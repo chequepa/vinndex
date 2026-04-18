@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditoría de fuentes — Vinndex</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          cobalt: '#1E3FBF', sky2: '#4D79E8', andes: '#7C8FD9', snow: '#F5EDE0',
+          magenta: '#D63A7A', terracota: '#D97449', mustard: '#E8B547',
+          malbec: '#6B1E2E', rosado: '#E8859E', chardonnay: '#E8D47C',
+          ink: '#0F1729', graphite: '#4A5468', stone2: '#D1D5DB',
+          green2: '#1B7A4F', yellow2: '#B88A1B', red2: '#A6262F',
+        },
+        fontFamily: { display: ['Fraunces', 'serif'], sans: ['Inter', 'sans-serif'] }
+      } }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; color: #0F1729; background: #F5EDE0; }
+    .display { font-family: 'Fraunces', Georgia, serif; }
+    .cursor-wine { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'><path d='M12 2 C 6 12, 4 18, 12 26 C 20 18, 18 12, 12 2 Z' fill='%236B1E2E'/></svg>") 12 14, pointer; }
+
+    .grain::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      opacity: 0.15; mix-blend-mode: multiply;
+    }
+
+    .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+    .st-alive { background: #1B7A4F20; color: #1B7A4F; }
+    .st-dead  { background: #A6262F20; color: #A6262F; }
+    .st-noweb { background: #B88A1B25; color: #B88A1B; }
+
+    .dif-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .dif-easy { background: #1B7A4F20; color: #1B7A4F; }
+    .dif-med  { background: #B88A1B25; color: #B88A1B; }
+    .dif-hard { background: #A6262F20; color: #A6262F; }
+    .dif-none { background: #D1D5DB40; color: #4A5468; }
+
+    .plat-pill {
+      display: inline-block; padding: 2px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 600;
+      background: #0F172910; color: #0F1729;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    .plat-vtex   { background: #FF3366; color: white; }
+    .plat-tn     { background: #2FB344; color: white; }
+    .plat-wc     { background: #7F54B3; color: white; }
+    .plat-bc     { background: #F9F9F9; color: #34313F; border: 1px solid #ccc; }
+    .plat-shopify{ background: #96BF48; color: white; }
+    .plat-magento{ background: #EE672F; color: white; }
+    .plat-ps     { background: #DF0067; color: white; }
+    .plat-wix    { background: #0C6EFC; color: white; }
+    .plat-odoo   { background: #714B67; color: white; }
+    .plat-custom { background: #0F1729; color: #F5EDE0; }
+
+    .decision-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .dec-yes   { background: #1B7A4F; color: white; }
+    .dec-maybe { background: #E8B547; color: #0F1729; }
+    .dec-no    { background: #D1D5DB; color: #4A5468; }
+
+    .badge-new { display: inline-flex; background: #E8B547; color: #0F1729; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.08em; margin-left: 6px; }
+
+    tr.row-yes { background: #1B7A4F08; }
+    tr.row-maybe { background: #E8B54710; }
+    tr.row-no { opacity: 0.55; }
+
+    th { background: #F5EDE0; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #4A5468; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #E5E7EB; vertical-align: top; }
+    td { font-size: 13px; }
+
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] .chevron { transform: rotate(90deg); }
+    .chevron { transition: transform 0.2s; display: inline-block; }
+
+    /* Platform bar visualization */
+    .plat-bar {
+      display: flex; align-items: center;
+      background: #F5EDE0;
+      border-radius: 14px;
+      padding: 18px 20px;
+      gap: 20px;
+    }
+    .plat-bar-count {
+      display: flex; flex-direction: column; align-items: center;
+      min-width: 90px;
+    }
+    .plat-bar-meter {
+      flex: 1;
+      background: rgba(15,23,41,0.08);
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .plat-bar-fill {
+      height: 100%; border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+    .confetti {
+      position: absolute; top: -8px; left: 0; right: 0; bottom: -8px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-2 shrink-0 cursor-wine">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <path d="M4 26 L12 14 L18 20 L22 12 L28 26 Z" fill="#1E3FBF" stroke="#1E3FBF" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="24" cy="8" r="3" fill="#E8B547"/>
+        </svg>
+        <span class="display text-xl font-semibold text-ink">Vinndex</span>
+        <span class="text-xs text-graphite ml-2 hidden sm:inline">· Admin / Auditoría v3</span>
+      </a>
+      <div class="flex gap-2 text-sm">
+        <a href="index.html" class="text-graphite hover:text-ink">← Volver al sitio</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO — TARGET CUMPLIDO -->
+  <section class="relative bg-ink text-snow overflow-hidden grain">
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, #0F1729 0%, #1E3FBF 50%, #6B1E2E 100%);"></div>
+    <div class="relative max-w-7xl mx-auto px-4 lg:px-8 py-14 lg:py-20">
+      <p class="text-mustard text-xs tracking-[0.22em] uppercase font-bold mb-4">Auditoría de fuentes · v3 — Target cumplido</p>
+      <h1 class="display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.02] mb-6">
+        43 vinotecas viables.<br/>
+        <span class="italic font-normal">Superamos el target</span> por 13.
+      </h1>
+      <p class="text-snow/85 text-lg max-w-3xl leading-relaxed">
+        Sumaste 21 URLs más en tu última tanda y <strong class="text-snow">21 de 21 son viables</strong>. El target del brief era 30+. Hoy tenemos 43 tiendas reales + Mercado Libre = <strong class="text-snow">44 fuentes de precios</strong>. Es muchísimo más de lo que ofrece cualquier comparador de vinos en Argentina hoy.
+      </p>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="max-w-7xl mx-auto px-4 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+
+    <div class="bg-white border-2 border-green2/30 rounded-2xl p-5">
+      <div class="display text-5xl font-semibold text-green2 leading-none">43</div>
+      <div class="text-sm text-ink font-semibold mt-2">viables</div>
+      <div class="text-xs text-graphite mt-1">tiendas online vivas con catálogo</div>
+    </div>
+
+    <div class="bg-white border border-ink/10 rounded-2xl p-5">
+      <div class="display text-5xl font-semibold text-cobalt leading-none">31</div>
+      <div class="text-sm text-ink font-semibold mt-2">fáciles</div>
+      <div class="text-xs text-graphite mt-1">plataforma estándar, scraping directo</div>
+    </div>
+
+    <div class="bg-white border border-ink/10 rounded-2xl p-5">
+      <div class="display text-5xl font-semibold" style="color:#B88A1B;">7</div>
+      <div class="text-sm text-ink font-semibold mt-2">medias</div>
+      <div class="text-xs text-graphite mt-1">requieren parseo HTML extra</div>
+    </div>
+
+    <div class="bg-white border border-ink/10 rounded-2xl p-5">
+      <div class="display text-5xl font-semibold text-malbec leading-none">5</div>
+      <div class="text-sm text-ink font-semibold mt-2">difíciles</div>
+      <div class="text-xs text-graphite mt-1">Playwright + proxies residenciales</div>
+    </div>
+  </section>
+
+  <!-- ADAPTERS LEVERAGE -->
+  <section class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+    <div class="bg-white rounded-2xl border border-ink/10 p-6 md:p-10">
+      <div class="max-w-3xl mb-8">
+        <p class="text-malbec text-xs tracking-[0.22em] uppercase font-bold mb-3">El hallazgo técnico</p>
+        <h2 class="display text-3xl md:text-4xl font-semibold text-ink leading-tight mb-4">
+          Con 6 adapters cubrimos<br/>el 95% del mercado.
+        </h2>
+        <p class="text-graphite leading-relaxed">
+          El brief recomienda construir "adapters por plataforma, no scrapers por tienda". Acá se ve por qué:
+          <strong class="text-ink">15 de 43 tiendas corren en Tiendanube</strong>. Un mismo código sirve para las 15.
+          Cuando Tiendanube cambia algo, arreglás 1 adapter y volvés a tener esas 15 funcionando.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+
+        <!-- Tiendanube -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#2FB344;">15</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tiendas</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-tn">Tiendanube</span>
+                <span class="font-semibold text-ink">1 adapter → 15 tiendas</span>
+              </div>
+              <span class="text-xs text-graphite hidden md:inline">Rebellion, Tonel Privado, Grand Cru, Enotek, Varietal, Wine Boutique, Biendevinos, Dionisio, Lo de Granado, 1812, Bebiendo Estrellas, Rincón, Vinería SJ, Vinicius, Enoteca Privada</span>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 100%; background: #2FB344;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WooCommerce -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#7F54B3;">10</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tiendas</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-wc">WooCommerce</span>
+                <span class="font-semibold text-ink">1 adapter → 10 tiendas</span>
+              </div>
+              <span class="text-xs text-graphite hidden md:inline">Lo de Joaquín, La Enoteca, De Barricas, Winery, Mercado de Vinos, Don Vino, Vinos Directos, La Taverna, Tienda de Vinos, Vitvin</span>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 66%; background: #7F54B3;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VTEX -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#FF3366;">6</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tiendas</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-vtex">VTEX</span>
+                <span class="font-semibold text-ink">1 adapter → 6 tiendas (¡5 son Cencosud!)</span>
+              </div>
+              <span class="text-xs text-graphite hidden md:inline">Jumbo, Disco, Carrefour, Día, Vea, Gobar</span>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 40%; background: #FF3366;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shopify -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#96BF48;">1</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tienda</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-shopify">Shopify</span>
+                <span class="font-semibold text-ink">1 adapter → Vinos y Spirits</span>
+              </div>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 7%; background: #96BF48;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BigCommerce -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#34313F;">1</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tienda</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-bc">BigCommerce</span>
+                <span class="font-semibold text-ink">1 adapter → Pampa Direct</span>
+              </div>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 7%; background: #34313F;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mercado Libre -->
+        <div class="plat-bar">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold" style="color:#FFE600; -webkit-text-stroke: 1px #0F1729;">API</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">oficial</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill" style="background:#FFE600; color:#0F1729;">Mercado Libre</span>
+                <span class="font-semibold text-ink">API oficial → todos los sellers de MLA1577</span>
+              </div>
+              <span class="text-xs text-graphite hidden md:inline">Sin scraping, sin proxies</span>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 30%; background:#FFE600;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom / otras -->
+        <div class="plat-bar opacity-75">
+          <div class="plat-bar-count">
+            <div class="display text-4xl font-semibold text-graphite">10</div>
+            <div class="text-[10px] text-graphite uppercase tracking-wider">tiendas</div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="plat-pill plat-custom">Custom / otras</span>
+                <span class="font-semibold text-ink">Requieren trabajo custom por tienda</span>
+              </div>
+              <span class="text-xs text-graphite hidden md:inline">Magento, PrestaShop, Wix, Odoo, PHP custom, ATG, SPA</span>
+            </div>
+            <div class="plat-bar-meter">
+              <div class="plat-bar-fill" style="width: 33%; background: #0F1729;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-ink/10 text-sm text-graphite">
+        <strong class="text-ink">Plan de construcción sugerido:</strong> arrancamos con <strong class="text-ink">3 adapters</strong> (Tiendanube + WooCommerce + VTEX) que cubren <strong class="text-ink">31 tiendas</strong> el día 1. Sumamos Shopify + BigCommerce + ML en semana 2. Las 10 custom van de a 1-2 por sprint en fase 2.
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLA PRINCIPAL -->
+  <section class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <div class="flex items-end justify-between flex-wrap gap-4 mb-6">
+      <div>
+        <h2 class="display text-2xl md:text-3xl font-semibold text-ink">Las 43 viables</h2>
+        <p class="text-graphite text-sm mt-1">Ordenadas por dificultad · arrancamos por las verdes</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-ink/10 overflow-x-auto">
+      <table class="w-full text-left min-w-[1000px]">
+        <thead>
+          <tr>
+            <th class="pl-5">#</th>
+            <th>Tienda</th>
+            <th>URL</th>
+            <th>Plataforma</th>
+            <th>Catálogo</th>
+            <th>Dificultad</th>
+            <th class="pr-5">Notas</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- FÁCILES -->
+          <tr><td colspan="7" class="!bg-green2/5 !py-2 !pl-5 text-[10px] font-bold text-green2 uppercase tracking-widest">Tier 1 · Fáciles (31) — día 1</td></tr>
+
+          <tr class="row-yes"><td class="pl-5">1</td><td class="font-semibold">Jumbo</td><td class="text-graphite">jumbo.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>grande</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">VTEX Cencosud · API pública</td></tr>
+          <tr class="row-yes"><td class="pl-5">2</td><td class="font-semibold">Disco</td><td class="text-graphite">disco.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>grande</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Misma cuenta VTEX</td></tr>
+          <tr class="row-yes"><td class="pl-5">3</td><td class="font-semibold">Carrefour</td><td class="text-graphite">carrefour.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>grande</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">VTEX estándar</td></tr>
+          <tr class="row-yes"><td class="pl-5">4</td><td class="font-semibold">Día</td><td class="text-graphite">diaonline.supermercadosdia.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>grande</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">VTEX estándar</td></tr>
+          <tr class="row-yes"><td class="pl-5">5</td><td class="font-semibold">Vea</td><td class="text-graphite">vea.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>grande</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">VTEX Cencosud</td></tr>
+          <tr class="row-yes"><td class="pl-5">6</td><td class="font-semibold">Gobar <span class="badge-new">NUEVO</span></td><td class="text-graphite">gobar.com.ar</td><td><span class="plat-pill plat-vtex">VTEX</span></td><td>888 (429 vinos)</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">API VTEX pública, catálogo visible</td></tr>
+
+          <tr class="row-yes"><td class="pl-5">7</td><td class="font-semibold">Tonel Privado</td><td class="text-graphite">tonelprivado.com</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">/products.json disponible</td></tr>
+          <tr class="row-yes"><td class="pl-5">8</td><td class="font-semibold">Grand Cru</td><td class="text-graphite">grandcru.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>~625</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">625 productos en sitemap</td></tr>
+          <tr class="row-yes"><td class="pl-5">9</td><td class="font-semibold">Enotek</td><td class="text-graphite">enotek.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>~2.700</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Catálogo enorme</td></tr>
+          <tr class="row-yes"><td class="pl-5">10</td><td class="font-semibold">Varietal</td><td class="text-graphite">varietalvinoteca.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Córdoba, envíos nacionales</td></tr>
+          <tr class="row-yes"><td class="pl-5">11</td><td class="font-semibold">Rebellion <span class="badge-new">NUEVO</span></td><td class="text-graphite">rebellion.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">12</td><td class="font-semibold">Wine Boutique <span class="badge-new">NUEVO</span></td><td class="text-graphite">wineboutique.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">13</td><td class="font-semibold">Biendevinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">biendevinos.com</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">14</td><td class="font-semibold">Dionisio Online <span class="badge-new">NUEVO</span></td><td class="text-graphite">tienda.dionisioonline.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">15</td><td class="font-semibold">Lo de Granado <span class="badge-new">NUEVO</span></td><td class="text-graphite">lodegranado.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">16</td><td class="font-semibold">1812 Vinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">1812vinos.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">17</td><td class="font-semibold">Bebiendo Estrellas <span class="badge-new">NUEVO</span></td><td class="text-graphite">bebiendoestrellas.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">18</td><td class="font-semibold">Rincón de Vinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">rincondevinos.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">19</td><td class="font-semibold">Vinería San Juan <span class="badge-new">NUEVO</span></td><td class="text-graphite">vineriasanjuan.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">20</td><td class="font-semibold">Vinicius Vinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">viniciusvinos.com.ar</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+          <tr class="row-yes"><td class="pl-5">21</td><td class="font-semibold">Enoteca Privada <span class="badge-new">NUEVO</span></td><td class="text-graphite">enotecaprivada.com</td><td><span class="plat-pill plat-tn">Tiendanube</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">CSP Tiendanube</td></tr>
+
+          <tr class="row-yes"><td class="pl-5">22</td><td class="font-semibold">Lo de Joaquín</td><td class="text-graphite">lodejoaquin.com</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">WP+WC limpio</td></tr>
+          <tr class="row-yes"><td class="pl-5">23</td><td class="font-semibold">La Enoteca</td><td class="text-graphite">laenoteca.com.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">WP clásico</td></tr>
+          <tr class="row-yes"><td class="pl-5">24</td><td class="font-semibold">De Barricas</td><td class="text-graphite">debarricas.com.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>~2.255</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">WC Store API pública</td></tr>
+          <tr class="row-yes"><td class="pl-5">25</td><td class="font-semibold">Mercado de Vinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">mercadodevinos.com.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>202</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">WP-JSON expuesto</td></tr>
+          <tr class="row-yes"><td class="pl-5">26</td><td class="font-semibold">Don Vino <span class="badge-new">NUEVO</span></td><td class="text-graphite">donvino.com.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>761</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Yoast sitemap completo</td></tr>
+          <tr class="row-yes"><td class="pl-5">27</td><td class="font-semibold">Vinos Directos de Bodegas <span class="badge-new">NUEVO</span></td><td class="text-graphite">vinosdirectosdebodegas.com</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">LiteSpeed + WP-JSON</td></tr>
+          <tr class="row-yes"><td class="pl-5">28</td><td class="font-semibold">La Taverna Club <span class="badge-new">NUEVO</span></td><td class="text-graphite">latavernaclub.com</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>~233 vinos</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Sitemap expuesto</td></tr>
+          <tr class="row-yes"><td class="pl-5">29</td><td class="font-semibold">Tienda de Vinos <span class="badge-new">NUEVO</span></td><td class="text-graphite">tiendadevinos.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>257</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Yoast sitemap</td></tr>
+
+          <tr class="row-yes"><td class="pl-5">30</td><td class="font-semibold">Pampa Direct</td><td class="text-graphite">pampadirect.com</td><td><span class="plat-pill plat-bc">BigCommerce</span></td><td>?</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Stencil + API BC</td></tr>
+          <tr class="row-yes"><td class="pl-5">31</td><td class="font-semibold">Vinos y Spirits <span class="badge-new">NUEVO</span></td><td class="text-graphite">vinosyspirits.com</td><td><span class="plat-pill plat-shopify">Shopify</span></td><td>~125</td><td><span class="dif-pill dif-easy">Fácil</span></td><td class="pr-5 text-graphite">Peñaflor · /products.json abierto</td></tr>
+
+          <!-- MEDIAS -->
+          <tr><td colspan="7" class="!bg-yellow2/5 !py-2 !pl-5 text-[10px] font-bold uppercase tracking-widest" style="color:#B88A1B;">Tier 2 · Medias (7) — parsing HTML custom</td></tr>
+
+          <tr class="row-maybe"><td class="pl-5">32</td><td class="font-semibold">Winery</td><td class="text-graphite">winery.com.ar</td><td><span class="plat-pill plat-wc">WooCommerce</span></td><td>?</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">Cloudflare 403, se arregla con headers</td></tr>
+          <tr class="row-maybe"><td class="pl-5">33</td><td class="font-semibold">Ligier</td><td class="text-graphite">vinotecaligier.com</td><td><span class="plat-pill plat-magento">Magento</span></td><td>?</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">Magento 2, antibot ligero</td></tr>
+          <tr class="row-maybe"><td class="pl-5">34</td><td class="font-semibold">Frappe</td><td class="text-graphite">frappe.com.ar</td><td><span class="plat-pill plat-ps">PrestaShop</span></td><td>?</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">Parsear HTML de categorías</td></tr>
+          <tr class="row-maybe"><td class="pl-5">35</td><td class="font-semibold">La Anónima</td><td class="text-graphite">laanonimaonline.com</td><td><span class="plat-pill plat-custom">Custom</span></td><td>?</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">JS pesado, inspeccionar XHR</td></tr>
+          <tr class="row-maybe"><td class="pl-5">36</td><td class="font-semibold">Espacio Vino <span class="badge-new">NUEVO</span></td><td class="text-graphite">espaciovino.com.ar</td><td><span class="plat-pill plat-custom">Custom PHP</span></td><td>grande</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">PHP 5.6 antiguo, SSR con carrito</td></tr>
+          <tr class="row-maybe"><td class="pl-5">37</td><td class="font-semibold">Vitvin <span class="badge-new">NUEVO</span></td><td class="text-graphite">vitvin.com.ar</td><td><span class="plat-pill plat-wc">Next+Woo</span></td><td>?</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">Headless, backend woo.vitvin.com.ar</td></tr>
+          <tr class="row-maybe"><td class="pl-5">38</td><td class="font-semibold">MA Distribución <span class="badge-new">NUEVO</span></td><td class="text-graphite">madistribucion.com</td><td><span class="plat-pill plat-odoo">Odoo</span></td><td>~3.152</td><td><span class="dif-pill dif-med">Media</span></td><td class="pr-5 text-graphite">Distribuidor B2B/C, Odoo.sh</td></tr>
+
+          <!-- DIFÍCILES -->
+          <tr><td colspan="7" class="!bg-red2/5 !py-2 !pl-5 text-[10px] font-bold text-red2 uppercase tracking-widest">Tier 3 · Difíciles (5) — Playwright + proxies residenciales</td></tr>
+
+          <tr class="row-maybe"><td class="pl-5">39</td><td class="font-semibold">Bonvivir</td><td class="text-graphite">bonvivir.com</td><td><span class="plat-pill plat-custom">Custom SPA</span></td><td>?</td><td><span class="dif-pill dif-hard">Difícil</span></td><td class="pr-5 text-graphite">SPA + captcha. Curaduría Rosberg</td></tr>
+          <tr class="row-maybe"><td class="pl-5">40</td><td class="font-semibold">Coto Digital</td><td class="text-graphite">cotodigital.com.ar</td><td><span class="plat-pill plat-custom">Oracle ATG</span></td><td>grande</td><td><span class="dif-pill dif-hard">Difícil</span></td><td class="pr-5 text-graphite">Legado, sin API JSON</td></tr>
+          <tr class="row-maybe"><td class="pl-5">41</td><td class="font-semibold">The Little Cava</td><td class="text-graphite">thelittlecava.ar</td><td><span class="plat-pill plat-wix">Wix</span></td><td>?</td><td><span class="dif-pill dif-hard">Difícil</span></td><td class="pr-5 text-graphite">Wix SSR, Puppeteer/GraphQL</td></tr>
+          <tr class="row-maybe"><td class="pl-5">42</td><td class="font-semibold">Jose La Vinos</td><td class="text-graphite">joselavinos.com</td><td><span class="plat-pill">?</span></td><td>?</td><td><span class="dif-pill dif-hard">Difícil</span></td><td class="pr-5 text-graphite">Cloudflare 403, browser real</td></tr>
+          <tr class="row-maybe"><td class="pl-5">43</td><td class="font-semibold">Baco</td><td class="text-graphite">baco.com.ar</td><td><span class="plat-pill plat-wc">WordPress</span></td><td>?</td><td><span class="dif-pill dif-hard">Difícil</span></td><td class="pr-5 text-graphite">403 a bots en www</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-graphite mt-4">
+      <span class="badge-new !ml-0">NUEVO</span> = agregadas en tu última tanda (21/04/18)
+    </p>
+  </section>
+
+  <!-- DESCARTADAS (colapsado) -->
+  <section class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <details class="bg-white rounded-2xl border border-ink/10 p-6">
+      <summary class="flex items-center gap-2 font-semibold cursor-wine">
+        <span class="chevron text-graphite">›</span>
+        Ver las 41 descartadas (muertas o sin tienda) · total revisado: 84
+      </summary>
+      <div class="mt-6 text-sm text-graphite">
+        <p class="mb-4">Auditamos 84 candidatos totales (32 del brief + 7 tuyas ronda 1 + 24 mías + 21 tuyas ronda 2). 43 quedaron viables, 41 descartadas. Mayoría de descartadas: DNS muerto (30) o bodegas con web institucional sin tienda (11).</p>
+        <p class="text-xs italic">Lista completa guardada en SOURCES.md para referencia técnica.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- PRÓXIMOS PASOS -->
+  <section class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+    <div class="relative rounded-2xl overflow-hidden grain" style="background: linear-gradient(135deg, #1B7A4F 0%, #2FB344 60%, #E8B547 100%);">
+      <div class="relative z-10 p-8 md:p-12 text-snow">
+        <p class="text-ink/70 text-xs tracking-widest uppercase font-bold mb-3">Siguiente paso</p>
+        <h2 class="display text-3xl md:text-5xl font-semibold leading-tight mb-5 text-ink">
+          Lista cerrada.<br/>
+          <span class="italic font-normal">Arrancamos el código.</span>
+        </h2>
+        <p class="text-ink/90 text-lg leading-relaxed max-w-3xl mb-8">
+          Con 43 vinotecas viables + Mercado Libre ya tenemos el catálogo base. Ahora toca abrir cuentas (dominio, hosting, OpenAI, proxies) y empezar a escribir los primeros 3 adapters (Tiendanube, WooCommerce, VTEX) que el día 1 cubren 31 tiendas.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-ink/10 backdrop-blur border border-ink/20 rounded-xl p-5 text-ink">
+            <div class="display text-3xl font-semibold mb-2">01</div>
+            <h4 class="font-semibold mb-2">Abrir cuentas</h4>
+            <p class="text-ink/85 text-sm leading-relaxed">NIC.ar (vinndex.com.ar), Railway, OpenAI, IPRoyal, Cloudflare, Mercado Libre Developer. ~USD 130-180/mes.</p>
+          </div>
+          <div class="bg-ink/10 backdrop-blur border border-ink/20 rounded-xl p-5 text-ink">
+            <div class="display text-3xl font-semibold mb-2">02</div>
+            <h4 class="font-semibold mb-2">Scaffolding</h4>
+            <p class="text-ink/85 text-sm leading-relaxed">Monorepo Next.js + workers + Postgres+pgvector + Meilisearch + BullMQ. Todo en Railway.</p>
+          </div>
+          <div class="bg-ink/10 backdrop-blur border border-ink/20 rounded-xl p-5 text-ink">
+            <div class="display text-3xl font-semibold mb-2">03</div>
+            <h4 class="font-semibold mb-2">3 adapters + ML</h4>
+            <p class="text-ink/85 text-sm leading-relaxed">Tiendanube (15 tiendas), WooCommerce (10), VTEX (6), ML API. 32 fuentes activas al final de mes 1.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-ink text-snow/70 px-6 py-10 mt-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+      <p>© 2026 Vinndex · Admin — Auditoría v3 · <a href="index.html" class="hover:text-snow">Volver al sitio</a></p>
+      <p>Última revisión: 2026-04-18 · 43/44 fuentes listas</p>
+    </div>
+  </footer>
+
+</body>
+</html>

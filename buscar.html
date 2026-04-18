@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados para "Malbec" — Vinndex</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          cobalt: '#1E3FBF', sky2: '#4D79E8', andes: '#7C8FD9', snow: '#F5EDE0',
+          magenta: '#D63A7A', terracota: '#D97449', mustard: '#E8B547',
+          malbec: '#6B1E2E', rosado: '#E8859E', chardonnay: '#E8D47C',
+          ink: '#0F1729', graphite: '#4A5468', stone2: '#D1D5DB',
+        },
+        fontFamily: { display: ['Fraunces', 'serif'], sans: ['Inter', 'sans-serif'] }
+      } }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; color: #0F1729; background: #FFFFFF; }
+    .display { font-family: 'Fraunces', Georgia, serif; }
+    .cursor-wine { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'><path d='M12 2 C 6 12, 4 18, 12 26 C 20 18, 18 12, 12 2 Z' fill='%236B1E2E'/></svg>") 12 14, pointer; }
+
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .tag-malbec { background: #6B1E2E15; color: #6B1E2E; }
+
+    .filter-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 999px;
+      background: white; border: 1px solid #D1D5DB;
+      font-size: 13px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: #1E3FBF; color: #1E3FBF; }
+    .filter-chip.active { background: #0F1729; color: #F5EDE0; border-color: #0F1729; }
+
+    .wine-row { transition: background-color 0.2s; }
+    .wine-row:hover { background-color: #F5EDE080; }
+
+    .wine-thumb {
+      width: 64px; height: 96px; border-radius: 8px; position: relative; overflow: hidden;
+      background: linear-gradient(180deg, #F5EDE0 0%, #E8D47C 100%);
+      display: flex; align-items: flex-end; justify-content: center;
+      border: 1px solid rgba(15,23,41,0.08);
+    }
+    .wine-thumb svg { width: 100%; height: 100%; }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
+      <a href="index.html" class="flex items-center gap-2 shrink-0 cursor-wine">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <path d="M4 26 L12 14 L18 20 L22 12 L28 26 Z" fill="#1E3FBF" stroke="#1E3FBF" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="24" cy="8" r="3" fill="#E8B547"/>
+        </svg>
+        <span class="display text-xl font-semibold text-ink hidden sm:block">Vinndex</span>
+      </a>
+
+      <form action="buscar.html" class="flex-1 max-w-2xl">
+        <div class="relative flex items-center bg-snow rounded-full border border-ink/10 focus-within:border-cobalt p-1 pl-4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-graphite shrink-0">
+            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" value="Malbec" class="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink" />
+          <button class="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">Buscar</button>
+        </div>
+      </form>
+
+      <div class="flex items-center gap-2 text-sm shrink-0">
+        <span class="text-graphite hidden lg:inline">Enviando a</span>
+        <select class="bg-snow border border-ink/10 rounded-full px-3 py-2 font-medium text-ink cursor-wine">
+          <option>CABA</option><option>GBA</option><option>Resto</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- HEADER -->
+  <section class="bg-snow border-b border-ink/10">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+      <div class="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-3">
+        <a href="index.html" class="hover:text-ink">Inicio</a>
+        <span>/</span><span>Búsqueda</span>
+      </div>
+      <h1 class="display text-4xl md:text-5xl font-semibold text-ink leading-tight">
+        Resultados para <span class="italic">"Malbec"</span>
+      </h1>
+      <p class="text-graphite mt-2">
+        <span class="font-semibold text-ink">1.247 vinos</span> encontrados · precios con envío a <span class="font-semibold text-ink">CABA</span>
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        <button class="filter-chip active">Malbec ×</button>
+        <button class="filter-chip">Varietal
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="filter-chip">Bodega
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="filter-chip">Región
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="filter-chip">Precio
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="filter-chip">Cosecha
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 grid lg:grid-cols-[260px_1fr] gap-10">
+
+    <!-- SIDEBAR FILTROS -->
+    <aside class="hidden lg:block">
+      <div class="sticky top-24">
+        <div class="mb-8">
+          <h3 class="display text-lg font-semibold mb-4">Rango de precio</h3>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Menos de $10.000 <span class="text-graphite ml-auto">(142)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt" checked> $10k - $25k <span class="text-graphite ml-auto">(538)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> $25k - $50k <span class="text-graphite ml-auto">(361)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> $50k - $100k <span class="text-graphite ml-auto">(148)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Más de $100k <span class="text-graphite ml-auto">(58)</span></label>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <h3 class="display text-lg font-semibold mb-4">Región</h3>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt" checked> Valle de Uco <span class="text-graphite ml-auto">(423)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Luján de Cuyo <span class="text-graphite ml-auto">(389)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Maipú <span class="text-graphite ml-auto">(201)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Tupungato <span class="text-graphite ml-auto">(134)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Cafayate <span class="text-graphite ml-auto">(67)</span></label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Patagonia <span class="text-graphite ml-auto">(33)</span></label>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <h3 class="display text-lg font-semibold mb-4">Cosecha</h3>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <button class="filter-chip text-xs !px-3 !py-1">2023</button>
+            <button class="filter-chip text-xs !px-3 !py-1 active">2022</button>
+            <button class="filter-chip text-xs !px-3 !py-1 active">2021</button>
+            <button class="filter-chip text-xs !px-3 !py-1">2020</button>
+            <button class="filter-chip text-xs !px-3 !py-1">2019</button>
+            <button class="filter-chip text-xs !px-3 !py-1">Otras</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="display text-lg font-semibold mb-4">Disponibilidad</h3>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt" checked> En stock</label>
+            <label class="flex items-center gap-2 cursor-wine"><input type="checkbox" class="accent-cobalt"> Envío gratis disponible</label>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RESULTADOS -->
+    <section>
+
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
+        <p class="text-sm text-graphite">Mostrando <span class="font-semibold text-ink">1-12</span> de <span class="font-semibold text-ink">1.247</span></p>
+        <div class="flex items-center gap-2 text-sm">
+          <label class="text-graphite">Ordenar por:</label>
+          <select class="bg-white border border-ink/10 rounded-full px-3 py-1.5 font-medium cursor-wine">
+            <option>Precio total (con envío)</option>
+            <option>Precio sin envío</option>
+            <option>Más populares</option>
+            <option>Cosecha más nueva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divide-y divide-ink/10">
+
+        <!-- VINO 1 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0" opacity="0.9"/>
+                <text x="32" y="52" font-size="5" text-anchor="middle" fill="#6B1E2E" font-weight="bold">CATENA</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Catena Zapata Malbec 2021</h3>
+                  <p class="text-sm text-graphite mt-0.5">Bodega Catena Zapata · Luján de Cuyo · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$18.450</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">14 vinotecas</span> lo venden</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-terracota font-medium">Envío gratis desde Winery</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 2 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#E8D47C" opacity="0.95"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#3A1020" font-weight="bold">LUIGI B.</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Luigi Bosca Reserva Malbec 2020</h3>
+                  <p class="text-sm text-graphite mt-0.5">Luigi Bosca · Luján de Cuyo · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$12.890</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">23 vinotecas</span> lo venden</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="tag" style="background:#E8B54725; color:#8B6A1A;">★ Más popular</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 3 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0"/>
+                <text x="32" y="52" font-size="5" text-anchor="middle" fill="#6B1E2E" font-weight="bold">ZUCCARDI</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Zuccardi Q Malbec 2021</h3>
+                  <p class="text-sm text-graphite mt-0.5">Familia Zuccardi · Valle de Uco · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$15.200</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">19 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 4 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#E8B547"/>
+                <text x="32" y="52" font-size="5" text-anchor="middle" fill="#3A1020" font-weight="bold">RUTINI</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Rutini Trumpeter Reserve Malbec 2022</h3>
+                  <p class="text-sm text-graphite mt-0.5">Rutini Wines · Tupungato · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$9.450</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">17 vinotecas</span> lo venden</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-terracota font-medium">−8% esta semana</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 5 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#6B1E2E" font-weight="bold">ALAMOS</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Alamos Selección Malbec 2022</h3>
+                  <p class="text-sm text-graphite mt-0.5">Bodega Catena Zapata · Mendoza · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$5.890</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">28 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 6 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#E8859E"/>
+                <text x="32" y="52" font-size="5" text-anchor="middle" fill="#3A1020" font-weight="bold">TRAPICHE</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Trapiche Oak Cask Malbec 2021</h3>
+                  <p class="text-sm text-graphite mt-0.5">Trapiche · Maipú · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$7.350</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">21 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 7 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#6B1E2E" font-weight="bold">ACHAVAL</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Achaval Ferrer Finca Altamira Malbec 2019</h3>
+                  <p class="text-sm text-graphite mt-0.5">Achaval Ferrer · Valle de Uco · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$87.500</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">7 vinotecas</span> lo venden</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="tag" style="background:#6B1E2E20; color:#6B1E2E;">Premium</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 8 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#E8D47C"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#3A1020" font-weight="bold">EL ESTECO</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">El Esteco Altimus Malbec 2020</h3>
+                  <p class="text-sm text-graphite mt-0.5">El Esteco · Cafayate · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$24.900</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">11 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 9 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#6B1E2E" font-weight="bold">SALENTEIN</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Salentein Reserve Malbec 2021</h3>
+                  <p class="text-sm text-graphite mt-0.5">Bodegas Salentein · Valle de Uco · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$11.890</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">16 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 10 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#D97449"/>
+                <text x="32" y="52" font-size="5" text-anchor="middle" fill="#3A1020" font-weight="bold">COLOMÉ</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Colomé Estate Malbec 2021</h3>
+                  <p class="text-sm text-graphite mt-0.5">Bodega Colomé · Calchaquí (Salta) · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$13.450</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">13 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 11 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#6B1E2E"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#E8B547"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#6B1E2E" font-weight="bold">NORTON</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Norton Reserva Malbec 2022</h3>
+                  <p class="text-sm text-graphite mt-0.5">Bodega Norton · Luján de Cuyo · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$8.990</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">20 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- VINO 12 -->
+        <a href="vino.html" class="wine-row block py-5">
+          <div class="flex gap-5">
+            <div class="wine-thumb shrink-0">
+              <svg viewBox="0 0 64 96" fill="none">
+                <rect x="22" y="12" width="20" height="72" rx="2" fill="#3A1020"/>
+                <rect x="22" y="8" width="20" height="8" fill="#0F1729"/>
+                <rect x="24" y="36" width="16" height="28" fill="#F5EDE0"/>
+                <text x="32" y="52" font-size="4" text-anchor="middle" fill="#3A1020" font-weight="bold">PULENTA</text>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 mb-1">
+                <div>
+                  <h3 class="display text-lg md:text-xl font-semibold text-ink leading-tight">Pulenta Estate Gran Malbec 2020</h3>
+                  <p class="text-sm text-graphite mt-0.5">Pulenta Estate · Alto Agrelo · 750ml</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-graphite">desde</div>
+                  <div class="display text-2xl font-semibold text-cobalt">$34.200</div>
+                  <div class="text-xs text-graphite">+ envío</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="tag tag-malbec">Malbec</span>
+                <span class="text-xs text-graphite">•</span>
+                <span class="text-xs text-graphite"><span class="font-semibold text-ink">9 vinotecas</span> lo venden</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="mt-12 flex items-center justify-center gap-2">
+        <button class="filter-chip !px-4" disabled style="opacity: 0.4;">‹ Anterior</button>
+        <button class="filter-chip !w-10 !h-10 !p-0 !justify-center active">1</button>
+        <button class="filter-chip !w-10 !h-10 !p-0 !justify-center">2</button>
+        <button class="filter-chip !w-10 !h-10 !p-0 !justify-center">3</button>
+        <span class="text-graphite px-2">...</span>
+        <button class="filter-chip !w-10 !h-10 !p-0 !justify-center">104</button>
+        <button class="filter-chip !px-4 cursor-wine">Siguiente ›</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="bg-ink text-snow/70 px-6 py-10 mt-16">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+      <p>© 2026 Vinndex · <a href="index.html" class="hover:text-snow">Inicio</a></p>
+      <p>Precios relevados una vez por día · Beber con moderación</p>
+    </div>
+  </footer>
+
+</body>
+</html>
