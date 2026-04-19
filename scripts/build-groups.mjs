@@ -434,15 +434,18 @@ function main() {
     multiStore > 0 ? (totalOffersInMulti / multiStore).toFixed(2) : 0
   }`);
 
+  // Drop snapshot.products from the published snapshot — it's fully
+  // redundant with productGroups[].offers[]. Saves ~18MB.
+  const { products: _products, ...rest } = snap;
   const out = {
-    ...snap,
+    ...rest,
     productGroups: groups,
     groupCount: groups.length,
     multiStoreGroupCount: multiStore,
     groupsGeneratedAt: new Date().toISOString(),
   };
 
-  writeFileSync(inPath, JSON.stringify(out, null, 2));
+  writeFileSync(inPath, JSON.stringify(out));
   console.log(`\nWrote ${inPath}`);
 }
 

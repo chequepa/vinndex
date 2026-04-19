@@ -20,7 +20,8 @@ export type Snapshot = {
   storeCount: number;
   productCount: number;
   stores: SnapshotStore[];
-  products: ScrapedProduct[];
+  /** Legacy — dropped from shipped snapshot in favor of productGroups[].offers[]. */
+  products?: ScrapedProduct[];
   productGroups?: ProductGroup[];
   groupCount?: number;
   multiStoreGroupCount?: number;
@@ -30,15 +31,25 @@ export type Snapshot = {
 export const snapshot = snapshotJson as Snapshot;
 
 export function snapshotStats() {
+  let inStock = 0;
+  let withPrice = 0;
+  let withBrand = 0;
+  for (const g of groups) {
+    for (const o of g.offers) {
+      if (o.inStock) inStock++;
+      if (o.priceArs !== null && o.priceArs > 0) withPrice++;
+    }
+    if (g.brand) {
+      for (const _ of g.offers) withBrand++;
+    }
+  }
   return {
     productCount: snapshot.productCount,
     storeCount: snapshot.storeCount,
     generatedAt: snapshot.generatedAt,
-    inStock: snapshot.products.filter((p) => p.inStock).length,
-    withPrice: snapshot.products.filter(
-      (p) => p.priceArs !== null && p.priceArs > 0,
-    ).length,
-    withBrand: snapshot.products.filter((p) => p.brand).length,
+    inStock,
+    withPrice,
+    withBrand,
     groupCount: snapshot.groupCount ?? 0,
     multiStoreGroupCount: snapshot.multiStoreGroupCount ?? 0,
   };
@@ -140,52 +151,8 @@ export function facetCounts(): {
   };
 }
 
-/** Derive a URL-safe slug from a product's externalUrl. */
-export function productSlug(product: ScrapedProduct): string {
-  try {
-    const u = new URL(product.externalUrl);
-    const parts = u.pathname.split("/").filter(Boolean);
-    const last = parts[parts.length - 1] ?? parts[parts.length - 2] ?? "";
-    if (last) return `${product.storeSlug}__${last}`;
-  } catch {
-    /* fall through */
-  }
-  return `${product.storeSlug}__${product.name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")}`;
-}
-
-export function findProductBySlug(slug: string): ScrapedProduct | undefined {
-  return snapshot.products.find((p) => productSlug(p) === slug);
-}
-
-/**
- * Sort key that pushes null/missing prices to the end but keeps real prices
- * in ascending order.
- */
-function priceKey(p: ScrapedProduct): number {
-  return p.priceArs != null && p.priceArs > 0
-    ? p.priceArs
-    : Number.POSITIVE_INFINITY;
-}
-
-export function searchProducts(query: string, limit = 50): ScrapedProduct[] {
-  const q = query.trim().toLowerCase();
-  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
-  const filtered = q
-    ? snapshot.products.filter((p) => {
-        const haystack =
-          `${p.name} ${p.brand ?? ""} ${p.description ?? ""}`.toLowerCase();
-        return tokens.every((t) => haystack.includes(t));
-      })
-    : snapshot.products;
-  return [...filtered]
-    .sort((a, b) => priceKey(a) - priceKey(b) || a.name.localeCompare(b.name))
-    .slice(0, limit);
-}
+// Note: findProductBySlug / searchProducts / productSlug were removed —
+// all pages now operate on productGroups via findGroup / searchGroups.
 
 export function formatArs(value: number | null): string {
   if (value === null || value <= 0) return "Consultar";
@@ -250,35 +217,31 @@ export function topBrands(limit = 12): BrandStat[] {
     { count: number; stores: Set<string>; wineish: number }
   >();
 
-  // Build a lookup of (name -> first matching varietal) using the groups.
-  const productToVarietal = new Map<string, boolean>();
+  // Walk groups → offers (avoids needing snapshot.products, which is
+  // redundant with offers and was dropped from the shipped snapshot).
   for (const g of groups) {
-    const isWine =
-      (g.varietals && g.varietals.length > 0) || g.type === "Tinto" || g.type === "Blanco";
-    for (const o of g.offers) {
-      productToVarietal.set(o.externalUrl, isWine);
-    }
-  }
-
-  for (const p of snapshot.products) {
-    if (!p.brand) continue;
-    const raw = p.brand.trim();
+    const raw = g.brand?.trim();
     if (!raw) continue;
     if (/smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i.test(raw))
-      continue; // blacklist common spirits brands
-    const key = normalizeBrandCase(raw); // collapses NORTON ↔ Norton
-    const existing = byBrand.get(key);
-    const isWine = productToVarietal.get(p.externalUrl) ?? false;
-    if (existing) {
-      existing.count++;
-      existing.stores.add(p.storeSlug);
-      if (isWine) existing.wineish++;
-    } else {
-      byBrand.set(key, {
-        count: 1,
-        stores: new Set([p.storeSlug]),
-        wineish: isWine ? 1 : 0,
-      });
+      continue;
+    const key = normalizeBrandCase(raw);
+    const isWine =
+      (g.varietals && g.varietals.length > 0) ||
+      g.type === "Tinto" ||
+      g.type === "Blanco";
+    for (const offer of g.offers) {
+      const existing = byBrand.get(key);
+      if (existing) {
+        existing.count++;
+        existing.stores.add(offer.storeSlug);
+        if (isWine) existing.wineish++;
+      } else {
+        byBrand.set(key, {
+          count: 1,
+          stores: new Set([offer.storeSlug]),
+          wineish: isWine ? 1 : 0,
+        });
+      }
     }
   }
 
