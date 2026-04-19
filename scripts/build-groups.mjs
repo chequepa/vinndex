@@ -293,6 +293,42 @@ function main() {
     else byKey.set(ks, { key: k, items: [p] });
   }
 
+  // Stage 1b: subset merge. Single-token or short groups whose tokens are a
+  // strict subset of a larger multi-item group likely belong to that group
+  // (e.g. "Emma Bonarda" without brand token, merged into "Emma Bonarda
+  // Zuccardi"). Require the subset to have >=2 distinctive tokens and the
+  // target to be unambiguous (only one multi-item group contains those
+  // tokens as a subset).
+  const keyEntries = [...byKey.entries()];
+  const targets = keyEntries.filter(([, v]) => v.items.length >= 2);
+  const targetTokens = targets.map(([k]) => ({
+    key: k,
+    tokens: new Set(k.split(" ").filter(Boolean)),
+  }));
+
+  const merged = new Set();
+  for (const [k, v] of keyEntries) {
+    if (v.items.length >= 2) continue; // only try to merge singletons
+    const tokens = k.split(" ").filter(Boolean);
+    if (tokens.length < 2) continue;
+    // Find all targets where these tokens are a strict subset of target tokens
+    const matches = targetTokens.filter(
+      (t) =>
+        t.key !== k &&
+        tokens.every((tok) => t.tokens.has(tok)) &&
+        tokens.length < t.tokens.size,
+    );
+    if (matches.length === 1) {
+      // Unambiguous match — merge
+      const target = byKey.get(matches[0].key);
+      if (target) {
+        target.items.push(...v.items);
+        merged.add(k);
+      }
+    }
+  }
+  for (const k of merged) byKey.delete(k);
+
   const usedSlugs = new Map();
   const groups = [];
 

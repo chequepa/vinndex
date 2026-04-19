@@ -102,6 +102,28 @@ function colorForStore(slug: string): string {
   return STORE_COLORS[h % STORE_COLORS.length];
 }
 
+function extractVintageFromName(name: string): number | null {
+  const m = name.match(/\b(19\d{2}|20[0-2]\d)\b/);
+  return m ? Number(m[1]) : null;
+}
+
+/** Strip vintage + volume + redundant brand mentions from an offer name for cleaner display. */
+function prettyOfferName(name: string, brand: string | null): string {
+  let s = name
+    .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
+    .replace(/\s*\d+\s*(ml|cc)\b/gi, " ")
+    .replace(/\b(Vino|Tinto|Blanco)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (brand) {
+    const rb = new RegExp(`\\b${brand}\\b`, "gi");
+    const stripped = s.replace(rb, " ").replace(/\s+/g, " ").trim();
+    // Only return stripped if it still has useful content
+    if (stripped.length > 5) s = stripped;
+  }
+  return s;
+}
+
 export default async function Vino({ params }: Params) {
   const { slug } = await params;
   const group = findGroup(slug);
@@ -109,6 +131,14 @@ export default async function Vino({ params }: Params) {
 
   const offers = group.offers;
   const bestOffer = offers[0];
+
+  // Compute distinct vintages across offers in this group
+  const vintageSet = new Set<number>();
+  for (const o of offers) {
+    const v = extractVintageFromName(o.name);
+    if (v) vintageSet.add(v);
+  }
+  const vintagesSorted = [...vintageSet].sort((a, b) => b - a);
 
   // Related: prefer same brand. Fall back to same varietal + similar price band.
   const sameBrand = allGroups.filter(
@@ -328,6 +358,16 @@ export default async function Vino({ params }: Params) {
                   {group.storeCount === 1 ? "" : "s"}
                 </span>{" "}
                 online.
+                {vintagesSorted.length > 1 && (
+                  <>
+                    {" "}
+                    Cosechas relevadas:{" "}
+                    <span className="font-semibold text-snow">
+                      {vintagesSorted.join(", ")}
+                    </span>
+                    .
+                  </>
+                )}
               </p>
 
               <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 mb-8">
@@ -443,12 +483,20 @@ export default async function Vino({ params }: Params) {
                             ★ Mejor precio
                           </span>
                         )}
+                        {(() => {
+                          const v = extractVintageFromName(offer.name);
+                          return v ? (
+                            <span className="text-[10px] bg-cobalt/15 text-cobalt px-2 py-0.5 rounded-full font-semibold">
+                              Cosecha {v}
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
                       <div
                         className="text-xs text-graphite truncate"
                         title={offer.name}
                       >
-                        {offer.name}
+                        {prettyOfferName(offer.name, group.brand)}
                         {offer.externalSku ? ` · SKU ${offer.externalSku}` : ""}
                       </div>
                     </div>
