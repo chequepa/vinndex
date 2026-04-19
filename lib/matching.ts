@@ -107,6 +107,9 @@ export type ProductGroup = {
   offerCount: number;
   minPrice: number | null;
   maxPrice: number | null;
+  varietals?: string[];
+  region?: string | null;
+  type?: string | null;
   offers: ProductOffer[];
 };
 

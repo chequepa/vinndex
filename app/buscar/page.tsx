@@ -4,6 +4,7 @@ import {
   formatArs,
   storeName,
   snapshot,
+  facetCounts,
 } from "@/lib/snapshot";
 
 export const metadata: Metadata = {
@@ -11,7 +12,13 @@ export const metadata: Metadata = {
 };
 
 type Params = {
-  searchParams: Promise<{ q?: string; multi?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    multi?: string;
+    varietal?: string;
+    tipo?: string;
+    region?: string;
+  }>;
 };
 
 function ChevronIcon() {
@@ -27,17 +34,46 @@ function ChevronIcon() {
   );
 }
 
+function buildQS(params: URLSearchParams): string {
+  const s = params.toString();
+  return s ? `?${s}` : "";
+}
+
 export default async function Buscar({ searchParams }: Params) {
   const params = await searchParams;
   const query = (params.q ?? "").trim();
   const multiOnly = params.multi === "1";
-  const results = searchGroups(query, 48, { multiStoreOnly: multiOnly });
+  const varietal = params.varietal ?? null;
+  const type = params.tipo ?? null;
+  const region = params.region ?? null;
+
+  const results = searchGroups(query, 48, {
+    multiStoreOnly: multiOnly,
+    varietal,
+    type,
+    region,
+  });
   const totalGroups = snapshot.groupCount ?? 0;
   const totalMulti = snapshot.multiStoreGroupCount ?? 0;
+  const facets = facetCounts();
+
+  const hasAnyFilter = query || multiOnly || varietal || type || region;
 
   const headerTitle = query ? (
     <>
       Resultados para <span className="italic">&ldquo;{query}&rdquo;</span>
+    </>
+  ) : varietal ? (
+    <>
+      <span className="italic">{varietal}</span>
+    </>
+  ) : type ? (
+    <>
+      Vinos <span className="italic">{type.toLowerCase()}</span>
+    </>
+  ) : region ? (
+    <>
+      Vinos de <span className="italic">{region}</span>
     </>
   ) : multiOnly ? (
     <>
@@ -48,6 +84,28 @@ export default async function Buscar({ searchParams }: Params) {
       Catálogo completo <span className="italic">Vinndex</span>
     </>
   );
+
+  // Build "with" / "without" URLs for a given filter
+  function filterHref(key: string, value: string | null): string {
+    const sp = new URLSearchParams();
+    if (query) sp.set("q", query);
+    if (multiOnly && key !== "multi") sp.set("multi", "1");
+    if (varietal && key !== "varietal") sp.set("varietal", varietal);
+    if (type && key !== "tipo") sp.set("tipo", type);
+    if (region && key !== "region") sp.set("region", region);
+    if (value !== null) sp.set(key, value);
+    return `/buscar${buildQS(sp)}`;
+  }
+
+  function toggleMulti(): string {
+    const sp = new URLSearchParams();
+    if (query) sp.set("q", query);
+    if (!multiOnly) sp.set("multi", "1");
+    if (varietal) sp.set("varietal", varietal);
+    if (type) sp.set("tipo", type);
+    if (region) sp.set("region", region);
+    return `/buscar${buildQS(sp)}`;
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -133,64 +191,170 @@ export default async function Buscar({ searchParams }: Params) {
             <span className="font-semibold text-ink">
               {totalMulti.toLocaleString("es-AR")}
             </span>{" "}
-            vinos comparables en 2+ tiendas de un total de{" "}
+            comparables en 2+ tiendas ·{" "}
             <span className="font-semibold text-ink">
               {totalGroups.toLocaleString("es-AR")}
-            </span>
+            </span>{" "}
+            en total
           </p>
 
+          {/* ACTIVE FILTERS */}
           <div className="mt-6 flex flex-wrap gap-2">
             {query && (
-              <a href="/buscar" className="filter-chip active">
+              <a href={filterHref("q", null)} className="filter-chip active">
                 {query} ×
               </a>
             )}
+            {varietal && (
+              <a
+                href={filterHref("varietal", null)}
+                className="filter-chip active"
+              >
+                {varietal} ×
+              </a>
+            )}
+            {type && (
+              <a href={filterHref("tipo", null)} className="filter-chip active">
+                {type} ×
+              </a>
+            )}
+            {region && (
+              <a
+                href={filterHref("region", null)}
+                className="filter-chip active"
+              >
+                {region} ×
+              </a>
+            )}
             <a
-              href={
-                multiOnly
-                  ? query
-                    ? `/buscar?q=${encodeURIComponent(query)}`
-                    : "/buscar"
-                  : query
-                    ? `/buscar?q=${encodeURIComponent(query)}&multi=1`
-                    : "/buscar?multi=1"
-              }
+              href={toggleMulti()}
               className={`filter-chip ${multiOnly ? "active" : ""}`}
             >
               Sólo comparables (2+ tiendas)
             </a>
-            <button className="filter-chip">
-              Varietal <ChevronIcon />
-            </button>
-            <button className="filter-chip">
-              Bodega <ChevronIcon />
-            </button>
-            <button className="filter-chip">
-              Precio <ChevronIcon />
-            </button>
+            {hasAnyFilter && (
+              <a href="/buscar" className="filter-chip">
+                Limpiar filtros ×
+              </a>
+            )}
           </div>
         </div>
       </section>
 
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 grid lg:grid-cols-[260px_1fr] gap-10">
         <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <div className="mb-8">
+          <div className="sticky top-24 space-y-8">
+            {/* VARIETAL */}
+            <div>
+              <h3 className="display text-lg font-semibold mb-4">Varietal</h3>
+              <div className="space-y-1.5 text-sm">
+                {facets.varietals.slice(0, 12).map((f) => {
+                  const active =
+                    varietal?.toLowerCase() === f.name.toLowerCase();
+                  return (
+                    <a
+                      key={f.name}
+                      href={filterHref(
+                        "varietal",
+                        active ? null : f.name,
+                      )}
+                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                        active
+                          ? "bg-ink text-snow font-semibold"
+                          : "hover:bg-snow"
+                      }`}
+                    >
+                      <span className="truncate">{f.name}</span>
+                      <span
+                        className={`ml-auto text-xs ${
+                          active ? "text-snow/70" : "text-graphite"
+                        }`}
+                      >
+                        {f.count}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* TIPO */}
+            <div>
+              <h3 className="display text-lg font-semibold mb-4">Tipo</h3>
+              <div className="space-y-1.5 text-sm">
+                {facets.types.map((f) => {
+                  const active = type?.toLowerCase() === f.name.toLowerCase();
+                  return (
+                    <a
+                      key={f.name}
+                      href={filterHref("tipo", active ? null : f.name)}
+                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                        active
+                          ? "bg-ink text-snow font-semibold"
+                          : "hover:bg-snow"
+                      }`}
+                    >
+                      <span>{f.name}</span>
+                      <span
+                        className={`ml-auto text-xs ${
+                          active ? "text-snow/70" : "text-graphite"
+                        }`}
+                      >
+                        {f.count}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* REGIÓN */}
+            {facets.regions.length > 0 && (
+              <div>
+                <h3 className="display text-lg font-semibold mb-4">Región</h3>
+                <div className="space-y-1.5 text-sm">
+                  {facets.regions.slice(0, 10).map((f) => {
+                    const active =
+                      region?.toLowerCase() === f.name.toLowerCase();
+                    return (
+                      <a
+                        key={f.name}
+                        href={filterHref("region", active ? null : f.name)}
+                        className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                          active
+                            ? "bg-ink text-snow font-semibold"
+                            : "hover:bg-snow"
+                        }`}
+                      >
+                        <span>{f.name}</span>
+                        <span
+                          className={`ml-auto text-xs ${
+                            active ? "text-snow/70" : "text-graphite"
+                          }`}
+                        >
+                          {f.count}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* VINOTECAS */}
+            <div>
               <h3 className="display text-lg font-semibold mb-4">
                 Vinotecas sincronizando
               </h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-sm text-graphite max-h-64 overflow-y-auto">
                 {snapshot.stores.map((s) => (
-                  <label
+                  <div
                     key={s.storeSlug}
-                    className="flex items-center gap-2 cursor-wine"
+                    className="flex items-center justify-between"
                   >
-                    <input type="checkbox" className="accent-cobalt" />
                     <span className="truncate">{s.storeName}</span>
-                    <span className="text-graphite ml-auto">
-                      ({s.productCount})
-                    </span>
-                  </label>
+                    <span className="text-xs">{s.productCount}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -202,7 +366,7 @@ export default async function Buscar({ searchParams }: Params) {
             <p className="text-sm text-graphite">
               Ordenado por:{" "}
               <span className="font-semibold text-ink">
-                vinos con más ofertas primero, después por precio
+                más ofertas primero, después precio
               </span>
             </p>
           </div>
@@ -210,15 +374,29 @@ export default async function Buscar({ searchParams }: Params) {
           {results.length === 0 ? (
             <div className="py-20 text-center">
               <p className="display text-2xl font-semibold text-ink mb-2">
-                Sin resultados para &ldquo;{query}&rdquo;
+                Sin resultados{query ? ` para "${query}"` : ""}
               </p>
               <p className="text-graphite">
-                Probá con el nombre del vino, bodega, varietal o tirá un{" "}
+                Probá con{" "}
                 <a
                   href="/buscar?q=malbec"
                   className="text-cobalt hover:underline"
                 >
                   Malbec
+                </a>
+                ,{" "}
+                <a
+                  href="/buscar?varietal=Chardonnay"
+                  className="text-cobalt hover:underline"
+                >
+                  Chardonnay
+                </a>
+                , o{" "}
+                <a
+                  href="/buscar?tipo=Espumante"
+                  className="text-cobalt hover:underline"
+                >
+                  Espumantes
                 </a>
                 .
               </p>
@@ -267,7 +445,7 @@ export default async function Buscar({ searchParams }: Params) {
                             <p className="text-sm text-graphite mt-0.5 truncate">
                               {g.brand ? `${g.brand}` : "Sin bodega identificada"}
                               {g.vintage ? ` · ${g.vintage}` : ""}
-                              {g.format ? ` · ${g.format}` : ""}
+                              {g.region ? ` · ${g.region}` : ""}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
@@ -300,19 +478,27 @@ export default async function Buscar({ searchParams }: Params) {
                               {storeName(g.offers[0].storeSlug)}
                             </span>
                           )}
+                          {g.type && (
+                            <span
+                              className="tag"
+                              style={{
+                                background: "#1E3FBF15",
+                                color: "#1E3FBF",
+                              }}
+                            >
+                              {g.type}
+                            </span>
+                          )}
+                          {(g.varietals ?? []).slice(0, 2).map((v) => (
+                            <span key={v} className="tag tag-malbec">
+                              {v}
+                            </span>
+                          ))}
                           {savings > 0 && (
                             <>
                               <span className="text-xs text-graphite">•</span>
                               <span className="text-xs text-terracota font-semibold">
                                 ahorrá hasta {savings}%
-                              </span>
-                            </>
-                          )}
-                          {g.offers[0].inStock && (
-                            <>
-                              <span className="text-xs text-graphite">•</span>
-                              <span className="text-xs text-graphite">
-                                En stock
                               </span>
                             </>
                           )}
