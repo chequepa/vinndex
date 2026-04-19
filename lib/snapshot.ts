@@ -1,5 +1,6 @@
 import snapshotJson from "@/data/snapshot.json";
 import type { ScrapedProduct } from "./adapters/types";
+import type { ProductGroup } from "./matching";
 
 export type SnapshotStore = {
   storeSlug: string;
@@ -20,6 +21,10 @@ export type Snapshot = {
   productCount: number;
   stores: SnapshotStore[];
   products: ScrapedProduct[];
+  productGroups?: ProductGroup[];
+  groupCount?: number;
+  multiStoreGroupCount?: number;
+  groupsGeneratedAt?: string;
 };
 
 export const snapshot = snapshotJson as Snapshot;
@@ -34,7 +39,47 @@ export function snapshotStats() {
       (p) => p.priceArs !== null && p.priceArs > 0,
     ).length,
     withBrand: snapshot.products.filter((p) => p.brand).length,
+    groupCount: snapshot.groupCount ?? 0,
+    multiStoreGroupCount: snapshot.multiStoreGroupCount ?? 0,
   };
+}
+
+/** All productGroups (sorted by relevance — multi-store first, then price). */
+export const groups: ProductGroup[] = snapshot.productGroups ?? [];
+
+export function findGroup(slug: string): ProductGroup | undefined {
+  return groups.find((g) => g.groupSlug === slug);
+}
+
+function groupPriceKey(g: ProductGroup): number {
+  return g.minPrice != null && g.minPrice > 0
+    ? g.minPrice
+    : Number.POSITIVE_INFINITY;
+}
+
+export function searchGroups(
+  query: string,
+  limit = 48,
+  options: { multiStoreOnly?: boolean } = {},
+): ProductGroup[] {
+  const q = query.trim().toLowerCase();
+  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+  const source = options.multiStoreOnly
+    ? groups.filter((g) => g.storeCount >= 2)
+    : groups;
+  const filtered = q
+    ? source.filter((g) => {
+        const haystack =
+          `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase();
+        return tokens.every((t) => haystack.includes(t));
+      })
+    : source;
+  return [...filtered]
+    .sort((a, b) => {
+      if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
+      return groupPriceKey(a) - groupPriceKey(b);
+    })
+    .slice(0, limit);
 }
 
 /** Derive a URL-safe slug from a product's externalUrl. */
