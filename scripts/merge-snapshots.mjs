@@ -18,6 +18,7 @@ const INPUTS = [
   { path: "data/snapshot-tiendanube.json", platform: "tiendanube" },
   { path: "data/snapshot-woocommerce.json", platform: "woocommerce" },
   { path: "data/snapshot-vtex.json", platform: "vtex" },
+  { path: "data/snapshot-shopify.json", platform: "shopify" },
 ];
 
 function loadIfExists(path) {
