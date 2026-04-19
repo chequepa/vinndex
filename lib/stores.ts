@@ -106,6 +106,64 @@ export const STORES: StoreConfig[] = [
     baseUrl: "https://www.enotecaprivada.com",
     catalogPath: "/ar/productos/",
   },
+
+  // WooCommerce stores (10). catalogPath unused — WC adapter hits Store API.
+  {
+    slug: "de-barricas",
+    name: "De Barricas",
+    platform: "woocommerce",
+    baseUrl: "https://debarricas.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "mercado-de-vinos",
+    name: "Mercado de Vinos",
+    platform: "woocommerce",
+    baseUrl: "https://www.mercadodevinos.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "don-vino",
+    name: "Don Vino",
+    platform: "woocommerce",
+    baseUrl: "https://www.donvino.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "lo-de-joaquin",
+    name: "Lo de Joaquín",
+    platform: "woocommerce",
+    baseUrl: "https://lodejoaquin.com",
+    catalogPath: "/",
+  },
+  {
+    slug: "la-enoteca",
+    name: "La Enoteca",
+    platform: "woocommerce",
+    baseUrl: "https://laenoteca.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "vinos-directos",
+    name: "Vinos Directos de Bodegas",
+    platform: "woocommerce",
+    baseUrl: "https://vinosdirectosdebodegas.com",
+    catalogPath: "/",
+  },
+  {
+    slug: "la-taverna-club",
+    name: "La Taverna Club",
+    platform: "woocommerce",
+    baseUrl: "https://latavernaclub.com",
+    catalogPath: "/",
+  },
+  {
+    slug: "tienda-de-vinos",
+    name: "Tienda de Vinos",
+    platform: "woocommerce",
+    baseUrl: "https://tiendadevinos.ar",
+    catalogPath: "/",
+  },
 ];
 
 export function getStore(slug: string): StoreConfig | undefined {
