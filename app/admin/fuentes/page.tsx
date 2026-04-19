@@ -1,8 +1,45 @@
 import type { Metadata } from "next";
+import { snapshot, snapshotStats } from "@/lib/snapshot";
 
 export const metadata: Metadata = {
   title: "Auditoría de fuentes — Vinndex",
 };
+
+function platformFromSlug(slug: string): string {
+  const tn = new Set([
+    "grand-cru",
+    "enotek",
+    "tonel-privado",
+    "varietal",
+    "rebellion",
+    "wine-boutique",
+    "biendevinos",
+    "lo-de-granado",
+    "1812-vinos",
+    "bebiendo-estrellas",
+    "rincon-de-vinos",
+    "vineria-san-juan",
+    "vinicius",
+    "enoteca-privada",
+  ]);
+  const wc = new Set([
+    "de-barricas",
+    "mercado-de-vinos",
+    "don-vino",
+    "lo-de-joaquin",
+    "la-enoteca",
+    "vinos-directos",
+    "la-taverna-club",
+    "tienda-de-vinos",
+  ]);
+  const vtex = new Set(["jumbo", "disco", "vea", "carrefour", "dia", "gobar"]);
+  const shop = new Set(["vinos-y-spirits"]);
+  if (tn.has(slug)) return "tiendanube";
+  if (wc.has(slug)) return "woocommerce";
+  if (vtex.has(slug)) return "vtex";
+  if (shop.has(slug)) return "shopify";
+  return "other";
+}
 
 type Source = {
   n: number;
@@ -103,6 +140,25 @@ function Row({ s }: { s: Source }) {
 }
 
 export default function AdminFuentes() {
+  const stats = snapshotStats();
+  const storesByPlatform: Record<string, typeof snapshot.stores> = {};
+  for (const s of snapshot.stores) {
+    const p = platformFromSlug(s.storeSlug);
+    (storesByPlatform[p] ??= []).push(s);
+  }
+  const platformOrder = ["tiendanube", "woocommerce", "vtex", "shopify"];
+  const platformLabels: Record<string, string> = {
+    tiendanube: "Tiendanube",
+    woocommerce: "WooCommerce",
+    vtex: "VTEX",
+    shopify: "Shopify",
+  };
+  const platformColors: Record<string, string> = {
+    tiendanube: "#2FB344",
+    woocommerce: "#7F54B3",
+    vtex: "#FF3366",
+    shopify: "#96BF48",
+  };
   return (
     <>
       {/* NAV */}
@@ -168,8 +224,143 @@ export default function AdminFuentes() {
         </div>
       </section>
 
+      {/* ESTADO ACTUAL — EN PRODUCCIÓN */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <span
+            className="inline-flex items-center gap-2 bg-green2/10 text-green2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green2 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green2" />
+            </span>
+            En producción
+          </span>
+          <h2 className="display text-2xl font-semibold text-ink">
+            Estado de las fuentes al{" "}
+            {new Date(stats.generatedAt).toLocaleDateString("es-AR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white border-2 border-green2/30 rounded-2xl p-5">
+            <div className="display text-5xl font-semibold text-green2 leading-none">
+              {stats.storeCount}
+            </div>
+            <div className="text-sm text-ink font-semibold mt-2">
+              vinotecas activas
+            </div>
+            <div className="text-xs text-graphite mt-1">
+              scrapeando cada día
+            </div>
+          </div>
+          <div className="bg-white border border-ink/10 rounded-2xl p-5">
+            <div className="display text-5xl font-semibold text-cobalt leading-none">
+              {stats.productCount.toLocaleString("es-AR")}
+            </div>
+            <div className="text-sm text-ink font-semibold mt-2">
+              ofertas de precio
+            </div>
+            <div className="text-xs text-graphite mt-1">
+              productos individuales por tienda
+            </div>
+          </div>
+          <div className="bg-white border border-ink/10 rounded-2xl p-5">
+            <div className="display text-5xl font-semibold text-malbec leading-none">
+              {stats.multiStoreGroupCount.toLocaleString("es-AR")}
+            </div>
+            <div className="text-sm text-ink font-semibold mt-2">
+              vinos comparables
+            </div>
+            <div className="text-xs text-graphite mt-1">
+              el mismo vino en 2+ vinotecas
+            </div>
+          </div>
+          <div className="bg-white border border-ink/10 rounded-2xl p-5">
+            <div
+              className="display text-5xl font-semibold leading-none"
+              style={{ color: "#E8B547" }}
+            >
+              {Object.keys(storesByPlatform).length}
+            </div>
+            <div className="text-sm text-ink font-semibold mt-2">
+              adapters escritos
+            </div>
+            <div className="text-xs text-graphite mt-1">
+              Tiendanube · WooCommerce · VTEX · Shopify
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-ink/10 p-6 mt-6">
+          <h3 className="display text-lg font-semibold mb-4">
+            Por plataforma
+          </h3>
+          <div className="space-y-3">
+            {platformOrder
+              .filter((p) => storesByPlatform[p]?.length)
+              .map((p) => {
+                const stores = storesByPlatform[p];
+                const productCount = stores.reduce(
+                  (sum, s) => sum + s.productCount,
+                  0,
+                );
+                return (
+                  <div key={p} className="plat-bar">
+                    <div className="plat-bar-count">
+                      <div
+                        className="display text-4xl font-semibold"
+                        style={{ color: platformColors[p] }}
+                      >
+                        {stores.length}
+                      </div>
+                      <div className="text-[10px] text-graphite uppercase tracking-wider">
+                        tiendas
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span
+                          className="plat-pill"
+                          style={{
+                            background: platformColors[p],
+                            color: "white",
+                          }}
+                        >
+                          {platformLabels[p]}
+                        </span>
+                        <span className="font-semibold text-ink">
+                          {productCount.toLocaleString("es-AR")} productos
+                        </span>
+                        <span className="text-xs text-graphite">
+                          — {stores.map((s) => s.storeName).join(", ")}
+                        </span>
+                      </div>
+                      <div className="plat-bar-meter">
+                        <div
+                          className="plat-bar-fill"
+                          style={{
+                            width: `${Math.min(100, (productCount / stats.productCount) * 100)}%`,
+                            background: platformColors[p],
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </section>
+
+      {/* ==== AUDITORÍA ORIGINAL (v3) ==== */}
+
       {/* STATS */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 pt-16 pb-10 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border-2 border-green2/30 rounded-2xl p-5">
           <div className="display text-5xl font-semibold text-green2 leading-none">
             43
