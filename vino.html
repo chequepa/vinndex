@@ -40,6 +40,11 @@
 
     .ficha-hero { background: linear-gradient(160deg, #0F1E4D 0%, #1E3FBF 40%, #4D79E8 75%, #E8859E 100%); }
 
+    /* Glow sutil para despegar el copy del fondo del hero sin romper la estética flat */
+    .ficha-hero h1, .ficha-hero p, .ficha-hero .display {
+      text-shadow: 0 2px 24px rgba(15, 30, 77, 0.55);
+    }
+
     .price-row { transition: background-color 0.15s; }
     .price-row:hover { background-color: #F5EDE080; }
     .price-row.best {
@@ -99,9 +104,9 @@
 
   <!-- HERO -->
   <section class="relative ficha-hero text-snow overflow-hidden grain">
-    <svg class="absolute bottom-0 left-0 w-full opacity-55" viewBox="0 0 1440 240" preserveAspectRatio="none" style="height: 130px;">
+    <svg class="absolute bottom-0 left-0 w-full opacity-40" viewBox="0 0 1440 240" preserveAspectRatio="none" style="height: 130px;">
       <path d="M0 160 L140 80 L260 120 L380 60 L520 110 L680 50 L840 100 L1000 60 L1140 110 L1280 70 L1440 120 L1440 240 L0 240 Z" fill="#0F1E4D"/>
-      <path d="M380 60 L400 85 L362 85 Z M680 50 L700 78 L660 78 Z M1000 60 L1022 88 L978 88 Z" fill="#F5EDE0" opacity="0.8"/>
+      <path d="M380 60 L400 85 L362 85 Z M680 50 L700 78 L660 78 Z M1000 60 L1022 88 L978 88 Z" fill="#F5EDE0" opacity="0.45"/>
     </svg>
 
     <div class="relative max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
@@ -214,7 +219,7 @@
           <div></div>
         </div>
 
-        <div class="price-row best grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row best grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#6B1E2E;">W</div>
             <div>
@@ -228,10 +233,10 @@
           <div class="text-right"><span class="md:hidden text-xs text-graphite">Precio: </span><span class="font-semibold text-ink">$18.450</span></div>
           <div class="text-right"><span class="md:hidden text-xs text-graphite">Envío: </span><span class="text-terracota font-medium text-sm">GRATIS</span><div class="text-xs text-graphite hidden md:block">compra &gt; $15k</div></div>
           <div class="text-right"><span class="md:hidden text-xs text-graphite">Total: </span><span class="display text-2xl font-semibold text-cobalt">$18.450</span></div>
-          <a href="#" class="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Winery <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#1E3FBF;">M</div>
             <div><div class="font-semibold text-ink">Mosto Wines</div><div class="text-xs text-graphite">mosto.com.ar · ★ 4.5 · 3 días</div></div>
@@ -239,10 +244,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$18.990</span></div>
           <div class="text-right"><span class="text-ink">$3.200</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$22.190</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Mosto <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#D97449;">SW</div>
             <div><div class="font-semibold text-ink">Sir Winston Churchill</div><div class="text-xs text-graphite">sirwinston.com.ar · ★ 4.7 · 2 días</div></div>
@@ -250,10 +255,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$18.790</span></div>
           <div class="text-right"><span class="text-ink">$3.500</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$22.290</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Sir Winston <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#E8B547; color:#6B1E2E;">BV</div>
             <div><div class="font-semibold text-ink">Bonvivir</div><div class="text-xs text-graphite">bonvivir.com · ★ 4.8 · 2-3 días</div></div>
@@ -261,10 +266,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$19.200</span></div>
           <div class="text-right"><span class="text-ink">$3.500</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$22.700</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Bonvivir <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#4D79E8;">LJ</div>
             <div><div class="font-semibold text-ink">Lo de Joaquín</div><div class="text-xs text-graphite">lodejoaquin.com · ★ 4.4 · 3-4 días</div></div>
@@ -272,10 +277,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$18.890</span></div>
           <div class="text-right"><span class="text-ink">$4.200</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$23.090</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Joaquín <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#E8B547; color:#0F1729;">ML</div>
             <div><div class="font-semibold text-ink">Mercado Libre</div><div class="text-xs text-graphite">Seller: vinotecadelcentro · ★ 4.7</div></div>
@@ -283,10 +288,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$19.750</span></div>
           <div class="text-right"><span class="text-terracota font-medium text-sm">GRATIS</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$19.750</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a ML <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#6B1E2E;">TP</div>
             <div><div class="font-semibold text-ink">Tonel Privado</div><div class="text-xs text-graphite">tonelprivado.com · ★ 4.6 · 3 días</div></div>
@@ -294,10 +299,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$19.490</span></div>
           <div class="text-right"><span class="text-ink">$3.800</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$23.290</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Tonel <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#D63A7A;">CV</div>
             <div><div class="font-semibold text-ink">Club del Vino</div><div class="text-xs text-graphite">clubdelvino.com.ar · ★ 4.3 · 4 días</div></div>
@@ -305,10 +310,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$19.890</span></div>
           <div class="text-right"><span class="text-ink">$3.500</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$23.390</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir al Club <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#7C8FD9;">VN</div>
             <div><div class="font-semibold text-ink">Vinísimo</div><div class="text-xs text-graphite">vinissimo.com.ar · ★ 4.4 · 3 días</div></div>
@@ -316,10 +321,10 @@
           <div class="text-right"><span class="font-semibold text-ink">$20.100</span></div>
           <div class="text-right"><span class="text-ink">$3.500</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$23.600</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Vinísimo <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
-        <div class="price-row grid md:grid-cols-[2fr_1fr_1fr_1.1fr_auto] gap-4 items-center px-5 py-4 border-b border-ink/5">
+        <div class="price-row grid md:grid-cols-[2.2fr_1fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5">
           <div class="flex items-center gap-3">
             <div class="store-logo" style="background:#3A1020;">JB</div>
             <div><div class="font-semibold text-ink">Jumbo</div><div class="text-xs text-graphite">jumbo.com.ar · ★ 4.1 · 1-2 días</div></div>
@@ -327,7 +332,7 @@
           <div class="text-right"><span class="font-semibold text-ink">$21.350</span></div>
           <div class="text-right"><span class="text-ink">$2.500</span></div>
           <div class="text-right"><span class="display text-2xl font-semibold text-cobalt">$23.850</span></div>
-          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center gap-2 justify-self-end transition-colors">Ir a Jumbo <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
+          <a href="#" class="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full">Visitar <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L11 3 L11 11 M11 3 L3 11" stroke-linecap="round"/></svg></a>
         </div>
 
         <div class="px-5 py-4 text-center">
