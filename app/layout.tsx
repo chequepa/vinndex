@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Buscá un vino, encontrá todas las vinotecas online de Argentina que lo venden, ordenadas por precio. Comparamos 29 tiendas y 25k+ etiquetas.",
+    "Buscá un vino, encontrá todas las vinotecas online de Argentina que lo venden, ordenadas por precio. Comparamos 29 tiendas y 33k+ etiquetas.",
   metadataBase: new URL("https://vinndex.com.ar"),
   openGraph: {
     type: "website",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     url: "https://vinndex.com.ar",
     title: "Vinndex — Comparador de precios de vinos en Argentina",
     description:
-      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio. 29 tiendas, 25k+ etiquetas.",
+      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio. 29 tiendas, 33k+ etiquetas.",
   },
   twitter: {
     card: "summary_large_image",
