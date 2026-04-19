@@ -14,12 +14,50 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const g = findGroup(slug);
   if (!g) return { title: "Vino no encontrado — Vinndex" };
   const storesPart =
-    g.storeCount >= 2 ? `Compará en ${g.storeCount} vinotecas` : `Precio actualizado`;
+    g.storeCount >= 2
+      ? `Compará en ${g.storeCount} vinotecas`
+      : `Precio actualizado`;
+  const title = `${g.canonicalName}${g.vintage ? ` ${g.vintage}` : ""} — ${storesPart} | Vinndex`;
+
+  let description = `Precios de ${g.canonicalName} en ${g.storeCount} vinoteca${
+    g.storeCount === 1 ? "" : "s"
+  } online en Argentina.`;
+  if (g.minPrice != null) {
+    const fmt = new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      maximumFractionDigits: 0,
+    });
+    description += ` Desde ${fmt.format(g.minPrice)}`;
+    if (g.maxPrice && g.maxPrice > g.minPrice) {
+      description += ` — ahorro hasta ${Math.round(
+        ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
+      )}%`;
+    }
+    description += ".";
+  }
+
   return {
-    title: `${g.canonicalName}${g.vintage ? ` ${g.vintage}` : ""} — ${storesPart} | Vinndex`,
-    description: `Precios de ${g.canonicalName} en ${g.storeCount} vinoteca${
-      g.storeCount === 1 ? "" : "s"
-    } online en Argentina.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://vinndex.com.ar/vino/${g.groupSlug}`,
+      siteName: "Vinndex",
+      type: "website",
+      locale: "es_AR",
+      images: g.imageUrl ? [{ url: g.imageUrl }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: g.imageUrl ? [g.imageUrl] : undefined,
+    },
+    alternates: {
+      canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
+    },
   };
 }
 
@@ -101,8 +139,42 @@ export default async function Vino({ params }: Params) {
     related = [...related, ...sameVarietal];
   }
 
+  // JSON-LD Product schema for rich search snippets
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    name: group.canonicalName,
+    image: group.imageUrl ?? undefined,
+    description: group.offers[0]?.name ?? group.canonicalName,
+    brand: group.brand
+      ? { "@type": "Brand", name: group.brand }
+      : undefined,
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "ARS",
+      lowPrice: group.minPrice ?? undefined,
+      highPrice: group.maxPrice ?? undefined,
+      offerCount: group.offerCount,
+      offers: offers.map((o) => ({
+        "@type": "Offer",
+        price: o.priceArs ?? undefined,
+        priceCurrency: "ARS",
+        availability: o.inStock
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+        url: o.externalUrl,
+        seller: { "@type": "Organization", name: storeName(o.storeSlug) },
+      })),
+    },
+  };
+
   return (
     <div className="bg-white min-h-screen">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <a
