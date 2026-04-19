@@ -343,3 +343,84 @@ export function brandSlug(brand: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+export type BrandPage = {
+  slug: string;
+  name: string;
+  groupCount: number;
+  wineCount: number;
+  storeCount: number;
+  regions: string[];
+  varietals: string[];
+  topGroups: ProductGroup[];
+};
+
+/** All brand pages for navigation / sitemap. Brand is normalized and
+ * a page is generated only if the brand has at least 3 wines and is NOT
+ * in the spirits blacklist. */
+export function brandPages(): BrandPage[] {
+  const SPIRITS = /smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i;
+  const byKey = new Map<string, { canonicalName: string; groups: ProductGroup[] }>();
+
+  for (const g of groups) {
+    if (!g.brand) continue;
+    if (SPIRITS.test(g.brand)) continue;
+    const normalized = g.brand
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/^bodega(s)?\s+/, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    if (!normalized) continue;
+    const entry = byKey.get(normalized);
+    const pretty = displayBrand(g.brand);
+    if (entry) {
+      entry.groups.push(g);
+      // Prefer longer canonical names
+      if (pretty.length > entry.canonicalName.length)
+        entry.canonicalName = pretty;
+    } else {
+      byKey.set(normalized, { canonicalName: pretty, groups: [g] });
+    }
+  }
+
+  const pages: BrandPage[] = [];
+  for (const [slug, { canonicalName, groups: gs }] of byKey.entries()) {
+    if (gs.length < 3) continue;
+    const stores = new Set<string>();
+    const regions = new Set<string>();
+    const varietals = new Set<string>();
+    let wineCount = 0;
+    for (const g of gs) {
+      wineCount += g.offerCount;
+      for (const o of g.offers) stores.add(o.storeSlug);
+      if (g.region) regions.add(g.region);
+      for (const v of g.varietals ?? []) varietals.add(v);
+    }
+    // Top groups by storeCount + min price
+    const topGroups = [...gs]
+      .sort((a, b) => {
+        if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
+        return (a.minPrice ?? 1e9) - (b.minPrice ?? 1e9);
+      })
+      .slice(0, 24);
+
+    pages.push({
+      slug,
+      name: canonicalName,
+      groupCount: gs.length,
+      wineCount,
+      storeCount: stores.size,
+      regions: [...regions],
+      varietals: [...varietals].slice(0, 5),
+      topGroups,
+    });
+  }
+
+  return pages.sort((a, b) => b.storeCount - a.storeCount || b.groupCount - a.groupCount);
+}
+
+export function findBrandPage(slug: string): BrandPage | undefined {
+  return brandPages().find((p) => p.slug === slug);
+}
