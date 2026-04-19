@@ -119,47 +119,163 @@ function extractFormat(name) {
   return parts.length > 0 ? parts.sort().join("-") : null;
 }
 
+/** Common typo and alias map — collapse variants to a canonical form. */
+const BRAND_ALIASES = [
+  ["zucardi", "zuccardi"],
+  ["familia zuccardi", "zuccardi"],
+  ["familia zucardi", "zuccardi"],
+  ["cheval des andes", "cheval"],
+  ["bodega catena zapata", "catena"],
+  ["catena zapata", "catena"],
+  ["bodega norton", "norton"],
+  ["bodegas norton", "norton"],
+  ["bodega trapiche", "trapiche"],
+  ["bodega salentein", "salentein"],
+  ["bodegas salentein", "salentein"],
+  ["luigi bosca", "luigibosca"],
+  ["el esteco", "elesteco"],
+  ["finca las moras", "lasmoras"],
+  ["las moras", "lasmoras"],
+  ["don david", "dondavid"],
+  ["kaiken", "kaiken"],
+  ["chandon", "chandon"],
+  ["baron b", "baronb"],
+];
+
+// Words that don't carry wine identity — strip from the token set.
+// KEEP varietals (Malbec/Bonarda/etc), proper nouns, and quality tiers —
+// they're part of wine identity and distinguish e.g. Emma Bonarda from
+// Emma Malbec.
+const NOISE_TOKENS = new Set([
+  "vino",
+  "cosecha",
+  "anada",
+  "ano",
+  "lata",
+  "botella",
+  "unidad",
+  "unidades",
+  "unid",
+  "caja",
+  "estuche",
+  "pack",
+  "box",
+  "magnum",
+  "media",
+  "half",
+  "750",
+  "750cc",
+  "cc",
+  "ml",
+  "tinto",
+  "rojo",
+  "red",
+  "white",
+  "x1",
+  "x2",
+  "x3",
+  "x4",
+  "x6",
+  "x12",
+  "de",
+  "la",
+  "el",
+  "los",
+  "las",
+  "del",
+  "y",
+  "e",
+  "o",
+  "u",
+  "x",
+  "a",
+]);
+
+function tokenize(name) {
+  const s = stripAccents(name)
+    .toLowerCase()
+    .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
+    .replace(/\d+\s*ml\b/g, " ")
+    .replace(/\d+\s*cc\b/g, " ")
+    .replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ")
+    .replace(/\bx\s*\d+\b/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return s
+    .split(" ")
+    .filter((t) => t && t.length > 1 && !NOISE_TOKENS.has(t));
+}
+
+function normalizeBrandAlias(brand) {
+  if (!brand) return null;
+  let s = stripAccents(brand)
+    .toLowerCase()
+    .replace(/^bodega(s)?\s+/, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const [from, to] of BRAND_ALIASES) {
+    if (s === from) {
+      s = to;
+      break;
+    }
+  }
+  return s;
+}
+
 function canonicalize(name, brand) {
   const vintage = extractVintage(name);
   const format = extractFormat(name);
 
-  let s = stripAccents(name).toLowerCase().trim();
-  s = s.replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ");
-  s = s.replace(/\d+\s*ml\b/g, " ");
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ");
-  s = s.replace(/\bx\s*\d+\b/g, " ");
-  s = s.replace(
-    /\b(caja|pack|box|estuche|magnum|media|half|vino|cosecha|750)\b/g,
-    " ",
-  );
-  s = s.replace(/[^a-z0-9\s]/g, " ");
-  s = s.replace(/\s+/g, " ").trim();
+  // Token-set from name: order-independent, vintage-independent
+  const nameTokens = tokenize(name);
 
-  if (brand) {
-    const nb = stripAccents(brand)
-      .toLowerCase()
-      .replace(/^bodega\s+/, "")
-      .replace(/^bodegas\s+/, "")
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim();
-    if (nb && !s.startsWith(nb)) {
-      s = `${nb} ${s}`;
-      s = s.replace(/\s+/g, " ").trim();
+  // Also include alias-normalized brand tokens so "Zucardi Emma" and
+  // "Zuccardi Emma" match. Apply alias replacement BEFORE tokenization so
+  // multi-word aliases (Familia Zucardi) resolve first.
+  const brandSanitized = normalizeBrandAlias(brand);
+  if (brandSanitized) {
+    for (const t of brandSanitized.split(" ")) {
+      if (t && !NOISE_TOKENS.has(t) && !nameTokens.includes(t)) {
+        nameTokens.push(t);
+      }
     }
   }
 
-  return { base: s, vintage, format };
+  // Apply brand aliases inside the name tokens too
+  const joined = nameTokens.join(" ");
+  let aliased = joined;
+  for (const [from, to] of BRAND_ALIASES) {
+    aliased = aliased.replace(new RegExp(`\\b${from}\\b`, "g"), to);
+  }
+  const finalTokens = aliased.split(" ").filter(Boolean);
+
+  // Sort tokens alphabetically so order of words doesn't matter
+  finalTokens.sort();
+
+  return {
+    base: finalTokens.join(" "),
+    vintage,
+    format,
+  };
 }
 
 function keyToString(k) {
-  return `${k.base}|${k.vintage ?? ""}|${k.format ?? ""}`;
+  // Only base is used as the matching key. Vintage and format are kept as
+  // metadata per offer — we show vintage on the ficha to let the buyer
+  // decide. Pooling across vintages drastically improves group coverage
+  // (Emma Bonarda 2010, 2012, 2014 all collapse into one group).
+  return k.base;
 }
 
 function groupSlug(k) {
-  const base = k.base.replace(/\s+/g, "-").slice(0, 60);
-  const vint = k.vintage ? `-${k.vintage}` : "";
-  const fmt = k.format ? `-${k.format.replace(/[^a-z0-9]+/g, "-")}` : "";
-  return (base + vint + fmt).replace(/-+/g, "-").replace(/^-|-$/g, "");
+  // Slug matches the key — vintage/format are per-offer metadata, not identity.
+  return k.base
+    .replace(/\s+/g, "-")
+    .slice(0, 80)
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function main() {

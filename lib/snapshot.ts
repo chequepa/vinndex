@@ -101,8 +101,11 @@ export function searchGroups(
 
   return [...filtered]
     .sort((a, b) => {
-      if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
-      return groupPriceKey(a) - groupPriceKey(b);
+      // Default sort: cheapest first. Comparables bubble up via tiebreak
+      // (more stores validating the price win when prices tie).
+      if (groupPriceKey(a) !== groupPriceKey(b))
+        return groupPriceKey(a) - groupPriceKey(b);
+      return b.storeCount - a.storeCount;
     })
     .slice(0, limit);
 }
