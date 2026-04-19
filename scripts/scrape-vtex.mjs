@@ -72,10 +72,18 @@ function looksLikeWine(p) {
   return WINE_CATEGORY.test(name);
 }
 
+// VTEX returns sentinel prices like $1.59 / $525 / $1150 for unavailable
+// or promo-locked products. The real p10 of VTEX wine prices is ~$1550,
+// with dense clusters of sentinels between $500-$1200. Anything under
+// $1500 is almost certainly not a real price.
+const MIN_REALISTIC_PRICE = 1500;
+
 function priceFromOffer(co) {
   if (!co) return null;
   const v = co.Price ?? co.ListPrice ?? co.PriceWithoutDiscount;
-  return typeof v === "number" && v > 0 ? v : null;
+  if (typeof v !== "number" || v <= 0) return null;
+  if (v < MIN_REALISTIC_PRICE) return null;
+  return v;
 }
 
 function normalize(p, storeSlug, baseUrl) {
