@@ -37,13 +37,58 @@ const BATCH_DELAY_MS = 300;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
 
+/**
+ * Category paths per store. VTEX requires the FULL category path with
+ * parent IDs (e.g. /2/45/215/ not just 215).  For the 3 Cencosud stores
+ * (Jumbo/Disco/Vea) the taxonomy is shared.
+ *
+ * When a store has known category paths we iterate them (bypass the 2500
+ * offset cap per subquery). Falls back to ft=vino text search otherwise.
+ */
 const STORES = [
-  { slug: "jumbo", name: "Jumbo", platform: "vtex", baseUrl: "https://www.jumbo.com.ar" },
-  { slug: "disco", name: "Disco", platform: "vtex", baseUrl: "https://www.disco.com.ar" },
-  { slug: "vea", name: "Vea", platform: "vtex", baseUrl: "https://www.vea.com.ar" },
-  { slug: "carrefour", name: "Carrefour", platform: "vtex", baseUrl: "https://www.carrefour.com.ar" },
-  { slug: "dia", name: "Día", platform: "vtex", baseUrl: "https://diaonline.supermercadosdia.com.ar" },
-  { slug: "gobar", name: "Gobar", platform: "vtex", baseUrl: "https://www.gobar.com.ar" },
+  {
+    slug: "jumbo",
+    name: "Jumbo",
+    platform: "vtex",
+    baseUrl: "https://www.jumbo.com.ar",
+    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
+  },
+  {
+    slug: "disco",
+    name: "Disco",
+    platform: "vtex",
+    baseUrl: "https://www.disco.com.ar",
+    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
+  },
+  {
+    slug: "vea",
+    name: "Vea",
+    platform: "vtex",
+    baseUrl: "https://www.vea.com.ar",
+    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
+  },
+  {
+    slug: "carrefour",
+    name: "Carrefour",
+    platform: "vtex",
+    baseUrl: "https://www.carrefour.com.ar",
+    // Carrefour's taxonomy is different; fall back to ft search
+    categoryPaths: null,
+  },
+  {
+    slug: "dia",
+    name: "Día",
+    platform: "vtex",
+    baseUrl: "https://diaonline.supermercadosdia.com.ar",
+    categoryPaths: null,
+  },
+  {
+    slug: "gobar",
+    name: "Gobar",
+    platform: "vtex",
+    baseUrl: "https://www.gobar.com.ar",
+    categoryPaths: ["/10/17/", "/10/18/", "/10/19/", "/11/"],
+  },
 ];
 
 async function fetchJson(url) {
@@ -115,41 +160,29 @@ function normalize(p, storeSlug, baseUrl) {
   };
 }
 
-async function scrapeStore(store) {
-  const startedAt = new Date().toISOString();
-  const t0 = Date.now();
+async function scrapeQuery(base, queryString, products, counters) {
   const errors = [];
-  const products = new Map();
-  const base = store.baseUrl.replace(/\/+$/, "");
-
-  let pagesFetched = 0;
-  let rawSeen = 0;
-  let filtered = 0;
-
   for (let from = 0; from <= MAX_OFFSET; from += BATCH) {
     const to = Math.min(from + BATCH - 1, MAX_OFFSET);
-    const url = `${base}/api/catalog_system/pub/products/search?ft=vino&_from=${from}&_to=${to}`;
-    pagesFetched++;
+    const url = `${base}/api/catalog_system/pub/products/search?${queryString}&_from=${from}&_to=${to}`;
+    counters.pagesFetched++;
 
     let res;
     try {
       res = await fetchJson(url);
     } catch (err) {
-      errors.push(`from ${from}: fetch failed (${err.message})`);
+      errors.push(`${queryString} from ${from}: fetch failed (${err.message})`);
       break;
     }
     if (!res.ok) {
-      if (res.status === 416 || res.status === 206) {
-        // Range exceeded or partial — some VTEX stores return 206
-        if (res.status === 416) break;
-      } else if (res.status >= 500) {
-        errors.push(`from ${from}: HTTP ${res.status} (likely offset cap)`);
+      if (res.status === 416) break;
+      if (res.status >= 500) {
+        errors.push(`${queryString} from ${from}: HTTP ${res.status}`);
         break;
-      } else {
-        errors.push(`from ${from}: HTTP ${res.status}`);
-        if (from === 0) break;
-        continue;
       }
+      errors.push(`${queryString} from ${from}: HTTP ${res.status}`);
+      if (from === 0) break;
+      continue;
     }
 
     let items;
@@ -157,33 +190,57 @@ async function scrapeStore(store) {
       const body = await res.json();
       items = Array.isArray(body) ? body : [];
     } catch {
-      errors.push(`from ${from}: non-JSON`);
+      errors.push(`${queryString} from ${from}: non-JSON`);
       break;
     }
-
     if (items.length === 0) break;
-    rawSeen += items.length;
+    counters.rawSeen += items.length;
 
-    let added = 0;
     for (const p of items) {
       if (!looksLikeWine(p)) {
-        filtered++;
+        counters.filtered++;
         continue;
       }
-      const n = normalize(p, store.slug, base);
+      const n = normalize(p, counters.storeSlug, base);
       if (!n) continue;
-      if (!products.has(n.externalUrl)) {
-        products.set(n.externalUrl, n);
-        added++;
-      }
+      if (!products.has(n.externalUrl)) products.set(n.externalUrl, n);
     }
 
     if (items.length < BATCH) break;
-    if (added === 0 && from > 0) {
-      // safety — if we got items but none were wines, keep going a couple batches
-    }
-
     await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+  }
+  return errors;
+}
+
+async function scrapeStore(store) {
+  const startedAt = new Date().toISOString();
+  const t0 = Date.now();
+  const errors = [];
+  const products = new Map();
+  const base = store.baseUrl.replace(/\/+$/, "");
+  const counters = {
+    storeSlug: store.slug,
+    pagesFetched: 0,
+    rawSeen: 0,
+    filtered: 0,
+  };
+
+  if (store.categoryPaths && store.categoryPaths.length > 0) {
+    // Iterate each wine category path independently (each is <2500 products)
+    for (const path of store.categoryPaths) {
+      const encoded = path
+        .split("/")
+        .filter(Boolean)
+        .map(encodeURIComponent)
+        .join("/");
+      const fq = `fq=C:/${encoded}/`;
+      const errs = await scrapeQuery(base, fq, products, counters);
+      errors.push(...errs);
+    }
+  } else {
+    // Fallback: text search ft=vino
+    const errs = await scrapeQuery(base, "ft=vino", products, counters);
+    errors.push(...errs);
   }
 
   return {
@@ -191,9 +248,9 @@ async function scrapeStore(store) {
     storeName: store.name,
     startedAt,
     durationMs: Date.now() - t0,
-    pagesFetched,
-    rawSeen,
-    filtered,
+    pagesFetched: counters.pagesFetched,
+    rawSeen: counters.rawSeen,
+    filtered: counters.filtered,
     productCount: products.size,
     products: [...products.values()],
     errors,
