@@ -1,4 +1,10 @@
-import { snapshotStats, topBrands, topDeals, formatArs } from "@/lib/snapshot";
+import {
+  snapshotStats,
+  topBrands,
+  topDeals,
+  formatArs,
+  displayBrand,
+} from "@/lib/snapshot";
 
 function formatCount(n: number): string {
   if (n >= 1000) {
@@ -278,7 +284,7 @@ export default function Home() {
                         {g.canonicalName}
                       </h3>
                       <p className="text-xs text-graphite mb-3 truncate">
-                        {g.brand ? `${g.brand} · ` : ""}
+                        {g.brand ? `${displayBrand(g.brand)} · ` : ""}
                         {g.storeCount} vinoteca{g.storeCount === 1 ? "" : "s"}
                         {g.vintage ? ` · ${g.vintage}` : ""}
                       </p>

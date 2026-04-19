@@ -5,6 +5,7 @@ import {
   formatArs,
   storeName,
   groups as allGroups,
+  displayBrand,
 } from "@/lib/snapshot";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -282,7 +283,7 @@ export default async function Vino({ params }: Params) {
               <div className="mb-4 flex items-center gap-2 text-sm flex-wrap">
                 {group.brand && (
                   <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
-                    {group.brand}
+                    {displayBrand(group.brand)}
                   </span>
                 )}
                 {(group.varietals ?? []).slice(0, 2).map((v) => (
@@ -498,7 +499,7 @@ export default async function Vino({ params }: Params) {
           <section className="mt-16">
             <h2 className="display text-2xl font-semibold text-ink mb-6">
               {sameBrand.length > 0
-                ? `Otros de ${group.brand}`
+                ? `Otros de ${displayBrand(group.brand)}`
                 : group.varietals?.[0]
                   ? `Otros ${group.varietals[0]}s populares`
                   : "Otros comparables"}

@@ -207,6 +207,33 @@ export type BrandStat = {
 };
 
 /**
+ * Normalize brand casing for display: ALLCAPS brands from VTEX become
+ * Title Case, others are left alone.
+ */
+function normalizeBrandCase(s: string): string {
+  if (!/[a-z]/.test(s)) {
+    // All-uppercase — title case it
+    return s
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => {
+        if (w.length === 0) return w;
+        // Preserve roman numerals and short connectors
+        if (/^(de|del|la|el|las|los|y|&)$/.test(w)) return w;
+        return w[0].toUpperCase() + w.slice(1);
+      })
+      .join(" ");
+  }
+  return s;
+}
+
+/** Pretty brand name for display (fixes SHOUT CASE from VTEX etc). */
+export function displayBrand(brand: string | null | undefined): string {
+  if (!brand) return "";
+  return normalizeBrandCase(brand.trim());
+}
+
+/**
  * Top wine brands across all stores.
  *
  * We prefer brands whose products are tagged with a varietal — otherwise
@@ -232,10 +259,11 @@ export function topBrands(limit = 12): BrandStat[] {
 
   for (const p of snapshot.products) {
     if (!p.brand) continue;
-    const key = p.brand.trim();
-    if (!key) continue;
-    if (/smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i.test(key))
+    const raw = p.brand.trim();
+    if (!raw) continue;
+    if (/smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i.test(raw))
       continue; // blacklist common spirits brands
+    const key = normalizeBrandCase(raw); // collapses NORTON ↔ Norton
     const existing = byBrand.get(key);
     const isWine = productToVarietal.get(p.externalUrl) ?? false;
     if (existing) {
