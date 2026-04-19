@@ -17,6 +17,7 @@ const REPO_ROOT = resolve(__dirname, "..");
 const INPUTS = [
   { path: "data/snapshot-tiendanube.json", platform: "tiendanube" },
   { path: "data/snapshot-woocommerce.json", platform: "woocommerce" },
+  { path: "data/snapshot-vtex.json", platform: "vtex" },
 ];
 
 function loadIfExists(path) {
