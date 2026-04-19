@@ -12,13 +12,21 @@
 *.swp
 *.swo
 
-# Node (future)
+# Node
 node_modules/
 .next/
 out/
 dist/
 build/
 .turbo/
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
 
 # Env files (secrets!)
 .env
