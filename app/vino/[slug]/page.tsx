@@ -70,15 +70,36 @@ export default async function Vino({ params }: Params) {
 
   const offers = group.offers;
   const bestOffer = offers[0];
-  const related = allGroups
-    .filter(
-      (g) =>
-        g.groupSlug !== group.groupSlug &&
-        g.brand &&
-        group.brand &&
-        g.brand.toLowerCase() === group.brand.toLowerCase(),
-    )
-    .slice(0, 4);
+
+  // Related: prefer same brand. Fall back to same varietal + similar price band.
+  const sameBrand = allGroups.filter(
+    (g) =>
+      g.groupSlug !== group.groupSlug &&
+      g.brand &&
+      group.brand &&
+      g.brand.toLowerCase() === group.brand.toLowerCase(),
+  );
+  let related = sameBrand.slice(0, 4);
+  if (related.length < 4 && group.varietals?.length) {
+    const primary = group.varietals[0].toLowerCase();
+    const band = group.minPrice ? [group.minPrice * 0.5, group.minPrice * 2.5] : null;
+    const sameVarietal = allGroups
+      .filter(
+        (g) =>
+          g.groupSlug !== group.groupSlug &&
+          !sameBrand.includes(g) &&
+          (g.varietals ?? []).some((v) => v.toLowerCase() === primary) &&
+          g.storeCount >= 2 &&
+          g.imageUrl &&
+          (!band ||
+            (g.minPrice != null &&
+              g.minPrice >= band[0] &&
+              g.minPrice <= band[1])),
+      )
+      .sort((a, b) => b.storeCount - a.storeCount)
+      .slice(0, 4 - related.length);
+    related = [...related, ...sameVarietal];
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -191,6 +212,23 @@ export default async function Vino({ params }: Params) {
                   <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
                     {group.brand}
                   </span>
+                )}
+                {(group.varietals ?? []).slice(0, 2).map((v) => (
+                  <a
+                    key={v}
+                    href={`/buscar?varietal=${encodeURIComponent(v)}`}
+                    className="px-2.5 py-1 rounded-full bg-mustard/30 border border-mustard/50 text-xs font-semibold uppercase tracking-wide hover:bg-mustard/50 transition-colors"
+                  >
+                    {v}
+                  </a>
+                ))}
+                {group.region && (
+                  <a
+                    href={`/buscar?region=${encodeURIComponent(group.region)}`}
+                    className="px-2.5 py-1 rounded-full bg-snow/15 border border-snow/25 text-xs font-semibold uppercase tracking-wide hover:bg-snow/30 transition-colors"
+                  >
+                    {group.region}
+                  </a>
                 )}
                 {group.vintage && (
                   <>
@@ -387,7 +425,11 @@ export default async function Vino({ params }: Params) {
         {related.length > 0 && (
           <section className="mt-16">
             <h2 className="display text-2xl font-semibold text-ink mb-6">
-              Otros de {group.brand}
+              {sameBrand.length > 0
+                ? `Otros de ${group.brand}`
+                : group.varietals?.[0]
+                  ? `Otros ${group.varietals[0]}s populares`
+                  : "Otros comparables"}
             </h2>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               {related.map((r) => (

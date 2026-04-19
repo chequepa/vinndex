@@ -57,16 +57,40 @@ function groupPriceKey(g: ProductGroup): number {
     : Number.POSITIVE_INFINITY;
 }
 
+export type SearchOptions = {
+  multiStoreOnly?: boolean;
+  varietal?: string | null;
+  type?: string | null;
+  region?: string | null;
+};
+
 export function searchGroups(
   query: string,
   limit = 48,
-  options: { multiStoreOnly?: boolean } = {},
+  options: SearchOptions = {},
 ): ProductGroup[] {
   const q = query.trim().toLowerCase();
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
-  const source = options.multiStoreOnly
-    ? groups.filter((g) => g.storeCount >= 2)
-    : groups;
+  let source = groups;
+
+  if (options.multiStoreOnly) {
+    source = source.filter((g) => g.storeCount >= 2);
+  }
+  if (options.varietal) {
+    const v = options.varietal.toLowerCase();
+    source = source.filter((g) =>
+      (g.varietals ?? []).some((x) => x.toLowerCase() === v),
+    );
+  }
+  if (options.type) {
+    const t = options.type.toLowerCase();
+    source = source.filter((g) => g.type?.toLowerCase() === t);
+  }
+  if (options.region) {
+    const r = options.region.toLowerCase();
+    source = source.filter((g) => g.region?.toLowerCase() === r);
+  }
+
   const filtered = q
     ? source.filter((g) => {
         const haystack =
@@ -74,12 +98,43 @@ export function searchGroups(
         return tokens.every((t) => haystack.includes(t));
       })
     : source;
+
   return [...filtered]
     .sort((a, b) => {
       if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
       return groupPriceKey(a) - groupPriceKey(b);
     })
     .slice(0, limit);
+}
+
+/** Get top facets (varietals, types, regions) for sidebar filtering. */
+export function facetCounts(): {
+  varietals: { name: string; count: number }[];
+  types: { name: string; count: number }[];
+  regions: { name: string; count: number }[];
+} {
+  const vCount = new Map<string, number>();
+  const tCount = new Map<string, number>();
+  const rCount = new Map<string, number>();
+
+  for (const g of groups) {
+    for (const v of g.varietals ?? []) {
+      vCount.set(v, (vCount.get(v) ?? 0) + 1);
+    }
+    if (g.type) tCount.set(g.type, (tCount.get(g.type) ?? 0) + 1);
+    if (g.region) rCount.set(g.region, (rCount.get(g.region) ?? 0) + 1);
+  }
+
+  const toSorted = (m: Map<string, number>) =>
+    [...m.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+  return {
+    varietals: toSorted(vCount),
+    types: toSorted(tCount),
+    regions: toSorted(rCount),
+  };
 }
 
 /** Derive a URL-safe slug from a product's externalUrl. */
