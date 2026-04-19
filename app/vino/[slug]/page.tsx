@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  findProductBySlug,
+  findGroup,
   formatArs,
   storeName,
-  snapshot,
-  productSlug,
+  groups as allGroups,
 } from "@/lib/snapshot";
 
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const product = findProductBySlug(slug);
-  if (!product) return { title: "Vino no encontrado — Vinndex" };
+  const g = findGroup(slug);
+  if (!g) return { title: "Vino no encontrado — Vinndex" };
+  const storesPart =
+    g.storeCount >= 2 ? `Compará en ${g.storeCount} vinotecas` : `Precio actualizado`;
   return {
-    title: `${product.name} — ${storeName(product.storeSlug)} | Vinndex`,
-    description:
-      product.description ??
-      `Compará el precio de ${product.name} en Vinndex.`,
+    title: `${g.canonicalName}${g.vintage ? ` ${g.vintage}` : ""} — ${storesPart} | Vinndex`,
+    description: `Precios de ${g.canonicalName} en ${g.storeCount} vinoteca${
+      g.storeCount === 1 ? "" : "s"
+    } online en Argentina.`,
   };
 }
 
@@ -37,26 +38,50 @@ function ExternalIcon() {
   );
 }
 
+function storeInitials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+// Deterministic color from store slug so each tienda has its own badge color.
+const STORE_COLORS = [
+  "#6B1E2E",
+  "#1E3FBF",
+  "#D97449",
+  "#E8B547",
+  "#4D79E8",
+  "#D63A7A",
+  "#7C8FD9",
+  "#2FB344",
+  "#7F54B3",
+];
+function colorForStore(slug: string): string {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return STORE_COLORS[h % STORE_COLORS.length];
+}
+
 export default async function Vino({ params }: Params) {
   const { slug } = await params;
-  const product = findProductBySlug(slug);
-  if (!product) notFound();
+  const group = findGroup(slug);
+  if (!group) notFound();
 
-  const related = snapshot.products
+  const offers = group.offers;
+  const bestOffer = offers[0];
+  const related = allGroups
     .filter(
-      (p) =>
-        p.externalUrl !== product.externalUrl &&
-        (p.brand === product.brand ||
-          p.storeSlug === product.storeSlug) &&
-        p.brand !== null,
+      (g) =>
+        g.groupSlug !== group.groupSlug &&
+        g.brand &&
+        group.brand &&
+        g.brand.toLowerCase() === group.brand.toLowerCase(),
     )
     .slice(0, 4);
 
-  const store = storeName(product.storeSlug);
-
   return (
     <div className="bg-white min-h-screen">
-      {/* NAV */}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <a
@@ -136,7 +161,7 @@ export default async function Vino({ params }: Params) {
               Catálogo
             </a>
             <span>/</span>
-            <span className="truncate">{product.name}</span>
+            <span className="truncate">{group.canonicalName}</span>
           </div>
 
           <div className="grid lg:grid-cols-[280px_1fr] gap-10 items-start">
@@ -144,11 +169,11 @@ export default async function Vino({ params }: Params) {
               <div className="relative">
                 <div className="absolute inset-0 bg-snow/15 blur-2xl rounded-full" />
                 <div className="relative w-56 h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
-                  {product.imageUrl ? (
+                  {group.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={product.imageUrl}
-                      alt={product.name}
+                      src={group.imageUrl}
+                      alt={group.canonicalName}
                       className="w-full h-full object-contain"
                     />
                   ) : (
@@ -162,90 +187,213 @@ export default async function Vino({ params }: Params) {
 
             <div>
               <div className="mb-4 flex items-center gap-2 text-sm flex-wrap">
-                {product.brand && (
+                {group.brand && (
                   <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
-                    {product.brand}
+                    {group.brand}
                   </span>
                 )}
-                <span className="text-snow/70">·</span>
-                <span className="text-snow/80">{store}</span>
-                {product.inStock ? (
+                {group.vintage && (
                   <>
                     <span className="text-snow/70">·</span>
-                    <span className="text-mustard text-xs font-semibold uppercase tracking-wide">
-                      En stock
-                    </span>
+                    <span className="text-snow/80">Cosecha {group.vintage}</span>
                   </>
-                ) : null}
+                )}
+                {group.format && (
+                  <>
+                    <span className="text-snow/70">·</span>
+                    <span className="text-snow/80">{group.format}</span>
+                  </>
+                )}
               </div>
 
               <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] mb-3">
-                {product.name}
+                {group.canonicalName}
               </h1>
 
-              {product.description && (
-                <p className="text-snow/80 text-lg mb-8 max-w-2xl leading-relaxed">
-                  {product.description}
-                </p>
-              )}
+              <p className="text-snow/80 text-lg mb-8">
+                Disponible en{" "}
+                <span className="font-semibold text-mustard">
+                  {group.storeCount} vinoteca
+                  {group.storeCount === 1 ? "" : "s"}
+                </span>{" "}
+                online.
+              </p>
 
               <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 mb-8">
                 <div>
                   <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
-                    Precio
+                    Desde
                   </div>
-                  <div className="display text-4xl md:text-5xl font-semibold leading-none text-mustard">
-                    {formatArs(product.priceArs)}
+                  <div className="display text-4xl md:text-5xl font-semibold leading-none">
+                    {formatArs(group.minPrice)}
                   </div>
                   <div className="text-xs text-snow/70 mt-1.5">
-                    en {store} · sin envío
+                    en {storeName(bestOffer.storeSlug)}
                   </div>
                 </div>
+                {group.maxPrice != null &&
+                  group.minPrice != null &&
+                  group.maxPrice > group.minPrice && (
+                    <>
+                      <div className="h-14 w-px bg-snow/25" />
+                      <div>
+                        <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
+                          Ahorro máximo
+                        </div>
+                        <div className="display text-4xl md:text-5xl font-semibold leading-none text-mustard">
+                          {Math.round(
+                            ((group.maxPrice - group.minPrice) /
+                              group.maxPrice) *
+                              100,
+                          )}
+                          %
+                        </div>
+                        <div className="text-xs text-snow/70 mt-1.5">
+                          vs {formatArs(group.maxPrice)}
+                        </div>
+                      </div>
+                    </>
+                  )}
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={product.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
-                >
-                  Ir a {store} <ExternalIcon />
-                </a>
-                <a
-                  href="/buscar"
-                  className="cursor-wine border border-snow/40 text-snow font-semibold px-8 py-3.5 rounded-full hover:bg-snow/10 transition-colors"
-                >
-                  Ver más vinos
-                </a>
-              </div>
+              <a
+                href={bestOffer.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
+              >
+                Ir al mejor precio en {storeName(bestOffer.storeSlug)}{" "}
+                <ExternalIcon />
+              </a>
             </div>
           </div>
         </div>
       </section>
 
+      {/* TABLA DE PRECIOS */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
-        <div className="bg-mustard/10 border-l-4 border-mustard rounded-r-xl p-5 mb-10">
-          <p className="text-sm text-ink leading-relaxed">
-            <strong>Este vino aparece en 1 de las 14 vinotecas</strong>{" "}
-            sincronizadas hoy. Cuando sumemos matching entre tiendas (mes 2),
-            vas a ver todas las vinotecas que lo venden con precio total
-            comparado — que es el corazón del producto.
+        <section>
+          <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
+            <div>
+              <h2 className="display text-3xl font-semibold text-ink">
+                Comparación de precios
+              </h2>
+              <p className="text-graphite text-sm mt-1">
+                Ordenado de menor a mayor · {offers.length} oferta
+                {offers.length === 1 ? "" : "s"} detectada
+                {offers.length === 1 ? "" : "s"}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
+            <div className="hidden md:grid grid-cols-[2fr_1fr_1.1fr_auto] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
+              <div>Vinoteca</div>
+              <div className="text-right">Precio</div>
+              <div className="text-right">Diferencia vs min</div>
+              <div />
+            </div>
+
+            {offers.map((offer, i) => {
+              const isBest = i === 0;
+              const rowClasses = isBest
+                ? "price-row best grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5"
+                : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
+              const ctaClasses = isBest
+                ? "cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
+                : "cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full";
+              const diffPct =
+                offer.priceArs != null &&
+                bestOffer.priceArs != null &&
+                bestOffer.priceArs > 0 &&
+                offer.priceArs > bestOffer.priceArs
+                  ? Math.round(
+                      ((offer.priceArs - bestOffer.priceArs) /
+                        bestOffer.priceArs) *
+                        100,
+                    )
+                  : null;
+              const sname = storeName(offer.storeSlug);
+
+              return (
+                <div key={offer.externalUrl} className={rowClasses}>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="store-logo"
+                      style={{ background: colorForStore(offer.storeSlug) }}
+                    >
+                      {storeInitials(sname)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
+                        <span className="truncate">{sname}</span>
+                        {isBest && (
+                          <span className="text-[10px] bg-mustard/25 text-mustard px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                            ★ Mejor precio
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className="text-xs text-graphite truncate"
+                        title={offer.name}
+                      >
+                        {offer.name}
+                        {offer.externalSku ? ` · SKU ${offer.externalSku}` : ""}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="md:hidden text-xs text-graphite">
+                      Precio:{" "}
+                    </span>
+                    <span className="display text-2xl font-semibold text-cobalt">
+                      {formatArs(offer.priceArs)}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="md:hidden text-xs text-graphite">
+                      Diferencia:{" "}
+                    </span>
+                    {isBest ? (
+                      <span className="text-terracota font-semibold text-sm">
+                        —
+                      </span>
+                    ) : diffPct != null ? (
+                      <span className="text-ink text-sm">+{diffPct}%</span>
+                    ) : (
+                      <span className="text-graphite text-sm">—</span>
+                    )}
+                  </div>
+                  <a
+                    href={offer.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className={ctaClasses}
+                  >
+                    Visitar <ExternalIcon />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-graphite mt-4">
+            Matching determinístico por nombre + añada + formato. No vendemos
+            vino — al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
+            vinoteca.
           </p>
-        </div>
+        </section>
 
         {related.length > 0 && (
-          <section>
+          <section className="mt-16">
             <h2 className="display text-2xl font-semibold text-ink mb-6">
-              {product.brand
-                ? `Otros de ${product.brand}`
-                : `Otros de ${store}`}
+              Otros de {group.brand}
             </h2>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               {related.map((r) => (
                 <a
-                  key={r.externalUrl}
-                  href={`/vino/${productSlug(r)}`}
+                  key={r.groupSlug}
+                  href={`/vino/${r.groupSlug}`}
                   className="bg-white rounded-2xl p-5 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
                   <div className="w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
@@ -253,20 +401,21 @@ export default async function Vino({ params }: Params) {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={r.imageUrl}
-                        alt={r.name}
+                        alt={r.canonicalName}
                         loading="lazy"
                         className="w-full h-full object-contain"
                       />
                     ) : null}
                   </div>
                   <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
-                    {r.name}
+                    {r.canonicalName}
                   </div>
                   <div className="text-xs text-graphite mt-0.5">
-                    {storeName(r.storeSlug)}
+                    {r.storeCount} vinoteca{r.storeCount === 1 ? "" : "s"}
+                    {r.vintage ? ` · ${r.vintage}` : ""}
                   </div>
                   <div className="display text-xl font-semibold text-cobalt mt-3">
-                    {formatArs(r.priceArs)}
+                    {formatArs(r.minPrice)}
                   </div>
                 </a>
               ))}

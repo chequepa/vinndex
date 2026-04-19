@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { searchProducts, formatArs, storeName, productSlug, snapshot } from "@/lib/snapshot";
+import {
+  searchGroups,
+  formatArs,
+  storeName,
+  snapshot,
+} from "@/lib/snapshot";
 
 export const metadata: Metadata = {
   title: "Buscar — Vinndex",
 };
 
-type Params = { searchParams: Promise<{ q?: string }> };
+type Params = {
+  searchParams: Promise<{ q?: string; multi?: string }>;
+};
 
 function ChevronIcon() {
   return (
@@ -23,12 +30,18 @@ function ChevronIcon() {
 export default async function Buscar({ searchParams }: Params) {
   const params = await searchParams;
   const query = (params.q ?? "").trim();
-  const results = searchProducts(query, 48);
-  const totalInCatalog = snapshot.productCount;
+  const multiOnly = params.multi === "1";
+  const results = searchGroups(query, 48, { multiStoreOnly: multiOnly });
+  const totalGroups = snapshot.groupCount ?? 0;
+  const totalMulti = snapshot.multiStoreGroupCount ?? 0;
 
   const headerTitle = query ? (
     <>
       Resultados para <span className="italic">&ldquo;{query}&rdquo;</span>
+    </>
+  ) : multiOnly ? (
+    <>
+      Vinos comparables en <span className="italic">2+ vinotecas</span>
     </>
   ) : (
     <>
@@ -102,7 +115,6 @@ export default async function Buscar({ searchParams }: Params) {
         </div>
       </header>
 
-      {/* HEADER */}
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-3">
@@ -117,9 +129,14 @@ export default async function Buscar({ searchParams }: Params) {
           </h1>
           <p className="text-graphite mt-2">
             <span className="font-semibold text-ink">{results.length}</span>{" "}
-            resultados · del catálogo vivo de{" "}
-            <span className="font-semibold text-ink">{totalInCatalog.toLocaleString("es-AR")}</span>{" "}
-            vinos
+            vinos ·{" "}
+            <span className="font-semibold text-ink">
+              {totalMulti.toLocaleString("es-AR")}
+            </span>{" "}
+            vinos comparables en 2+ tiendas de un total de{" "}
+            <span className="font-semibold text-ink">
+              {totalGroups.toLocaleString("es-AR")}
+            </span>
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2">
@@ -128,14 +145,25 @@ export default async function Buscar({ searchParams }: Params) {
                 {query} ×
               </a>
             )}
+            <a
+              href={
+                multiOnly
+                  ? query
+                    ? `/buscar?q=${encodeURIComponent(query)}`
+                    : "/buscar"
+                  : query
+                    ? `/buscar?q=${encodeURIComponent(query)}&multi=1`
+                    : "/buscar?multi=1"
+              }
+              className={`filter-chip ${multiOnly ? "active" : ""}`}
+            >
+              Sólo comparables (2+ tiendas)
+            </a>
             <button className="filter-chip">
               Varietal <ChevronIcon />
             </button>
             <button className="filter-chip">
               Bodega <ChevronIcon />
-            </button>
-            <button className="filter-chip">
-              Vinoteca <ChevronIcon />
             </button>
             <button className="filter-chip">
               Precio <ChevronIcon />
@@ -145,7 +173,6 @@ export default async function Buscar({ searchParams }: Params) {
       </section>
 
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 grid lg:grid-cols-[260px_1fr] gap-10">
-        {/* SIDEBAR FILTROS */}
         <aside className="hidden lg:block">
           <div className="sticky top-24">
             <div className="mb-8">
@@ -167,50 +194,17 @@ export default async function Buscar({ searchParams }: Params) {
                 ))}
               </div>
             </div>
-
-            <div>
-              <h3 className="display text-lg font-semibold mb-4">Sólo con</h3>
-              <div className="space-y-2 text-sm">
-                <label className="flex items-center gap-2 cursor-wine">
-                  <input
-                    type="checkbox"
-                    className="accent-cobalt"
-                    defaultChecked
-                  />{" "}
-                  En stock
-                </label>
-                <label className="flex items-center gap-2 cursor-wine">
-                  <input type="checkbox" className="accent-cobalt" /> Con precio
-                  público
-                </label>
-              </div>
-            </div>
           </div>
         </aside>
 
-        {/* RESULTADOS */}
         <section>
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
             <p className="text-sm text-graphite">
-              Snapshot del{" "}
+              Ordenado por:{" "}
               <span className="font-semibold text-ink">
-                {new Date(snapshot.generatedAt).toLocaleDateString("es-AR", {
-                  day: "2-digit",
-                  month: "long",
-                })}
+                vinos con más ofertas primero, después por precio
               </span>
             </p>
-            <div className="flex items-center gap-2 text-sm">
-              <label className="text-graphite">Ordenar por:</label>
-              <select
-                defaultValue="Precio (ascendente)"
-                className="bg-white border border-ink/10 rounded-full px-3 py-1.5 font-medium cursor-wine"
-              >
-                <option>Precio (ascendente)</option>
-                <option>Precio (descendente)</option>
-                <option>Nombre A-Z</option>
-              </select>
-            </div>
           </div>
 
           {results.length === 0 ? (
@@ -231,76 +225,103 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           ) : (
             <div className="divide-y divide-ink/10">
-              {results.map((p) => (
-                <a
-                  key={p.externalUrl}
-                  href={`/vino/${productSlug(p)}`}
-                  className="wine-row block py-5"
-                >
-                  <div className="flex gap-5">
-                    <div className="w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                      {p.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.imageUrl}
-                          alt={p.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-malbec/40 text-xs">
-                          sin foto
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-1">
-                        <div className="min-w-0">
-                          <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight truncate">
-                            {p.name}
-                          </h3>
-                          <p className="text-sm text-graphite mt-0.5 truncate">
-                            {p.brand ? `${p.brand} · ` : ""}
-                            {storeName(p.storeSlug)}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <div className="text-xs text-graphite">desde</div>
-                          <div className="display text-2xl font-semibold text-cobalt">
-                            {formatArs(p.priceArs)}
-                          </div>
-                          <div className="text-xs text-graphite">
-                            en {storeName(p.storeSlug)}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        {p.inStock ? (
-                          <span className="tag tag-malbec">En stock</span>
+              {results.map((g) => {
+                const savings =
+                  g.minPrice != null &&
+                  g.maxPrice != null &&
+                  g.minPrice > 0 &&
+                  g.maxPrice > g.minPrice
+                    ? Math.round(
+                        ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
+                      )
+                    : 0;
+
+                return (
+                  <a
+                    key={g.groupSlug}
+                    href={`/vino/${g.groupSlug}`}
+                    className="wine-row block py-5"
+                  >
+                    <div className="flex gap-5">
+                      <div className="w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                        {g.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={g.imageUrl}
+                            alt={g.canonicalName}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <span
-                            className="tag"
-                            style={{
-                              background: "#A6262F15",
-                              color: "#A6262F",
-                            }}
-                          >
-                            Agotado
-                          </span>
-                        )}
-                        {p.externalSku && (
-                          <>
-                            <span className="text-xs text-graphite">•</span>
-                            <span className="text-xs text-graphite">
-                              SKU {p.externalSku}
-                            </span>
-                          </>
+                          <div className="w-full h-full flex items-center justify-center text-malbec/40 text-xs">
+                            sin foto
+                          </div>
                         )}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4 mb-1">
+                          <div className="min-w-0">
+                            <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight truncate">
+                              {g.canonicalName}
+                            </h3>
+                            <p className="text-sm text-graphite mt-0.5 truncate">
+                              {g.brand ? `${g.brand}` : "Sin bodega identificada"}
+                              {g.vintage ? ` · ${g.vintage}` : ""}
+                              {g.format ? ` · ${g.format}` : ""}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-xs text-graphite">desde</div>
+                            <div className="display text-2xl font-semibold text-cobalt">
+                              {formatArs(g.minPrice)}
+                            </div>
+                            {g.maxPrice != null &&
+                              g.minPrice != null &&
+                              g.maxPrice > g.minPrice && (
+                                <div className="text-xs text-graphite">
+                                  hasta {formatArs(g.maxPrice)}
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                          {g.storeCount >= 2 ? (
+                            <span
+                              className="tag"
+                              style={{
+                                background: "#1B7A4F20",
+                                color: "#1B7A4F",
+                              }}
+                            >
+                              {g.storeCount} vinotecas
+                            </span>
+                          ) : (
+                            <span className="tag tag-malbec">
+                              {storeName(g.offers[0].storeSlug)}
+                            </span>
+                          )}
+                          {savings > 0 && (
+                            <>
+                              <span className="text-xs text-graphite">•</span>
+                              <span className="text-xs text-terracota font-semibold">
+                                ahorrá hasta {savings}%
+                              </span>
+                            </>
+                          )}
+                          {g.offers[0].inStock && (
+                            <>
+                              <span className="text-xs text-graphite">•</span>
+                              <span className="text-xs text-graphite">
+                                En stock
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                );
+              })}
             </div>
           )}
 
