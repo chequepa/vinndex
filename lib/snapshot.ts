@@ -236,17 +236,24 @@ export function topBrands(limit = 12): BrandStat[] {
     .slice(0, limit);
 }
 
-/** Top deals: multi-store groups with biggest savings %. */
+/**
+ * Top deals: multi-store groups with credible savings.
+ *
+ * Credibility filter: we require 3+ stores validating the price range (so a
+ * single outlier store doesn't drive the "deal"), and cap savings at 70% —
+ * anything higher usually signals bad data (stale price, wrong SKU match,
+ * promo-locked listing) rather than a real bargain.
+ */
 export function topDeals(limit = 6): ProductGroup[] {
   return groups
     .filter(
       (g) =>
-        g.storeCount >= 2 &&
+        g.storeCount >= 3 &&
         g.minPrice != null &&
         g.maxPrice != null &&
-        g.minPrice > 0 &&
+        g.minPrice >= 2000 && // exclude absurdly low min prices
         g.maxPrice > g.minPrice &&
-        g.imageUrl, // require image so card doesn't look empty
+        g.imageUrl,
     )
     .map((g) => ({
       g,
@@ -254,8 +261,9 @@ export function topDeals(limit = 6): ProductGroup[] {
         ((g.maxPrice as number) - (g.minPrice as number)) /
         (g.maxPrice as number),
     }))
+    .filter(({ savings }) => savings >= 0.25 && savings <= 0.7)
     .sort((a, b) => {
-      // Prioritize bigger savings, then more stores (more validation)
+      // Prioritize bigger savings, then more stores
       if (Math.abs(b.savings - a.savings) > 0.01)
         return b.savings - a.savings;
       return b.g.storeCount - a.g.storeCount;
