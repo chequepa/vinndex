@@ -16,10 +16,38 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vinndex — Comparador de precios de vinos en Argentina",
+  title: {
+    default: "Vinndex — Comparador de precios de vinos en Argentina",
+    template: "%s",
+  },
   description:
-    "Buscá un vino, encontrá todos los lugares que lo venden online, ordenados por precio total con envío a tu zona.",
+    "Buscá un vino, encontrá todas las vinotecas online de Argentina que lo venden, ordenadas por precio. Comparamos 29 tiendas y 25k+ etiquetas.",
   metadataBase: new URL("https://vinndex.com.ar"),
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: "Vinndex",
+    url: "https://vinndex.com.ar",
+    title: "Vinndex — Comparador de precios de vinos en Argentina",
+    description:
+      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio. 29 tiendas, 25k+ etiquetas.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vinndex — Comparador de precios de vinos en Argentina",
+    description:
+      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
