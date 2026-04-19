@@ -206,22 +206,53 @@ export type BrandStat = {
   storeCount: number;
 };
 
-/** Top brands by product count across all stores. */
+/**
+ * Top wine brands across all stores.
+ *
+ * We prefer brands whose products are tagged with a varietal — otherwise
+ * supermarket spirits/champagne brands (Glenmorangie, Smirnoff, Veuve
+ * Clicquot) drown out actual Argentine wine bodegas, since they're stocked
+ * by 3-6 supermarkets each.
+ */
 export function topBrands(limit = 12): BrandStat[] {
-  const byBrand = new Map<string, { count: number; stores: Set<string> }>();
+  const byBrand = new Map<
+    string,
+    { count: number; stores: Set<string>; wineish: number }
+  >();
+
+  // Build a lookup of (name -> first matching varietal) using the groups.
+  const productToVarietal = new Map<string, boolean>();
+  for (const g of groups) {
+    const isWine =
+      (g.varietals && g.varietals.length > 0) || g.type === "Tinto" || g.type === "Blanco";
+    for (const o of g.offers) {
+      productToVarietal.set(o.externalUrl, isWine);
+    }
+  }
+
   for (const p of snapshot.products) {
     if (!p.brand) continue;
     const key = p.brand.trim();
     if (!key) continue;
+    if (/smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i.test(key))
+      continue; // blacklist common spirits brands
     const existing = byBrand.get(key);
+    const isWine = productToVarietal.get(p.externalUrl) ?? false;
     if (existing) {
       existing.count++;
       existing.stores.add(p.storeSlug);
+      if (isWine) existing.wineish++;
     } else {
-      byBrand.set(key, { count: 1, stores: new Set([p.storeSlug]) });
+      byBrand.set(key, {
+        count: 1,
+        stores: new Set([p.storeSlug]),
+        wineish: isWine ? 1 : 0,
+      });
     }
   }
+
   return [...byBrand.entries()]
+    .filter(([, { count, wineish }]) => count === 0 || wineish / count >= 0.4)
     .map(([name, { count, stores }]) => ({
       name,
       count,
