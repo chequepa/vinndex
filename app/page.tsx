@@ -1,4 +1,4 @@
-import { snapshotStats, topBrands } from "@/lib/snapshot";
+import { snapshotStats, topBrands, topDeals, formatArs } from "@/lib/snapshot";
 
 function formatCount(n: number): string {
   if (n >= 1000) {
@@ -11,6 +11,7 @@ function formatCount(n: number): string {
 export default function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
+  const deals = topDeals(6);
   return (
     <>
       {/* NAV */}
@@ -216,6 +217,84 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* TOP OFERTAS */}
+      {deals.length > 0 && (
+        <section id="ofertas" className="py-24 lg:py-32 px-6 bg-snow/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
+              <div className="max-w-2xl">
+                <p className="text-malbec text-sm tracking-[0.2em] uppercase font-semibold mb-4">
+                  Top ofertas del snapshot
+                </p>
+                <h2 className="display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05]">
+                  El mismo vino,
+                  <br />
+                  <span className="italic font-normal">precios muy distintos.</span>
+                </h2>
+                <p className="text-graphite mt-5 text-lg leading-relaxed">
+                  Vinos que aparecen en 2+ vinotecas con diferencias de precio que
+                  importan. Elegí la más barata — o la que te llega más rápido.
+                </p>
+              </div>
+              <a href="/buscar?multi=1" className="chip !bg-ink !text-snow hover:!bg-malbec">
+                Ver todos los comparables →
+              </a>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {deals.map((g) => {
+                const savingsPct =
+                  g.minPrice != null && g.maxPrice != null && g.maxPrice > 0
+                    ? Math.round(
+                        ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
+                      )
+                    : 0;
+                return (
+                  <a
+                    key={g.groupSlug}
+                    href={`/vino/${g.groupSlug}`}
+                    className="postcard p-6 flex gap-5 items-start"
+                  >
+                    <div className="w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                      {g.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={g.imageUrl}
+                          alt={g.canonicalName}
+                          loading="lazy"
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="inline-flex items-center gap-1.5 bg-malbec text-snow text-xs font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wide">
+                        Ahorrá {savingsPct}%
+                      </div>
+                      <h3 className="display text-lg font-semibold text-ink leading-tight line-clamp-2 mb-1">
+                        {g.canonicalName}
+                      </h3>
+                      <p className="text-xs text-graphite mb-3 truncate">
+                        {g.brand ? `${g.brand} · ` : ""}
+                        {g.storeCount} vinoteca{g.storeCount === 1 ? "" : "s"}
+                        {g.vintage ? ` · ${g.vintage}` : ""}
+                      </p>
+                      <div className="flex items-baseline gap-2">
+                        <div className="display text-2xl font-semibold text-cobalt">
+                          {formatArs(g.minPrice)}
+                        </div>
+                        <div className="text-xs text-graphite line-through">
+                          {formatArs(g.maxPrice)}
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CÓMO FUNCIONA */}
       <section id="como-funciona" className="py-24 lg:py-32 px-6">

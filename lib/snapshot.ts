@@ -181,6 +181,34 @@ export function topBrands(limit = 12): BrandStat[] {
     .slice(0, limit);
 }
 
+/** Top deals: multi-store groups with biggest savings %. */
+export function topDeals(limit = 6): ProductGroup[] {
+  return groups
+    .filter(
+      (g) =>
+        g.storeCount >= 2 &&
+        g.minPrice != null &&
+        g.maxPrice != null &&
+        g.minPrice > 0 &&
+        g.maxPrice > g.minPrice &&
+        g.imageUrl, // require image so card doesn't look empty
+    )
+    .map((g) => ({
+      g,
+      savings:
+        ((g.maxPrice as number) - (g.minPrice as number)) /
+        (g.maxPrice as number),
+    }))
+    .sort((a, b) => {
+      // Prioritize bigger savings, then more stores (more validation)
+      if (Math.abs(b.savings - a.savings) > 0.01)
+        return b.savings - a.savings;
+      return b.g.storeCount - a.g.storeCount;
+    })
+    .slice(0, limit)
+    .map(({ g }) => g);
+}
+
 /** Brand slug for search filter */
 export function brandSlug(brand: string): string {
   return brand
