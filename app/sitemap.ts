@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { snapshot, groups } from "@/lib/snapshot";
+import { snapshot, groups, brandPages } from "@/lib/snapshot";
 
 const SITE = "https://vinndex.com.ar";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const generatedAt = new Date(snapshot.generatedAt);
+  const brands = brandPages();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -43,5 +44,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: g.storeCount >= 2 ? 0.8 : 0.5,
     }));
 
-  return [...staticRoutes, ...winePages];
+  const bodegaPages: MetadataRoute.Sitemap = brands.map((b) => ({
+    url: `${SITE}/bodega/${b.slug}`,
+    lastModified: generatedAt,
+    changeFrequency: "daily" as const,
+    priority: b.storeCount >= 3 ? 0.7 : 0.5,
+  }));
+
+  return [...staticRoutes, ...bodegaPages, ...winePages];
 }

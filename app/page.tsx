@@ -4,6 +4,7 @@ import {
   topDeals,
   formatArs,
   displayBrand,
+  brandSlug,
 } from "@/lib/snapshot";
 
 function formatCount(n: number): string {
@@ -620,7 +621,7 @@ export default function Home() {
               {brands.map((b) => (
                 <a
                   key={b.name}
-                  href={`/buscar?q=${encodeURIComponent(b.name)}`}
+                  href={`/bodega/${brandSlug(b.name)}`}
                   className="postcard p-5 text-center"
                 >
                   <div className="display text-xl font-semibold line-clamp-2 min-h-[2.5em] flex items-center justify-center">

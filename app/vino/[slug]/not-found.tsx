@@ -1,4 +1,4 @@
-import { topBrands, snapshotStats } from "@/lib/snapshot";
+import { topBrands, snapshotStats, brandSlug } from "@/lib/snapshot";
 
 export default function NotFound() {
   const brands = topBrands(8);
@@ -74,7 +74,7 @@ export default function NotFound() {
           {brands.map((b) => (
             <a
               key={b.name}
-              href={`/buscar?q=${encodeURIComponent(b.name)}`}
+              href={`/bodega/${brandSlug(b.name)}`}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-ink/20 hover:border-cobalt hover:text-cobalt transition-colors text-sm font-medium"
             >
               {b.name}
