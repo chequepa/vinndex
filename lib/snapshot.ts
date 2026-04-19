@@ -59,15 +59,28 @@ export function findProductBySlug(slug: string): ScrapedProduct | undefined {
   return snapshot.products.find((p) => productSlug(p) === slug);
 }
 
+/**
+ * Sort key that pushes null/missing prices to the end but keeps real prices
+ * in ascending order.
+ */
+function priceKey(p: ScrapedProduct): number {
+  return p.priceArs != null && p.priceArs > 0
+    ? p.priceArs
+    : Number.POSITIVE_INFINITY;
+}
+
 export function searchProducts(query: string, limit = 50): ScrapedProduct[] {
   const q = query.trim().toLowerCase();
-  if (!q) return snapshot.products.slice(0, limit);
-  const tokens = q.split(/\s+/).filter(Boolean);
-  return snapshot.products
-    .filter((p) => {
-      const haystack = `${p.name} ${p.brand ?? ""} ${p.description ?? ""}`.toLowerCase();
-      return tokens.every((t) => haystack.includes(t));
-    })
+  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+  const filtered = q
+    ? snapshot.products.filter((p) => {
+        const haystack =
+          `${p.name} ${p.brand ?? ""} ${p.description ?? ""}`.toLowerCase();
+        return tokens.every((t) => haystack.includes(t));
+      })
+    : snapshot.products;
+  return [...filtered]
+    .sort((a, b) => priceKey(a) - priceKey(b) || a.name.localeCompare(b.name))
     .slice(0, limit);
 }
 
