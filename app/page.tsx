@@ -1,4 +1,4 @@
-import { snapshotStats } from "@/lib/snapshot";
+import { snapshotStats, topBrands } from "@/lib/snapshot";
 
 function formatCount(n: number): string {
   if (n >= 1000) {
@@ -10,6 +10,7 @@ function formatCount(n: number): string {
 
 export default function Home() {
   const stats = snapshotStats();
+  const brands = topBrands(12);
   return (
     <>
       {/* NAV */}
@@ -526,58 +527,29 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            <a
-              href="/buscar?bodega=catena-zapata"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">Catena Zapata</div>
-              <div className="text-graphite text-xs mt-1">
-                Mendoza · 89 vinos
-              </div>
-            </a>
-            <a
-              href="/buscar?bodega=luigi-bosca"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">Luigi Bosca</div>
-              <div className="text-graphite text-xs mt-1">Luján · 64 vinos</div>
-            </a>
-            <a
-              href="/buscar?bodega=zuccardi"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">Zuccardi</div>
-              <div className="text-graphite text-xs mt-1">
-                Valle de Uco · 73 vinos
-              </div>
-            </a>
-            <a
-              href="/buscar?bodega=rutini"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">Rutini</div>
-              <div className="text-graphite text-xs mt-1">
-                Tupungato · 51 vinos
-              </div>
-            </a>
-            <a
-              href="/buscar?bodega=trapiche"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">Trapiche</div>
-              <div className="text-graphite text-xs mt-1">Maipú · 88 vinos</div>
-            </a>
-            <a
-              href="/buscar?bodega=el-esteco"
-              className="postcard p-5 text-center"
-            >
-              <div className="display text-xl font-semibold">El Esteco</div>
-              <div className="text-graphite text-xs mt-1">
-                Cafayate · 34 vinos
-              </div>
-            </a>
-          </div>
+          {brands.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {brands.map((b) => (
+                <a
+                  key={b.name}
+                  href={`/buscar?q=${encodeURIComponent(b.name)}`}
+                  className="postcard p-5 text-center"
+                >
+                  <div className="display text-xl font-semibold line-clamp-2 min-h-[2.5em] flex items-center justify-center">
+                    {b.name}
+                  </div>
+                  <div className="text-graphite text-xs mt-1">
+                    {b.count} vino{b.count === 1 ? "" : "s"} ·{" "}
+                    {b.storeCount} vinoteca{b.storeCount === 1 ? "" : "s"}
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-graphite">
+              Todavía no sincronizamos marcas suficientes.
+            </p>
+          )}
         </div>
       </section>
 

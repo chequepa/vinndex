@@ -248,10 +248,13 @@ async function main() {
     products: results.flatMap((r) => r.products),
   };
 
-  const outPath = resolve(REPO_ROOT, "data/snapshot.json");
+  const outPath = resolve(REPO_ROOT, "data/snapshot-tiendanube.json");
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, JSON.stringify(snapshot, null, 2));
   console.log(`\nWrote ${outPath}`);
+  console.log(
+    `\nRun "node scripts/merge-snapshots.mjs" to produce data/snapshot.json.`,
+  );
 }
 
 main().catch((err) => {

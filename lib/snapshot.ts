@@ -14,7 +14,8 @@ export type SnapshotStore = {
 export type Snapshot = {
   generatedAt: string;
   generator: string;
-  maxPagesPerStore: number;
+  maxPagesPerStore?: number;
+  sources?: { platform: string; path: string; generatedAt: string }[];
   storeCount: number;
   productCount: number;
   stores: SnapshotStore[];
@@ -84,4 +85,50 @@ export function storeName(slug: string): string {
   return (
     snapshot.stores.find((s) => s.storeSlug === slug)?.storeName ?? slug
   );
+}
+
+export type BrandStat = {
+  name: string;
+  count: number;
+  storeCount: number;
+};
+
+/** Top brands by product count across all stores. */
+export function topBrands(limit = 12): BrandStat[] {
+  const byBrand = new Map<string, { count: number; stores: Set<string> }>();
+  for (const p of snapshot.products) {
+    if (!p.brand) continue;
+    const key = p.brand.trim();
+    if (!key) continue;
+    const existing = byBrand.get(key);
+    if (existing) {
+      existing.count++;
+      existing.stores.add(p.storeSlug);
+    } else {
+      byBrand.set(key, { count: 1, stores: new Set([p.storeSlug]) });
+    }
+  }
+  return [...byBrand.entries()]
+    .map(([name, { count, stores }]) => ({
+      name,
+      count,
+      storeCount: stores.size,
+    }))
+    .sort(
+      (a, b) =>
+        b.storeCount - a.storeCount ||
+        b.count - a.count ||
+        a.name.localeCompare(b.name),
+    )
+    .slice(0, limit);
+}
+
+/** Brand slug for search filter */
+export function brandSlug(brand: string): string {
+  return brand
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
