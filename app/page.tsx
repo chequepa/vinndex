@@ -1,4 +1,15 @@
+import { snapshotStats } from "@/lib/snapshot";
+
+function formatCount(n: number): string {
+  if (n >= 1000) {
+    const k = Math.floor(n / 1000);
+    return `${k}k+`;
+  }
+  return String(n);
+}
+
 export default function Home() {
+  const stats = snapshotStats();
   return (
     <>
       {/* NAV */}
@@ -182,7 +193,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
           <div>
             <div className="display text-5xl md:text-6xl font-semibold text-cobalt leading-none">
-              15k+
+              {formatCount(stats.productCount)}
             </div>
             <div className="text-graphite text-sm mt-2">
               vinos en el catálogo
@@ -190,9 +201,11 @@ export default function Home() {
           </div>
           <div>
             <div className="display text-5xl md:text-6xl font-semibold text-malbec leading-none">
-              43
+              {stats.storeCount}
             </div>
-            <div className="text-graphite text-sm mt-2">vinotecas online</div>
+            <div className="text-graphite text-sm mt-2">
+              vinotecas sincronizando
+            </div>
           </div>
           <div>
             <div className="display text-5xl md:text-6xl font-semibold text-mustard leading-none">
