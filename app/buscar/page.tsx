@@ -5,6 +5,7 @@ import {
   storeName,
   snapshot,
   facetCounts,
+  displayBrand,
 } from "@/lib/snapshot";
 
 export const metadata: Metadata = {
@@ -443,7 +444,7 @@ export default async function Buscar({ searchParams }: Params) {
                               {g.canonicalName}
                             </h3>
                             <p className="text-sm text-graphite mt-0.5 truncate">
-                              {g.brand ? `${g.brand}` : "Sin bodega identificada"}
+                              {g.brand ? displayBrand(g.brand) : "Sin bodega identificada"}
                               {g.vintage ? ` · ${g.vintage}` : ""}
                               {g.region ? ` · ${g.region}` : ""}
                             </p>
