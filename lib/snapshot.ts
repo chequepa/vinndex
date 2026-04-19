@@ -424,3 +424,94 @@ export function brandPages(): BrandPage[] {
 export function findBrandPage(slug: string): BrandPage | undefined {
   return brandPages().find((p) => p.slug === slug);
 }
+
+export type FacetPage = {
+  slug: string;
+  name: string;
+  kind: "varietal" | "region";
+  groupCount: number;
+  storeCount: number;
+  topGroups: ProductGroup[];
+};
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function varietalPages(): FacetPage[] {
+  const byVar = new Map<string, ProductGroup[]>();
+  for (const g of groups) {
+    for (const v of g.varietals ?? []) {
+      const arr = byVar.get(v) ?? [];
+      arr.push(g);
+      byVar.set(v, arr);
+    }
+  }
+  const pages: FacetPage[] = [];
+  for (const [name, gs] of byVar.entries()) {
+    if (gs.length < 10) continue;
+    const stores = new Set<string>();
+    for (const g of gs) for (const o of g.offers) stores.add(o.storeSlug);
+    const topGroups = [...gs]
+      .sort(
+        (a, b) =>
+          b.storeCount - a.storeCount ||
+          (a.minPrice ?? 1e9) - (b.minPrice ?? 1e9),
+      )
+      .slice(0, 48);
+    pages.push({
+      slug: slugify(name),
+      name,
+      kind: "varietal",
+      groupCount: gs.length,
+      storeCount: stores.size,
+      topGroups,
+    });
+  }
+  return pages.sort((a, b) => b.groupCount - a.groupCount);
+}
+
+export function regionPages(): FacetPage[] {
+  const byReg = new Map<string, ProductGroup[]>();
+  for (const g of groups) {
+    if (!g.region) continue;
+    const arr = byReg.get(g.region) ?? [];
+    arr.push(g);
+    byReg.set(g.region, arr);
+  }
+  const pages: FacetPage[] = [];
+  for (const [name, gs] of byReg.entries()) {
+    if (gs.length < 5) continue;
+    const stores = new Set<string>();
+    for (const g of gs) for (const o of g.offers) stores.add(o.storeSlug);
+    const topGroups = [...gs]
+      .sort(
+        (a, b) =>
+          b.storeCount - a.storeCount ||
+          (a.minPrice ?? 1e9) - (b.minPrice ?? 1e9),
+      )
+      .slice(0, 48);
+    pages.push({
+      slug: slugify(name),
+      name,
+      kind: "region",
+      groupCount: gs.length,
+      storeCount: stores.size,
+      topGroups,
+    });
+  }
+  return pages.sort((a, b) => b.groupCount - a.groupCount);
+}
+
+export function findFacetPage(
+  kind: "varietal" | "region",
+  slug: string,
+): FacetPage | undefined {
+  const source = kind === "varietal" ? varietalPages() : regionPages();
+  return source.find((p) => p.slug === slug);
+}
