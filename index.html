@@ -97,6 +97,11 @@
       transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1), box-shadow 0.3s;
     }
     .postcard:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(15,23,41,0.2); }
+
+    /* Glow sutil para despegar el copy del fondo del hero sin romper la estética flat */
+    .hero-text h1, .hero-text p {
+      text-shadow: 0 2px 24px rgba(15, 30, 77, 0.55);
+    }
   </style>
 </head>
 
@@ -136,7 +141,7 @@
 
     <svg class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 520" preserveAspectRatio="none" style="height: 65vh;">
       <path d="M0 400 L120 280 L220 340 L340 220 L460 300 L580 190 L700 260 L820 170 L940 240 L1060 180 L1180 260 L1320 210 L1440 280 L1440 520 L0 520 Z" fill="#7C8FD9" opacity="0.55"/>
-      <path d="M340 220 L360 240 L325 240 Z M580 190 L605 215 L555 215 Z M820 170 L850 200 L790 200 Z M1060 180 L1090 210 L1030 210 Z M1320 210 L1345 235 L1295 235 Z" fill="#F5EDE0" opacity="0.9"/>
+      <path d="M340 220 L360 240 L325 240 Z M580 190 L605 215 L555 215 Z M820 170 L850 200 L790 200 Z M1060 180 L1090 210 L1030 210 Z M1320 210 L1345 235 L1295 235 Z" fill="#F5EDE0" opacity="0.5"/>
       <path d="M0 460 L140 360 L260 400 L380 320 L520 380 L660 310 L800 370 L940 300 L1080 370 L1220 320 L1360 380 L1440 350 L1440 520 L0 520 Z" fill="#1E3FBF" opacity="0.75"/>
       <path d="M0 500 L200 440 L420 470 L640 430 L880 470 L1100 440 L1320 475 L1440 450 L1440 520 L0 520 Z" fill="#0F1E4D"/>
       <g stroke="#6B1E2E" stroke-width="1.5" opacity="0.55">
@@ -159,7 +164,7 @@
       </g>
     </svg>
 
-    <div class="relative z-20 max-w-5xl mx-auto px-6 pt-32 pb-24 text-center">
+    <div class="relative z-20 max-w-5xl mx-auto px-6 pt-32 pb-24 text-center hero-text">
 
       <p class="text-snow/90 text-sm md:text-base tracking-[0.25em] uppercase mb-6 font-medium">La biblia para comprar vino online en Argentina</p>
 
@@ -199,7 +204,7 @@
 
   <!-- STATS -->
   <section class="bg-snow border-y border-ink/10 relative grain">
-    <div class="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div class="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-3 gap-8">
       <div>
         <div class="display text-5xl md:text-6xl font-semibold text-cobalt leading-none">15k+</div>
         <div class="text-graphite text-sm mt-2">vinos en el catálogo</div>
@@ -207,10 +212,6 @@
       <div>
         <div class="display text-5xl md:text-6xl font-semibold text-malbec leading-none">43</div>
         <div class="text-graphite text-sm mt-2">vinotecas online</div>
-      </div>
-      <div>
-        <div class="display text-5xl md:text-6xl font-semibold text-terracota leading-none">1x día</div>
-        <div class="text-graphite text-sm mt-2">precios actualizados</div>
       </div>
       <div>
         <div class="display text-5xl md:text-6xl font-semibold text-mustard leading-none">$0</div>
@@ -239,7 +240,7 @@
             </svg>
           </div>
           <h3 class="display text-2xl font-semibold mb-3">Buscá el vino</h3>
-          <p class="text-graphite leading-relaxed">Por nombre, bodega, varietal o región. Tolera errores de tipeo y sinónimos — escribís "cabsauv" y entiende.</p>
+          <p class="text-graphite leading-relaxed">Por nombre, bodega, varietal o región.</p>
         </div>
 
         <div class="postcard p-8">
@@ -252,7 +253,7 @@
             </svg>
           </div>
           <h3 class="display text-2xl font-semibold mb-3">Comparamos todo</h3>
-          <p class="text-graphite leading-relaxed">Te mostramos las 32 vinotecas que lo venden online con precio actualizado y costo de envío a tu zona.</p>
+          <p class="text-graphite leading-relaxed">Te mostramos todas las vinotecas que lo venden online con precio actualizado y costo de envío a tu zona.</p>
         </div>
 
         <div class="postcard p-8">
@@ -330,10 +331,11 @@
         </a>
 
         <a href="buscar.html?region=patagonia" class="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10">
-          <div class="absolute inset-0" style="background: linear-gradient(180deg, #0F1E4D 0%, #1E3FBF 50%, #7C8FD9 100%);"></div>
+          <div class="absolute inset-0" style="background: linear-gradient(180deg, #0F1E4D 0%, #1E3FBF 55%, #7C8FD9 100%);"></div>
           <svg class="absolute bottom-0 w-full" viewBox="0 0 200 100" preserveAspectRatio="none">
-            <path d="M0 80 L200 80 L200 100 L0 100 Z" fill="#F5EDE0" opacity="0.95"/>
-            <path d="M0 72 L50 55 L90 65 L140 48 L200 65 L200 80 L0 80 Z" fill="#7C8FD9" opacity="0.8"/>
+            <path d="M0 58 L40 32 L80 44 L130 22 L170 38 L200 42 L200 100 L0 100 Z" fill="#0F1E4D" opacity="0.85"/>
+            <path d="M40 32 L52 46 L28 46 Z M130 22 L143 38 L117 38 Z M170 38 L180 48 L160 48 Z" fill="#F5EDE0" opacity="0.9"/>
+            <path d="M0 82 L200 82 L200 100 L0 100 Z" fill="#0F1729"/>
           </svg>
           <div class="absolute inset-0 p-5 flex flex-col justify-between">
             <span class="text-xs text-snow/70 tracking-widest uppercase">Río Negro</span>
