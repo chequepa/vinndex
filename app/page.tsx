@@ -5,6 +5,8 @@ import {
   formatArs,
   displayBrand,
   brandSlug,
+  varietalPages,
+  regionPages,
 } from "@/lib/snapshot";
 
 function formatCount(n: number): string {
@@ -19,6 +21,8 @@ export default function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
   const deals = topDeals(6);
+  const varietals = varietalPages().slice(0, 8);
+  const regions = regionPages().slice(0, 6);
   return (
     <>
       {/* NAV */}
@@ -639,6 +643,66 @@ export default function Home() {
               Todavía no sincronizamos marcas suficientes.
             </p>
           )}
+        </div>
+      </section>
+
+      {/* DESCUBRÍ — varietals + regiones */}
+      <section className="py-16 lg:py-24 px-6 bg-snow/50 border-y border-ink/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-2xl mb-10">
+            <p className="text-cobalt text-sm tracking-[0.2em] uppercase font-semibold mb-3">
+              Descubrí
+            </p>
+            <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
+              Elegí por dónde arrancar.
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-10">
+            {varietals.length > 0 && (
+              <div>
+                <h3 className="display text-xl font-semibold text-ink mb-5">
+                  Por varietal
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {varietals.map((v) => (
+                    <a
+                      key={v.slug}
+                      href={`/varietal/${v.slug}`}
+                      className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-cobalt rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
+                    >
+                      {v.name}
+                      <span className="text-xs text-graphite">
+                        {v.groupCount}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {regions.length > 0 && (
+              <div>
+                <h3 className="display text-xl font-semibold text-ink mb-5">
+                  Por región
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {regions.map((r) => (
+                    <a
+                      key={r.slug}
+                      href={`/region/${r.slug}`}
+                      className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-malbec rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
+                    >
+                      {r.name}
+                      <span className="text-xs text-graphite">
+                        {r.groupCount}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
