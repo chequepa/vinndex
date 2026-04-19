@@ -180,16 +180,16 @@ export default function Home() {
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-snow/80 text-sm">
               <span className="opacity-70">Popular hoy:</span>
-              <a href="/buscar?varietal=Malbec" className="chip text-xs !py-1.5">
+              <a href="/varietal/malbec" className="chip text-xs !py-1.5">
                 Malbec
               </a>
-              <a href="/buscar?varietal=Cabernet+Sauvignon" className="chip text-xs !py-1.5">
-                Cabernet Sauvignon
-              </a>
               <a
-                href="/buscar?region=Valle+de+Uco"
+                href="/varietal/cabernet-sauvignon"
                 className="chip text-xs !py-1.5"
               >
+                Cabernet Sauvignon
+              </a>
+              <a href="/region/valle-de-uco" className="chip text-xs !py-1.5">
                 Valle de Uco
               </a>
               <a href="/buscar?tipo=Espumante" className="chip text-xs !py-1.5">
