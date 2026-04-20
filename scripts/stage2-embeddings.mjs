@@ -99,19 +99,72 @@ function embeddingText(g) {
   return parts.join(" — ");
 }
 
-/** Compatible merge: require matching varietal if both have one, and
- * roughly same brand (case-insensitive loose match) if both have one. */
+// Words that signal a distinct sub-SKU in Spanish wine catalogs. If two
+// groups differ in any of these aspects we refuse to merge.
+const COLOR_KEYWORDS = ["tinto", "blanco", "rosado", "rose", "rojo", "red", "white"];
+const SWEETNESS_KEYWORDS = ["extra brut", "demi sec", "demi-sec", "dulce", "nature", "seco", "dry", "sweet", "brut nature"];
+const NUMBERED_EDITION = /\b(\d{1,3})\s*(bot|un|unid|edicion|n\.?)?\b/i;
+
+function hasWord(haystack, word) {
+  return new RegExp(`\\b${word.replace(/[-\s]/g, "[-\\s]?")}\\b`, "i").test(haystack);
+}
+
+/** Compatible merge: require matching varietal + type + color + sweetness
+ * when signals are present. Varietal agreement alone isn't enough because
+ * supermarkets often share naming conventions (e.g. "Pico de Oro Tinto" vs
+ * "Pico de Oro Rosado" differ only in color word). */
 function compatibleToMerge(a, b) {
   const av = new Set((a.varietals ?? []).map((v) => v.toLowerCase()));
   const bv = new Set((b.varietals ?? []).map((v) => v.toLowerCase()));
   if (av.size > 0 && bv.size > 0) {
-    // Require intersection
     let hit = false;
     for (const v of av) if (bv.has(v)) hit = true;
     if (!hit) return false;
   }
-  // If both have format and differ, don't merge (bottle vs caja)
+
+  // Type mismatch (Tinto vs Blanco vs Espumante vs Rosado vs Dulce) — block
+  if (a.type && b.type && a.type !== b.type) return false;
+
+  // Format mismatch (caja vs bottle vs magnum) — block
   if (a.format && b.format && a.format !== b.format) return false;
+
+  // Explicit color / sweetness disagreement even when type is missing
+  const aname = a.canonicalName.toLowerCase();
+  const bname = b.canonicalName.toLowerCase();
+
+  for (const color of COLOR_KEYWORDS) {
+    const aHas = hasWord(aname, color);
+    const bHas = hasWord(bname, color);
+    if (aHas !== bHas) {
+      // Check if either explicitly has a DIFFERENT color keyword
+      const otherColors = COLOR_KEYWORDS.filter((c) => c !== color);
+      const aOther = otherColors.some((c) => hasWord(aname, c));
+      const bOther = otherColors.some((c) => hasWord(bname, c));
+      if ((aHas && bOther) || (bHas && aOther)) return false;
+    }
+  }
+
+  for (const sw of SWEETNESS_KEYWORDS) {
+    const aHas = hasWord(aname, sw);
+    const bHas = hasWord(bname, sw);
+    if (aHas !== bHas) {
+      // If one has explicit sweetness and the other has a DIFFERENT sweetness, block
+      const others = SWEETNESS_KEYWORDS.filter((s) => s !== sw);
+      const aOther = others.some((s) => hasWord(aname, s));
+      const bOther = others.some((s) => hasWord(bname, s));
+      if ((aHas && bOther) || (bHas && aOther)) return false;
+    }
+  }
+
+  // Numbered editions: "Expo 13" vs "Expo 24" should not merge
+  const aNum = aname.match(NUMBERED_EDITION);
+  const bNum = bname.match(NUMBERED_EDITION);
+  if (aNum && bNum && aNum[1] !== bNum[1]) {
+    // Ignore if the number is a common year or 750
+    const skipNums = new Set(["750", "375", "187", "1500"]);
+    if (!skipNums.has(aNum[1]) && !skipNums.has(bNum[1])) return false;
+  }
+
   return true;
 }
 
