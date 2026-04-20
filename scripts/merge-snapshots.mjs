@@ -19,6 +19,7 @@ const INPUTS = [
   { path: "data/snapshot-woocommerce.json", platform: "woocommerce" },
   { path: "data/snapshot-vtex.json", platform: "vtex" },
   { path: "data/snapshot-shopify.json", platform: "shopify" },
+  { path: "data/snapshot-mercadolibre.json", platform: "mercadolibre" },
 ];
 
 function loadIfExists(path) {
