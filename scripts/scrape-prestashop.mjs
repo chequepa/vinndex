@@ -9,7 +9,7 @@
  * Nicely structured — no fighting with messy markup.
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -31,18 +31,12 @@ const MAX_PAGES = 100;
 const PAGE_DELAY_MS = 500;
 const FETCH_TIMEOUT_MS = 20_000;
 
-const STORES = [
-  {
-    slug: "frappe",
-    name: "Frappe",
-    platform: "prestashop",
-    baseUrl: "https://www.frappe.com.ar",
-    categoryPath: "/1574-vinos",
-  },
-  // TODO: Sol y Vino Mendoza (solyvinomendoza.com /12-tintos) usa un
-  // theme PrestaShop custom (clases pro_outer_box / pro_first_box en vez
-  // de h3.product-title). Requiere parser específico. Diferido.
-];
+// TODO: Sol y Vino Mendoza (solyvinomendoza.com /12-tintos) usa un theme
+// PrestaShop custom (clases pro_outer_box / pro_first_box en vez de
+// h3.product-title). Requiere parser específico. Diferido.
+const STORES = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "prestashop");
 
 const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
 function decodeEntities(s) {

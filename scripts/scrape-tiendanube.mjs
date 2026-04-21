@@ -44,8 +44,8 @@ const HEADERS = {
 };
 
 const STORES = JSON.parse(
-  readFileSync(resolve(REPO_ROOT, "data/stores-snapshot-config.json"), "utf8"),
-);
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "tiendanube");
 
 const MAX_PAGES = 80;
 const PAGE_DELAY_MS = 500;

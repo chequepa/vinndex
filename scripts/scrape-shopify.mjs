@@ -6,7 +6,7 @@
  *   GET /products.json?limit=250&page=N   (max 250/page)
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -27,20 +27,9 @@ const MAX_PAGES = 50;
 const PAGE_DELAY_MS = 400;
 const FETCH_TIMEOUT_MS = 20_000;
 
-const STORES = [
-  {
-    slug: "vinos-y-spirits",
-    name: "Vinos y Spirits",
-    platform: "shopify",
-    baseUrl: "https://vinosyspirits.com",
-  },
-  {
-    slug: "aldos-vinoteca",
-    name: "Aldo's Vinoteca",
-    platform: "shopify",
-    baseUrl: "https://tienda.aldosvinoteca.com",
-  },
-];
+const STORES = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "shopify");
 
 async function fetchJson(url) {
   const ctrl = new AbortController();

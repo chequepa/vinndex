@@ -26,21 +26,9 @@ const PAGE_DELAY_MS = 400;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
 
-const STORES = [
-  { slug: "de-barricas", name: "De Barricas", platform: "woocommerce", baseUrl: "https://debarricas.com.ar" },
-  { slug: "mercado-de-vinos", name: "Mercado de Vinos", platform: "woocommerce", baseUrl: "https://www.mercadodevinos.com.ar" },
-  { slug: "don-vino", name: "Don Vino", platform: "woocommerce", baseUrl: "https://www.donvino.com.ar" },
-  { slug: "lo-de-joaquin", name: "Lo de Joaquín", platform: "woocommerce", baseUrl: "https://lodejoaquin.com" },
-  { slug: "la-enoteca", name: "La Enoteca", platform: "woocommerce", baseUrl: "https://laenoteca.com.ar" },
-  { slug: "vinos-directos", name: "Vinos Directos de Bodegas", platform: "woocommerce", baseUrl: "https://vinosdirectosdebodegas.com" },
-  { slug: "la-taverna-club", name: "La Taverna Club", platform: "woocommerce", baseUrl: "https://latavernaclub.com" },
-  { slug: "tienda-de-vinos", name: "Tienda de Vinos", platform: "woocommerce", baseUrl: "https://tiendadevinos.ar" },
-  { slug: "enofilo", name: "Enofilo", platform: "woocommerce", baseUrl: "https://enofilo.com.ar" },
-  { slug: "vino-el-salvador", name: "Vino El Salvador", platform: "woocommerce", baseUrl: "https://vinoelsalvador.com" },
-  { slug: "casa-de-vinos-mendoza", name: "Casa de Vinos Mendoza", platform: "woocommerce", baseUrl: "https://casadevinosmendoza.com.ar" },
-  { slug: "club-vinoteca", name: "Club Vinoteca", platform: "woocommerce", baseUrl: "https://clubvinoteca.com" },
-  { slug: "galo-wines", name: "Galo Wines", platform: "woocommerce", baseUrl: "https://galowines.com.ar" },
-];
+const STORES = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "woocommerce");
 
 async function fetchJson(url) {
   const ctrl = new AbortController();
