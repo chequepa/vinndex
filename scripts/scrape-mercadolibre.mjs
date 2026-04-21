@@ -131,38 +131,15 @@ function normalizeApiItem(it) {
 }
 
 async function scrapeApi() {
-  const token = await refreshAccessToken();
-  if (!token) return null; // no credentials
-  console.log("  ML API mode (user token via refresh_token)");
-  const products = new Map();
-  const errors = [];
-  const limit = 50;
-  let offset = 0;
-  let pages = 0;
-  while (pages < 40) {
-    // ML public API caps offset at 1000 for user tokens
-    if (offset >= 1000) break;
-    let data;
-    try {
-      data = await apiSearch(token, offset, limit);
-    } catch (err) {
-      errors.push(`offset ${offset}: ${err.message}`);
-      break;
-    }
-    const items = data.results ?? [];
-    if (items.length === 0) break;
-    for (const it of items) {
-      const n = normalizeApiItem(it);
-      if (!n.externalUrl || !n.name) continue;
-      if (!products.has(n.externalUrl)) products.set(n.externalUrl, n);
-    }
-    pages++;
-    console.log(`  page ${pages} (offset=${offset}) ... ${items.length} items (${products.size} total)`);
-    if (items.length < limit) break;
-    offset += limit;
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  return { products: [...products.values()], errors, pagesFetched: pages };
+  // NOTE (2026-04-21): probado el flujo 3-legged OAuth + PKCE + user token
+  // y /sites/MLA/search devuelve 403 de todas formas. ML cambi\u00f3 pol\u00edtica
+  // en 2024 y el endpoint de b\u00fasqueda est\u00e1 cerrado para apps de terceros
+  // independiente del scope. El HTML scraper sigue siendo el \u00fanico camino
+  // viable para listados masivos.
+  //
+  // El refresh_token queda guardado por si en el futuro queremos enriquecer
+  // items individuales (/items/{id}) con EAN / reviews / seller rating.
+  return null;
 }
 
 // ========= HTML mode (default / fallback) =========
