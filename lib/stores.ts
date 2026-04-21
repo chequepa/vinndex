@@ -106,8 +106,50 @@ export const STORES: StoreConfig[] = [
     baseUrl: "https://www.enotecaprivada.com",
     catalogPath: "/ar/productos/",
   },
+  {
+    slug: "vinoteca-bodega-901",
+    name: "Vinoteca Bodega 901",
+    platform: "tiendanube",
+    baseUrl: "https://vinotecabodega901.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "vinoteca-vito",
+    name: "Vinoteca Vito",
+    platform: "tiendanube",
+    baseUrl: "https://vinotecavito.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "terruno",
+    name: "Terruño Vinoteca",
+    platform: "tiendanube",
+    baseUrl: "https://terrunovinoteca.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "carlos-barroca",
+    name: "Carlos Barroca",
+    platform: "tiendanube",
+    baseUrl: "https://vinotecaterrarum.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "vinoteca-lanus",
+    name: "La Vinoteca Lanús",
+    platform: "tiendanube",
+    baseUrl: "https://lavinotecalanus.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "vinos-de-rios",
+    name: "Vinos de Ríos",
+    platform: "tiendanube",
+    baseUrl: "https://vinosderios2.mitiendanube.com",
+    catalogPath: "/ar/productos/",
+  },
 
-  // WooCommerce stores (10). catalogPath unused — WC adapter hits Store API.
+  // WooCommerce stores (11). catalogPath unused — WC adapter hits Store API.
   {
     slug: "de-barricas",
     name: "De Barricas",
@@ -176,6 +218,13 @@ export const STORES: StoreConfig[] = [
     name: "Vino El Salvador",
     platform: "woocommerce",
     baseUrl: "https://vinoelsalvador.com",
+    catalogPath: "/",
+  },
+  {
+    slug: "casa-de-vinos-mendoza",
+    name: "Casa de Vinos Mendoza",
+    platform: "woocommerce",
+    baseUrl: "https://casadevinosmendoza.com.ar",
     catalogPath: "/",
   },
 ];
