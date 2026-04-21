@@ -21,7 +21,8 @@
  * Cost: ~$0.02 for 20k groups (text-embedding-3-small, $0.02/M tokens)
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, createReadStream, createWriteStream } from "node:fs";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -189,6 +190,41 @@ function makeUF(n) {
   return { find, union };
 }
 
+// NDJSON (newline-delimited JSON) — one entry per line. Avoids the
+// 512MB string limit of JSON.stringify on ~300MB caches (25k embeddings
+// × 1536 floats). Streaming read keeps memory bounded too.
+async function loadCacheNdjson(path) {
+  const cache = {};
+  if (!existsSync(path)) return cache;
+  const rl = createInterface({
+    input: createReadStream(path),
+    crlfDelay: Infinity,
+  });
+  for await (const line of rl) {
+    if (!line) continue;
+    try {
+      const { k, e } = JSON.parse(line);
+      if (k && Array.isArray(e)) cache[k] = e;
+    } catch {
+      /* skip malformed lines */
+    }
+  }
+  return cache;
+}
+
+async function saveCacheNdjson(path, cache) {
+  const ws = createWriteStream(path);
+  for (const [key, emb] of Object.entries(cache)) {
+    const line = JSON.stringify({ k: key, e: emb }) + "\n";
+    if (!ws.write(line)) {
+      await new Promise((resolve) => ws.once("drain", resolve));
+    }
+  }
+  await new Promise((resolve, reject) => {
+    ws.end((err) => (err ? reject(err) : resolve()));
+  });
+}
+
 async function main() {
   const inPath = resolve(REPO_ROOT, "data/snapshot.json");
   const snap = JSON.parse(readFileSync(inPath, "utf8"));
@@ -201,9 +237,7 @@ async function main() {
   // Load cache (key = embeddingText). Most canonicalNames are stable
   // day-to-day — only new groups need a fresh embedding. Cache cuts the
   // OpenAI calls from ~20k/run to typically <200/run after the first.
-  const cache = existsSync(CACHE_PATH)
-    ? JSON.parse(readFileSync(CACHE_PATH, "utf8"))
-    : {};
+  const cache = await loadCacheNdjson(CACHE_PATH);
   const cacheHits = { hit: 0, miss: 0 };
 
   const embeddings = new Array(groups.length);
@@ -256,7 +290,7 @@ async function main() {
     console.log(
       `\n  OpenAI calls done in ${Math.round((Date.now() - t0) / 1000)}s`,
     );
-    writeFileSync(CACHE_PATH, JSON.stringify(cache));
+    await saveCacheNdjson(CACHE_PATH, cache);
     console.log(`  cache saved (${Object.keys(cache).length} entries)`);
   } else {
     console.log("  100% cache hit — no OpenAI calls needed");
