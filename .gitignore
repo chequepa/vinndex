@@ -40,6 +40,9 @@ next-env.d.ts
 # Stage 2 embeddings cache (restored via actions/cache in CI)
 /data/embeddings-cache.json
 
+# Stage 3 LLM adjudicator cache (restored via actions/cache in CI)
+/data/stage3-cache.json
+
 # Env files (secrets!)
 .env
 .env.local

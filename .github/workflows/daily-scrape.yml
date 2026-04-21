@@ -88,6 +88,25 @@ jobs:
           fi
         continue-on-error: true
 
+      - name: Restore Stage 3 LLM cache
+        uses: actions/cache@v4
+        with:
+          path: data/stage3-cache.json
+          key: stage3-cache-v1-${{ github.run_id }}
+          restore-keys: |
+            stage3-cache-v1-
+
+      - name: Stage 3 LLM adjudicator (if OPENAI_API_KEY set)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            node scripts/stage3-llm-adjudicator.mjs
+          else
+            echo "Skipping Stage 3 — OPENAI_API_KEY not set"
+          fi
+        continue-on-error: true
+
       - name: Stats
         run: |
           node -e "
