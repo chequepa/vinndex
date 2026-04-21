@@ -148,8 +148,29 @@ export const STORES: StoreConfig[] = [
     baseUrl: "https://vinosderios2.mitiendanube.com",
     catalogPath: "/ar/productos/",
   },
+  {
+    slug: "santa-barrica",
+    name: "Santa Barrica",
+    platform: "tiendanube",
+    baseUrl: "https://www.santabarrica.com.ar",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "tinte-vinos",
+    name: "Tinte Vinos",
+    platform: "tiendanube",
+    baseUrl: "https://www.tintevinos.com.ar",
+    catalogPath: "/ar/productos/",
+  },
+  {
+    slug: "tienda-vinos",
+    name: "TiendaVinos",
+    platform: "tiendanube",
+    baseUrl: "https://www.tiendavinos.com.ar",
+    catalogPath: "/ar/productos/",
+  },
 
-  // WooCommerce stores (11). catalogPath unused — WC adapter hits Store API.
+  // WooCommerce stores (13). catalogPath unused — WC adapter hits Store API.
   {
     slug: "de-barricas",
     name: "De Barricas",
@@ -225,6 +246,27 @@ export const STORES: StoreConfig[] = [
     name: "Casa de Vinos Mendoza",
     platform: "woocommerce",
     baseUrl: "https://casadevinosmendoza.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "club-vinoteca",
+    name: "Club Vinoteca",
+    platform: "woocommerce",
+    baseUrl: "https://clubvinoteca.com",
+    catalogPath: "/",
+  },
+  {
+    slug: "aldos-vinoteca",
+    name: "Aldo's Vinoteca",
+    platform: "shopify",
+    baseUrl: "https://tienda.aldosvinoteca.com",
+    catalogPath: "/products.json",
+  },
+  {
+    slug: "galo-wines",
+    name: "Galo Wines",
+    platform: "woocommerce",
+    baseUrl: "https://galowines.com.ar",
     catalogPath: "/",
   },
 ];

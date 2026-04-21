@@ -38,6 +38,8 @@ const STORES = [
   { slug: "enofilo", name: "Enofilo", platform: "woocommerce", baseUrl: "https://enofilo.com.ar" },
   { slug: "vino-el-salvador", name: "Vino El Salvador", platform: "woocommerce", baseUrl: "https://vinoelsalvador.com" },
   { slug: "casa-de-vinos-mendoza", name: "Casa de Vinos Mendoza", platform: "woocommerce", baseUrl: "https://casadevinosmendoza.com.ar" },
+  { slug: "club-vinoteca", name: "Club Vinoteca", platform: "woocommerce", baseUrl: "https://clubvinoteca.com" },
+  { slug: "galo-wines", name: "Galo Wines", platform: "woocommerce", baseUrl: "https://galowines.com.ar" },
 ];
 
 async function fetchJson(url) {

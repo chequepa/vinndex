@@ -34,6 +34,12 @@ const STORES = [
     platform: "shopify",
     baseUrl: "https://vinosyspirits.com",
   },
+  {
+    slug: "aldos-vinoteca",
+    name: "Aldo's Vinoteca",
+    platform: "shopify",
+    baseUrl: "https://tienda.aldosvinoteca.com",
+  },
 ];
 
 async function fetchJson(url) {
