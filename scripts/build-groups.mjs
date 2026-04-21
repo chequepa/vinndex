@@ -306,6 +306,44 @@ function main() {
   }
   const products = snap.products ?? [];
 
+  // ============ STAGE 0: EAN grouping ============
+  // Barcode (GTIN/EAN) is a globally unique product identifier. When two
+  // stores list the same EAN, it's the same wine — zero false positives.
+  // We pre-cluster by EAN, then canonicalize + merge-by-key picks up the
+  // remaining by name tokens.
+  //
+  // EAN extraction: externalSku that's 12-14 digits. Strip variants like
+  // "7,80E+12" (Excel export scientific notation) which we can't recover.
+  function extractEan(p) {
+    const sku = (p.externalSku ?? "").toString().trim();
+    if (!sku) return null;
+    // Drop non-EAN scientific notation and similar garbage
+    if (/[eE]\+?\d/.test(sku)) return null;
+    // Exact 12-14 digit barcode
+    const m = sku.match(/^\s*(\d{12,14})\s*$/);
+    return m ? m[1] : null;
+  }
+
+  // Assign each product to an EAN cluster (if it has one)
+  const eanToProducts = new Map();
+  const productEan = new Map();
+  for (const p of products) {
+    const ean = extractEan(p);
+    if (!ean) continue;
+    productEan.set(p, ean);
+    const arr = eanToProducts.get(ean) ?? [];
+    arr.push(p);
+    eanToProducts.set(ean, arr);
+  }
+  const multiStoreEans = [...eanToProducts.values()].filter((items) => {
+    const stores = new Set(items.map((i) => i.storeSlug));
+    return stores.size >= 2;
+  }).length;
+  console.log(
+    `  Stage 0: ${eanToProducts.size} EANs distintos, ${multiStoreEans} compartidos por 2+ tiendas`,
+  );
+
+  // ============ STAGE 1: canonical-key grouping ============
   const byKey = new Map();
   for (const p of products) {
     const k = canonicalize(p.name, p.brand);
@@ -315,6 +353,49 @@ function main() {
     if (existing) existing.items.push(p);
     else byKey.set(ks, { key: k, items: [p] });
   }
+
+  // ============ STAGE 0 + 1 merge: union EAN clusters ============
+  // After Stage 1 we have key-clusters. Now we also union groups that
+  // share an EAN even if their canonical keys differ.
+  // Build productId -> clusterKey map
+  const productToClusterKey = new Map();
+  for (const [clusterKey, { items }] of byKey.entries()) {
+    for (const item of items) productToClusterKey.set(item, clusterKey);
+  }
+  // For each multi-store EAN, merge all products' cluster keys into one
+  let eanMerges = 0;
+  for (const [ean, items] of eanToProducts.entries()) {
+    if (items.length < 2) continue;
+    // Pick target cluster: the one with the most items (most likely the
+    // canonical group)
+    const clusterKeys = items
+      .map((i) => productToClusterKey.get(i))
+      .filter(Boolean);
+    if (clusterKeys.length === 0) continue;
+    const clusterSize = new Map();
+    for (const ck of clusterKeys) {
+      clusterSize.set(ck, (clusterSize.get(ck) ?? 0) + 1);
+    }
+    // Pick the cluster with the most products
+    const target = [...clusterSize.entries()].sort(
+      (a, b) => b[1] - a[1],
+    )[0][0];
+    // Merge other clusters into target
+    for (const ck of new Set(clusterKeys)) {
+      if (ck === target) continue;
+      const src = byKey.get(ck);
+      const tgt = byKey.get(target);
+      if (!src || !tgt) continue;
+      // Move items
+      for (const item of src.items) {
+        tgt.items.push(item);
+        productToClusterKey.set(item, target);
+      }
+      byKey.delete(ck);
+      eanMerges++;
+    }
+  }
+  if (eanMerges > 0) console.log(`  Stage 0 merges: ${eanMerges}`);
 
   // Stage 1b: subset merge. Single-token or short groups whose tokens are a
   // strict subset of a larger multi-item group likely belong to that group
