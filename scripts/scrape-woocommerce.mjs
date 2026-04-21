@@ -35,6 +35,8 @@ const STORES = [
   { slug: "vinos-directos", name: "Vinos Directos de Bodegas", platform: "woocommerce", baseUrl: "https://vinosdirectosdebodegas.com" },
   { slug: "la-taverna-club", name: "La Taverna Club", platform: "woocommerce", baseUrl: "https://latavernaclub.com" },
   { slug: "tienda-de-vinos", name: "Tienda de Vinos", platform: "woocommerce", baseUrl: "https://tiendadevinos.ar" },
+  { slug: "enofilo", name: "Enofilo", platform: "woocommerce", baseUrl: "https://enofilo.com.ar" },
+  { slug: "vino-el-salvador", name: "Vino El Salvador", platform: "woocommerce", baseUrl: "https://vinoelsalvador.com" },
 ];
 
 async function fetchJson(url) {

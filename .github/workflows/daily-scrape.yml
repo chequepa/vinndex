@@ -46,6 +46,14 @@ jobs:
         run: node scripts/scrape-mercadolibre.mjs
         continue-on-error: true
 
+      - name: Enrich ML catalog (brand, varietal, EAN)
+        env:
+          ML_APP_ID: ${{ secrets.ML_APP_ID }}
+          ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
+          ML_REFRESH_TOKEN: ${{ secrets.ML_REFRESH_TOKEN }}
+        run: node scripts/enrich-ml-catalog.mjs
+        continue-on-error: true
+
       - name: Scrape Magento (Ligier)
         run: node scripts/scrape-magento.mjs
         continue-on-error: true
