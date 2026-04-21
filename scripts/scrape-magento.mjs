@@ -9,7 +9,7 @@
  * Paginación: ?p=N (24 productos/page). Rewrite URL: /catalogsearch/result/?q=vino → /search/vino
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -34,15 +34,9 @@ const MAX_PAGES = 150;
 const PAGE_DELAY_MS = 600;
 const FETCH_TIMEOUT_MS = 25_000;
 
-const STORES = [
-  {
-    slug: "ligier",
-    name: "Vinoteca Ligier",
-    platform: "magento",
-    baseUrl: "https://vinotecaligier.com",
-    searchPath: "/search/vino",
-  },
-];
+const STORES = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "magento");
 
 const NAMED_ENTITIES = {
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",

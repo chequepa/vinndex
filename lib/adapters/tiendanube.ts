@@ -149,7 +149,10 @@ export async function scrapeTiendanube(
   const maxPages = Math.min(options.maxPages ?? MAX_PAGES, MAX_PAGES);
 
   const base = config.baseUrl.replace(/\/+$/, "");
-  const catalog = config.catalogPath.replace(/^\/+|\/+$/g, "");
+  const catalog = (config.catalogPath ?? "/ar/productos/").replace(
+    /^\/+|\/+$/g,
+    "",
+  );
 
   let pagesFetched = 0;
   let lastPageAddedCount = 1;

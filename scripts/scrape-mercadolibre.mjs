@@ -153,12 +153,9 @@ function decodeEntities(s) {
     .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
 }
 
-const STORE = {
-  slug: "mercado-libre",
-  name: "Mercado Libre",
-  platform: "mercadolibre",
-  baseUrl: "https://listado.mercadolibre.com.ar",
-};
+const STORE = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).find((s) => s.platform === "mercadolibre");
 
 async function fetchWithTimeout(url) {
   const ctrl = new AbortController();

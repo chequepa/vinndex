@@ -15,7 +15,7 @@
  * (copas, decanters, sacacorchos) which we don't want.
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -37,59 +37,12 @@ const BATCH_DELAY_MS = 300;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
 
-/**
- * Category paths per store. VTEX requires the FULL category path with
- * parent IDs (e.g. /2/45/215/ not just 215).  For the 3 Cencosud stores
- * (Jumbo/Disco/Vea) the taxonomy is shared.
- *
- * When a store has known category paths we iterate them (bypass the 2500
- * offset cap per subquery). Falls back to ft=vino text search otherwise.
- */
-const STORES = [
-  {
-    slug: "jumbo",
-    name: "Jumbo",
-    platform: "vtex",
-    baseUrl: "https://www.jumbo.com.ar",
-    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
-  },
-  {
-    slug: "disco",
-    name: "Disco",
-    platform: "vtex",
-    baseUrl: "https://www.disco.com.ar",
-    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
-  },
-  {
-    slug: "vea",
-    name: "Vea",
-    platform: "vtex",
-    baseUrl: "https://www.vea.com.ar",
-    categoryPaths: ["/2/45/215/", "/2/45/216/", "/2/45/217/", "/2/45/218/", "/2/39/"],
-  },
-  {
-    slug: "carrefour",
-    name: "Carrefour",
-    platform: "vtex",
-    baseUrl: "https://www.carrefour.com.ar",
-    // Carrefour's taxonomy is different; fall back to ft search
-    categoryPaths: null,
-  },
-  {
-    slug: "dia",
-    name: "Día",
-    platform: "vtex",
-    baseUrl: "https://diaonline.supermercadosdia.com.ar",
-    categoryPaths: null,
-  },
-  {
-    slug: "gobar",
-    name: "Gobar",
-    platform: "vtex",
-    baseUrl: "https://www.gobar.com.ar",
-    categoryPaths: ["/10/17/", "/10/18/", "/10/19/", "/11/"],
-  },
-];
+// VTEX stores con categoryPaths opcional por tienda. Los Cencosud
+// (jumbo/disco/vea) comparten taxonomy; carrefour y dia caen al ft=vino
+// fallback (categoryPaths: null en data/stores.json).
+const STORES = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
+).filter((s) => s.platform === "vtex");
 
 async function fetchJson(url) {
   const ctrl = new AbortController();

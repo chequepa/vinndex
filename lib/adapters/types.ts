@@ -25,10 +25,27 @@ export type ScrapeResult = {
   errors: string[];
 };
 
+export type StorePlatform =
+  | "tiendanube"
+  | "woocommerce"
+  | "vtex"
+  | "shopify"
+  | "bigcommerce"
+  | "magento"
+  | "prestashop"
+  | "mercadolibre";
+
 export type StoreConfig = {
   slug: string;
   name: string;
-  platform: "tiendanube" | "woocommerce" | "vtex" | "shopify" | "bigcommerce";
+  platform: StorePlatform;
   baseUrl: string;
-  catalogPath: string;
+  /** Tiendanube (/ar/productos/), Shopify (/products.json), WC placeholder. */
+  catalogPath?: string;
+  /** PrestaShop (/1574-vinos). */
+  categoryPath?: string;
+  /** VTEX: array de category paths; null para fallback ft=vino. */
+  categoryPaths?: string[] | null;
+  /** Magento (/search/vino). */
+  searchPath?: string;
 };
