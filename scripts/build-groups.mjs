@@ -445,13 +445,14 @@ function main() {
     usedSlugs.set(baseSlug, count + 1);
 
     // Stock-aware summary: min/max/storeCount/offerCount reflect only
-    // in-stock offers so rankings and "ahorrá X%" don't surface phantom
-    // deals from supermarkets that keep dead listings. See Zuccardi Q
-    // Cabernet Franc (Cencosud $7.805 out-of-stock pulling avg 70% off).
+    // in-stock offers. Si NO hay ninguna in-stock, queda en null/0 y el
+    // frontend muestra "Actualmente sin stock" en vez de precio (opción 3
+    // acordada con Sebi, 2026-04-21). Los offers crudos siguen en el
+    // detalle para que la tabla muestre las tiendas que lo tienen (con
+    // badge "sin stock") pero sin sugerir un precio vigente.
     const inStockItems = items.filter((i) => i.inStock);
-    const summaryItems = inStockItems.length > 0 ? inStockItems : items;
-    const uniqueStores = new Set(summaryItems.map((i) => i.storeSlug));
-    const prices = summaryItems
+    const uniqueStores = new Set(inStockItems.map((i) => i.storeSlug));
+    const prices = inStockItems
       .map((i) => i.priceArs)
       .filter((p) => typeof p === "number" && p > 0);
 
@@ -514,7 +515,7 @@ function main() {
       format: key.format,
       imageUrl,
       storeCount: uniqueStores.size,
-      offerCount: summaryItems.length,
+      offerCount: inStockItems.length,
       totalStoreCount: new Set(items.map((i) => i.storeSlug)).size,
       totalOfferCount: items.length,
       inStockOfferCount: inStockItems.length,
