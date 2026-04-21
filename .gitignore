@@ -37,6 +37,9 @@ next-env.d.ts
 /data/snapshot-magento.json
 /data/snapshot-prestashop.json
 
+# Stage 2 embeddings cache (restored via actions/cache in CI)
+/data/embeddings-cache.json
+
 # Env files (secrets!)
 .env
 .env.local

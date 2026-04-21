@@ -21,7 +21,7 @@
  * Cost: ~$0.02 for 20k groups (text-embedding-3-small, $0.02/M tokens)
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -60,6 +60,8 @@ const MODEL = "text-embedding-3-small";
 const BATCH_SIZE = 500;
 const SIM_THRESHOLD = 0.93; // conservative — false merges are worse than missed merges
 const MAX_MERGE_PAIRS_PER_GROUP = 5;
+const CACHE_PATH = resolve(REPO_ROOT, "data/embeddings-cache.json");
+const EMBED_CONCURRENCY = 4;
 
 async function embedBatch(texts) {
   const res = await fetch("https://api.openai.com/v1/embeddings", {
@@ -196,20 +198,69 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(
-    `Computing embeddings for ${groups.length} groups (batches of ${BATCH_SIZE})...`,
-  );
+  // Load cache (key = embeddingText). Most canonicalNames are stable
+  // day-to-day — only new groups need a fresh embedding. Cache cuts the
+  // OpenAI calls from ~20k/run to typically <200/run after the first.
+  const cache = existsSync(CACHE_PATH)
+    ? JSON.parse(readFileSync(CACHE_PATH, "utf8"))
+    : {};
+  const cacheHits = { hit: 0, miss: 0 };
+
   const embeddings = new Array(groups.length);
-  const t0 = Date.now();
-  for (let i = 0; i < groups.length; i += BATCH_SIZE) {
-    const batch = groups.slice(i, i + BATCH_SIZE).map(embeddingText);
-    const embs = await embedBatch(batch);
-    for (let j = 0; j < embs.length; j++) embeddings[i + j] = embs[j];
-    process.stdout.write(
-      `\r  ${Math.min(i + BATCH_SIZE, groups.length)}/${groups.length}`,
-    );
+  const missIdx = [];
+  const missText = [];
+  for (let i = 0; i < groups.length; i++) {
+    const text = embeddingText(groups[i]);
+    const cached = cache[text];
+    if (cached) {
+      embeddings[i] = cached;
+      cacheHits.hit++;
+    } else {
+      missIdx.push(i);
+      missText.push(text);
+      cacheHits.miss++;
+    }
   }
-  console.log(`\n  embeddings done in ${Math.round((Date.now() - t0) / 1000)}s`);
+  console.log(
+    `Cache: ${cacheHits.hit}/${groups.length} hits, ${cacheHits.miss} misses`,
+  );
+
+  if (missText.length > 0) {
+    console.log(
+      `Embedding ${missText.length} new groups (batches of ${BATCH_SIZE}, concurrency ${EMBED_CONCURRENCY})...`,
+    );
+    const t0 = Date.now();
+    const batches = [];
+    for (let i = 0; i < missText.length; i += BATCH_SIZE) {
+      batches.push({ start: i, texts: missText.slice(i, i + BATCH_SIZE) });
+    }
+    let done = 0;
+    async function worker() {
+      while (batches.length > 0) {
+        const job = batches.shift();
+        if (!job) break;
+        const embs = await embedBatch(job.texts);
+        for (let j = 0; j < embs.length; j++) {
+          const origIdx = missIdx[job.start + j];
+          const text = missText[job.start + j];
+          embeddings[origIdx] = embs[j];
+          cache[text] = embs[j];
+        }
+        done += embs.length;
+        process.stdout.write(`\r  ${done}/${missText.length}`);
+      }
+    }
+    await Promise.all(
+      Array.from({ length: EMBED_CONCURRENCY }, () => worker()),
+    );
+    console.log(
+      `\n  OpenAI calls done in ${Math.round((Date.now() - t0) / 1000)}s`,
+    );
+    writeFileSync(CACHE_PATH, JSON.stringify(cache));
+    console.log(`  cache saved (${Object.keys(cache).length} entries)`);
+  } else {
+    console.log("  100% cache hit — no OpenAI calls needed");
+  }
 
   // Find candidate merges by brute force (cubic would be too slow for 20k,
   // but linear-scan per-group against all others is O(n²) ≈ 400M ops —
