@@ -164,6 +164,20 @@ export const STORES: StoreConfig[] = [
     baseUrl: "https://tiendadevinos.ar",
     catalogPath: "/",
   },
+  {
+    slug: "enofilo",
+    name: "Enofilo",
+    platform: "woocommerce",
+    baseUrl: "https://enofilo.com.ar",
+    catalogPath: "/",
+  },
+  {
+    slug: "vino-el-salvador",
+    name: "Vino El Salvador",
+    platform: "woocommerce",
+    baseUrl: "https://vinoelsalvador.com",
+    catalogPath: "/",
+  },
 ];
 
 export function getStore(slug: string): StoreConfig | undefined {
