@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 
 /** Railway proxies to localhost internally; use forwarded headers to build
  * the public origin. Must match the URI registered in ML app settings. */
@@ -58,6 +58,16 @@ export async function GET(req: Request) {
 
   const redirectUri = `${await publicOrigin(req)}/api/auth/mercadolibre/callback`;
 
+  // PKCE: recupera el code_verifier que /login dejó en cookie
+  const cookieStore = await cookies();
+  const codeVerifier = cookieStore.get("ml_pkce_verifier")?.value;
+  if (!codeVerifier) {
+    return html(
+      `<h1>Sesión PKCE expirada</h1><p>No encontré el <code>code_verifier</code> en cookies (puede haber expirado si tardaste más de 10 min, o el dominio cambió entre <code>/login</code> y este callback).</p><a href="/api/auth/mercadolibre/login">Empezar de nuevo</a>`,
+      400,
+    );
+  }
+
   let tokenRes: Response;
   try {
     tokenRes = await fetch("https://api.mercadolibre.com/oauth/token", {
@@ -69,6 +79,7 @@ export async function GET(req: Request) {
         client_secret: secret,
         code,
         redirect_uri: redirectUri,
+        code_verifier: codeVerifier,
       }),
     });
   } catch (err) {
