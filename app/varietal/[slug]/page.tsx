@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findFacetPage, formatArs } from "@/lib/snapshot";
+import { SearchInput } from "@/components/SearchInput";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -75,9 +76,7 @@ function FacetLayout({
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <input
-                type="text"
-                name="q"
+              <SearchInput
                 placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
               />

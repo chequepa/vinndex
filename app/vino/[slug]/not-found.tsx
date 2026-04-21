@@ -1,4 +1,5 @@
 import { topBrands, snapshotStats, brandSlug } from "@/lib/snapshot";
+import { SearchInput } from "@/components/SearchInput";
 
 export default function NotFound() {
   const brands = topBrands(8);
@@ -40,9 +41,7 @@ export default function NotFound() {
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <input
-                type="text"
-                name="q"
+              <SearchInput
                 placeholder="Buscar otro vino..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
                 autoFocus
