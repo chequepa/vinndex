@@ -37,6 +37,7 @@ const STORES = [
   { slug: "tienda-de-vinos", name: "Tienda de Vinos", platform: "woocommerce", baseUrl: "https://tiendadevinos.ar" },
   { slug: "enofilo", name: "Enofilo", platform: "woocommerce", baseUrl: "https://enofilo.com.ar" },
   { slug: "vino-el-salvador", name: "Vino El Salvador", platform: "woocommerce", baseUrl: "https://vinoelsalvador.com" },
+  { slug: "casa-de-vinos-mendoza", name: "Casa de Vinos Mendoza", platform: "woocommerce", baseUrl: "https://casadevinosmendoza.com.ar" },
 ];
 
 async function fetchJson(url) {

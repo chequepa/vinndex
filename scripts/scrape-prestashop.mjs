@@ -39,6 +39,9 @@ const STORES = [
     baseUrl: "https://www.frappe.com.ar",
     categoryPath: "/1574-vinos",
   },
+  // TODO: Sol y Vino Mendoza (solyvinomendoza.com /12-tintos) usa un
+  // theme PrestaShop custom (clases pro_outer_box / pro_first_box en vez
+  // de h3.product-title). Requiere parser específico. Diferido.
 ];
 
 const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
