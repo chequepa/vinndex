@@ -160,16 +160,22 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           </form>
 
-          <div className="flex items-center gap-2 text-sm shrink-0">
-            <span className="text-graphite hidden lg:inline">Enviando a</span>
-            <select
-              defaultValue="CABA"
-              className="bg-snow border border-ink/10 rounded-full px-3 py-2 font-medium text-ink cursor-wine"
+          <div className="hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow border border-ink/10 rounded-full px-3 py-2 font-medium text-ink">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-graphite"
             >
-              <option>CABA</option>
-              <option>GBA</option>
-              <option>Resto</option>
-            </select>
+              <path d="M12 2a10 10 0 1 0 10 10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Precios en CABA</span>
           </div>
         </div>
       </header>

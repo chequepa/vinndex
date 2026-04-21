@@ -52,6 +52,15 @@ const PAGE_DELAY_MS = 500;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
 
+const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+function decodeEntities(s) {
+  if (!s || typeof s !== "string") return s;
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
 function isJsonLdProduct(obj) {
   if (!obj || typeof obj !== "object") return false;
   const t = obj["@type"];
@@ -108,13 +117,13 @@ function normalize(ld, storeSlug) {
     storeSlug,
     externalUrl: url,
     externalSku: ld.sku ?? null,
-    name,
-    brand: brand ?? null,
+    name: decodeEntities(name),
+    brand: brand ? decodeEntities(brand) : null,
     imageUrl: image ?? null,
     priceArs,
     currency: ld.offers?.priceCurrency ?? "ARS",
     inStock,
-    description: ld.description ?? null,
+    description: ld.description ? decodeEntities(ld.description) : null,
   };
 }
 

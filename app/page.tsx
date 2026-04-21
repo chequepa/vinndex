@@ -54,10 +54,16 @@ export default function Home() {
               Bodegas
             </a>
           </div>
-          <div className="flex items-center gap-2 text-snow text-sm">
+          {/*
+            "Enviando a" estático por ahora — la filtración por zona de envío
+            llega cuando tengamos cálculo de costo real por tienda. Era un
+            <select> pero (1) no hacía nada (2) su dropdown nativo se superponía
+            mal sobre el hero. Lo dejamos como indicador visual.
+          */}
+          <div className="hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium">
             <svg
-              width="16"
-              height="16"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -68,15 +74,7 @@ export default function Home() {
               <path d="M12 2a10 10 0 1 0 10 10" />
               <circle cx="12" cy="12" r="3" />
             </svg>
-            <span className="hidden sm:inline">Enviando a</span>
-            <select
-              className="bg-white/15 border border-white/25 backdrop-blur rounded-full px-3 py-1.5 text-snow text-sm font-medium"
-              defaultValue="CABA"
-            >
-              <option>CABA</option>
-              <option>GBA</option>
-              <option>Resto del país</option>
-            </select>
+            <span>Precios en CABA</span>
           </div>
         </div>
       </nav>
