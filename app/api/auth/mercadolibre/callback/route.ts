@@ -1,4 +1,18 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+
+/** Railway proxies to localhost internally; use forwarded headers to build
+ * the public origin. Must match the URI registered in ML app settings. */
+async function publicOrigin(req: Request): Promise<string> {
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const host =
+    h.get("x-forwarded-host") ?? h.get("host") ?? new URL(req.url).host;
+  if (!host || host.startsWith("localhost")) {
+    return "https://vinndex.com.ar";
+  }
+  return `${proto}://${host}`;
+}
 
 /**
  * Mercado Libre OAuth callback.
@@ -42,7 +56,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const redirectUri = `${url.origin}/api/auth/mercadolibre/callback`;
+  const redirectUri = `${await publicOrigin(req)}/api/auth/mercadolibre/callback`;
 
   let tokenRes: Response;
   try {
