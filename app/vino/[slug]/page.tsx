@@ -370,7 +370,8 @@ export default async function Vino({ params }: Params) {
                 )}
               </p>
 
-              <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 mb-10">
+              <div className="mb-10">
+                <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5">
                 <div>
                   <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
                     Desde
@@ -405,6 +406,7 @@ export default async function Vino({ params }: Params) {
                       </div>
                     </>
                   )}
+                </div>
               </div>
 
               <a
