@@ -21,7 +21,8 @@
  *     embeddings cache)
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, createReadStream } from "node:fs";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -237,7 +238,22 @@ async function main() {
     );
     process.exit(1);
   }
-  const embCache = JSON.parse(readFileSync(EMBED_CACHE_PATH, "utf8"));
+  // NDJSON format (one entry per line) — avoids JSON.stringify 512MB
+  // string limit on large caches. Same format Stage 2 writes.
+  const embCache = {};
+  const rl = createInterface({
+    input: createReadStream(EMBED_CACHE_PATH),
+    crlfDelay: Infinity,
+  });
+  for await (const line of rl) {
+    if (!line) continue;
+    try {
+      const { k, e } = JSON.parse(line);
+      if (k && Array.isArray(e)) embCache[k] = e;
+    } catch {
+      /* skip */
+    }
+  }
 
   console.log(`Stage 3 on ${groups.length} groups, threshold [${SIM_MIN}, ${SIM_MAX})`);
 
