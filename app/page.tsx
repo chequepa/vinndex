@@ -1,3 +1,4 @@
+import { SearchInput } from "@/components/SearchInput";
 import {
   snapshotStats,
   topBrands,
@@ -166,9 +167,7 @@ export default function Home() {
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <input
-                type="text"
-                name="q"
+              <SearchInput
                 placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                 className="w-full bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
               />
@@ -726,9 +725,7 @@ export default function Home() {
                 action="/buscar"
                 className="flex flex-col sm:flex-row gap-3 max-w-xl"
               >
-                <input
-                  type="text"
-                  name="q"
+                <SearchInput
                   placeholder="Ej: Luigi Bosca Reserva Malbec"
                   className="flex-1 bg-snow/15 backdrop-blur border border-snow/25 rounded-full px-6 py-3.5 text-snow placeholder:text-snow/60 outline-none focus:border-snow/60"
                 />

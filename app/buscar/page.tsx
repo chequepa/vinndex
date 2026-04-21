@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SearchInput } from "@/components/SearchInput";
 import {
   searchGroups,
   formatArs,
@@ -147,9 +148,7 @@ export default async function Buscar({ searchParams }: Params) {
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <input
-                type="text"
-                name="q"
+              <SearchInput
                 defaultValue={query}
                 placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"

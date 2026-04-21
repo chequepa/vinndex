@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SearchInput } from "@/components/SearchInput";
 import {
   findGroup,
   formatArs,
@@ -247,9 +248,7 @@ export default async function Vino({ params }: Params) {
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <input
-                type="text"
-                name="q"
+              <SearchInput
                 placeholder="Buscar otro vino..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
               />
@@ -460,7 +459,7 @@ export default async function Vino({ params }: Params) {
               const rowClasses = isBest
                 ? "price-row best grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5"
                 : outOfStock
-                  ? "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5 opacity-60"
+                  ? "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5 opacity-50 grayscale"
                   : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
               const ctaClasses = isBest
                 ? "cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
