@@ -130,7 +130,12 @@ export default async function Vino({ params }: Params) {
   if (!group) notFound();
 
   const offers = group.offers;
-  const bestOffer = offers[0];
+  // build-groups.mjs ya ordena in-stock primero, así que offers[0] es el
+  // mejor precio con stock real. Si todas están sin stock (raro pero
+  // posible con catálogos abandonados), fallback al primero de la lista.
+  const inStockOffers = offers.filter((o) => o.inStock);
+  const allOutOfStock = inStockOffers.length === 0;
+  const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
 
   // Compute distinct vintages across offers in this group
   const vintageSet = new Set<number>();
@@ -432,9 +437,11 @@ export default async function Vino({ params }: Params) {
                 Comparación de precios
               </h2>
               <p className="text-graphite text-sm mt-1">
-                Ordenado de menor a mayor · {offers.length} oferta
-                {offers.length === 1 ? "" : "s"} detectada
-                {offers.length === 1 ? "" : "s"}
+                Ordenado de menor a mayor ·{" "}
+                {inStockOffers.length} con stock
+                {offers.length > inStockOffers.length
+                  ? ` · ${offers.length - inStockOffers.length} sin stock`
+                  : ""}
               </p>
             </div>
           </div>
@@ -448,13 +455,18 @@ export default async function Vino({ params }: Params) {
             </div>
 
             {offers.map((offer, i) => {
-              const isBest = i === 0;
+              const isBest = offer === bestOffer && offer.inStock;
+              const outOfStock = !offer.inStock;
               const rowClasses = isBest
                 ? "price-row best grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5"
-                : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
+                : outOfStock
+                  ? "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5 opacity-60"
+                  : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
               const ctaClasses = isBest
                 ? "cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
-                : "cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full";
+                : outOfStock
+                  ? "cursor-wine border border-ink/15 text-graphite font-medium px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full hover:border-ink/30"
+                  : "cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full";
               const diffPct =
                 offer.priceArs != null &&
                 bestOffer.priceArs != null &&
@@ -483,6 +495,11 @@ export default async function Vino({ params }: Params) {
                         {isBest && (
                           <span className="text-[10px] bg-mustard/25 text-mustard px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
                             ★ Mejor precio
+                          </span>
+                        )}
+                        {outOfStock && (
+                          <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
+                            Sin stock
                           </span>
                         )}
                         {(() => {
@@ -531,7 +548,7 @@ export default async function Vino({ params }: Params) {
                     rel="noopener noreferrer nofollow"
                     className={ctaClasses}
                   >
-                    Visitar <ExternalIcon />
+                    {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
                   </a>
                 </div>
               );

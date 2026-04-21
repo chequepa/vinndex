@@ -437,8 +437,6 @@ function main() {
   const groups = [];
 
   for (const { key, items } of byKey.values()) {
-    const uniqueStores = new Set(items.map((i) => i.storeSlug));
-
     let slug = groupSlug(key);
     if (!slug) slug = "wine";
     const baseSlug = slug;
@@ -446,7 +444,14 @@ function main() {
     if (count > 0) slug = `${baseSlug}-${count + 1}`;
     usedSlugs.set(baseSlug, count + 1);
 
-    const prices = items
+    // Stock-aware summary: min/max/storeCount/offerCount reflect only
+    // in-stock offers so rankings and "ahorrá X%" don't surface phantom
+    // deals from supermarkets that keep dead listings. See Zuccardi Q
+    // Cabernet Franc (Cencosud $7.805 out-of-stock pulling avg 70% off).
+    const inStockItems = items.filter((i) => i.inStock);
+    const summaryItems = inStockItems.length > 0 ? inStockItems : items;
+    const uniqueStores = new Set(summaryItems.map((i) => i.storeSlug));
+    const prices = summaryItems
       .map((i) => i.priceArs)
       .filter((p) => typeof p === "number" && p > 0);
 
@@ -467,6 +472,7 @@ function main() {
         imageUrl: i.imageUrl,
       }))
       .sort((a, b) => {
+        if (a.inStock !== b.inStock) return a.inStock ? -1 : 1;
         const pa = a.priceArs ?? Number.POSITIVE_INFINITY;
         const pb = b.priceArs ?? Number.POSITIVE_INFINITY;
         return pa - pb;
@@ -508,7 +514,10 @@ function main() {
       format: key.format,
       imageUrl,
       storeCount: uniqueStores.size,
-      offerCount: items.length,
+      offerCount: summaryItems.length,
+      totalStoreCount: new Set(items.map((i) => i.storeSlug)).size,
+      totalOfferCount: items.length,
+      inStockOfferCount: inStockItems.length,
       minPrice: prices.length > 0 ? Math.min(...prices) : null,
       maxPrice: prices.length > 0 ? Math.max(...prices) : null,
       varietals,
