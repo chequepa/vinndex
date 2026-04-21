@@ -105,6 +105,9 @@ export type ProductGroup = {
   imageUrl: string | null;
   storeCount: number;
   offerCount: number;
+  totalStoreCount?: number;
+  totalOfferCount?: number;
+  inStockOfferCount?: number;
   minPrice: number | null;
   maxPrice: number | null;
   varietals?: string[];
