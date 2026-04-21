@@ -20,6 +20,8 @@ const INPUTS = [
   { path: "data/snapshot-vtex.json", platform: "vtex" },
   { path: "data/snapshot-shopify.json", platform: "shopify" },
   { path: "data/snapshot-mercadolibre.json", platform: "mercadolibre" },
+  { path: "data/snapshot-magento.json", platform: "magento" },
+  { path: "data/snapshot-prestashop.json", platform: "prestashop" },
 ];
 
 function loadIfExists(path) {

@@ -16,12 +16,33 @@
  * collapses duplicates across ML and other stores.
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
+
+// Load .env.local for ML credentials (ML_APP_ID + ML_CLIENT_SECRET + ML_REFRESH_TOKEN)
+function loadEnv() {
+  const envPath = resolve(REPO_ROOT, ".env.local");
+  if (!existsSync(envPath)) return;
+  try {
+    const raw = readFileSync(envPath, "utf8");
+    for (const line of raw.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eq = trimmed.indexOf("=");
+      if (eq === -1) continue;
+      const key = trimmed.slice(0, eq).trim();
+      const value = trimmed.slice(eq + 1).trim().replace(/^['"]|['"]$/g, "");
+      if (!process.env[key]) process.env[key] = value;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+loadEnv();
 
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -40,6 +61,111 @@ const HEADERS = {
 const MAX_PAGES = 40; // 40 × ~50 = ~2000 products cap
 const PAGE_DELAY_MS = 800;
 const FETCH_TIMEOUT_MS = 25_000;
+
+// ========= API mode (when ML_REFRESH_TOKEN is set) =========
+// User tokens from 3-legged OAuth work against /sites/MLA/search, which
+// client_credentials don't. Much richer data than HTML scrape.
+
+async function refreshAccessToken() {
+  const appId = process.env.ML_APP_ID;
+  const secret = process.env.ML_CLIENT_SECRET;
+  const refreshToken = process.env.ML_REFRESH_TOKEN;
+  if (!appId || !secret || !refreshToken) return null;
+  const res = await fetch("https://api.mercadolibre.com/oauth/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: appId,
+      client_secret: secret,
+      refresh_token: refreshToken,
+    }),
+  });
+  if (!res.ok) {
+    console.error(`  refresh failed: HTTP ${res.status}`);
+    return null;
+  }
+  const body = await res.json();
+  return body.access_token;
+}
+
+async function apiSearch(accessToken, offset, limit) {
+  const res = await fetch(
+    `https://api.mercadolibre.com/sites/MLA/search?category=MLA1577&limit=${limit}&offset=${offset}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  if (!res.ok) throw new Error(`API HTTP ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+function normalizeApiItem(it) {
+  // EAN from attributes
+  let ean = null;
+  for (const a of it.attributes ?? []) {
+    if (a.id === "EAN" || a.id === "GTIN" || a.name === "EAN" || a.name === "GTIN") {
+      const v = a.value_name ?? a.values?.[0]?.name;
+      if (v && /^\d{12,14}$/.test(v.trim())) ean = v.trim();
+    }
+  }
+  // Brand
+  let brand = null;
+  for (const a of it.attributes ?? []) {
+    if (a.id === "BRAND" || a.name === "Marca") {
+      brand = a.value_name ?? a.values?.[0]?.name;
+      if (brand) break;
+    }
+  }
+  const priceNum = typeof it.price === "number" && it.price > 0 ? it.price : null;
+  return {
+    storeSlug: "mercado-libre",
+    externalUrl: (it.permalink || "").split("?")[0] || it.permalink,
+    externalSku: ean || it.id || null,
+    name: decodeEntities((it.title || "").trim()),
+    brand: brand ? decodeEntities(brand) : null,
+    imageUrl: it.thumbnail || null,
+    priceArs: priceNum,
+    currency: it.currency_id || "ARS",
+    inStock: (it.available_quantity ?? 0) > 0,
+    description: null,
+  };
+}
+
+async function scrapeApi() {
+  const token = await refreshAccessToken();
+  if (!token) return null; // no credentials
+  console.log("  ML API mode (user token via refresh_token)");
+  const products = new Map();
+  const errors = [];
+  const limit = 50;
+  let offset = 0;
+  let pages = 0;
+  while (pages < 40) {
+    // ML public API caps offset at 1000 for user tokens
+    if (offset >= 1000) break;
+    let data;
+    try {
+      data = await apiSearch(token, offset, limit);
+    } catch (err) {
+      errors.push(`offset ${offset}: ${err.message}`);
+      break;
+    }
+    const items = data.results ?? [];
+    if (items.length === 0) break;
+    for (const it of items) {
+      const n = normalizeApiItem(it);
+      if (!n.externalUrl || !n.name) continue;
+      if (!products.has(n.externalUrl)) products.set(n.externalUrl, n);
+    }
+    pages++;
+    console.log(`  page ${pages} (offset=${offset}) ... ${items.length} items (${products.size} total)`);
+    if (items.length < limit) break;
+    offset += limit;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  return { products: [...products.values()], errors, pagesFetched: pages };
+}
+
+// ========= HTML mode (default / fallback) =========
 
 const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
 function decodeEntities(s) {
@@ -154,6 +280,18 @@ async function main() {
   const products = new Map();
   const errors = [];
   let pagesFetched = 0;
+
+  // If API credentials exist, use the API path (richer data: EAN, brand)
+  const apiResult = await scrapeApi();
+  if (apiResult) {
+    for (const p of apiResult.products) {
+      if (!products.has(p.externalUrl)) products.set(p.externalUrl, p);
+    }
+    errors.push(...apiResult.errors);
+    pagesFetched = apiResult.pagesFetched;
+    console.log(`  API mode total: ${products.size} products\n`);
+    // Still run HTML mode after API to cover listings API caps at offset 1000
+  }
 
   for (let page = 0; page < MAX_PAGES; page++) {
     const from = page === 0 ? 1 : 48 * page + 1;

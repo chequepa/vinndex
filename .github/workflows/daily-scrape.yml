@@ -46,6 +46,14 @@ jobs:
         run: node scripts/scrape-mercadolibre.mjs
         continue-on-error: true
 
+      - name: Scrape Magento (Ligier)
+        run: node scripts/scrape-magento.mjs
+        continue-on-error: true
+
+      - name: Scrape PrestaShop (Frappe)
+        run: node scripts/scrape-prestashop.mjs
+        continue-on-error: true
+
       - name: Merge snapshots
         run: node scripts/merge-snapshots.mjs
 
