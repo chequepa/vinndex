@@ -356,12 +356,25 @@ export default async function Vino({ params }: Params) {
               </h1>
 
               <p className="text-snow/80 text-lg mb-8">
-                Disponible en{" "}
-                <span className="font-semibold text-mustard">
-                  {group.storeCount} vinoteca
-                  {group.storeCount === 1 ? "" : "s"}
-                </span>{" "}
-                online.
+                {allOutOfStock ? (
+                  <>
+                    Relevado en{" "}
+                    <span className="font-semibold text-mustard">
+                      {group.totalStoreCount} vinoteca
+                      {group.totalStoreCount === 1 ? "" : "s"}
+                    </span>
+                    , actualmente sin stock en todas.
+                  </>
+                ) : (
+                  <>
+                    Disponible en{" "}
+                    <span className="font-semibold text-mustard">
+                      {group.storeCount} vinoteca
+                      {group.storeCount === 1 ? "" : "s"}
+                    </span>{" "}
+                    online.
+                  </>
+                )}
                 {vintagesSorted.length > 1 && (
                   <>
                     {" "}
@@ -374,54 +387,93 @@ export default async function Vino({ params }: Params) {
                 )}
               </p>
 
-              <div className="mb-10">
-                <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5">
-                <div>
-                  <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
-                    Desde
-                  </div>
-                  <div className="display text-4xl md:text-5xl font-semibold leading-none">
-                    {formatArs(group.minPrice)}
-                  </div>
-                  <div className="text-xs text-snow/70 mt-1.5">
-                    en {storeName(bestOffer.storeSlug)}
-                  </div>
-                </div>
-                {group.maxPrice != null &&
-                  group.minPrice != null &&
-                  group.maxPrice > group.minPrice && (
-                    <>
-                      <div className="h-14 w-px bg-snow/25" />
-                      <div>
-                        <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
-                          Ahorro máximo
-                        </div>
-                        <div className="display text-4xl md:text-5xl font-semibold leading-none text-mustard">
-                          {Math.round(
-                            ((group.maxPrice - group.minPrice) /
-                              group.maxPrice) *
-                              100,
-                          )}
-                          %
-                        </div>
-                        <div className="text-xs text-snow/70 mt-1.5">
-                          vs {formatArs(group.maxPrice)}
-                        </div>
+              {allOutOfStock ? (
+                <div className="mb-10">
+                  <div className="inline-flex items-center gap-4 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 max-w-xl">
+                    <svg
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-mustard shrink-0"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <div>
+                      <div className="display text-xl md:text-2xl font-semibold leading-tight">
+                        Actualmente sin stock
                       </div>
-                    </>
-                  )}
+                      <div className="text-sm text-snow/70 mt-1">
+                        Revisá en unos días — listamos abajo las tiendas que lo tienen en catálogo.
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mb-10">
+                  <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5">
+                  <div>
+                    <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
+                      Desde
+                    </div>
+                    <div className="display text-4xl md:text-5xl font-semibold leading-none">
+                      {formatArs(group.minPrice)}
+                    </div>
+                    <div className="text-xs text-snow/70 mt-1.5">
+                      en {storeName(bestOffer.storeSlug)}
+                    </div>
+                  </div>
+                  {group.maxPrice != null &&
+                    group.minPrice != null &&
+                    group.maxPrice > group.minPrice && (
+                      <>
+                        <div className="h-14 w-px bg-snow/25" />
+                        <div>
+                          <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
+                            Ahorro máximo
+                          </div>
+                          <div className="display text-4xl md:text-5xl font-semibold leading-none text-mustard">
+                            {Math.round(
+                              ((group.maxPrice - group.minPrice) /
+                                group.maxPrice) *
+                                100,
+                            )}
+                            %
+                          </div>
+                          <div className="text-xs text-snow/70 mt-1.5">
+                            vs {formatArs(group.maxPrice)}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
 
-              <a
-                href={bestOffer.externalUrl}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
-              >
-                Ir al mejor precio en {storeName(bestOffer.storeSlug)}{" "}
-                <ExternalIcon />
-              </a>
+              {allOutOfStock ? (
+                <a
+                  href="#precios"
+                  className="cursor-wine bg-snow/15 text-snow border border-snow/30 font-semibold px-8 py-3.5 rounded-full hover:bg-snow/25 transition-colors inline-flex items-center gap-2"
+                >
+                  Ver tiendas que lo tienen
+                </a>
+              ) : (
+                <a
+                  href={bestOffer.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
+                >
+                  Ir al mejor precio en {storeName(bestOffer.storeSlug)}{" "}
+                  <ExternalIcon />
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -429,7 +481,7 @@ export default async function Vino({ params }: Params) {
 
       {/* TABLA DE PRECIOS */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
-        <section>
+        <section id="precios" className="scroll-mt-8">
           <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
             <div>
               <h2 className="display text-3xl font-semibold text-ink">
