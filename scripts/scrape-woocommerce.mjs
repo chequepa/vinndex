@@ -52,6 +52,15 @@ async function fetchJson(url) {
   }
 }
 
+const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+function decodeEntities(s) {
+  if (!s || typeof s !== "string") return s;
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
 function extractBrand(p) {
   if (p.brands && p.brands.length > 0 && p.brands[0].name) {
     return p.brands[0].name.trim();
@@ -86,19 +95,22 @@ function normalize(p, storeSlug) {
   const url = p.permalink;
   const name = p.name?.trim();
   if (!url || !name) return null;
+  const brand = extractBrand(p);
+  const desc = p.short_description
+    ?.replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return {
     storeSlug,
     externalUrl: url,
     externalSku: p.sku ? p.sku.trim() || null : null,
-    name,
-    brand: extractBrand(p),
+    name: decodeEntities(name),
+    brand: brand ? decodeEntities(brand) : null,
     imageUrl: p.images?.[0]?.src ?? null,
     priceArs: priceToNumber(p.prices),
     currency: p.prices?.currency_code ?? "ARS",
     inStock: p.is_in_stock ?? false,
-    description:
-      p.short_description?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ??
-      null,
+    description: desc ? decodeEntities(desc) : null,
   };
 }
 

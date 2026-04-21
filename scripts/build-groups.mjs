@@ -15,6 +15,23 @@ function stripAccents(s) {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+/** Decode HTML entities (&amp; &#8220; &#8211; etc) so names display cleanly. */
+const NAMED_ENTITIES = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+};
+function decodeEntities(s) {
+  if (!s || typeof s !== "string") return s;
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
 const VARIETALS = [
   { name: "Malbec", re: /\bmalbec\b/i },
   { name: "Cabernet Sauvignon", re: /\bcabernet\s+sauvignon\b/i },
@@ -281,6 +298,12 @@ function groupSlug(k) {
 function main() {
   const inPath = resolve(REPO_ROOT, "data/snapshot.json");
   const snap = JSON.parse(readFileSync(inPath, "utf8"));
+  // Decode HTML entities everywhere before building groups so names are clean
+  for (const p of snap.products ?? []) {
+    if (p.name) p.name = decodeEntities(p.name);
+    if (p.brand) p.brand = decodeEntities(p.brand);
+    if (p.description) p.description = decodeEntities(p.description);
+  }
   const products = snap.products ?? [];
 
   const byKey = new Map();

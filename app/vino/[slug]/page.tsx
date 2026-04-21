@@ -370,7 +370,7 @@ export default async function Vino({ params }: Params) {
                 )}
               </p>
 
-              <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 mb-8">
+              <div className="inline-flex items-baseline gap-6 bg-snow/10 backdrop-blur border border-snow/20 rounded-2xl px-6 py-5 mb-10">
                 <div>
                   <div className="text-xs text-snow/70 uppercase tracking-wider mb-1">
                     Desde
@@ -440,8 +440,8 @@ export default async function Vino({ params }: Params) {
           <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
             <div className="hidden md:grid grid-cols-[2fr_1fr_1.1fr_auto] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
               <div>Vinoteca</div>
-              <div className="text-right">Precio</div>
-              <div className="text-right">Diferencia vs min</div>
+              <div className="text-center">Precio</div>
+              <div className="text-center">Diferencia vs min</div>
               <div />
             </div>
 
@@ -501,7 +501,7 @@ export default async function Vino({ params }: Params) {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="md:text-center">
                     <span className="md:hidden text-xs text-graphite">
                       Precio:{" "}
                     </span>
@@ -509,7 +509,7 @@ export default async function Vino({ params }: Params) {
                       {formatArs(offer.priceArs)}
                     </span>
                   </div>
-                  <div className="text-right">
+                  <div className="md:text-center">
                     <span className="md:hidden text-xs text-graphite">
                       Diferencia:{" "}
                     </span>

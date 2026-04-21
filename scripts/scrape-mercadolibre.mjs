@@ -41,6 +41,15 @@ const MAX_PAGES = 40; // 40 × ~50 = ~2000 products cap
 const PAGE_DELAY_MS = 800;
 const FETCH_TIMEOUT_MS = 25_000;
 
+const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+function decodeEntities(s) {
+  if (!s || typeof s !== "string") return s;
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
 const STORE = {
   slug: "mercado-libre",
   name: "Mercado Libre",
@@ -127,7 +136,7 @@ function parseListingPage(html) {
       storeSlug: STORE.slug,
       externalUrl,
       externalSku,
-      name: title,
+      name: decodeEntities(title),
       brand: null, // ML doesn't expose brand in listing card
       imageUrl,
       priceArs,
