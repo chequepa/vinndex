@@ -177,24 +177,73 @@ export type BrandStat = {
 };
 
 /**
- * Normalize brand casing for display: ALLCAPS brands from VTEX become
- * Title Case, others are left alone.
+ * Known brand aliases so "Familia Zuccardi" / "Bodegas Norton" / "Catena
+ * Zapata" collapse with their short forms for the Top Brands ranking and
+ * to avoid splitting the same bodega into multiple cards.
+ * Keys lowercase; values are the canonical display form.
+ */
+const BRAND_ALIASES_DISPLAY: Record<string, string> = {
+  "bodega catena zapata": "Catena Zapata",
+  "catena zapata": "Catena Zapata",
+  catena: "Catena Zapata",
+  "familia zuccardi": "Zuccardi",
+  zucardi: "Zuccardi",
+  "bodegas zuccardi": "Zuccardi",
+  "bodega norton": "Norton",
+  "bodegas norton": "Norton",
+  "bodega trapiche": "Trapiche",
+  "bodegas trapiche": "Trapiche",
+  "bodega salentein": "Salentein",
+  "bodegas salentein": "Salentein",
+  "bodega luigi bosca": "Luigi Bosca",
+  "luigi bosca": "Luigi Bosca",
+  "cheval des andes": "Cheval des Andes",
+  "el esteco": "El Esteco",
+  "finca las moras": "Las Moras",
+  "las moras": "Las Moras",
+  "don david": "Don David",
+};
+
+/**
+ * Normalize brand for grouping (topBrands key). Strip redundant prefixes
+ * ("Bodega", "Bodegas", "Familia"), lowercase, collapse whitespace, then
+ * apply alias map so variants merge into one key.
+ */
+function normalizeBrandKey(s: string): string {
+  const stripped = s
+    .toLowerCase()
+    .replace(/^\s*(bodegas?|familia)\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return BRAND_ALIASES_DISPLAY[stripped]?.toLowerCase() ?? stripped;
+}
+
+/**
+ * Pretty brand name for display. Prefers the canonical alias when known
+ * (e.g. "BODEGA CATENA ZAPATA" → "Catena Zapata"); otherwise applies
+ * title-casing for all-uppercase VTEX brands and leaves the rest alone.
  */
 function normalizeBrandCase(s: string): string {
-  if (!/[a-z]/.test(s)) {
-    // All-uppercase — title case it
-    return s
-      .toLowerCase()
-      .split(/\s+/)
-      .map((w) => {
-        if (w.length === 0) return w;
-        // Preserve roman numerals and short connectors
-        if (/^(de|del|la|el|las|los|y|&)$/.test(w)) return w;
-        return w[0].toUpperCase() + w.slice(1);
-      })
-      .join(" ");
-  }
-  return s;
+  const trimmed = s.trim();
+  const stripped = trimmed
+    .toLowerCase()
+    .replace(/^\s*(bodegas?|familia)\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const alias = BRAND_ALIASES_DISPLAY[stripped];
+  if (alias) return alias;
+  // Fallback: preserve original if it already has mixed case
+  if (/[a-z]/.test(trimmed)) return trimmed;
+  // ALLCAPS → Title Case
+  return trimmed
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => {
+      if (w.length === 0) return w;
+      if (/^(de|del|la|el|las|los|y|&)$/.test(w)) return w;
+      return w[0].toUpperCase() + w.slice(1);
+    })
+    .join(" ");
 }
 
 /** Pretty brand name for display (fixes SHOUT CASE from VTEX etc). */
@@ -224,7 +273,7 @@ export function topBrands(limit = 12): BrandStat[] {
     if (!raw) continue;
     if (/smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i.test(raw))
       continue;
-    const key = normalizeBrandCase(raw);
+    const key = normalizeBrandKey(raw);
     const isWine =
       (g.varietals && g.varietals.length > 0) ||
       g.type === "Tinto" ||
@@ -247,8 +296,10 @@ export function topBrands(limit = 12): BrandStat[] {
 
   return [...byBrand.entries()]
     .filter(([, { count, wineish }]) => count === 0 || wineish / count >= 0.4)
-    .map(([name, { count, stores }]) => ({
-      name,
+    .map(([key, { count, stores }]) => ({
+      // key is normalized lowercase; run it through displayBrand for
+      // proper casing + alias canonicalization for the home card.
+      name: displayBrand(key),
       count,
       storeCount: stores.size,
     }))

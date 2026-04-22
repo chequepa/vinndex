@@ -15,33 +15,74 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const g = findGroup(slug);
   if (!g) return { title: "Vino no encontrado — Vinndex" };
-  const storesPart =
-    g.storeCount >= 2
-      ? `Compará en ${g.storeCount} vinotecas`
-      : `Precio actualizado`;
-  const title = `${g.canonicalName}${g.vintage ? ` ${g.vintage}` : ""} — ${storesPart} | Vinndex`;
 
-  let description = `Precios de ${g.canonicalName} en ${g.storeCount} vinoteca${
-    g.storeCount === 1 ? "" : "s"
-  } online en Argentina.`;
-  if (g.minPrice != null) {
-    const fmt = new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      maximumFractionDigits: 0,
-    });
-    description += ` Desde ${fmt.format(g.minPrice)}`;
-    if (g.maxPrice && g.maxPrice > g.minPrice) {
-      description += ` — ahorro hasta ${Math.round(
-        ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
-      )}%`;
+  const fmt = new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  });
+  const allOutOfStock = !g.offers?.some((o) => o.inStock);
+  const totalStores = g.totalStoreCount ?? g.storeCount;
+  const savingsPct =
+    g.minPrice && g.maxPrice && g.maxPrice > g.minPrice
+      ? Math.round(((g.maxPrice - g.minPrice) / g.maxPrice) * 100)
+      : null;
+
+  // Title: include brand only if not already part of the canonical name
+  const canonicalLower = g.canonicalName.toLowerCase();
+  const brandNotInName =
+    g.brand && !canonicalLower.includes(g.brand.toLowerCase());
+  const titleName = brandNotInName
+    ? `${g.brand} ${g.canonicalName}`
+    : g.canonicalName;
+  const titleVintage = g.vintage ? ` ${g.vintage}` : "";
+
+  let titleTail: string;
+  if (allOutOfStock) {
+    titleTail = `sin stock en ${totalStores} vinoteca${totalStores === 1 ? "" : "s"}`;
+  } else if (g.storeCount >= 2) {
+    titleTail = savingsPct
+      ? `compará ${g.storeCount} vinotecas · ahorrá hasta ${savingsPct}%`
+      : `compará en ${g.storeCount} vinotecas`;
+  } else {
+    titleTail = "precio al día";
+  }
+  const title = `${titleName}${titleVintage} — ${titleTail} | Vinndex`;
+
+  let description: string;
+  if (allOutOfStock) {
+    description = `${titleName}${titleVintage}: relevado en ${totalStores} vinoteca${
+      totalStores === 1 ? "" : "s"
+    } online de Argentina, actualmente sin stock en todas. Te mostramos dónde suele aparecer cuando vuelve.`;
+  } else {
+    description = `${titleName}${titleVintage} en ${g.storeCount} vinoteca${
+      g.storeCount === 1 ? "" : "s"
+    } online de Argentina.`;
+    if (g.minPrice != null) {
+      const bestStore = g.offers?.find((o) => o.inStock);
+      description += ` Desde ${fmt.format(g.minPrice)}`;
+      if (bestStore) {
+        description += ` en ${storeName(bestStore.storeSlug)}`;
+      }
+      if (savingsPct) {
+        description += ` — ahorrá hasta ${savingsPct}%`;
+      }
+      description += ".";
     }
-    description += ".";
   }
 
   return {
     title,
     description,
+    keywords: [
+      g.canonicalName,
+      g.brand ?? undefined,
+      ...(g.varietals ?? []),
+      g.region ?? undefined,
+      "comparar precios",
+      "vino argentino",
+      "vinoteca online",
+    ].filter(Boolean) as string[],
     openGraph: {
       title,
       description,
@@ -60,6 +101,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     alternates: {
       canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
     },
+    robots: allOutOfStock
+      ? { index: true, follow: true, nocache: true }
+      : { index: true, follow: true },
   };
 }
 
