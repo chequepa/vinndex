@@ -60,8 +60,11 @@ if (!OPENAI_API_KEY) {
 const MODEL = "text-embedding-3-small";
 const BATCH_SIZE = 500;
 const SIM_THRESHOLD = 0.93; // conservative — false merges are worse than missed merges
+const GRAY_ZONE_MIN = 0.88; // pairs [0.88, 0.93) go to Stage 3 LLM adjudicator
 const MAX_MERGE_PAIRS_PER_GROUP = 5;
+const MAX_GRAY_ZONE_PER_GROUP = 3;
 const CACHE_PATH = resolve(REPO_ROOT, "data/embeddings-cache.json");
+const STAGE3_CANDIDATES_PATH = resolve(REPO_ROOT, "data/stage3-candidates.json");
 const EMBED_CONCURRENCY = 4;
 
 async function embedBatch(texts) {
@@ -296,17 +299,20 @@ async function main() {
     console.log("  100% cache hit — no OpenAI calls needed");
   }
 
-  // Find candidate merges by brute force (cubic would be too slow for 20k,
-  // but linear-scan per-group against all others is O(n²) ≈ 400M ops —
-  // at a few nanoseconds per op that's ~5s total).
-  console.log("Finding candidate merge pairs...");
+  // Find candidate merges by brute force. Single O(n²) pass collects
+  // BOTH high-confidence pairs (sim >= SIM_THRESHOLD → merge now) AND
+  // gray-zone pairs ([GRAY_ZONE_MIN, SIM_THRESHOLD) → write to disk for
+  // Stage 3 LLM adjudicator). Doing it in one pass saves Stage 3 a full
+  // re-scan (which was timing out the runner at 30+ min on 25k groups).
+  console.log("Finding candidate merge pairs + gray-zone for Stage 3...");
   const t1 = Date.now();
   const pairs = [];
+  const grayZone = [];
   for (let i = 0; i < groups.length; i++) {
     const gi = groups[i];
     const ei = embeddings[i];
-    // Track top K candidates above threshold
     const topK = [];
+    const topGray = [];
     for (let j = i + 1; j < groups.length; j++) {
       const gj = groups[j];
       if (!compatibleToMerge(gi, gj)) continue;
@@ -317,13 +323,41 @@ async function main() {
           topK.sort((a, b) => b.sim - a.sim);
           topK.length = MAX_MERGE_PAIRS_PER_GROUP;
         }
+      } else if (sim >= GRAY_ZONE_MIN) {
+        topGray.push({ j, sim });
+        if (topGray.length > MAX_GRAY_ZONE_PER_GROUP) {
+          topGray.sort((a, b) => b.sim - a.sim);
+          topGray.length = MAX_GRAY_ZONE_PER_GROUP;
+        }
       }
     }
     for (const p of topK) pairs.push({ i, j: p.j, sim: p.sim });
+    for (const p of topGray) grayZone.push({ i, j: p.j, sim: p.sim });
   }
   console.log(
-    `  ${pairs.length} candidate pairs above sim=${SIM_THRESHOLD} in ${Math.round((Date.now() - t1) / 1000)}s`,
+    `  ${pairs.length} high-conf pairs + ${grayZone.length} gray-zone pairs in ${Math.round((Date.now() - t1) / 1000)}s`,
   );
+
+  // Dump gray-zone pairs with canonical context so Stage 3 can run
+  // without loading embeddings or doing any O(n²) work. We include the
+  // fields Stage 3 needs for its LLM prompt + guardrails.
+  const grayZonePayload = grayZone.map((p) => ({
+    sim: Number(p.sim.toFixed(4)),
+    a: {
+      canonicalName: groups[p.i].canonicalName,
+      brand: groups[p.i].brand,
+      vintage: groups[p.i].vintage,
+      groupSlug: groups[p.i].groupSlug,
+    },
+    b: {
+      canonicalName: groups[p.j].canonicalName,
+      brand: groups[p.j].brand,
+      vintage: groups[p.j].vintage,
+      groupSlug: groups[p.j].groupSlug,
+    },
+  }));
+  writeFileSync(STAGE3_CANDIDATES_PATH, JSON.stringify(grayZonePayload));
+  console.log(`  wrote ${STAGE3_CANDIDATES_PATH}`);
 
   // Union all pairs
   const uf = makeUF(groups.length);
