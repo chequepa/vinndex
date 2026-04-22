@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+
+// Cloudflare Web Analytics (free, no cookies, no PII). Active when
+// NEXT_PUBLIC_CF_ANALYTICS_TOKEN is set in the environment — get one at
+// https://dash.cloudflare.com → Analytics → Web Analytics → Add site.
+const CF_ANALYTICS_TOKEN = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -21,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Buscá un vino, encontrá todas las vinotecas online de Argentina que lo venden, ordenadas por precio. Comparamos 29 tiendas y 33k+ etiquetas.",
+    "Buscá un vino, encontrá todas las vinotecas online de Argentina que lo venden, ordenadas por precio. Sumamos nuevas tiendas cada semana.",
   metadataBase: new URL("https://vinndex.com.ar"),
   openGraph: {
     type: "website",
@@ -30,7 +36,7 @@ export const metadata: Metadata = {
     url: "https://vinndex.com.ar",
     title: "Vinndex — Comparador de precios de vinos en Argentina",
     description:
-      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio. 29 tiendas, 33k+ etiquetas.",
+      "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
   },
   twitter: {
     card: "summary_large_image",
@@ -60,7 +66,17 @@ export default function RootLayout({
       lang="es-AR"
       className={`${fraunces.variable} ${inter.variable} antialiased`}
     >
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        {children}
+        {CF_ANALYTICS_TOKEN && (
+          <Script
+            id="cf-beacon"
+            strategy="afterInteractive"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: CF_ANALYTICS_TOKEN })}
+          />
+        )}
+      </body>
     </html>
   );
 }
