@@ -60,7 +60,10 @@ if (!OPENAI_API_KEY) {
 const MODEL = "text-embedding-3-small";
 const BATCH_SIZE = 500;
 const SIM_THRESHOLD = 0.93; // conservative — false merges are worse than missed merges
-const GRAY_ZONE_MIN = 0.88; // pairs [0.88, 0.93) go to Stage 3 LLM adjudicator
+const GRAY_ZONE_MIN = 0.85; // pairs [0.85, 0.93) go to Stage 3 LLM adjudicator
+// Expanded from 0.88 → 0.85 (2026-04-22) to catch cases like "Concreto
+// Malbec" vs "Zuccardi Concreto Malbec" whose cosine similarity sits
+// around 0.86 — still safe because Stage 3 LLM vetoes false matches.
 const MAX_MERGE_PAIRS_PER_GROUP = 5;
 const MAX_GRAY_ZONE_PER_GROUP = 3;
 const CACHE_PATH = resolve(REPO_ROOT, "data/embeddings-cache.json");
