@@ -41,7 +41,7 @@ function FacetLayout({
   kindLabel: string;
 }) {
   const multi = facet.topGroups.filter((g) => g.storeCount >= 2);
-  const single = facet.topGroups.filter((g) => g.storeCount < 2);
+  const single = facet.topGroups.filter((g) => g.storeCount === 1);
   return (
     <div className="bg-white min-h-screen">
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
