@@ -317,8 +317,11 @@ async function main() {
     `Cache: ${cachedYes.length + cachedNo.length}/${candidates.length} known (${cachedYes.length} yes, ${cachedNo.length} no) · ${toAsk.length} to ask`,
   );
 
-  // Ask LLM in batches with concurrency
+  // Ask LLM in batches with concurrency. Checkpoint the cache every N
+  // batches so an interrupted run doesn't waste its progress — the next
+  // run resumes from where we left off.
   const mergedPairs = [...cachedYes];
+  const CHECKPOINT_EVERY = 50;
   if (toAsk.length > 0) {
     const t2 = Date.now();
     const batches = [];
@@ -327,6 +330,7 @@ async function main() {
     }
     let done = 0;
     let errors = 0;
+    let lastCheckpoint = 0;
     async function worker() {
       while (batches.length > 0) {
         const batch = batches.shift();
@@ -343,6 +347,15 @@ async function main() {
           }
           done += batch.length;
           process.stdout.write(`\r  ${done}/${toAsk.length}`);
+          // Checkpoint cache periodically
+          if (done - lastCheckpoint >= CHECKPOINT_EVERY * BATCH_SIZE) {
+            lastCheckpoint = done;
+            try {
+              writeFileSync(LLM_CACHE_PATH, JSON.stringify(llmCache));
+            } catch (err) {
+              console.error(`\n  checkpoint write failed: ${err.message}`);
+            }
+          }
         } catch (err) {
           errors++;
           console.error(`\n  batch error: ${err.message}`);
