@@ -295,6 +295,67 @@ function groupSlug(k) {
     .replace(/^-|-$/g, "");
 }
 
+// Infer brand on products where the scraper couldn't extract one, by
+// matching their name against brands that OTHER products in the dataset
+// do have. Helps merging — e.g. "Vino Concreto Malbec" (brand=null in
+// Casa de Vinos Mendoza) will pick up brand=Zuccardi from the hundreds
+// of other Concreto listings that have it. Also feeds Stage 2 embedding
+// input with richer context.
+const GENERIC_BRAND_TOKENS = new Set([
+  // Too generic to be useful as an inference key
+  "vino",
+  "vinos",
+  "wine",
+  "wines",
+  "bodega",
+  "bodegas",
+  "familia",
+  "reserva",
+  "estate",
+  "cellars",
+  "finca",
+]);
+
+function inferBrands(products) {
+  const brandCanonical = new Map(); // lowercased → original casing
+  for (const p of products) {
+    if (!p.brand) continue;
+    const trimmed = p.brand.trim();
+    if (trimmed.length < 3) continue;
+    const lower = trimmed.toLowerCase();
+    if (!brandCanonical.has(lower)) brandCanonical.set(lower, trimmed);
+  }
+  // Filter out too-generic single-word brands
+  const entries = [...brandCanonical.entries()].filter(([lower]) => {
+    const words = lower.split(/\s+/).filter(Boolean);
+    if (words.length === 1 && GENERIC_BRAND_TOKENS.has(words[0])) return false;
+    return true;
+  });
+  // Sort by length desc so "Catena Zapata" beats "Catena" for a name
+  // containing both.
+  entries.sort((a, b) => b[0].length - a[0].length);
+
+  let filled = 0;
+  for (const p of products) {
+    if (p.brand) continue;
+    const name = (p.name ?? "").toLowerCase();
+    if (!name) continue;
+    for (const [lower, original] of entries) {
+      // Word-boundary match so "Alta" doesn't match inside "Altamira"
+      const re = new RegExp(
+        `\\b${lower.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}\\b`,
+        "i",
+      );
+      if (re.test(name)) {
+        p.brand = original;
+        filled++;
+        break;
+      }
+    }
+  }
+  return filled;
+}
+
 function main() {
   const inPath = resolve(REPO_ROOT, "data/snapshot.json");
   const snap = JSON.parse(readFileSync(inPath, "utf8"));
@@ -305,6 +366,13 @@ function main() {
     if (p.description) p.description = decodeEntities(p.description);
   }
   const products = snap.products ?? [];
+
+  // Infer missing brands using the corpus of known brands
+  const brandlessBefore = products.filter((p) => !p.brand).length;
+  const inferred = inferBrands(products);
+  console.log(
+    `Brand inference: ${inferred}/${brandlessBefore} products gained a brand`,
+  );
 
   // ============ STAGE 0: EAN grouping ============
   // Barcode (GTIN/EAN) is a globally unique product identifier. When two
