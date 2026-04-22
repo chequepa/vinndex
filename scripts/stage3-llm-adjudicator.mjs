@@ -7,22 +7,24 @@
  * Malbec" vs "Vino Concreto Malbec 750ml" (sim ~0.90) that are clearly
  * the same wine but differ enough in tokens to fall below the threshold.
  *
- * Stage 3 picks pairs in the "gray zone" [0.88, 0.93) that pass the
- * compatibleToMerge() guardrails (varietal/color/format agreement) and
- * asks GPT-4o-mini a binary question: is this the same wine SKU?
+ * Stage 3 reads the gray-zone candidate pairs that Stage 2 already
+ * collected during its O(n²) scan (dumped to data/stage3-candidates.json)
+ * and asks GPT-4o-mini a binary question: is this the same wine SKU?
  *
- * Cost: ~$0.50 first run for ~30-40k candidate pairs. Subsequent runs
- * ~$0.02 thanks to data/stage3-cache.json which remembers every pair
- * we've already adjudicated.
+ * No re-scanning, no embeddings loading — just LLM calls over the pairs
+ * that Stage 2 handed us. Keeps Stage 3 under a few minutes even on the
+ * first run.
+ *
+ * Cost: ~$0.30-0.50 first run for ~30-40k pairs. Subsequent runs ~$0.02
+ * thanks to data/stage3-cache.json.
  *
  * Requirements:
  *   - OPENAI_API_KEY in .env.local or CI secrets
- *   - Runs AFTER stage2-embeddings.mjs (reads its output snapshot +
- *     embeddings cache)
+ *   - Runs AFTER stage2-embeddings.mjs (reads the candidates file it
+ *     wrote)
  */
 
-import { readFileSync, writeFileSync, existsSync, createReadStream } from "node:fs";
-import { createInterface } from "node:readline";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -55,85 +57,11 @@ if (!OPENAI_API_KEY) {
 }
 
 const MODEL = "gpt-4o-mini";
-const SIM_MIN = 0.88;
-const SIM_MAX = 0.93;
-const MAX_PAIRS_PER_GROUP = 3;
 const BATCH_SIZE = 20;
 const CONCURRENCY = 4;
-const EMBED_CACHE_PATH = resolve(REPO_ROOT, "data/embeddings-cache.json");
+const CHECKPOINT_EVERY = 50; // batches → checkpoint cache every ~1k answers
+const CANDIDATES_PATH = resolve(REPO_ROOT, "data/stage3-candidates.json");
 const LLM_CACHE_PATH = resolve(REPO_ROOT, "data/stage3-cache.json");
-
-// ===== matching helpers (mirrored from stage2-embeddings.mjs) =====
-
-function cosine(a, b) {
-  let dot = 0,
-    na = 0,
-    nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  const denom = Math.sqrt(na) * Math.sqrt(nb);
-  return denom === 0 ? 0 : dot / denom;
-}
-
-function embeddingText(g) {
-  const parts = [g.canonicalName];
-  if (g.brand) parts.push(g.brand);
-  if (g.varietals && g.varietals.length > 0) parts.push(g.varietals.join(" "));
-  return parts.join(" — ");
-}
-
-const COLOR_KEYWORDS = ["tinto", "blanco", "rosado", "rose", "rojo", "red", "white"];
-const SWEETNESS_KEYWORDS = ["extra brut", "demi sec", "demi-sec", "dulce", "nature", "seco", "dry", "sweet", "brut nature"];
-const NUMBERED_EDITION = /\b(\d{1,3})\s*(bot|un|unid|edicion|n\.?)?\b/i;
-
-function hasWord(haystack, word) {
-  return new RegExp(`\\b${word.replace(/[-\s]/g, "[-\\s]?")}\\b`, "i").test(haystack);
-}
-
-function compatibleToMerge(a, b) {
-  const av = new Set((a.varietals ?? []).map((v) => v.toLowerCase()));
-  const bv = new Set((b.varietals ?? []).map((v) => v.toLowerCase()));
-  if (av.size > 0 && bv.size > 0) {
-    let hit = false;
-    for (const v of av) if (bv.has(v)) hit = true;
-    if (!hit) return false;
-  }
-  if (a.type && b.type && a.type !== b.type) return false;
-  if (a.format && b.format && a.format !== b.format) return false;
-
-  const aname = a.canonicalName.toLowerCase();
-  const bname = b.canonicalName.toLowerCase();
-  for (const color of COLOR_KEYWORDS) {
-    const aHas = hasWord(aname, color);
-    const bHas = hasWord(bname, color);
-    if (aHas !== bHas) {
-      const otherColors = COLOR_KEYWORDS.filter((c) => c !== color);
-      const aOther = otherColors.some((c) => hasWord(aname, c));
-      const bOther = otherColors.some((c) => hasWord(bname, c));
-      if ((aHas && bOther) || (bHas && aOther)) return false;
-    }
-  }
-  for (const sw of SWEETNESS_KEYWORDS) {
-    const aHas = hasWord(aname, sw);
-    const bHas = hasWord(bname, sw);
-    if (aHas !== bHas) {
-      const others = SWEETNESS_KEYWORDS.filter((s) => s !== sw);
-      const aOther = others.some((s) => hasWord(aname, s));
-      const bOther = others.some((s) => hasWord(bname, s));
-      if ((aHas && bOther) || (bHas && aOther)) return false;
-    }
-  }
-  const aNum = aname.match(NUMBERED_EDITION);
-  const bNum = bname.match(NUMBERED_EDITION);
-  if (aNum && bNum && aNum[1] !== bNum[1]) {
-    const skipNums = new Set(["750", "375", "187", "1500"]);
-    if (!skipNums.has(aNum[1]) && !skipNums.has(bNum[1])) return false;
-  }
-  return true;
-}
 
 function makeUF(n) {
   const parent = new Array(n);
@@ -153,10 +81,8 @@ function makeUF(n) {
   return { find, union };
 }
 
-// ===== LLM call =====
-
 function buildPrompt(pairs) {
-  const lines = pairs
+  return pairs
     .map((p, i) => {
       const aCtx = [p.a.canonicalName];
       if (p.a.brand) aCtx.push(`bodega: ${p.a.brand}`);
@@ -167,7 +93,6 @@ function buildPrompt(pairs) {
       return `${i + 1}. A: "${aCtx.join(" · ")}" | B: "${bCtx.join(" · ")}"`;
     })
     .join("\n");
-  return lines;
 }
 
 const SYSTEM_PROMPT =
@@ -221,9 +146,16 @@ function cacheKey(a, b) {
   return aKey < bKey ? `${aKey}||${bKey}` : `${bKey}||${aKey}`;
 }
 
-// ===== main =====
-
 async function main() {
+  if (!existsSync(CANDIDATES_PATH)) {
+    console.error(
+      "Missing data/stage3-candidates.json — Stage 2 did not emit gray-zone pairs (older stage2 format?).",
+    );
+    process.exit(1);
+  }
+  const candidates = JSON.parse(readFileSync(CANDIDATES_PATH, "utf8"));
+  console.log(`Stage 3 on ${candidates.length} gray-zone pairs from Stage 2`);
+
   const snapPath = resolve(REPO_ROOT, "data/snapshot.json");
   const snap = JSON.parse(readFileSync(snapPath, "utf8"));
   const groups = snap.productGroups ?? [];
@@ -231,84 +163,22 @@ async function main() {
     console.error("No productGroups — run build-groups.mjs + stage2 first.");
     process.exit(1);
   }
-
-  if (!existsSync(EMBED_CACHE_PATH)) {
-    console.error(
-      "Missing data/embeddings-cache.json — Stage 3 requires Stage 2 embeddings.",
-    );
-    process.exit(1);
-  }
-  // NDJSON format (one entry per line) — avoids JSON.stringify 512MB
-  // string limit on large caches. Same format Stage 2 writes.
-  const embCache = {};
-  const rl = createInterface({
-    input: createReadStream(EMBED_CACHE_PATH),
-    crlfDelay: Infinity,
-  });
-  for await (const line of rl) {
-    if (!line) continue;
-    try {
-      const { k, e } = JSON.parse(line);
-      if (k && Array.isArray(e)) embCache[k] = e;
-    } catch {
-      /* skip */
-    }
-  }
-
-  console.log(`Stage 3 on ${groups.length} groups, threshold [${SIM_MIN}, ${SIM_MAX})`);
-
-  // Build embeddings array (cache hit only — no new OpenAI calls here)
-  const embeddings = new Array(groups.length);
-  let missing = 0;
-  for (let i = 0; i < groups.length; i++) {
-    const e = embCache[embeddingText(groups[i])];
-    if (e) embeddings[i] = e;
-    else missing++;
-  }
-  if (missing > 0) {
-    console.warn(
-      `${missing}/${groups.length} groups missing embeddings — skipped`,
-    );
-  }
-
-  // Gather gray-zone candidate pairs
-  console.log("Finding gray-zone candidate pairs...");
-  const t1 = Date.now();
-  const candidates = [];
-  for (let i = 0; i < groups.length; i++) {
-    const ei = embeddings[i];
-    if (!ei) continue;
-    const topK = [];
-    for (let j = i + 1; j < groups.length; j++) {
-      const ej = embeddings[j];
-      if (!ej) continue;
-      if (!compatibleToMerge(groups[i], groups[j])) continue;
-      const sim = cosine(ei, ej);
-      if (sim >= SIM_MIN && sim < SIM_MAX) {
-        topK.push({ j, sim });
-        if (topK.length > MAX_PAIRS_PER_GROUP) {
-          topK.sort((a, b) => b.sim - a.sim);
-          topK.length = MAX_PAIRS_PER_GROUP;
-        }
-      }
-    }
-    for (const p of topK) candidates.push({ i, j: p.j, sim: p.sim });
-  }
-  console.log(
-    `  ${candidates.length} candidates in ${Math.round((Date.now() - t1) / 1000)}s`,
-  );
+  // Slug → index, for applying merges
+  const slugIndex = new Map();
+  for (let i = 0; i < groups.length; i++) slugIndex.set(groups[i].groupSlug, i);
 
   // Load LLM cache
   const llmCache = existsSync(LLM_CACHE_PATH)
     ? JSON.parse(readFileSync(LLM_CACHE_PATH, "utf8"))
     : {};
+
+  // Separate cached vs fresh
   const cachedYes = [];
   const cachedNo = [];
   const toAsk = [];
   for (const pair of candidates) {
-    const key = cacheKey(groups[pair.i], groups[pair.j]);
-    pair._cacheKey = key;
-    const cached = llmCache[key];
+    pair._cacheKey = cacheKey(pair.a, pair.b);
+    const cached = llmCache[pair._cacheKey];
     if (cached === "yes") cachedYes.push(pair);
     else if (cached === "no") cachedNo.push(pair);
     else toAsk.push(pair);
@@ -317,11 +187,8 @@ async function main() {
     `Cache: ${cachedYes.length + cachedNo.length}/${candidates.length} known (${cachedYes.length} yes, ${cachedNo.length} no) · ${toAsk.length} to ask`,
   );
 
-  // Ask LLM in batches with concurrency. Checkpoint the cache every N
-  // batches so an interrupted run doesn't waste its progress — the next
-  // run resumes from where we left off.
   const mergedPairs = [...cachedYes];
-  const CHECKPOINT_EVERY = 50;
+
   if (toAsk.length > 0) {
     const t2 = Date.now();
     const batches = [];
@@ -336,9 +203,7 @@ async function main() {
         const batch = batches.shift();
         if (!batch) break;
         try {
-          const answers = await askLLMBatch(
-            batch.map((p) => ({ a: groups[p.i], b: groups[p.j] })),
-          );
+          const answers = await askLLMBatch(batch);
           for (let k = 0; k < batch.length; k++) {
             const pair = batch[k];
             const ans = answers[k];
@@ -347,7 +212,6 @@ async function main() {
           }
           done += batch.length;
           process.stdout.write(`\r  ${done}/${toAsk.length}`);
-          // Checkpoint cache periodically
           if (done - lastCheckpoint >= CHECKPOINT_EVERY * BATCH_SIZE) {
             lastCheckpoint = done;
             try {
@@ -362,9 +226,7 @@ async function main() {
         }
       }
     }
-    await Promise.all(
-      Array.from({ length: CONCURRENCY }, () => worker()),
-    );
+    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
     console.log(
       `\n  LLM calls done in ${Math.round((Date.now() - t2) / 1000)}s (${errors} errors)`,
     );
@@ -377,9 +239,24 @@ async function main() {
     return;
   }
 
-  // Apply Union-Find merges (same shape as Stage 2)
+  // Apply Union-Find merges using slugs as identity
   const uf = makeUF(groups.length);
-  for (const { i, j } of mergedPairs) uf.union(i, j);
+  let unresolvable = 0;
+  for (const pair of mergedPairs) {
+    const i = slugIndex.get(pair.a.groupSlug);
+    const j = slugIndex.get(pair.b.groupSlug);
+    if (i === undefined || j === undefined) {
+      unresolvable++;
+      continue;
+    }
+    uf.union(i, j);
+  }
+  if (unresolvable > 0) {
+    console.log(
+      `  ${unresolvable} merge pairs skipped (group slug missing, probably already merged in Stage 2)`,
+    );
+  }
+
   const clusters = new Map();
   for (let i = 0; i < groups.length; i++) {
     const root = uf.find(i);
@@ -394,8 +271,9 @@ async function main() {
     } groups)`,
   );
 
+  // Merge into new groups (same shape as Stage 2 cluster merging)
   const newGroups = [];
-  for (const [root, indices] of clusters.entries()) {
+  for (const indices of clusters.values()) {
     if (indices.length === 1) {
       newGroups.push(groups[indices[0]]);
       continue;
