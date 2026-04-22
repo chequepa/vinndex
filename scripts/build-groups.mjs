@@ -356,6 +356,64 @@ function inferBrands(products) {
   return filled;
 }
 
+// Second inference pass: infer brand from wine LINE tokens that are
+// distinctive of a single bodega. E.g. "Concreto Malbec" (scraper didn't
+// pick up the bodega) contains "concreto", which appears only in
+// Zuccardi-branded products in our corpus → assign brand=Zuccardi.
+// This catches the common case of supermarkets listing a well-known
+// label without the bodega prefix in the product name.
+function inferBrandsFromLine(products) {
+  const tokenBrandCount = new Map(); // token → Map(brand → count)
+  const brandOriginalCase = new Map(); // lower → canonical casing
+
+  for (const p of products) {
+    if (!p.brand) continue;
+    const trimmed = p.brand.trim();
+    const brandLower = trimmed.toLowerCase();
+    if (brandLower.length < 3) continue;
+    if (!brandOriginalCase.has(brandLower)) {
+      brandOriginalCase.set(brandLower, trimmed);
+    }
+    const brandTokens = new Set(
+      brandLower.split(/\s+/).filter((t) => t.length >= 3),
+    );
+    const tokens = new Set(
+      tokenize(p.name ?? "").filter((t) => t.length >= 4),
+    );
+    for (const t of tokens) {
+      if (brandTokens.has(t)) continue; // skip brand's own tokens
+      if (!tokenBrandCount.has(t)) tokenBrandCount.set(t, new Map());
+      const m = tokenBrandCount.get(t);
+      m.set(brandLower, (m.get(brandLower) ?? 0) + 1);
+    }
+  }
+
+  // Distinctive: token appears in ≥3 products of exactly 1 brand.
+  // ≥3 (not ≥2) guards against accidental single-brand occurrences.
+  const distinctive = new Map();
+  for (const [token, brandMap] of tokenBrandCount) {
+    if (brandMap.size !== 1) continue;
+    const [[brand, count]] = brandMap;
+    if (count >= 3) distinctive.set(token, brand);
+  }
+
+  let filled = 0;
+  for (const p of products) {
+    if (p.brand) continue;
+    const tokens = tokenize(p.name ?? "");
+    for (const t of tokens) {
+      if (t.length < 4) continue;
+      const brand = distinctive.get(t);
+      if (brand) {
+        p.brand = brandOriginalCase.get(brand) ?? brand;
+        filled++;
+        break;
+      }
+    }
+  }
+  return { filled, distinctiveCount: distinctive.size };
+}
+
 function main() {
   const inPath = resolve(REPO_ROOT, "data/snapshot.json");
   const snap = JSON.parse(readFileSync(inPath, "utf8"));
@@ -371,7 +429,16 @@ function main() {
   const brandlessBefore = products.filter((p) => !p.brand).length;
   const inferred = inferBrands(products);
   console.log(
-    `Brand inference: ${inferred}/${brandlessBefore} products gained a brand`,
+    `Brand inference (pass 1, name-contains-brand): ${inferred}/${brandlessBefore} gained a brand`,
+  );
+  // Second pass: reverse inference from distinctive wine-line tokens
+  // (e.g. "Concreto" → Zuccardi). Catches products that mention the
+  // wine label without the bodega prefix.
+  const remaining = products.filter((p) => !p.brand).length;
+  const { filled: inferredLine, distinctiveCount } =
+    inferBrandsFromLine(products);
+  console.log(
+    `Brand inference (pass 2, line→brand): ${inferredLine}/${remaining} gained a brand (${distinctiveCount} distinctive line tokens)`,
   );
 
   // ============ STAGE 0: EAN grouping ============
