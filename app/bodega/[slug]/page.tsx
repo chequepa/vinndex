@@ -35,7 +35,7 @@ export default async function BodegaPage({ params }: Params) {
   if (!b) notFound();
 
   const multiStore = b.topGroups.filter((g) => g.storeCount >= 2);
-  const singleStore = b.topGroups.filter((g) => g.storeCount < 2);
+  const singleStore = b.topGroups.filter((g) => g.storeCount === 1);
 
   return (
     <div className="bg-white min-h-screen">
