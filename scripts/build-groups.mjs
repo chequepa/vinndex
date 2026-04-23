@@ -159,6 +159,67 @@ const BRAND_ALIASES = [
   ["baron b", "baronb"],
 ];
 
+/**
+ * Label → bodega: cuando un scraper pone el NOMBRE DE LA LÍNEA como
+ * brand (ej "Concreto" en vez de "Zuccardi"), colapsa al brand canónico.
+ * Solo se incluyen aliases con asociación 1:1 no ambigua en el mercado
+ * AR. Se aplica a los productos crudos antes de cualquier matching
+ * (Stage 0/1/2/3) para que todo el pipeline use el mismo brand.
+ */
+const LABEL_TO_BODEGA = {
+  // Zuccardi labels
+  concreto: "Zuccardi",
+  emma: "Zuccardi",
+  aluvional: "Zuccardi",
+  fosil: "Zuccardi",
+  "piedra infinita": "Zuccardi",
+  "finca piedra infinita": "Zuccardi",
+  "jose zuccardi": "Zuccardi",
+  "serie a": "Zuccardi",
+  // Catena Zapata labels
+  adrianna: "Catena Zapata",
+  "adrianna vineyard": "Catena Zapata",
+  nicasia: "Catena Zapata",
+  "nicasia vineyard": "Catena Zapata",
+  argentino: "Catena Zapata",
+  // Rutini lines
+  expresiones: "Rutini",
+  encuentro: "Rutini",
+  antologia: "Rutini",
+  antología: "Rutini",
+  // Luigi Bosca
+  paradigma: "Luigi Bosca",
+  "finca los nobles": "Luigi Bosca",
+  // Trapiche
+  medalla: "Trapiche",
+  broquel: "Trapiche",
+  iscay: "Trapiche",
+  "costa & pampa": "Trapiche",
+  // Norton
+  perdriel: "Norton",
+  // Salentein labels
+  portillo: "Salentein",
+  numina: "Salentein",
+  primus: "Salentein",
+  // Alejandro Vigil / independent (NOT Catena despite association)
+  "el enemigo": "El Enemigo",
+  // Durigutti / Las Compuertas etc — dejar como están
+};
+
+/** Apply LABEL_TO_BODEGA: if raw brand matches a known label, return the
+ * canonical bodega; otherwise return trimmed original (null→null). */
+function resolveBrandLabel(raw) {
+  if (!raw) return raw;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return trimmed;
+  const lower = stripAccents(trimmed)
+    .toLowerCase()
+    .replace(/^\s*(bodegas?|familia)\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return LABEL_TO_BODEGA[lower] ?? trimmed;
+}
+
 // Words that don't carry wine identity — strip from the token set.
 // KEEP varietals (Malbec/Bonarda/etc), proper nouns, and quality tiers —
 // they're part of wine identity and distinguish e.g. Emma Bonarda from
@@ -424,6 +485,22 @@ function main() {
     if (p.description) p.description = decodeEntities(p.description);
   }
   const products = snap.products ?? [];
+
+  // Resolve label→bodega: scrapers de supermercados/vinotecas a veces
+  // ponen el nombre de la línea (Concreto, Emma, Medalla) como brand.
+  // Colapsamos al bodega canónico ANTES del matching para que Stage 0-3
+  // no separen "Concreto Malbec" de "Zuccardi Concreto Malbec".
+  let relabeled = 0;
+  for (const p of products) {
+    const resolved = resolveBrandLabel(p.brand);
+    if (resolved !== p.brand) {
+      p.brand = resolved;
+      relabeled++;
+    }
+  }
+  if (relabeled > 0) {
+    console.log(`Label→bodega resolved: ${relabeled} products re-branded`);
+  }
 
   // Infer missing brands using the corpus of known brands
   const brandlessBefore = products.filter((p) => !p.brand).length;
