@@ -5,7 +5,7 @@ export default function NotFound() {
   const brands = topBrands(8);
   const stats = snapshotStats();
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-white min-h-[100dvh] flex flex-col">
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <a
