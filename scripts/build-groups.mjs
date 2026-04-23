@@ -170,6 +170,8 @@ const LABEL_TO_BODEGA = {
   // Zuccardi labels
   concreto: "Zuccardi",
   emma: "Zuccardi",
+  "emma zuccardi": "Zuccardi",
+  "zuccardi de viticultor": "Zuccardi",
   aluvional: "Zuccardi",
   fosil: "Zuccardi",
   "piedra infinita": "Zuccardi",
@@ -218,6 +220,79 @@ function resolveBrandLabel(raw) {
     .replace(/\s+/g, " ")
     .trim();
   return LABEL_TO_BODEGA[lower] ?? trimmed;
+}
+
+/**
+ * Detect obviously-bad brand values that scrapers sometimes put in the
+ * brand field: varietals ("Malbec"), regions ("Altamira"), wine types
+ * ("Tinto"), or generic words. Returning true means we should null the
+ * brand so inference/matching can assign a real one from the name.
+ */
+const BAD_BRAND_LITERALS = new Set([
+  "vino",
+  "wine",
+  "wines",
+  "tinto",
+  "blanco",
+  "rosado",
+  "rose",
+  "rojo",
+  "red",
+  "white",
+  "espumante",
+  "champagne",
+  "champana",
+  "brut",
+  "dulce",
+  "reserva",
+  "premium",
+  "gran reserva",
+  "malbec",
+  "cabernet",
+  "cabernet sauvignon",
+  "cabernet franc",
+  "chardonnay",
+  "merlot",
+  "bonarda",
+  "syrah",
+  "shiraz",
+  "pinot noir",
+  "pinot grigio",
+  "sauvignon blanc",
+  "torrontes",
+  "torrontés",
+  "tempranillo",
+  "petit verdot",
+  "viognier",
+  "semillon",
+  "semillón",
+  "tannat",
+  "riesling",
+  "mendoza",
+  "salta",
+  "cafayate",
+  "patagonia",
+  "san juan",
+  "la rioja",
+  "altamira",
+  "tupungato",
+  "lujan de cuyo",
+  "valle de uco",
+  "uco",
+  "varios",
+  "otros",
+  "sin marca",
+  "sin identificar",
+]);
+
+function isBadBrand(raw) {
+  if (!raw) return false;
+  const lower = stripAccents(String(raw))
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return BAD_BRAND_LITERALS.has(lower);
 }
 
 // Words that don't carry wine identity — strip from the token set.
@@ -486,21 +561,24 @@ function main() {
   }
   const products = snap.products ?? [];
 
-  // Resolve label→bodega: scrapers de supermercados/vinotecas a veces
-  // ponen el nombre de la línea (Concreto, Emma, Medalla) como brand.
-  // Colapsamos al bodega canónico ANTES del matching para que Stage 0-3
-  // no separen "Concreto Malbec" de "Zuccardi Concreto Malbec".
+  // Clean bad brand values (varietal/region/generic) + resolve
+  // label→bodega canónico. Both run ANTES del matching para que
+  // Stage 0-3 y la brand inference trabajen con brand fields limpios.
+  let cleaned = 0;
   let relabeled = 0;
   for (const p of products) {
+    if (isBadBrand(p.brand)) {
+      p.brand = null;
+      cleaned++;
+    }
     const resolved = resolveBrandLabel(p.brand);
     if (resolved !== p.brand) {
       p.brand = resolved;
       relabeled++;
     }
   }
-  if (relabeled > 0) {
-    console.log(`Label→bodega resolved: ${relabeled} products re-branded`);
-  }
+  if (cleaned > 0) console.log(`Bad brands nulled: ${cleaned}`);
+  if (relabeled > 0) console.log(`Label→bodega resolved: ${relabeled}`);
 
   // Infer missing brands using the corpus of known brands
   const brandlessBefore = products.filter((p) => !p.brand).length;
