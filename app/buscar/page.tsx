@@ -110,7 +110,7 @@ export default async function Buscar({ searchParams }: Params) {
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-[100dvh]">
       {/* NAV */}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

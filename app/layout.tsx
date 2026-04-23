@@ -66,7 +66,7 @@ export default function RootLayout({
       lang="es-AR"
       className={`${fraunces.variable} ${inter.variable} antialiased`}
     >
-      <body className="min-h-screen">
+      <body className="min-h-[100dvh]">
         {children}
         {CF_ANALYTICS_TOKEN && (
           <Script

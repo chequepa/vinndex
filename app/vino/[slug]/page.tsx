@@ -250,7 +250,7 @@ export default async function Vino({ params }: Params) {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-[100dvh]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

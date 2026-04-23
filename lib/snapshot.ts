@@ -320,6 +320,21 @@ export function topBrands(limit = 12): BrandStat[] {
  * anything higher usually signals bad data (stale price, wrong SKU match,
  * promo-locked listing) rather than a real bargain.
  */
+// Keywords that signal the group is NOT wine (aperitivos, destilados,
+// cerveza, cidra, etc.). topDeals otherwise surfaces "Gancia Aperitivo"
+// or "Sidra Sáenz Briones" because they're stocked in 3+ supermarkets.
+const NOT_WINE_RE =
+  /\b(sidra|gin|whisk[ey]+|vodka|ron|tequila|mezcal|vermut|vermouth|aperitivo|aperol|campari|fernet|gancia|cinzano|martini|cerveza|beer|jugo|licor|bailey|baileys|absolut|smirnoff|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|malibu|red\s+bull|coca|pepsi|agua|juice)\b/i;
+
+function looksLikeWineGroup(g: ProductGroup): boolean {
+  // If the group has a varietal or a wine type, trust that.
+  if (g.varietals && g.varietals.length > 0) return true;
+  if (g.type && g.type !== null) return true;
+  // Otherwise sniff the canonical name for non-wine keywords
+  if (NOT_WINE_RE.test(g.canonicalName)) return false;
+  return true;
+}
+
 export function topDeals(limit = 6): ProductGroup[] {
   return groups
     .filter(
@@ -329,7 +344,8 @@ export function topDeals(limit = 6): ProductGroup[] {
         g.maxPrice != null &&
         g.minPrice >= 2000 && // exclude absurdly low min prices
         g.maxPrice > g.minPrice &&
-        g.imageUrl,
+        g.imageUrl &&
+        looksLikeWineGroup(g),
     )
     .map((g) => ({
       g,

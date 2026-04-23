@@ -81,7 +81,7 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="relative nagai-sky min-h-screen flex items-center justify-center overflow-hidden grain">
+      <section className="relative nagai-sky min-h-[100dvh] flex items-center justify-center overflow-hidden grain">
         <div className="absolute top-32 right-[18%] float">
           <div
             className="w-28 h-28 rounded-full"
