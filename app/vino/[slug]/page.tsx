@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
+import { BottleFallback } from "@/components/BottleFallback";
 import {
   findGroup,
   formatArs,
@@ -396,9 +397,10 @@ export default async function Vino({ params }: Params) {
                       className="object-contain"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-snow/50">
-                      sin imagen
-                    </div>
+                    <BottleFallback
+                      name={group.canonicalName}
+                      brand={group.brand}
+                    />
                   )}
                 </div>
               </div>
@@ -729,7 +731,9 @@ export default async function Vino({ params }: Params) {
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
                         className="object-contain"
                       />
-                    ) : null}
+                    ) : (
+                      <BottleFallback name={r.canonicalName} brand={r.brand} />
+                    )}
                   </div>
                   <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
                     {r.canonicalName}

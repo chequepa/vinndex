@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { SearchInput } from "@/components/SearchInput";
+import { BottleFallback } from "@/components/BottleFallback";
 import {
   searchGroups,
   formatArs,
@@ -379,34 +380,121 @@ export default async function Buscar({ searchParams }: Params) {
           </div>
 
           {results.length === 0 ? (
-            <div className="py-20 text-center">
-              <p className="display text-2xl font-semibold text-ink mb-2">
-                Sin resultados{query ? ` para "${query}"` : ""}
-              </p>
-              <p className="text-graphite">
-                Probá con{" "}
-                <a
-                  href="/buscar?q=malbec"
-                  className="text-cobalt hover:underline"
-                >
-                  Malbec
-                </a>
-                ,{" "}
-                <a
-                  href="/buscar?varietal=Chardonnay"
-                  className="text-cobalt hover:underline"
-                >
-                  Chardonnay
-                </a>
-                , o{" "}
-                <a
-                  href="/buscar?tipo=Espumante"
-                  className="text-cobalt hover:underline"
-                >
-                  Espumantes
-                </a>
-                .
-              </p>
+            <div className="py-16 md:py-20">
+              <div className="max-w-xl mx-auto text-center">
+                {/* Empty state icon */}
+                <div className="mx-auto mb-6 w-16 h-16 rounded-full bg-snow flex items-center justify-center border border-ink/10">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-graphite"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </div>
+                <h2 className="display text-2xl md:text-3xl font-semibold text-ink mb-3">
+                  {query
+                    ? `No encontramos "${query}"`
+                    : "Sin resultados"}
+                </h2>
+                <p className="text-graphite mb-8 leading-relaxed">
+                  Revisá la ortografía o probá con un término más general.
+                  También podés explorar el catálogo por varietal, región o
+                  bodega.
+                </p>
+              </div>
+
+              <div className="max-w-3xl mx-auto">
+                <h3 className="text-xs uppercase tracking-widest text-graphite font-semibold mb-3">
+                  Varietales populares
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {[
+                    { label: "Malbec", href: "/varietal/malbec" },
+                    {
+                      label: "Cabernet Sauvignon",
+                      href: "/varietal/cabernet-sauvignon",
+                    },
+                    { label: "Chardonnay", href: "/varietal/chardonnay" },
+                    { label: "Bonarda", href: "/varietal/bonarda" },
+                    { label: "Pinot Noir", href: "/varietal/pinot-noir" },
+                    { label: "Torrontés", href: "/varietal/torrontes" },
+                    {
+                      label: "Sauvignon Blanc",
+                      href: "/varietal/sauvignon-blanc",
+                    },
+                  ].map((v) => (
+                    <a
+                      key={v.label}
+                      href={v.href}
+                      className="inline-flex items-center bg-snow hover:bg-ink hover:text-snow text-ink border border-ink/10 rounded-full px-4 py-2 text-sm transition-colors"
+                    >
+                      {v.label}
+                    </a>
+                  ))}
+                </div>
+
+                <h3 className="text-xs uppercase tracking-widest text-graphite font-semibold mb-3">
+                  Regiones
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {[
+                    { label: "Mendoza", href: "/region/mendoza" },
+                    { label: "Valle de Uco", href: "/region/valle-de-uco" },
+                    {
+                      label: "Luján de Cuyo",
+                      href: "/region/lujan-de-cuyo",
+                    },
+                    { label: "Salta", href: "/region/salta" },
+                    { label: "Patagonia", href: "/region/patagonia" },
+                  ].map((r) => (
+                    <a
+                      key={r.label}
+                      href={r.href}
+                      className="inline-flex items-center bg-snow hover:bg-cobalt hover:text-snow text-ink border border-ink/10 rounded-full px-4 py-2 text-sm transition-colors"
+                    >
+                      {r.label}
+                    </a>
+                  ))}
+                </div>
+
+                <div className="bg-snow/60 border border-ink/10 rounded-2xl p-6 text-sm text-graphite">
+                  <p className="text-ink font-semibold mb-2">
+                    ¿No está el vino que buscás?
+                  </p>
+                  <p className="mb-3">
+                    Puede ser que ninguna de las vinotecas integradas lo tenga
+                    hoy, o que una vinoteca que vende ese vino todavía no esté
+                    en Vinndex.
+                  </p>
+                  <p>
+                    <a
+                      href="/contacto"
+                      className="text-cobalt hover:underline"
+                    >
+                      Avisanos
+                    </a>{" "}
+                    qué vino es y dónde lo viste, y en el próximo ciclo lo
+                    intentamos. También podés ver la lista completa de
+                    vinotecas integradas en{" "}
+                    <a
+                      href="/admin/fuentes"
+                      className="text-cobalt hover:underline"
+                    >
+                      /admin/fuentes
+                    </a>
+                    .
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="divide-y divide-ink/10">
@@ -438,9 +526,7 @@ export default async function Buscar({ searchParams }: Params) {
                             className="object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-malbec/40 text-xs">
-                            sin foto
-                          </div>
+                          <BottleFallback name={g.canonicalName} brand={g.brand} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

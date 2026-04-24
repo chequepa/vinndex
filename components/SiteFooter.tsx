@@ -104,6 +104,11 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
+                <a href="/preguntas" className="hover:text-snow">
+                  Preguntas frecuentes
+                </a>
+              </li>
+              <li>
                 <a href="/sumate" className="hover:text-snow">
                   Sos vinoteca? Sumate
                 </a>
