@@ -3,6 +3,7 @@ import Image from "next/image";
 import { BottleFallback } from "@/components/BottleFallback";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
+import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
 import {
   snapshotStats,
   topBrands,
@@ -392,6 +393,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* VISTOS RECIENTEMENTE (client-side, hidden for zero-state) */}
+      <RecentlyViewedSection />
 
       {/* TOP OFERTAS */}
       {deals.length > 0 && (

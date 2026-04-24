@@ -5,6 +5,8 @@ import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
+import { ShareButtons } from "@/components/ShareButtons";
+import { ViewTracker } from "@/components/RecentlyViewed";
 import {
   findGroup,
   formatArs,
@@ -578,10 +580,27 @@ export default async function Vino({ params }: Params) {
                   <ExternalIcon />
                 </a>
               )}
+
+              <div className="mt-6 flex items-center gap-3 text-snow/85">
+                <span className="text-xs uppercase tracking-wider">
+                  Compartir
+                </span>
+                <ShareButtons
+                  url={`/vino/${group.groupSlug}`}
+                  title={`${group.canonicalName}${group.vintage ? ` ${group.vintage}` : ""} en Vinndex`}
+                  description={
+                    group.minPrice != null
+                      ? `desde ${formatArs(group.minPrice)} en ${group.storeCount} vinoteca${group.storeCount === 1 ? "" : "s"}`
+                      : undefined
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      <ViewTracker slug={group.groupSlug} />
 
       {/* TABLA DE PRECIOS */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
