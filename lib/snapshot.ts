@@ -69,6 +69,7 @@ function groupPriceKey(g: ProductGroup): number {
 }
 
 export type SortKey =
+  | "relevance"
   | "price-asc"
   | "price-desc"
   | "stores-desc"
@@ -82,14 +83,82 @@ export type SearchOptions = {
   sort?: SortKey;
 };
 
+function stripAccents(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Relevance score of a group against a user query. Higher = more
+ * relevant. Rewards phrase matches, prefix matches, brand matches,
+ * storeCount (more stores = more likely to be the one the user
+ * actually meant), and penalises long noisy names that happened to
+ * include the tokens (e.g., "Vino Blah Blah Malbec X Blah" shouldn't
+ * beat "Malbec").
+ */
+function relevanceScore(
+  g: ProductGroup,
+  phrase: string,
+  tokens: string[],
+): number {
+  const name = stripAccents(g.canonicalName.toLowerCase());
+  const brand = stripAccents((g.brand ?? "").toLowerCase());
+  // Compose a virtual "brand + name" haystack so phrases that span
+  // brand→name (e.g. "zuccardi concreto" when the brand is Zuccardi and
+  // the name is "Concreto Malbec") count as contiguous hits.
+  const combined = brand ? `${brand} ${name}` : name;
+
+  let score = 0;
+
+  // Bodega browsing mode: single-token query that matches the brand
+  // exactly. User is likely exploring that bodega's catalog — rank by
+  // storeCount so flagship wines surface first.
+  if (tokens.length === 1 && brand && brand === tokens[0]) {
+    score += 100 + Math.min(g.storeCount, 30) * 10;
+  }
+
+  // Full phrase hit — strong signal for specific searches. Works on the
+  // combined haystack so "zuccardi concreto" matches even when brand and
+  // name are stored separately.
+  if (name.startsWith(phrase)) score += 300;
+  else if (combined.startsWith(phrase)) score += 240;
+  else if (name.includes(phrase)) score += 180;
+  else if (combined.includes(phrase)) score += 130;
+
+  if (brand && phrase.length >= 3) {
+    if (brand.startsWith(phrase)) score += 120;
+    else if (brand.includes(phrase)) score += 60;
+  }
+
+  // Per-token matches. Word-boundary hit > substring.
+  for (const t of tokens) {
+    if (t.length === 0) continue;
+    const wordRe = new RegExp(`\\b${t}\\b`);
+    if (wordRe.test(combined)) score += 30;
+    else if (combined.includes(t)) score += 8;
+  }
+
+  // Social proof: more stores = more likely to be the SKU users want.
+  score += Math.min(g.storeCount, 25) * 5;
+
+  // Penalise long names, but only above a threshold so normal wine
+  // names ("Rutini Cabernet Malbec" = 22 chars) aren't hurt. Kicks in
+  // for the "Box Varietal Gran Enemigo 3 botellas + accesorios" kind
+  // of noisy names.
+  if (name.length > 30) score -= (name.length - 30) * 0.6;
+
+  // Boost wines with price data (in stock somewhere).
+  if (g.minPrice != null && g.minPrice > 0) score += 10;
+
+  return score;
+}
+
 function groupComparator(
   sort: SortKey,
+  query: string,
 ): (a: ProductGroup, b: ProductGroup) => number {
   switch (sort) {
     case "price-desc":
       return (a, b) => {
-        // Null prices sink to the bottom in both directions — having a
-        // real price is always more useful to the user than an empty row.
         const ap = a.minPrice ?? -1;
         const bp = b.minPrice ?? -1;
         if (ap === -1 && bp !== -1) return 1;
@@ -106,6 +175,16 @@ function groupComparator(
     case "name-asc":
       return (a, b) =>
         a.canonicalName.localeCompare(b.canonicalName, "es-AR");
+    case "relevance": {
+      const phrase = stripAccents(query.toLowerCase().trim());
+      const tokens = phrase ? phrase.split(/\s+/).filter(Boolean) : [];
+      return (a, b) => {
+        const sa = relevanceScore(a, phrase, tokens);
+        const sb = relevanceScore(b, phrase, tokens);
+        if (sa !== sb) return sb - sa;
+        return groupPriceKey(a) - groupPriceKey(b);
+      };
+    }
     case "price-asc":
     default:
       return (a, b) => {
@@ -121,7 +200,7 @@ export function searchGroups(
   limit = 48,
   options: SearchOptions = {},
 ): ProductGroup[] {
-  const q = query.trim().toLowerCase();
+  const q = stripAccents(query.trim().toLowerCase());
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
   let source = groups;
 
@@ -145,14 +224,21 @@ export function searchGroups(
 
   const filtered = q
     ? source.filter((g) => {
-        const haystack =
-          `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase();
+        const haystack = stripAccents(
+          `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase(),
+        );
         return tokens.every((t) => haystack.includes(t));
       })
     : source;
 
+  // When the user has a query and hasn't picked a sort, default to
+  // relevance — a cheap Monnalisa should not outrank an exact-match A
+  // Lisa when the user typed "a lisa".
+  const effectiveSort: SortKey =
+    options.sort ?? (q ? "relevance" : "price-asc");
+
   return [...filtered]
-    .sort(groupComparator(options.sort ?? "price-asc"))
+    .sort(groupComparator(effectiveSort, q))
     .slice(0, limit);
 }
 

@@ -42,10 +42,14 @@ export function SearchInput({
   ...rest
 }: Props) {
   const ref = useRef<HTMLInputElement | null>(null);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
   const [value, setValue] = useState(defaultValue ?? "");
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selected, setSelected] = useState(-1);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!withAutocomplete) return;
@@ -78,6 +82,28 @@ export function SearchInput({
     value.trim().length >= 2 &&
     suggestions.length > 0;
 
+  // Click / touch outside closes the dropdown. Covers the mobile case
+  // where onBlur isn't always reliable — users tap the backdrop and
+  // expect the suggestions to dismiss.
+  useEffect(() => {
+    if (!showDropdown) return;
+    function onDocPointer(e: MouseEvent | TouchEvent) {
+      const t = e.target as Node | null;
+      if (!t) return;
+      const input = ref.current;
+      const dd = dropdownRef.current;
+      if (input?.contains(t)) return;
+      if (dd?.contains(t)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocPointer);
+    document.addEventListener("touchstart", onDocPointer, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", onDocPointer);
+      document.removeEventListener("touchstart", onDocPointer);
+    };
+  }, [showDropdown]);
+
   const handleKey = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (!withAutocomplete || !open || suggestions.length === 0) return;
@@ -104,35 +130,36 @@ export function SearchInput({
     [withAutocomplete, open, suggestions, selected],
   );
 
-  return (
-    <>
-      <input
-        ref={ref}
-        type="text"
-        name={name}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKey}
-        onFocus={(e) => {
-          e.currentTarget.select();
-          if (withAutocomplete && suggestions.length > 0) setOpen(true);
-        }}
-        onBlur={() => {
-          // Delay so click on a suggestion (mousedown → click) fires
-          // before we close the dropdown.
-          setTimeout(() => setOpen(false), 150);
-        }}
-        placeholder={placeholder}
-        className={className}
-        autoFocus={autoFocus}
-        autoComplete="off"
-        {...rest}
-      />
-      {showDropdown && (
+  const dropdown =
+    showDropdown && mounted ? (
+      <>
+        {/* Backdrop: only on mobile, so tap anywhere closes. */}
+        <div
+          className="sm:hidden fixed inset-0 z-[39] bg-ink/20"
+          aria-hidden="true"
+          onClick={() => setOpen(false)}
+          onTouchStart={() => setOpen(false)}
+        />
         <ul
+          ref={dropdownRef}
           role="listbox"
-          className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[70vh] overflow-y-auto"
+          className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[50vh] overflow-y-auto"
         >
+          <li className="sm:hidden flex items-center justify-between px-4 py-2 border-b border-ink/10 sticky top-0 bg-white z-10">
+            <span className="text-xs uppercase tracking-wider text-graphite">
+              {suggestions.length} sugerencias
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                ref.current?.blur();
+              }}
+              className="text-xs font-semibold text-graphite hover:text-ink px-2 py-1 rounded"
+            >
+              Cerrar
+            </button>
+          </li>
           {suggestions.map((s, i) => (
             <li key={s.groupSlug} role="option" aria-selected={i === selected}>
               <a
@@ -178,7 +205,35 @@ export function SearchInput({
             </li>
           ))}
         </ul>
-      )}
+      </>
+    ) : null;
+
+  return (
+    <>
+      <input
+        ref={ref}
+        type="text"
+        name={name}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKey}
+        onFocus={(e) => {
+          e.currentTarget.select();
+          if (withAutocomplete && suggestions.length > 0) setOpen(true);
+        }}
+        onBlur={() => {
+          // Delay so click on a suggestion (mousedown → click) fires
+          // before we close the dropdown. The document-level pointer
+          // handler above is the real close on mobile.
+          setTimeout(() => setOpen(false), 150);
+        }}
+        placeholder={placeholder}
+        className={className}
+        autoFocus={autoFocus}
+        autoComplete="off"
+        {...rest}
+      />
+      {dropdown}
     </>
   );
 }
