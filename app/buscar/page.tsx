@@ -4,6 +4,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
+import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
 import {
   searchGroups,
   formatArs,
@@ -11,7 +12,24 @@ import {
   snapshot,
   facetCounts,
   displayBrand,
+  type SortKey,
 } from "@/lib/snapshot";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "price-asc", label: "Precio · menor a mayor" },
+  { key: "price-desc", label: "Precio · mayor a menor" },
+  { key: "stores-desc", label: "Más vinotecas primero" },
+  { key: "name-asc", label: "Nombre A-Z" },
+];
+
+function isValidSort(s: string | undefined): s is SortKey {
+  return (
+    s === "price-asc" ||
+    s === "price-desc" ||
+    s === "stores-desc" ||
+    s === "name-asc"
+  );
+}
 
 export const metadata: Metadata = {
   title: "Buscar — Vinndex",
@@ -24,6 +42,7 @@ type Params = {
     varietal?: string;
     tipo?: string;
     region?: string;
+    sort?: string;
   }>;
 };
 
@@ -52,12 +71,14 @@ export default async function Buscar({ searchParams }: Params) {
   const varietal = params.varietal ?? null;
   const type = params.tipo ?? null;
   const region = params.region ?? null;
+  const sort: SortKey = isValidSort(params.sort) ? params.sort : "price-asc";
 
   const results = searchGroups(query, 48, {
     multiStoreOnly: multiOnly,
     varietal,
     type,
     region,
+    sort,
   });
   const totalGroups = snapshot.groupCount ?? 0;
   const totalMulti = snapshot.multiStoreGroupCount ?? 0;
@@ -99,6 +120,7 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal && key !== "varietal") sp.set("varietal", varietal);
     if (type && key !== "tipo") sp.set("tipo", type);
     if (region && key !== "region") sp.set("region", region);
+    if (sort !== "price-asc" && key !== "sort") sp.set("sort", sort);
     if (value !== null) sp.set(key, value);
     return `/buscar${buildQS(sp)}`;
   }
@@ -110,6 +132,18 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal) sp.set("varietal", varietal);
     if (type) sp.set("tipo", type);
     if (region) sp.set("region", region);
+    if (sort !== "price-asc") sp.set("sort", sort);
+    return `/buscar${buildQS(sp)}`;
+  }
+
+  function sortHref(newSort: SortKey): string {
+    const sp = new URLSearchParams();
+    if (query) sp.set("q", query);
+    if (multiOnly) sp.set("multi", "1");
+    if (varietal) sp.set("varietal", varietal);
+    if (type) sp.set("tipo", type);
+    if (region) sp.set("region", region);
+    if (newSort !== "price-asc") sp.set("sort", newSort);
     return `/buscar${buildQS(sp)}`;
   }
 
@@ -156,6 +190,7 @@ export default async function Buscar({ searchParams }: Params) {
                 defaultValue={query}
                 placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
+                withAutocomplete
               />
               <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
                 Buscar
@@ -249,7 +284,9 @@ export default async function Buscar({ searchParams }: Params) {
                 Limpiar filtros ×
               </a>
             )}
+            {!hasAnyFilter && <LastSearchChip />}
           </div>
+          <SearchPersist query={query} />
         </div>
       </section>
 
@@ -374,13 +411,35 @@ export default async function Buscar({ searchParams }: Params) {
         </aside>
 
         <section>
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
-            <p className="text-sm text-graphite">
-              Ordenado por:{" "}
-              <span className="font-semibold text-ink">
-                más ofertas primero, después precio
-              </span>
+          <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-ink/10 flex-wrap">
+            <p className="text-sm text-graphite shrink-0">
+              <span className="font-semibold text-ink">{results.length}</span>{" "}
+              resultados
             </p>
+            <div
+              role="tablist"
+              aria-label="Ordenar por"
+              className="flex items-center gap-1.5 flex-wrap"
+            >
+              <span className="text-xs text-graphite mr-1 uppercase tracking-wide">
+                Ordenar
+              </span>
+              {SORT_OPTIONS.map((o) => (
+                <a
+                  key={o.key}
+                  href={sortHref(o.key)}
+                  role="tab"
+                  aria-selected={sort === o.key}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                    sort === o.key
+                      ? "bg-ink text-snow border-ink font-semibold"
+                      : "bg-white text-graphite border-ink/15 hover:border-ink/30 hover:text-ink"
+                  }`}
+                >
+                  {o.label}
+                </a>
+              ))}
+            </div>
           </div>
 
           {results.length === 0 ? (

@@ -68,12 +68,53 @@ function groupPriceKey(g: ProductGroup): number {
     : Number.POSITIVE_INFINITY;
 }
 
+export type SortKey =
+  | "price-asc"
+  | "price-desc"
+  | "stores-desc"
+  | "name-asc";
+
 export type SearchOptions = {
   multiStoreOnly?: boolean;
   varietal?: string | null;
   type?: string | null;
   region?: string | null;
+  sort?: SortKey;
 };
+
+function groupComparator(
+  sort: SortKey,
+): (a: ProductGroup, b: ProductGroup) => number {
+  switch (sort) {
+    case "price-desc":
+      return (a, b) => {
+        // Null prices sink to the bottom in both directions — having a
+        // real price is always more useful to the user than an empty row.
+        const ap = a.minPrice ?? -1;
+        const bp = b.minPrice ?? -1;
+        if (ap === -1 && bp !== -1) return 1;
+        if (bp === -1 && ap !== -1) return -1;
+        if (ap !== bp) return bp - ap;
+        return b.storeCount - a.storeCount;
+      };
+    case "stores-desc":
+      return (a, b) => {
+        if (a.storeCount !== b.storeCount)
+          return b.storeCount - a.storeCount;
+        return groupPriceKey(a) - groupPriceKey(b);
+      };
+    case "name-asc":
+      return (a, b) =>
+        a.canonicalName.localeCompare(b.canonicalName, "es-AR");
+    case "price-asc":
+    default:
+      return (a, b) => {
+        if (groupPriceKey(a) !== groupPriceKey(b))
+          return groupPriceKey(a) - groupPriceKey(b);
+        return b.storeCount - a.storeCount;
+      };
+  }
+}
 
 export function searchGroups(
   query: string,
@@ -111,13 +152,7 @@ export function searchGroups(
     : source;
 
   return [...filtered]
-    .sort((a, b) => {
-      // Default sort: cheapest first. Comparables bubble up via tiebreak
-      // (more stores validating the price win when prices tie).
-      if (groupPriceKey(a) !== groupPriceKey(b))
-        return groupPriceKey(a) - groupPriceKey(b);
-      return b.storeCount - a.storeCount;
-    })
+    .sort(groupComparator(options.sort ?? "price-asc"))
     .slice(0, limit);
 }
 
