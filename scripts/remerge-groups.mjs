@@ -32,35 +32,158 @@ const SNAPSHOT = path.join(ROOT, "data/snapshot.json");
 // When you add an entry there, add it here too (or the post-process
 // won't merge existing shipped groups that still have the old brands).
 const NAME_PREFIX_TO_BRAND = {
-  // Noemia's second labels — "A Lisa" / "J. Alberto" are the labels on
-  // the bottle, but producer Noemia is sometimes listed as the brand.
+  // Noemia labels
   "a lisa": "A Lisa",
   "a. lisa": "A Lisa",
   "j alberto": "J. Alberto",
   "j. alberto": "J. Alberto",
-  // DV Catena — sometimes "Catena", sometimes "DV Catena"
+  // Catena family
   "dv catena": "DV Catena",
-  // Enemigo line — El Enemigo is Alejandro Vigil's project; scrapers
-  // sometimes attribute to Aleanna (Vigil's company) or Catena Zapata
-  // (where Vigil is head enologist).
+  alamos: "Alamos",
+  "saint felicien": "Saint Felicien",
+  luca: "Luca",
+  "nicolas catena": "Nicolas Catena Zapata",
+  "angelica zapata": "Catena Zapata",
+  "angélica zapata": "Catena Zapata",
+  adrianna: "Catena Zapata",
+  nicasia: "Catena Zapata",
+  argentino: "Catena Zapata",
+  // Ernesto Catena
+  "alma negra": "Alma Negra",
+  padrillos: "Padrillos",
+  tikal: "Tikal",
+  // Vigil / Enemigo
   "el enemigo": "El Enemigo",
   "gran enemigo": "Gran Enemigo",
-  // Alamos is a Catena Zapata line, often listed with brand=Catena
-  "alamos": "Alamos",
-  // Padrillos is Ernesto Catena's line (Catena Zapata's brother),
-  // sometimes listed with brand=Ernesto Catena
-  "padrillos": "Padrillos",
-  // Saint Felicien — Catena Zapata's casual line
-  "saint felicien": "Saint Felicien",
-  // Luca is Laura Catena's project — distinct from Catena Zapata
-  "luca": "Luca",
-  // Cheval des Andes — Terrazas + Cheval Blanc JV
+  // Salentein
+  portillo: "Salentein",
+  numina: "Salentein",
+  primus: "Salentein",
+  killka: "Salentein",
+  pyros: "Salentein",
+  alyda: "Salentein",
+  // Zuccardi
+  concreto: "Zuccardi",
+  emma: "Zuccardi",
+  aluvional: "Zuccardi",
+  fosil: "Zuccardi",
+  "piedra infinita": "Zuccardi",
+  "finca piedra infinita": "Zuccardi",
+  poligonos: "Zuccardi",
+  polígonos: "Zuccardi",
+  "serie a": "Zuccardi",
+  "santa julia": "Santa Julia",
+  // Rutini
+  encuentro: "Rutini",
+  antologia: "Rutini",
+  antología: "Rutini",
+  expresiones: "Rutini",
+  trumpeter: "Trumpeter",
+  apartado: "Rutini Apartado",
+  // Luigi Bosca
+  paradigma: "Luigi Bosca",
+  "finca los nobles": "Luigi Bosca",
+  "la linda": "La Linda",
+  "finca la linda": "La Linda",
+  // Norton
+  perdriel: "Norton",
+  "cosecha especial": "Norton",
+  "sexy fish": "Sexy Fish",
+  "lote negro": "Lote Negro",
+  // Trapiche
+  medalla: "Trapiche",
+  broquel: "Trapiche",
+  iscay: "Trapiche",
+  "costa & pampa": "Trapiche",
+  alaris: "Trapiche",
+  // Independents
+  "la posta": "La Posta",
+  "los intocables": "Los Intocables",
+  "domaine nico": "Domaine Nico",
+  callia: "Callia",
+  "baron b": "Baron B",
+  "barón b": "Baron B",
+  mumm: "Mumm",
+  chacabuco: "Chacabuco",
+  cruzat: "Cruzat",
+  pascual: "Pascual Toso",
+  "don david": "Trapiche",
+  colome: "Colome",
+  colomé: "Colome",
+  garzon: "Garzon",
+  garzón: "Garzon",
+  argento: "Argento",
+  dada: "Dada",
+  privada: "Norton Privada",
+  particular: "Bianchi Particular",
   "cheval des andes": "Cheval Des Andes",
   "cheval-des-andes": "Cheval Des Andes",
-  // Nicolas Catena Zapata — top Catena cuvée, often conflated
-  "nicolas catena": "Nicolas Catena Zapata",
-  // Bodegas Bianchi's top line
-  "particular": "Bianchi Particular",
+  // More labels discovered via find-duplicates.mjs (round 2 QA)
+  malamado: "Malamado",
+  felino: "Felino",
+  "casa boher": "Casa Boher",
+  amalaya: "Amalaya",
+  chandon: "Chandon",
+  araucana: "Araucana",
+  "perro callejero": "Perro Callejero",
+  monteagrelo: "Monteagrelo",
+  festivo: "Festivo",
+  "terrazas reserva": "Terrazas de los Andes",
+  "zuccardi q": "Zuccardi",
+  hey: "Hey",
+  bramare: "Viña Cobos",
+  "el esteco": "El Esteco",
+  "achaval ferrer": "Achaval Ferrer",
+  quimera: "Achaval Ferrer",
+  coquena: "Coquena",
+  demencial: "Demencial",
+  "conejo verde": "Conejo Verde",
+  aperol: "Aperol",
+  animal: "Animal",
+  "cuchillo de palo": "Cuchillo de Palo",
+  catalpa: "Catalpa",
+  // Other common label-as-line patterns
+  "zuccardi fosil": "Zuccardi",
+  frizze: "Frizze",
+  cafayate: "Etchart",
+  // More labels (round 2 continued)
+  aruma: "Aruma",
+  "casa de herrero": "Casa de Herrero",
+  benmarco: "Benmarco",
+  "casillero del diablo": "Casillero del Diablo",
+  "mil demonios": "Mil Demonios",
+  cocodrilo: "Viña Cobos",
+  puramun: "Salentein",
+  otronia: "Otronia",
+  "familia gascon": "Familia Gascón",
+  "familia gascón": "Familia Gascón",
+  crios: "Susana Balbo",
+  // Round 3
+  "petite fleur": "Monteviejo",
+  hermandad: "Hermandad",
+  vallisto: "Vallisto",
+  serbal: "Atamisque",
+  "latitud 33": "Chandon",
+  "la cayetana": "Ver Sacrum",
+  teho: "Teho",
+  alandes: "Alandes",
+  mendel: "Mendel",
+  septima: "Séptima",
+  séptima: "Séptima",
+  catamarca: "La Riojana",
+  "gaia by mosquita muerta": "Mosquita Muerta",
+  "mosquita muerta": "Mosquita Muerta",
+  salentein: "Salentein",
+  "sangre azul": "Sottano",
+  pulenta: "Pulenta Estate",
+  // Typos and final cleanups
+  otornia: "Otronia",
+  "veuve cliquot": "Veuve Clicquot",
+  "veuve clicquot": "Veuve Clicquot",
+  andillian: "La Coste de los Andes",
+  "los cardos": "Doña Paula",
+  "almacen de la quebrada": "Almacén de la Quebrada",
+  "almacén de la quebrada": "Almacén de la Quebrada",
 };
 
 function stripAccents(s) {
@@ -74,13 +197,26 @@ function normalizeName(s) {
     .trim();
 }
 
+// Leading descriptive words that don't contribute to product identity.
+// Stripped before NAME_PREFIX_TO_BRAND matching so "Espumante Latitud
+// 33 Extra Brut" matches the "latitud 33" prefix, and "Vino A Lisa
+// Malbec" matches "a lisa".
+const LEADING_NOISE =
+  /^(?:vino|vinos?|espumante|champagne|champaña|champana|botella|bot|bote|tinto|blanco|rosado|rose|rosé|dulce|seco|brut|reserva|premium)\s+/i;
+
 function resolveBrandFromName(rawName, originalBrand) {
   if (!rawName) return originalBrand ?? null;
-  const lower = stripAccents(String(rawName))
+  let lower = stripAccents(String(rawName))
     .toLowerCase()
     .replace(/[^a-z0-9\s.]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+  // Peel up to 2 leading noise words ("Vino Espumante X") before checking.
+  for (let i = 0; i < 2; i++) {
+    const next = lower.replace(LEADING_NOISE, "");
+    if (next === lower) break;
+    lower = next;
+  }
   for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
     if (lower === prefix || lower.startsWith(prefix + " ")) {
       return NAME_PREFIX_TO_BRAND[prefix];
@@ -89,10 +225,70 @@ function resolveBrandFromName(rawName, originalBrand) {
   return originalBrand ?? null;
 }
 
+// Brand values that are clearly garbage (placeholder/generic) and
+// should be treated as null for merge-compat purposes. Keep this
+// aligned with BAD_BRAND_LITERALS in build-groups.mjs so CI and
+// post-process agree on what's a real brand.
+const BAD_BRAND_LITERALS = new Set([
+  "sin definir",
+  "sin reglas",
+  "sin marca",
+  "sin identificar",
+  "no definido",
+  "varios",
+  "otros",
+  "s/d",
+  "s/m",
+  "select",
+  "cosecha",
+  "cuvee",
+  "cuvée",
+  "fran",
+  "centenario",
+  "del valle",
+  "gualtallary",
+  "avinea",
+  "the trouble maker",
+  "a",
+  "b",
+  "c",
+  "x",
+]);
+
+function isBadBrand(raw) {
+  if (!raw) return false;
+  const lower = stripAccents(raw)
+    .toLowerCase()
+    .replace(/^\s*(bodegas?|familia)\s+/i, "")
+    .trim();
+  return BAD_BRAND_LITERALS.has(lower);
+}
+
+/** Levenshtein distance for typo tolerance on long brands. Skip for
+ * short brands (≤ 4 chars) where 1 edit is half the string and could
+ * match unrelated brands. */
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    const curr = [i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    prev = curr;
+  }
+  return prev[b.length];
+}
+
 function brandsAreCompatible(brands) {
-  // Null always OK. Otherwise, all non-null must be equal (case-insensitive)
-  // OR one is a substring of the other (e.g., "Catena" ⊂ "Catena Zapata").
-  const nonNull = brands.filter(Boolean);
+  // Treat bad brands as null for compat — they're placeholders that
+  // don't identify a real bodega, so they shouldn't block a merge.
+  const effective = brands.map((b) => (isBadBrand(b) ? null : b));
+  const nonNull = effective.filter(Boolean);
   if (nonNull.length <= 1) return true;
   const normalized = nonNull.map((b) =>
     stripAccents(b).toLowerCase().trim(),
@@ -111,7 +307,20 @@ function brandsAreCompatible(brands) {
     }
     if (wrapsAll) return true;
   }
-  return false;
+  // Typo tolerance: all brands within Levenshtein ≤ 1 per 5 chars of
+  // the longer side. Catches "Veuve Cliquot" vs "Veuve Clicquot",
+  // "Otornia" vs "Otronia". Refuses when any brand is shorter than 5
+  // chars (too noisy).
+  for (let i = 0; i < normalized.length; i++) {
+    for (let j = i + 1; j < normalized.length; j++) {
+      const a = normalized[i];
+      const b = normalized[j];
+      if (a.length < 5 || b.length < 5) return false;
+      const tolerance = Math.max(1, Math.floor(Math.max(a.length, b.length) / 10));
+      if (levenshtein(a, b) > tolerance) return false;
+    }
+  }
+  return true;
 }
 
 function recomputeStats(primary) {
@@ -208,10 +417,17 @@ function main() {
       !brandsAreCompatible(rawBrands)
     ) {
       rejectedBuckets++;
-      if (examples.length < 3) {
+      if (examples.length < 50) {
+        const totalSc = bucket.reduce(
+          (sum, g) => sum + (g.storeCount ?? 0),
+          0,
+        );
         examples.push({
           reason: "brand-conflict",
-          names: bucket.map((g) => `${g.brand ?? "∅"}: ${g.canonicalName}`),
+          totalSc,
+          names: bucket.map(
+            (g) => `sc=${g.storeCount ?? 0} · ${g.brand ?? "∅"}: ${g.canonicalName}`,
+          ),
         });
       }
       continue;
@@ -249,9 +465,17 @@ function main() {
   );
   console.log(`Multi-store: ${snapshot.multiStoreGroupCount}`);
 
-  console.log(`\nExamples:`);
-  for (const e of examples) {
-    console.log(JSON.stringify(e, null, 2));
+  // Sort examples so the most impactful rejects appear first
+  examples.sort((a, b) => (b.totalSc ?? 0) - (a.totalSc ?? 0));
+
+  console.log(`\nExamples (top rejects by total stores):`);
+  for (const e of examples.slice(0, 30)) {
+    if (e.reason === "brand-conflict") {
+      console.log(`  [conflict, total_sc=${e.totalSc}]`);
+      for (const n of e.names) console.log(`    ${n}`);
+    } else {
+      console.log(JSON.stringify(e, null, 2));
+    }
   }
 }
 
