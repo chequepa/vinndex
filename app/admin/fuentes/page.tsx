@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { snapshot, snapshotStats } from "@/lib/snapshot";
 import { STORES } from "@/lib/stores";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FavoritesNavLink } from "@/components/Favorites";
 import type { StorePlatform } from "@/lib/adapters/types";
 
 export const metadata: Metadata = {
@@ -155,6 +156,7 @@ export default function AdminFuentes() {
             <a href="/" className="text-graphite hover:text-ink">
               ← Volver al sitio
             </a>
+            <FavoritesNavLink className="text-ink shrink-0" />
             <ThemeToggle className="text-ink shrink-0" />
           </div>
         </div>

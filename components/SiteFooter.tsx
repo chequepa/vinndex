@@ -94,6 +94,11 @@ export function SiteFooter() {
             <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
             <ul className="space-y-2 text-sm">
               <li>
+                <a href="/favoritos" className="hover:text-snow">
+                  Mis vinos
+                </a>
+              </li>
+              <li>
                 <a href="/sobre" className="hover:text-snow">
                   Sobre el proyecto
                 </a>

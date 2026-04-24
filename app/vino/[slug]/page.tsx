@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import {
   findGroup,
@@ -348,6 +349,7 @@ export default async function Vino({ params }: Params) {
               </button>
             </div>
           </form>
+          <FavoritesNavLink className="text-ink shrink-0" />
           <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>
@@ -446,9 +448,16 @@ export default async function Vino({ params }: Params) {
                 )}
               </div>
 
-              <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] mb-3">
-                {group.canonicalName}
-              </h1>
+              <div className="flex items-start gap-4 mb-3">
+                <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] flex-1">
+                  {group.canonicalName}
+                </h1>
+                <FavoriteButton
+                  slug={group.groupSlug}
+                  className="text-mustard w-11 h-11 md:w-12 md:h-12 border border-snow/25 bg-snow/10 backdrop-blur hover:bg-snow/20 shrink-0 mt-1"
+                  size={22}
+                />
+              </div>
 
               <p className="text-snow/80 text-lg mb-8">
                 {allOutOfStock ? (

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { findFacetPage, formatArs } from "@/lib/snapshot";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -95,6 +96,7 @@ export default async function RegionPage({ params }: Params) {
               </button>
             </div>
           </form>
+          <FavoritesNavLink className="text-ink shrink-0" />
           <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>

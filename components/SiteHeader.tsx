@@ -1,5 +1,6 @@
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
+import { FavoritesNavLink } from "./Favorites";
 
 /**
  * Site-wide sticky header. Logo on the left, searchbar on the right.
@@ -50,6 +51,7 @@ export function SiteHeader() {
             </button>
           </div>
         </form>
+        <FavoritesNavLink className="text-ink shrink-0" />
         <ThemeToggle className="text-ink shrink-0" />
       </div>
     </header>
