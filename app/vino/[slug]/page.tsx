@@ -8,12 +8,15 @@ import { BottleFallback } from "@/components/BottleFallback";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
+import { StickyCTA } from "@/components/StickyCTA";
+import { getScoresForSlug, formatScore } from "@/lib/scores";
 import {
   findGroup,
   formatArs,
   storeName,
   groups as allGroups,
   displayBrand,
+  relatedGroups,
 } from "@/lib/snapshot";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -197,7 +200,8 @@ export default async function Vino({ params }: Params) {
   }
   const vintagesSorted = [...vintageSet].sort((a, b) => b - a);
 
-  // Related: prefer same brand. Fall back to same varietal + similar price band.
+  // Related: varietal + price + region similarity via helper. Falls back
+  // to same-bodega cross-sell if varietal-based search comes up short.
   const sameBrand = allGroups.filter(
     (g) =>
       g.groupSlug !== group.groupSlug &&
@@ -205,27 +209,19 @@ export default async function Vino({ params }: Params) {
       group.brand &&
       g.brand.toLowerCase() === group.brand.toLowerCase(),
   );
-  let related = sameBrand.slice(0, 4);
-  if (related.length < 4 && group.varietals?.length) {
-    const primary = group.varietals[0].toLowerCase();
-    const band = group.minPrice ? [group.minPrice * 0.5, group.minPrice * 2.5] : null;
-    const sameVarietal = allGroups
-      .filter(
-        (g) =>
-          g.groupSlug !== group.groupSlug &&
-          !sameBrand.includes(g) &&
-          (g.varietals ?? []).some((v) => v.toLowerCase() === primary) &&
-          g.storeCount >= 2 &&
-          g.imageUrl &&
-          (!band ||
-            (g.minPrice != null &&
-              g.minPrice >= band[0] &&
-              g.minPrice <= band[1])),
-      )
-      .sort((a, b) => b.storeCount - a.storeCount)
-      .slice(0, 4 - related.length);
-    related = [...related, ...sameVarietal];
+  let related = relatedGroups(group, 4);
+  if (related.length < 4) {
+    // Fill the tail with same-bodega wines (only ones not already
+    // surfaced via the helper) so the section is never short.
+    const relatedSlugs = new Set(related.map((r) => r.groupSlug));
+    related = [
+      ...related,
+      ...sameBrand
+        .filter((g) => !relatedSlugs.has(g.groupSlug) && g.imageUrl)
+        .slice(0, 4 - related.length),
+    ];
   }
+  const scores = getScoresForSlug(group.groupSlug);
 
   // JSON-LD Product schema for rich search snippets
   const productJsonLd = {
@@ -456,6 +452,39 @@ export default async function Vino({ params }: Params) {
                 )}
               </div>
 
+              {scores.length > 0 && (
+                <div className="mb-5 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs uppercase tracking-wider text-snow/60 mr-1">
+                    Puntajes
+                  </span>
+                  {scores.map((s, i) => (
+                    <span
+                      key={`${s.critic}-${s.year}-${i}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mustard/20 border border-mustard/40 text-xs font-semibold"
+                      title={s.note ?? undefined}
+                    >
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="text-mustard"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      <span className="text-mustard">{formatScore(s)}</span>
+                      <span className="text-snow/85">{s.critic}</span>
+                      {s.year && (
+                        <span className="text-snow/60 font-normal">
+                          · {s.year}
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <div className="flex items-start gap-4 mb-3">
                 <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] flex-1">
                   {group.canonicalName}
@@ -608,6 +637,19 @@ export default async function Vino({ params }: Params) {
 
       <ViewTracker slug={group.groupSlug} />
 
+      <StickyCTA
+        priceLabel={
+          allOutOfStock
+            ? "Sin stock"
+            : group.minPrice != null
+              ? formatArs(group.minPrice)
+              : "Ver precios"
+        }
+        storeName={bestOffer ? storeName(bestOffer.storeSlug) : ""}
+        externalUrl={bestOffer?.externalUrl ?? "#precios"}
+        allOutOfStock={allOutOfStock}
+      />
+
       {/* TABLA DE PRECIOS */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
         <section id="precios" className="scroll-mt-8">
@@ -744,13 +786,14 @@ export default async function Vino({ params }: Params) {
 
         {related.length > 0 && (
           <section className="mt-16">
-            <h2 className="display text-2xl font-semibold text-ink mb-6">
-              {sameBrand.length > 0
-                ? `Otros de ${displayBrand(group.brand)}`
-                : group.varietals?.[0]
-                  ? `Otros ${group.varietals[0]}s populares`
-                  : "Otros comparables"}
+            <h2 className="display text-2xl font-semibold text-ink mb-2">
+              Te pueden gustar
             </h2>
+            <p className="text-graphite text-sm mb-6">
+              {group.varietals?.[0]
+                ? `Similares en varietal${group.region ? `, región` : ""} y precio.`
+                : "Selección basada en precio y región."}
+            </p>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               {related.map((r) => (
                 <a

@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "description": "Puntajes de críticos por slug. La key es groupSlug exacto; el valor es un array de scores (un wine puede tener Parker + Tim Atkin + etc.). No commiteamos scores inventados — este archivo arranca con 1-2 ejemplos documentados para validar la feature y el resto se pobla manualmente con fuentes verificadas.",
+    "schema": {
+      "critic": "string — nombre del crítico o publicación (ej: 'Robert Parker', 'Tim Atkin', 'James Suckling', 'Decanter', 'Vinous')",
+      "score": "number — puntaje numérico",
+      "maxScore": "number — 100 típico, 20 para Decanter",
+      "year": "number — vintage reseñado",
+      "note": "string optional — comentario breve del crítico",
+      "source": "string optional — URL pública de la reseña"
+    }
+  },
+  "enemigo-malbec": [
+    {
+      "critic": "Tim Atkin",
+      "score": 93,
+      "maxScore": 100,
+      "year": 2021,
+      "note": "Malbec con identidad clara del proyecto El Enemigo."
+    }
+  ],
+  "adrianna-catena-designated-dv-malbec-vineyard": [
+    {
+      "critic": "Robert Parker",
+      "score": 95,
+      "maxScore": 100,
+      "year": 2019,
+      "note": "Parcela emblema de Catena Zapata en Gualtallary."
+    }
+  ]
+}

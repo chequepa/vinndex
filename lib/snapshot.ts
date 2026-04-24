@@ -156,6 +156,58 @@ export function searchGroups(
     .slice(0, limit);
 }
 
+/**
+ * Return wines similar to the one passed in — for the "otros que te
+ * pueden gustar" section at the bottom of /vino/[slug]. Ranking:
+ *
+ *   varietal match (+3) · region match (+2) · price band match (+2) · storeCount>=3 (+1)
+ *
+ * Only in-stock offers count, and we require at least a varietal match
+ * so we never recommend a Chardonnay next to a Malbec.
+ */
+export function relatedGroups(
+  base: ProductGroup,
+  limit = 6,
+): ProductGroup[] {
+  const baseVarietals = (base.varietals ?? []).map((v) => v.toLowerCase());
+  const baseRegion = base.region?.toLowerCase();
+  const basePrice = base.minPrice ?? null;
+  const priceMin = basePrice ? basePrice * 0.65 : null;
+  const priceMax = basePrice ? basePrice * 1.45 : null;
+
+  const candidates: { g: ProductGroup; score: number }[] = [];
+  for (const g of groups) {
+    if (g.groupSlug === base.groupSlug) continue;
+    if (g.minPrice == null || g.minPrice <= 0) continue;
+    if (!g.offers?.some((o) => o.inStock)) continue;
+
+    const gVarietals = (g.varietals ?? []).map((v) => v.toLowerCase());
+    const varietalOverlap =
+      baseVarietals.length === 0 ||
+      baseVarietals.some((v) => gVarietals.includes(v));
+    if (!varietalOverlap) continue;
+
+    let score = 0;
+    if (baseVarietals.length > 0 && baseVarietals.some((v) => gVarietals.includes(v))) {
+      score += 3;
+    }
+    if (baseRegion && g.region?.toLowerCase() === baseRegion) score += 2;
+    if (priceMin && priceMax && g.minPrice >= priceMin && g.minPrice <= priceMax) {
+      score += 2;
+    }
+    if (g.storeCount >= 3) score += 1;
+    candidates.push({ g, score });
+  }
+
+  return candidates
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score;
+      return b.g.storeCount - a.g.storeCount;
+    })
+    .slice(0, limit)
+    .map((x) => x.g);
+}
+
 /** Get top facets (varietals, types, regions) for sidebar filtering. */
 export function facetCounts(): {
   varietals: { name: string; count: number }[];
