@@ -93,6 +93,7 @@ export default async function BodegaPage({ params }: Params) {
               <SearchInput
                 placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                 className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
+                withAutocomplete
               />
               <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
                 Buscar

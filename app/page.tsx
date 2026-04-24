@@ -322,6 +322,7 @@ export default function Home() {
                   <SearchInput
                     placeholder="Malbec, Luigi Bosca, Catena Zapata..."
                     className="w-full bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
+                    withAutocomplete
                   />
                   <button
                     type="submit"
