@@ -184,34 +184,174 @@ const BRAND_ALIASES = [
  * with different brand attributions — check /admin/fuentes or the
  * duplicate-hunting report.
  */
+/**
+ * Name-prefix → brand overrides. Keep in sync with
+ * scripts/remerge-groups.mjs (same map, applied post-Stage 3).
+ *
+ * Only add entries when:
+ *   - The prefix is specific enough to NOT match generic wines
+ *     (never add "malbec", "reserva", etc.)
+ *   - You've confirmed multiple wines share this label with mixed
+ *     brand attributions in the data (use find-duplicates.mjs)
+ */
 const NAME_PREFIX_TO_BRAND = {
-  // Noemia's second labels — "A Lisa" / "J. Alberto" are the labels on
-  // the bottle, but producer Noemia is sometimes listed as the brand.
+  // ── Noemia's labels (often attributed to producer "Noemia") ──
   "a lisa": "A Lisa",
   "a. lisa": "A Lisa",
   "j alberto": "J. Alberto",
   "j. alberto": "J. Alberto",
-  // DV Catena — sometimes "Catena", sometimes "DV Catena".
+
+  // ── Catena family (sometimes listed under Catena Zapata) ──
   "dv catena": "DV Catena",
-  // Enemigo line — Alejandro Vigil's project; scrapers sometimes
-  // attribute to Aleanna (Vigil's company) or Catena Zapata.
+  "alamos": "Alamos",
+  "saint felicien": "Saint Felicien",
+  "luca": "Luca",
+  "nicolas catena": "Nicolas Catena Zapata",
+  "angelica zapata": "Catena Zapata",
+  "angélica zapata": "Catena Zapata",
+  adrianna: "Catena Zapata",
+  nicasia: "Catena Zapata",
+  argentino: "Catena Zapata",
+
+  // ── Ernesto Catena (Catena Zapata's brother's winery) ──
+  "alma negra": "Alma Negra",
+  padrillos: "Padrillos",
+  "tikal": "Tikal",
+
+  // ── Alejandro Vigil's Enemigo line ──
   "el enemigo": "El Enemigo",
   "gran enemigo": "Gran Enemigo",
-  // Alamos is a Catena Zapata line, often listed with brand=Catena.
-  "alamos": "Alamos",
-  // Padrillos is Ernesto Catena's line, sometimes listed as Ernesto Catena.
-  "padrillos": "Padrillos",
-  // Saint Felicien — Catena Zapata's casual line.
-  "saint felicien": "Saint Felicien",
-  // Luca is Laura Catena's project.
-  "luca": "Luca",
-  // Cheval des Andes — Terrazas + Cheval Blanc JV.
+
+  // ── Salentein labels (frequently listed as the parent bodega) ──
+  portillo: "Salentein",
+  numina: "Salentein",
+  primus: "Salentein",
+  killka: "Salentein",
+  pyros: "Salentein",
+  alyda: "Salentein",
+
+  // ── Zuccardi labels ──
+  concreto: "Zuccardi",
+  emma: "Zuccardi",
+  aluvional: "Zuccardi",
+  fosil: "Zuccardi",
+  "piedra infinita": "Zuccardi",
+  "finca piedra infinita": "Zuccardi",
+  poligonos: "Zuccardi",
+  polígonos: "Zuccardi",
+  "serie a": "Zuccardi",
+  "santa julia": "Santa Julia",
+
+  // ── Rutini lines ──
+  encuentro: "Rutini",
+  antologia: "Rutini",
+  antología: "Rutini",
+  expresiones: "Rutini",
+  trumpeter: "Trumpeter",
+  apartado: "Rutini Apartado",
+
+  // ── Luigi Bosca ──
+  paradigma: "Luigi Bosca",
+  "finca los nobles": "Luigi Bosca",
+  "la linda": "La Linda",
+  "finca la linda": "La Linda",
+
+  // ── Norton labels ──
+  perdriel: "Norton",
+  "cosecha especial": "Norton",
+  "sexy fish": "Sexy Fish",
+  "lote negro": "Lote Negro",
+
+  // ── Trapiche lines ──
+  medalla: "Trapiche",
+  broquel: "Trapiche",
+  iscay: "Trapiche",
+  "costa & pampa": "Trapiche",
+  alaris: "Trapiche",
+
+  // ── Independent labels commonly mis-attributed ──
+  "la posta": "La Posta",
+  "los intocables": "Los Intocables",
+  "domaine nico": "Domaine Nico",
+  callia: "Callia",
+  "baron b": "Baron B",
+  "barón b": "Baron B",
+  mumm: "Mumm",
+  chacabuco: "Chacabuco",
+  cruzat: "Cruzat",
+  pascual: "Pascual Toso",
+  "don david": "Trapiche",
+  colome: "Colome",
+  colomé: "Colome",
+  garzon: "Garzon",
+  garzón: "Garzon",
+  argento: "Argento",
+  dada: "Dada",
+  "privada": "Norton Privada",
+  particular: "Bianchi Particular",
   "cheval des andes": "Cheval Des Andes",
   "cheval-des-andes": "Cheval Des Andes",
-  // Nicolas Catena Zapata — top Catena cuvée, often conflated.
-  "nicolas catena": "Nicolas Catena Zapata",
-  // Bodegas Bianchi's top line.
-  "particular": "Bianchi Particular",
+  // More labels discovered via find-duplicates.mjs (round 2 QA)
+  malamado: "Malamado",
+  felino: "Felino",
+  "casa boher": "Casa Boher",
+  amalaya: "Amalaya",
+  chandon: "Chandon",
+  araucana: "Araucana",
+  "perro callejero": "Perro Callejero",
+  monteagrelo: "Monteagrelo",
+  festivo: "Festivo",
+  "terrazas reserva": "Terrazas de los Andes",
+  "zuccardi q": "Zuccardi",
+  hey: "Hey",
+  bramare: "Viña Cobos",
+  "el esteco": "El Esteco",
+  "achaval ferrer": "Achaval Ferrer",
+  quimera: "Achaval Ferrer",
+  coquena: "Coquena",
+  demencial: "Demencial",
+  "conejo verde": "Conejo Verde",
+  aperol: "Aperol",
+  animal: "Animal",
+  "cuchillo de palo": "Cuchillo de Palo",
+  catalpa: "Catalpa",
+  frizze: "Frizze",
+  cafayate: "Etchart",
+  // More labels (round 2 continued)
+  aruma: "Aruma",
+  "casa de herrero": "Casa de Herrero",
+  benmarco: "Benmarco",
+  "casillero del diablo": "Casillero del Diablo",
+  "mil demonios": "Mil Demonios",
+  cocodrilo: "Viña Cobos",
+  puramun: "Salentein",
+  otronia: "Otronia",
+  "familia gascon": "Familia Gascón",
+  "familia gascón": "Familia Gascón",
+  crios: "Susana Balbo",
+  // Round 3
+  "petite fleur": "Monteviejo",
+  hermandad: "Hermandad",
+  vallisto: "Vallisto",
+  serbal: "Atamisque",
+  "latitud 33": "Chandon",
+  "la cayetana": "Ver Sacrum",
+  teho: "Teho",
+  alandes: "Alandes",
+  mendel: "Mendel",
+  septima: "Séptima",
+  séptima: "Séptima",
+  catamarca: "La Riojana",
+  "mosquita muerta": "Mosquita Muerta",
+  salentein: "Salentein",
+  pulenta: "Pulenta Estate",
+  otornia: "Otronia",
+  "veuve cliquot": "Veuve Clicquot",
+  "veuve clicquot": "Veuve Clicquot",
+  andillian: "La Coste de los Andes",
+  "los cardos": "Doña Paula",
+  "almacen de la quebrada": "Almacén de la Quebrada",
+  "almacén de la quebrada": "Almacén de la Quebrada",
 };
 
 /** Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel. */
@@ -242,6 +382,8 @@ const LABEL_TO_BODEGA = {
   "finca piedra infinita": "Zuccardi",
   "jose zuccardi": "Zuccardi",
   "serie a": "Zuccardi",
+  poligonos: "Zuccardi",
+  polígonos: "Zuccardi",
   // Catena Zapata labels
   adrianna: "Catena Zapata",
   "adrianna vineyard": "Catena Zapata",
@@ -253,6 +395,7 @@ const LABEL_TO_BODEGA = {
   encuentro: "Rutini",
   antologia: "Rutini",
   antología: "Rutini",
+  "rutini wines": "Rutini",
   // Luigi Bosca
   paradigma: "Luigi Bosca",
   "finca los nobles": "Luigi Bosca",
@@ -261,14 +404,28 @@ const LABEL_TO_BODEGA = {
   broquel: "Trapiche",
   iscay: "Trapiche",
   "costa & pampa": "Trapiche",
+  alaris: "Trapiche",
   // Norton
   perdriel: "Norton",
+  "cosecha especial": "Norton",
   // Salentein labels
   portillo: "Salentein",
   numina: "Salentein",
   primus: "Salentein",
+  killka: "Salentein",
+  pyros: "Salentein",
+  alyda: "Salentein",
   // Alejandro Vigil / independent (NOT Catena despite association)
   "el enemigo": "El Enemigo",
+  aleanna: "El Enemigo",
+  // Hess Family produces Colome in Argentina
+  "hess family": "Colome",
+  // Mumm sometimes listed as "MUMM LEGER" etc.
+  "mumm leger 750 cc.": "Mumm",
+  // Familia Zuccardi / Santa Julia variants (Santa Julia is Zuccardi's entry line)
+  "familia zucardi": "Zuccardi",
+  "familia zuccardi": "Zuccardi",
+  zucardi: "Zuccardi",
   // Durigutti / Las Compuertas etc — dejar como están
 };
 
@@ -347,6 +504,28 @@ const BAD_BRAND_LITERALS = new Set([
   "otros",
   "sin marca",
   "sin identificar",
+  // Generic "undefined" / placeholder values from scrapers
+  "sin definir",
+  "sin reglas",
+  "sin definido",
+  "no definido",
+  "otros",
+  "s/d",
+  "s/m",
+  // Generic wine descriptors mistaken for brands
+  "select",
+  "cosecha",
+  "cuvee",
+  "cuvée",
+  "fran",
+  "centenario",
+  "del valle",
+  "gualtallary",
+  // Single-character or numeric garbage
+  "a",
+  "b",
+  "c",
+  "x",
 ]);
 
 function isBadBrand(raw) {
