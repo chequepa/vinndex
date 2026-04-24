@@ -7,6 +7,7 @@ import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
+import { CompareButton } from "@/components/Compare";
 import {
   findGroup,
   formatArs,
@@ -415,6 +416,10 @@ export default async function Vino({ params }: Params) {
 
             <div>
               <div className="mb-4 flex items-center gap-2 text-sm flex-wrap">
+                <CompareButton
+                  slug={group.groupSlug}
+                  className="px-3 py-1 text-snow"
+                />
                 {group.brand && (
                   <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
                     {displayBrand(group.brand)}
