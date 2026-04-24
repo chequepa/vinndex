@@ -22,6 +22,129 @@ function formatCount(n: number): string {
   return String(n);
 }
 
+/**
+ * Stylized Nagai-style wine bottle for the hero — flat shapes, brand
+ * palette (malbec body, mustard label, cobalt cap). The label carries a
+ * tiny sun that rhymes visually with the big radial sun behind it.
+ *
+ * Sized at ~520px tall on desktop. Hidden below lg breakpoint.
+ */
+function HeroBottle() {
+  return (
+    <svg
+      viewBox="0 0 220 540"
+      className="w-[260px] xl:w-[300px] h-auto drop-shadow-[0_30px_60px_rgba(15,30,77,0.45)]"
+      role="img"
+      aria-label="Ilustración de una botella de vino"
+    >
+      <defs>
+        <linearGradient id="bottleBody" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#4A1220" />
+          <stop offset="0.25" stopColor="#6B1E2E" />
+          <stop offset="0.65" stopColor="#6B1E2E" />
+          <stop offset="1" stopColor="#3D0F1C" />
+        </linearGradient>
+        <linearGradient id="labelBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#F5EDE0" />
+          <stop offset="1" stopColor="#E8D47C" />
+        </linearGradient>
+      </defs>
+
+      {/* Ground shadow */}
+      <ellipse cx="110" cy="520" rx="82" ry="10" fill="#0F1E4D" opacity="0.35" />
+
+      {/* Cap */}
+      <rect x="86" y="12" width="48" height="34" rx="1" fill="#1E3FBF" />
+      <rect x="86" y="12" width="48" height="8" fill="#0F1E4D" opacity="0.35" />
+
+      {/* Foil collar */}
+      <path
+        d="M 82 46 L 138 46 L 138 84 Q 138 88 134 88 L 86 88 Q 82 88 82 84 Z"
+        fill="#6B1E2E"
+      />
+      {/* Foil highlight */}
+      <path
+        d="M 86 48 L 90 48 L 90 86 L 86 86 Z"
+        fill="#E8B547"
+        opacity="0.35"
+      />
+
+      {/* Neck */}
+      <rect x="92" y="88" width="36" height="52" fill="url(#bottleBody)" />
+
+      {/* Shoulder + body */}
+      <path
+        d="M 92 138 Q 52 160 52 220 L 52 490 Q 52 510 72 510 L 148 510 Q 168 510 168 490 L 168 220 Q 168 160 128 138 Z"
+        fill="url(#bottleBody)"
+      />
+
+      {/* Highlight stripe on body (subtle glass reflection) */}
+      <path
+        d="M 66 220 Q 66 195 82 175 L 82 495 Q 66 493 66 478 Z"
+        fill="#F5EDE0"
+        opacity="0.08"
+      />
+
+      {/* Label */}
+      <rect x="58" y="285" width="104" height="160" rx="3" fill="url(#labelBg)" />
+      {/* Label top/bottom bands */}
+      <rect x="58" y="285" width="104" height="8" fill="#0F1729" opacity="0.1" />
+      <rect x="58" y="437" width="104" height="8" fill="#0F1729" opacity="0.1" />
+
+      {/* Mini sun on the label (rhymes with the big one behind) */}
+      <circle cx="110" cy="330" r="14" fill="#D97449" />
+      <g stroke="#0F1729" strokeWidth="1" opacity="0.4">
+        <line x1="110" y1="308" x2="110" y2="313" />
+        <line x1="110" y1="347" x2="110" y2="352" />
+        <line x1="88" y1="330" x2="93" y2="330" />
+        <line x1="127" y1="330" x2="132" y2="330" />
+        <line x1="93" y1="313" x2="96" y2="316" />
+        <line x1="124" y1="344" x2="127" y2="347" />
+        <line x1="127" y1="313" x2="124" y2="316" />
+        <line x1="96" y1="344" x2="93" y2="347" />
+      </g>
+
+      {/* Label divider */}
+      <line
+        x1="72"
+        y1="360"
+        x2="148"
+        y2="360"
+        stroke="#0F1729"
+        strokeWidth="0.6"
+        opacity="0.3"
+      />
+
+      {/* Monogram */}
+      <text
+        x="110"
+        y="397"
+        textAnchor="middle"
+        fontFamily="Fraunces, Georgia, serif"
+        fontSize="34"
+        fontWeight="700"
+        fill="#6B1E2E"
+      >
+        Vx
+      </text>
+
+      {/* Tagline */}
+      <text
+        x="110"
+        y="422"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, sans-serif"
+        fontSize="8"
+        letterSpacing="3.5"
+        fill="#0F1729"
+        opacity="0.7"
+      >
+        COMPARADOR
+      </text>
+    </svg>
+  );
+}
+
 export default function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
@@ -87,23 +210,26 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="relative nagai-sky min-h-[100dvh] flex items-center justify-center overflow-hidden grain">
-        <div className="absolute top-32 right-[18%] float">
+      <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
+        {/* Sun (larger, behind the bottle on desktop) */}
+        <div className="absolute top-[18%] right-[8%] lg:right-[15%] float pointer-events-none">
           <div
-            className="w-28 h-28 rounded-full"
+            className="w-36 h-36 lg:w-48 lg:h-48 rounded-full"
             style={{
               background:
                 "radial-gradient(circle at 40% 40%, #F5EDE0 0%, #E8B547 45%, #D97449 100%)",
-              boxShadow: "0 0 80px 20px rgba(232, 181, 71, 0.4)",
+              boxShadow: "0 0 120px 30px rgba(232, 181, 71, 0.45)",
             }}
           />
         </div>
 
+        {/* Mountain silhouettes at bottom */}
         <svg
-          className="absolute bottom-0 left-0 w-full"
+          className="absolute bottom-0 left-0 w-full pointer-events-none"
           viewBox="0 0 1440 520"
           preserveAspectRatio="none"
           style={{ height: "65vh" }}
+          aria-hidden="true"
         >
           <path
             d="M0 400 L120 280 L220 340 L340 220 L460 300 L580 190 L700 260 L820 170 L940 240 L1060 180 L1180 260 L1320 210 L1440 280 L1440 520 L0 520 Z"
@@ -119,6 +245,7 @@ export default function Home() {
             d="M0 500 L200 440 L420 470 L640 430 L880 470 L1100 440 L1320 475 L1440 450 L1440 520 L0 520 Z"
             fill="#0F1E4D"
           />
+          {/* Vineyard rows (oblique strokes) */}
           <g stroke="#6B1E2E" strokeWidth="1.5" opacity="0.55">
             <line x1="100" y1="505" x2="180" y2="485" />
             <line x1="220" y1="503" x2="320" y2="482" />
@@ -130,6 +257,7 @@ export default function Home() {
             <line x1="1060" y1="490" x2="1160" y2="473" />
             <line x1="1200" y1="488" x2="1300" y2="472" />
           </g>
+          {/* Wheat/agaves */}
           <g fill="#0F1E4D">
             <ellipse cx="80" cy="470" rx="6" ry="28" />
             <ellipse cx="105" cy="465" rx="5" ry="22" />
@@ -137,73 +265,103 @@ export default function Home() {
             <ellipse cx="1225" cy="455" rx="5" ry="24" />
             <ellipse cx="1250" cy="463" rx="6" ry="26" />
           </g>
+          {/* Small cypress/agave clusters mid-field */}
+          <g fill="#6B1E2E" opacity="0.85">
+            <path d="M 330 475 L 326 455 L 334 455 Z" />
+            <path d="M 336 478 L 332 462 L 340 462 Z" />
+            <path d="M 920 470 L 916 450 L 924 450 Z" />
+            <path d="M 928 473 L 924 456 L 932 456 Z" />
+          </g>
+          {/* Moons/small stars on sky portion (above mountain ridge) */}
+          <g fill="#F5EDE0" opacity="0.7">
+            <circle cx="180" cy="80" r="2" />
+            <circle cx="340" cy="50" r="1.5" />
+            <circle cx="1120" cy="90" r="2" />
+          </g>
         </svg>
 
-        <div className="relative z-20 max-w-5xl mx-auto px-6 pt-32 pb-24 text-center hero-text">
-          <p className="text-snow/90 text-sm md:text-base tracking-[0.25em] uppercase mb-6 font-medium">
-            La biblia para comprar vino online en Argentina
-          </p>
+        <div className="relative z-20 max-w-7xl w-full mx-auto px-6 lg:px-12 pt-28 lg:pt-16 pb-20">
+          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
+            {/* COPY + SEARCH */}
+            <div className="text-center lg:text-left hero-text">
+              <p className="text-snow/90 text-sm md:text-base tracking-[0.25em] uppercase mb-5 font-medium">
+                La biblia para comprar vino online en Argentina
+              </p>
 
-          <h1 className="display text-snow text-5xl md:text-7xl lg:text-8xl font-semibold leading-[0.95] tracking-tight mb-8">
-            Un vino.
-            <br />
-            <span className="italic font-normal">Todos</span> los precios.
-          </h1>
+              <h1 className="display text-snow text-5xl md:text-7xl lg:text-[5.5rem] xl:text-8xl font-semibold leading-[0.95] tracking-tight mb-6">
+                Un vino.
+                <br />
+                <span className="italic font-normal">Todos</span> los precios.
+              </h1>
 
-          <p className="text-snow/85 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Buscás el vino que querés. Te decimos{" "}
-            <span className="underline decoration-mustard decoration-2 underline-offset-4">
-              todas las vinotecas online
-            </span>{" "}
-            que lo tienen, ordenadas por precio total con envío a tu casa.
-          </p>
+              <p className="text-snow/85 text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 mb-9 leading-relaxed">
+                Buscás el vino que querés. Te decimos{" "}
+                <span className="underline decoration-mustard decoration-2 underline-offset-4">
+                  todas las vinotecas online
+                </span>{" "}
+                que lo tienen, ordenadas por precio total con envío a tu casa.
+              </p>
 
-          <form action="/buscar" className="max-w-2xl mx-auto">
-            <div className="relative flex items-center bg-snow rounded-full shadow-2xl p-2 pl-6 ring-1 ring-ink/5">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-graphite shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <SearchInput
-                placeholder="Malbec, Luigi Bosca, Catena Zapata..."
-                className="w-full bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
-              />
-              <button
-                type="submit"
-                className="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-6 md:px-8 py-3 rounded-full transition-colors text-sm md:text-base"
-              >
-                Buscar
-              </button>
+              <form action="/buscar" className="max-w-2xl mx-auto lg:mx-0">
+                <div className="relative flex items-center bg-snow rounded-full shadow-2xl p-2 pl-6 ring-1 ring-ink/5">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className="text-graphite shrink-0"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                  <SearchInput
+                    placeholder="Malbec, Luigi Bosca, Catena Zapata..."
+                    className="w-full bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
+                  />
+                  <button
+                    type="submit"
+                    className="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-6 md:px-8 py-3 rounded-full transition-colors text-sm md:text-base"
+                  >
+                    Buscar
+                  </button>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-snow/80 text-sm">
+                  <span className="opacity-70">Popular hoy:</span>
+                  <a href="/varietal/malbec" className="chip text-xs !py-1.5">
+                    Malbec
+                  </a>
+                  <a
+                    href="/varietal/cabernet-sauvignon"
+                    className="chip text-xs !py-1.5"
+                  >
+                    Cabernet Sauvignon
+                  </a>
+                  <a
+                    href="/region/valle-de-uco"
+                    className="chip text-xs !py-1.5"
+                  >
+                    Valle de Uco
+                  </a>
+                  <a
+                    href="/buscar?tipo=Espumante"
+                    className="chip text-xs !py-1.5"
+                  >
+                    Espumantes
+                  </a>
+                </div>
+              </form>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-snow/80 text-sm">
-              <span className="opacity-70">Popular hoy:</span>
-              <a href="/varietal/malbec" className="chip text-xs !py-1.5">
-                Malbec
-              </a>
-              <a
-                href="/varietal/cabernet-sauvignon"
-                className="chip text-xs !py-1.5"
-              >
-                Cabernet Sauvignon
-              </a>
-              <a href="/region/valle-de-uco" className="chip text-xs !py-1.5">
-                Valle de Uco
-              </a>
-              <a href="/buscar?tipo=Espumante" className="chip text-xs !py-1.5">
-                Espumantes
-              </a>
+            {/* BOTTLE */}
+            <div className="hidden lg:flex justify-center items-end">
+              <HeroBottle />
             </div>
-          </form>
+          </div>
         </div>
       </section>
 
