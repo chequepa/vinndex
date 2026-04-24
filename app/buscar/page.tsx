@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import {
   searchGroups,
@@ -179,6 +180,7 @@ export default async function Buscar({ searchParams }: Params) {
             </svg>
             <span>Precios en CABA</span>
           </div>
+          <FavoritesNavLink className="text-ink shrink-0" />
           <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>

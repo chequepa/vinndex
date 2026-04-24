@@ -2,6 +2,7 @@ import { SearchInput } from "@/components/SearchInput";
 import Image from "next/image";
 import { BottleFallback } from "@/components/BottleFallback";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FavoritesNavLink } from "@/components/Favorites";
 import {
   snapshotStats,
   topBrands,
@@ -80,6 +81,7 @@ export default function Home() {
             </svg>
             <span>Precios en CABA</span>
           </div>
+          <FavoritesNavLink className="text-snow shrink-0" />
           <ThemeToggle className="text-snow shrink-0" />
         </div>
       </nav>
