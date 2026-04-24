@@ -9,7 +9,9 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
 import { StickyCTA } from "@/components/StickyCTA";
+import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
+import { getPriceHistory } from "@/lib/priceHistory";
 import {
   findGroup,
   formatArs,
@@ -222,6 +224,7 @@ export default async function Vino({ params }: Params) {
     ];
   }
   const scores = getScoresForSlug(group.groupSlug);
+  const priceSeries = getPriceHistory(group.groupSlug);
 
   // JSON-LD Product schema for rich search snippets
   const productJsonLd = {
@@ -783,6 +786,12 @@ export default async function Vino({ params }: Params) {
             vinoteca.
           </p>
         </section>
+
+        {priceSeries.length >= 2 && (
+          <section className="mt-14 pt-10 border-t border-ink/10">
+            <PriceHistoryChart series={priceSeries} />
+          </section>
+        )}
 
         {related.length > 0 && (
           <section className="mt-16">
