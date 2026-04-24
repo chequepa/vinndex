@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { findFacetPage, formatArs } from "@/lib/snapshot";
 import { SearchInput } from "@/components/SearchInput";
@@ -131,14 +132,14 @@ export default async function RegionPage({ params }: Params) {
                   href={`/vino/${g.groupSlug}`}
                   className="postcard p-5 flex gap-4"
                 >
-                  <div className="w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                  <div className="relative w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
                     {g.imageUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={g.imageUrl}
                         alt={g.canonicalName}
-                        loading="lazy"
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="80px"
+                        className="object-contain"
                       />
                     )}
                   </div>
@@ -179,14 +180,14 @@ export default async function RegionPage({ params }: Params) {
                   href={`/vino/${g.groupSlug}`}
                   className="bg-white rounded-2xl p-4 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
-                  <div className="w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
+                  <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
                     {g.imageUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={g.imageUrl}
                         alt={g.canonicalName}
-                        loading="lazy"
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                        className="object-contain"
                       />
                     )}
                   </div>

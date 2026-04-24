@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
 import {
@@ -386,11 +387,13 @@ export default async function Vino({ params }: Params) {
                 <div className="absolute inset-0 bg-snow/15 blur-2xl rounded-full" />
                 <div className="relative w-56 h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
                   {group.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={group.imageUrl}
                       alt={group.canonicalName}
-                      className="w-full h-full object-contain"
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 224px, 224px"
+                      className="object-contain"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-snow/50">
@@ -719,12 +722,12 @@ export default async function Vino({ params }: Params) {
                 >
                   <div className="w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
                     {r.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={r.imageUrl}
                         alt={r.canonicalName}
-                        loading="lazy"
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+                        className="object-contain"
                       />
                     ) : null}
                   </div>
