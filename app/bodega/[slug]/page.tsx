@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { findBrandPage, formatArs } from "@/lib/snapshot";
 import { SearchInput } from "@/components/SearchInput";
+import { BottleFallback } from "@/components/BottleFallback";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -171,7 +172,7 @@ export default async function BodegaPage({ params }: Params) {
                   className="postcard p-5 flex gap-4"
                 >
                   <div className="relative w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                    {g.imageUrl && (
+                    {g.imageUrl ? (
                       <Image
                         src={g.imageUrl}
                         alt={g.canonicalName}
@@ -179,6 +180,8 @@ export default async function BodegaPage({ params }: Params) {
                         sizes="80px"
                         className="object-contain"
                       />
+                    ) : (
+                      <BottleFallback name={g.canonicalName} brand={g.brand} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -221,7 +224,7 @@ export default async function BodegaPage({ params }: Params) {
                   className="bg-white rounded-2xl p-4 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
-                    {g.imageUrl && (
+                    {g.imageUrl ? (
                       <Image
                         src={g.imageUrl}
                         alt={g.canonicalName}
@@ -229,6 +232,8 @@ export default async function BodegaPage({ params }: Params) {
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                         className="object-contain"
                       />
+                    ) : (
+                      <BottleFallback name={g.canonicalName} brand={g.brand} />
                     )}
                   </div>
                   <div className="display text-sm font-semibold line-clamp-2 min-h-[2.5em] text-ink">

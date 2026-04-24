@@ -1,5 +1,6 @@
 import { SearchInput } from "@/components/SearchInput";
 import Image from "next/image";
+import { BottleFallback } from "@/components/BottleFallback";
 import {
   snapshotStats,
   topBrands,
@@ -269,7 +270,7 @@ export default function Home() {
                     className="postcard p-6 flex gap-5 items-start"
                   >
                     <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                      {g.imageUrl && (
+                      {g.imageUrl ? (
                         <Image
                           src={g.imageUrl}
                           alt={g.canonicalName}
@@ -277,6 +278,8 @@ export default function Home() {
                           sizes="96px"
                           className="object-contain"
                         />
+                      ) : (
+                        <BottleFallback name={g.canonicalName} brand={g.brand} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
