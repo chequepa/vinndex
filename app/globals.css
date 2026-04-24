@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-cobalt: #1e3fbf;
   --color-sky2: #4d79e8;
@@ -22,11 +24,48 @@
   --font-sans: var(--font-inter), system-ui, sans-serif;
 }
 
+:root {
+  color-scheme: light;
+  --vx-bg: #f5ede0;
+  --vx-surface: #ffffff;
+  --vx-surface-2: #f5ede0;
+  --vx-surface-3: #faf4ea;
+  --vx-hover: rgba(245, 237, 224, 0.5);
+}
+
+.dark {
+  color-scheme: dark;
+  /* flip primary text/border vars so *all* text-ink/X + border-ink/X + text-graphite utilities auto-invert */
+  --color-ink: #ece4d2;
+  --color-graphite: #9aa3b8;
+  --color-stone2: #2a3142;
+  --vx-bg: #0b1020;
+  --vx-surface: #141b2d;
+  --vx-surface-2: #1a2240;
+  --vx-surface-3: #202a4a;
+  --vx-hover: rgba(236, 228, 210, 0.06);
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background: var(--color-snow);
+  background: var(--vx-bg);
 }
+
+/* surfaces — flip light utilities to dark surfaces when in .dark */
+.dark .bg-snow { background-color: var(--vx-surface-2); }
+.dark .bg-snow\/10 { background-color: color-mix(in oklab, var(--vx-surface-2) 10%, transparent); }
+.dark .bg-snow\/15 { background-color: color-mix(in oklab, var(--vx-surface-2) 15%, transparent); }
+.dark .bg-snow\/25 { background-color: color-mix(in oklab, var(--vx-surface-2) 25%, transparent); }
+.dark .bg-snow\/30 { background-color: color-mix(in oklab, var(--vx-surface-2) 30%, transparent); }
+.dark .bg-snow\/40 { background-color: color-mix(in oklab, var(--vx-surface-2) 40%, transparent); }
+.dark .bg-snow\/50 { background-color: color-mix(in oklab, var(--vx-surface-2) 50%, transparent); }
+.dark .bg-snow\/60 { background-color: color-mix(in oklab, var(--vx-surface-2) 60%, transparent); }
+.dark .bg-white { background-color: var(--vx-surface); }
+/* bg-ink is used for footer — force it to stay dark even though --color-ink flipped */
+.dark .bg-ink { background-color: var(--vx-bg); }
+.dark .bg-ink\/10 { background-color: rgba(0, 0, 0, 0.25); }
+/* text-snow and border-snow stay light — used on dark gradients (hero, footer). No override needed. */
 
 .display {
   font-family: var(--font-display);
@@ -449,4 +488,90 @@ tr.row-no {
   height: 100%;
   border-radius: 999px;
   transition: width 0.5s ease;
+}
+
+/* ───── Dark mode overrides for custom utilities ───── */
+
+.dark .postcard {
+  background: var(--vx-surface);
+  border-color: rgba(236, 228, 210, 0.08);
+}
+.dark .postcard:hover {
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
+
+.dark .varietal-tag {
+  background: rgba(26, 34, 64, 0.85);
+  border-color: rgba(236, 228, 210, 0.12);
+  color: var(--color-ink);
+}
+
+.dark .filter-chip {
+  background: var(--vx-surface);
+  border-color: rgba(236, 228, 210, 0.14);
+  color: var(--color-ink);
+}
+.dark .filter-chip:hover {
+  border-color: var(--color-sky2);
+  color: var(--color-sky2);
+}
+.dark .filter-chip.active {
+  background: var(--color-ink);
+  color: var(--vx-bg);
+  border-color: var(--color-ink);
+}
+
+.dark .wine-row:hover { background-color: var(--vx-hover); }
+.dark .price-row:hover { background-color: var(--vx-hover); }
+.dark .price-row.best {
+  background: linear-gradient(90deg, rgba(232, 181, 71, 0.1) 0%, transparent 70%);
+}
+
+.dark .shipping-tab {
+  background: var(--vx-surface);
+  border-color: rgba(236, 228, 210, 0.14);
+  color: var(--color-ink);
+}
+.dark .shipping-tab.active {
+  background: var(--color-ink);
+  color: var(--vx-bg);
+  border-color: var(--color-ink);
+}
+
+.dark .fuentes-table th {
+  background: var(--vx-surface-2);
+  color: var(--color-graphite);
+}
+.dark .fuentes-table th,
+.dark .fuentes-table td {
+  border-bottom-color: rgba(236, 228, 210, 0.08);
+}
+
+.dark .plat-bar { background: var(--vx-surface-2); }
+.dark .plat-bar-meter { background: rgba(236, 228, 210, 0.08); }
+.dark .plat-pill { background: rgba(236, 228, 210, 0.08); color: var(--color-ink); }
+
+.dark tr.row-yes { background: rgba(27, 122, 79, 0.1); }
+.dark tr.row-maybe { background: rgba(232, 181, 71, 0.1); }
+
+.dark .tag-malbec {
+  background: rgba(232, 133, 158, 0.15);
+  color: #f0a5ba;
+}
+
+.dark .st-alive { background: rgba(27, 122, 79, 0.2); color: #5bc48e; }
+.dark .st-dead { background: rgba(166, 38, 47, 0.2); color: #f0a5ba; }
+.dark .st-noweb { background: rgba(184, 138, 27, 0.25); color: #e8b547; }
+
+.dark .dif-easy { background: rgba(27, 122, 79, 0.2); color: #5bc48e; }
+.dark .dif-med { background: rgba(184, 138, 27, 0.25); color: #e8b547; }
+.dark .dif-hard { background: rgba(166, 38, 47, 0.2); color: #f0a5ba; }
+.dark .dif-none { background: rgba(236, 228, 210, 0.08); color: var(--color-graphite); }
+
+.dark .dec-maybe { background: var(--color-mustard); color: #0b1020; }
+
+/* wine thumb — the gradient bottle fallback */
+.dark .wine-thumb {
+  background: linear-gradient(180deg, #1a2240 0%, #342b1b 100%);
+  border-color: rgba(236, 228, 210, 0.08);
 }

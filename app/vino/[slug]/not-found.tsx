@@ -1,5 +1,6 @@
 import { topBrands, snapshotStats, brandSlug } from "@/lib/snapshot";
 import { SearchInput } from "@/components/SearchInput";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function NotFound() {
   const brands = topBrands(8);
@@ -51,6 +52,7 @@ export default function NotFound() {
               </button>
             </div>
           </form>
+          <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>
 
