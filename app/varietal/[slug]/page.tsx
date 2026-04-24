@@ -30,20 +30,36 @@ export default async function VarietalPage({ params }: Params) {
   const { slug } = await params;
   const facet = findFacetPage("varietal", slug);
   if (!facet) notFound();
-  return <FacetLayout facet={facet} kindLabel="varietal" />;
+  return <FacetLayout facet={facet} kindLabel="varietal" slug={slug} />;
 }
 
 function FacetLayout({
   facet,
   kindLabel,
+  slug,
 }: {
   facet: ReturnType<typeof findFacetPage> extends infer T ? NonNullable<T> : never;
   kindLabel: string;
+  slug: string;
 }) {
   const multi = facet.topGroups.filter((g) => g.storeCount >= 2);
   const single = facet.topGroups.filter((g) => g.storeCount === 1);
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: "https://vinndex.com.ar" },
+      { "@type": "ListItem", position: 2, name: kindLabel === "varietal" ? "Varietal" : "Región", item: "https://vinndex.com.ar/buscar" },
+      { "@type": "ListItem", position: 3, name: facet.name, item: `https://vinndex.com.ar/varietal/${slug}` },
+    ],
+  };
   return (
     <div className="bg-white min-h-[100dvh]">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <a href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
