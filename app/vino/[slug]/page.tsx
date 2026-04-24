@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { BottleFallback } from "@/components/BottleFallback";
 import {
   findGroup,
@@ -347,6 +348,7 @@ export default async function Vino({ params }: Params) {
               </button>
             </div>
           </form>
+          <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>
 

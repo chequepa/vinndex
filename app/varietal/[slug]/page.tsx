@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { findFacetPage, formatArs } from "@/lib/snapshot";
 import { SearchInput } from "@/components/SearchInput";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { BottleFallback } from "@/components/BottleFallback";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -103,6 +104,7 @@ function FacetLayout({
               </button>
             </div>
           </form>
+          <ThemeToggle className="text-ink shrink-0" />
         </div>
       </header>
 
