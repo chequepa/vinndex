@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ query: q, groups: [] });
   }
 
-  const results = searchGroups(q, limit);
+  const results = searchGroups(q, limit, { sort: "relevance" });
 
   const out = results.map((g) => {
     const inStockOffer = g.offers?.find((o) => o.inStock);

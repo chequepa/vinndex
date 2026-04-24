@@ -15,7 +15,15 @@ import {
   type SortKey,
 } from "@/lib/snapshot";
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+const SORT_OPTIONS_WITH_QUERY: { key: SortKey; label: string }[] = [
+  { key: "relevance", label: "Relevancia" },
+  { key: "price-asc", label: "Precio · menor a mayor" },
+  { key: "price-desc", label: "Precio · mayor a menor" },
+  { key: "stores-desc", label: "Más vinotecas primero" },
+  { key: "name-asc", label: "Nombre A-Z" },
+];
+
+const SORT_OPTIONS_NO_QUERY: { key: SortKey; label: string }[] = [
   { key: "price-asc", label: "Precio · menor a mayor" },
   { key: "price-desc", label: "Precio · mayor a menor" },
   { key: "stores-desc", label: "Más vinotecas primero" },
@@ -24,6 +32,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 function isValidSort(s: string | undefined): s is SortKey {
   return (
+    s === "relevance" ||
     s === "price-asc" ||
     s === "price-desc" ||
     s === "stores-desc" ||
@@ -71,7 +80,13 @@ export default async function Buscar({ searchParams }: Params) {
   const varietal = params.varietal ?? null;
   const type = params.tipo ?? null;
   const region = params.region ?? null;
-  const sort: SortKey = isValidSort(params.sort) ? params.sort : "price-asc";
+  // Default sort depends on whether there's a query: relevance when
+  // the user typed something, price-asc otherwise. Explicit ?sort= wins.
+  const sort: SortKey = isValidSort(params.sort)
+    ? params.sort
+    : query
+      ? "relevance"
+      : "price-asc";
 
   const results = searchGroups(query, 48, {
     multiStoreOnly: multiOnly,
@@ -120,7 +135,10 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal && key !== "varietal") sp.set("varietal", varietal);
     if (type && key !== "tipo") sp.set("tipo", type);
     if (region && key !== "region") sp.set("region", region);
-    if (sort !== "price-asc" && key !== "sort") sp.set("sort", sort);
+    // Default sort (relevance when query, price-asc otherwise) stays
+    // out of the URL so links are cleaner. Only surface explicit ones.
+    const defaultSort: SortKey = query ? "relevance" : "price-asc";
+    if (sort !== defaultSort && key !== "sort") sp.set("sort", sort);
     if (value !== null) sp.set(key, value);
     return `/buscar${buildQS(sp)}`;
   }
@@ -132,7 +150,8 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal) sp.set("varietal", varietal);
     if (type) sp.set("tipo", type);
     if (region) sp.set("region", region);
-    if (sort !== "price-asc") sp.set("sort", sort);
+    const defaultSort: SortKey = query ? "relevance" : "price-asc";
+    if (sort !== defaultSort) sp.set("sort", sort);
     return `/buscar${buildQS(sp)}`;
   }
 
@@ -143,9 +162,12 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal) sp.set("varietal", varietal);
     if (type) sp.set("tipo", type);
     if (region) sp.set("region", region);
-    if (newSort !== "price-asc") sp.set("sort", newSort);
+    const defaultSort: SortKey = query ? "relevance" : "price-asc";
+    if (newSort !== defaultSort) sp.set("sort", newSort);
     return `/buscar${buildQS(sp)}`;
   }
+
+  const sortOptions = query ? SORT_OPTIONS_WITH_QUERY : SORT_OPTIONS_NO_QUERY;
 
   return (
     <div className="bg-white min-h-[100dvh]">
@@ -424,7 +446,7 @@ export default async function Buscar({ searchParams }: Params) {
               <span className="text-xs text-graphite mr-1 uppercase tracking-wide">
                 Ordenar
               </span>
-              {SORT_OPTIONS.map((o) => (
+              {sortOptions.map((o) => (
                 <a
                   key={o.key}
                   href={sortHref(o.key)}

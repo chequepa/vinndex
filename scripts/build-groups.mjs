@@ -166,6 +166,70 @@ const BRAND_ALIASES = [
  * AR. Se aplica a los productos crudos antes de cualquier matching
  * (Stage 0/1/2/3) para que todo el pipeline use el mismo brand.
  */
+/**
+ * Name-prefix → brand overrides. Runs BEFORE any brand-based matching.
+ *
+ * Some labels are inconsistently attributed by scrapers: one store lists
+ * "A Lisa Malbec" with brand="A Lisa" (the label), another with
+ * brand="Noemia" (the producing bodega). Both versions are the same
+ * wine, so we force the brand based on the product name prefix — which
+ * is what the consumer actually sees on the bottle and searches for.
+ *
+ * Key is a lowercased, accent-stripped prefix. Match is "name starts
+ * with `<prefix> `" or exact equality. Keep entries specific enough
+ * that they don't over-match (e.g., "malbec" as a prefix would be a
+ * disaster — it'd stomp the real brand of every Malbec in the catalog).
+ *
+ * Grow this list when a wine surfaces as two near-identical groups
+ * with different brand attributions — check /admin/fuentes or the
+ * duplicate-hunting report.
+ */
+const NAME_PREFIX_TO_BRAND = {
+  // Noemia's second labels — "A Lisa" / "J. Alberto" are the labels on
+  // the bottle, but producer Noemia is sometimes listed as the brand.
+  "a lisa": "A Lisa",
+  "a. lisa": "A Lisa",
+  "j alberto": "J. Alberto",
+  "j. alberto": "J. Alberto",
+  // DV Catena — sometimes "Catena", sometimes "DV Catena".
+  "dv catena": "DV Catena",
+  // Enemigo line — Alejandro Vigil's project; scrapers sometimes
+  // attribute to Aleanna (Vigil's company) or Catena Zapata.
+  "el enemigo": "El Enemigo",
+  "gran enemigo": "Gran Enemigo",
+  // Alamos is a Catena Zapata line, often listed with brand=Catena.
+  "alamos": "Alamos",
+  // Padrillos is Ernesto Catena's line, sometimes listed as Ernesto Catena.
+  "padrillos": "Padrillos",
+  // Saint Felicien — Catena Zapata's casual line.
+  "saint felicien": "Saint Felicien",
+  // Luca is Laura Catena's project.
+  "luca": "Luca",
+  // Cheval des Andes — Terrazas + Cheval Blanc JV.
+  "cheval des andes": "Cheval Des Andes",
+  "cheval-des-andes": "Cheval Des Andes",
+  // Nicolas Catena Zapata — top Catena cuvée, often conflated.
+  "nicolas catena": "Nicolas Catena Zapata",
+  // Bodegas Bianchi's top line.
+  "particular": "Bianchi Particular",
+};
+
+/** Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel. */
+function resolveBrandFromName(rawName, originalBrand) {
+  if (!rawName) return originalBrand;
+  const lower = stripAccents(String(rawName))
+    .toLowerCase()
+    .replace(/[^a-z0-9\s.]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
+    if (lower === prefix || lower.startsWith(prefix + " ")) {
+      return NAME_PREFIX_TO_BRAND[prefix];
+    }
+  }
+  return originalBrand;
+}
+
 const LABEL_TO_BODEGA = {
   // Zuccardi labels
   concreto: "Zuccardi",
@@ -560,6 +624,20 @@ function main() {
     if (p.description) p.description = decodeEntities(p.description);
   }
   const products = snap.products ?? [];
+
+  // Force brand from product-name prefix for known labels that get
+  // attributed inconsistently across stores (A Lisa, J. Alberto, etc.).
+  // Runs FIRST so downstream cleanup works against the corrected brand.
+  let prefixForced = 0;
+  for (const p of products) {
+    const forced = resolveBrandFromName(p.name, p.brand);
+    if (forced !== p.brand) {
+      p.brand = forced;
+      prefixForced++;
+    }
+  }
+  if (prefixForced > 0)
+    console.log(`Name-prefix → brand forced: ${prefixForced}`);
 
   // Clean bad brand values (varietal/region/generic) + resolve
   // label→bodega canónico. Both run ANTES del matching para que

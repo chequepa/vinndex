@@ -107,6 +107,10 @@ jobs:
           fi
         continue-on-error: true
 
+      - name: Re-merge near-duplicate groups (Stage 4)
+        run: node scripts/remerge-groups.mjs
+        continue-on-error: true
+
       - name: Track prices (30-day rolling history)
         run: node scripts/track-prices.mjs
         continue-on-error: true
