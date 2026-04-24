@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { SearchInput } from "@/components/SearchInput";
 import {
   searchGroups,
@@ -427,14 +428,14 @@ export default async function Buscar({ searchParams }: Params) {
                     className="wine-row block py-5"
                   >
                     <div className="flex gap-5">
-                      <div className="w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                      <div className="relative w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
                         {g.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={g.imageUrl}
                             alt={g.canonicalName}
-                            loading="lazy"
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="64px"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-malbec/40 text-xs">

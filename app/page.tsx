@@ -1,4 +1,5 @@
 import { SearchInput } from "@/components/SearchInput";
+import Image from "next/image";
 import {
   snapshotStats,
   topBrands,
@@ -267,14 +268,14 @@ export default function Home() {
                     href={`/vino/${g.groupSlug}`}
                     className="postcard p-6 flex gap-5 items-start"
                   >
-                    <div className="w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                    <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
                       {g.imageUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={g.imageUrl}
                           alt={g.canonicalName}
-                          loading="lazy"
-                          className="w-full h-full object-contain"
+                          fill
+                          sizes="96px"
+                          className="object-contain"
                         />
                       )}
                     </div>
