@@ -6,14 +6,22 @@ import {
   varietalPages,
   regionPages,
 } from "@/lib/snapshot";
+import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 
 const SITE = "https://vinndex.com.ar";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const generatedAt = new Date(snapshot.generatedAt);
   const brands = brandPages();
   const varietals = varietalPages();
   const regions = regionPages();
+
+  const blogPosts = await Promise.all(
+    POST_SLUGS.map(async (slug) => {
+      const mod = await import(`@/content/blog/${slug}.mdx`);
+      return { slug, meta: mod.metadata as PostMeta };
+    }),
+  );
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -76,7 +84,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.3,
     },
+    {
+      url: `${SITE}/blog`,
+      lastModified: generatedAt,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
   ];
+
+  const blogPostsRoutes: MetadataRoute.Sitemap = blogPosts.map(
+    ({ slug, meta }) => ({
+      url: `${SITE}/blog/${slug}`,
+      lastModified: new Date(meta.updatedAt ?? meta.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }),
+  );
 
   /** Priority tier by storeCount — más tiendas = más relevante para ranking. */
   function winePriority(storeCount: number): number {
@@ -133,6 +156,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticRoutes,
+    ...blogPostsRoutes,
     ...bodegaPages,
     ...varietalPagesUrls,
     ...regionPagesUrls,

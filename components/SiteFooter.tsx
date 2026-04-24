@@ -109,6 +109,11 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
+                <a href="/blog" className="hover:text-snow">
+                  Blog
+                </a>
+              </li>
+              <li>
                 <a href="/preguntas" className="hover:text-snow">
                   Preguntas frecuentes
                 </a>

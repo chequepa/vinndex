@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
 const nextConfig: NextConfig = {
+  pageExtensions: ["ts", "tsx", "mdx"],
   images: {
     // Allow images from any HTTPS host — wine images come from 30+ store
     // CDNs (Tiendanube, Shopify, VTEX, WooCommerce self-hosted, etc.)
@@ -14,4 +16,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+});
+
+export default withMDX(nextConfig);
