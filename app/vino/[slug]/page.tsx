@@ -221,7 +221,7 @@ export default async function Vino({ params }: Params) {
   }
 
   // JSON-LD Product schema for rich search snippets
-  const jsonLd = {
+  const productJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: group.canonicalName,
@@ -249,12 +249,56 @@ export default async function Vino({ params }: Params) {
     },
   };
 
+  // Breadcrumb JSON-LD → Google muestra breadcrumbs en SERPs
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: "https://vinndex.com.ar",
+      },
+      ...(group.brand
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: group.brand,
+              item: `https://vinndex.com.ar/bodega/${encodeURIComponent(
+                group.brand.toLowerCase().replace(/\s+/g, "-"),
+              )}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: group.canonicalName,
+              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: group.canonicalName,
+              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+            },
+          ]),
+    ],
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

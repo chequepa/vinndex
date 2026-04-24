@@ -35,6 +35,36 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${SITE}/sobre`,
+      lastModified: generatedAt,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${SITE}/como-funciona`,
+      lastModified: generatedAt,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${SITE}/sumate`,
+      lastModified: generatedAt,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${SITE}/opt-out`,
+      lastModified: generatedAt,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
+    {
+      url: `${SITE}/contacto`,
+      lastModified: generatedAt,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
       url: `${SITE}/admin/fuentes`,
       lastModified: generatedAt,
       changeFrequency: "weekly",
@@ -42,35 +72,57 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Only index wine pages that have real data — skip groups without price or image.
+  /** Priority tier by storeCount — más tiendas = más relevante para ranking. */
+  function winePriority(storeCount: number): number {
+    if (storeCount >= 10) return 0.9;
+    if (storeCount >= 5) return 0.8;
+    if (storeCount >= 3) return 0.7;
+    if (storeCount >= 2) return 0.6;
+    return 0.4; // single-store pages still indexed but low priority
+  }
+
+  /** Reduce indexing of out-of-stock-only groups: Google might still crawl
+   * but with low priority and weekly freq since nothing is purchasable. */
   const winePages: MetadataRoute.Sitemap = groups
-    .filter((g) => g.minPrice !== null && g.imageUrl !== null)
-    .map((g) => ({
-      url: `${SITE}/vino/${g.groupSlug}`,
-      lastModified: generatedAt,
-      changeFrequency: "daily" as const,
-      priority: g.storeCount >= 2 ? 0.8 : 0.5,
-    }));
+    .filter((g) => g.imageUrl !== null)
+    .map((g) => {
+      const allOut = !g.offers?.some((o) => o.inStock);
+      return {
+        url: `${SITE}/vino/${g.groupSlug}`,
+        lastModified: generatedAt,
+        changeFrequency: allOut ? "weekly" : ("daily" as const),
+        priority: allOut ? 0.2 : winePriority(g.storeCount),
+      };
+    });
+
+  function bodegaPriority(storeCount: number): number {
+    if (storeCount >= 10) return 0.9;
+    if (storeCount >= 5) return 0.8;
+    if (storeCount >= 3) return 0.7;
+    return 0.5;
+  }
 
   const bodegaPages: MetadataRoute.Sitemap = brands.map((b) => ({
     url: `${SITE}/bodega/${b.slug}`,
     lastModified: generatedAt,
     changeFrequency: "daily" as const,
-    priority: b.storeCount >= 3 ? 0.7 : 0.5,
+    priority: bodegaPriority(b.storeCount),
   }));
 
   const varietalPagesUrls: MetadataRoute.Sitemap = varietals.map((v) => ({
     url: `${SITE}/varietal/${v.slug}`,
     lastModified: generatedAt,
     changeFrequency: "daily" as const,
-    priority: 0.7,
+    // Varietal pages are high-intent entry points from Google ("Malbec"
+    // searches are huge) — keep priority high.
+    priority: v.groupCount >= 50 ? 0.9 : 0.7,
   }));
 
   const regionPagesUrls: MetadataRoute.Sitemap = regions.map((r) => ({
     url: `${SITE}/region/${r.slug}`,
     lastModified: generatedAt,
     changeFrequency: "daily" as const,
-    priority: 0.6,
+    priority: r.groupCount >= 50 ? 0.8 : 0.6,
   }));
 
   return [

@@ -838,30 +838,27 @@ export default function Home() {
               <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-snow">
+                  <a href="/sobre" className="hover:text-snow">
                     Sobre el proyecto
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-snow">
+                  <a href="/como-funciona" className="hover:text-snow">
                     Cómo funciona
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-snow">
+                  <a href="/sumate" className="hover:text-snow">
                     Sos vinoteca? Sumate
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-snow">
+                  <a href="/opt-out" className="hover:text-snow">
                     Pedir opt-out
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="mailto:hola@vinndex.com.ar"
-                    className="hover:text-snow"
-                  >
+                  <a href="/contacto" className="hover:text-snow">
                     Contacto
                   </a>
                 </li>
