@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { CompareFloatingButton } from "@/components/Compare";
 
 // Cloudflare Web Analytics (free, no cookies, no PII). Active when
 // NEXT_PUBLIC_CF_ANALYTICS_TOKEN is set in the environment — get one at
@@ -77,6 +78,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-[100dvh]">
         {children}
+        <CompareFloatingButton />
         {CF_ANALYTICS_TOKEN && (
           <Script
             id="cf-beacon"
