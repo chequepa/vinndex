@@ -4,7 +4,12 @@
  * dynamicParams:false on /blog/[slug] will then render it and 404
  * any other route.
  */
-export const POST_SLUGS = ["valle-de-uco-guia"] as const;
+export const POST_SLUGS = [
+  "mejor-malbec-argentino-segun-presupuesto",
+  "bodegas-boutique-vs-grandes",
+  "como-leer-etiqueta-vino-argentino",
+  "valle-de-uco-guia",
+] as const;
 
 export type PostSlug = (typeof POST_SLUGS)[number];
 
