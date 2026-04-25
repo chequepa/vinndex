@@ -273,9 +273,38 @@ function trySplit(group, sink) {
     }
     const topName = [...nameCounts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (topName) sub.canonicalName = topName[0];
+
+    // Same problem with imageUrl: the parent's imageUrl was picked from
+    // some random offer that may belong to a different cluster after
+    // split. Pick the first non-empty imageUrl from THIS cluster's
+    // offers; null it out if none of our offers have one (the
+    // BottleFallback component will render).
+    const ownImage = subOffers
+      .map((o) => o.imageUrl)
+      .find((u) => typeof u === "string" && u.length > 0);
+    sub.imageUrl = ownImage ?? null;
     recomputeStats(sub);
     sink.push(sub);
   }
+  return true;
+}
+
+/**
+ * Ensure the group's imageUrl points to one of its OWN offers' images.
+ * After previous Stage 5 splits, a group may have inherited the wrong
+ * imageUrl from the parent chimera (e.g., Concreto group ended up with
+ * a Zuccardi-Q image). Fix transparently — picks the first valid
+ * imageUrl from the offers, or sets null so BottleFallback renders.
+ */
+function fixOrphanImage(g) {
+  const offerImages = new Set(
+    (g.offers ?? []).map((o) => o.imageUrl).filter(Boolean),
+  );
+  if (g.imageUrl && offerImages.has(g.imageUrl)) return false;
+  const replacement = (g.offers ?? [])
+    .map((o) => o.imageUrl)
+    .find((u) => typeof u === "string" && u.length > 0);
+  g.imageUrl = replacement ?? null;
   return true;
 }
 
@@ -287,7 +316,9 @@ function main() {
   const newGroups = [];
   let splitCount = 0;
   let added = 0;
+  let imagesFixed = 0;
   for (const g of groups) {
+    if (fixOrphanImage(g)) imagesFixed++;
     const before = newGroups.length;
     const split = trySplit(g, newGroups);
     if (split) {
@@ -297,6 +328,8 @@ function main() {
       newGroups.push(g);
     }
   }
+  if (imagesFixed > 0)
+    console.log(`Fixed ${imagesFixed} orphan imageUrls.`);
 
   snapshot.productGroups = newGroups;
   snapshot.groupCount = newGroups.length;
