@@ -24,123 +24,254 @@ function formatCount(n: number): string {
 }
 
 /**
- * Stylized Nagai-style wine bottle for the hero — flat shapes, brand
- * palette (malbec body, mustard label, cobalt cap). The label carries a
- * tiny sun that rhymes visually with the big radial sun behind it.
- *
- * Sized at ~520px tall on desktop. Hidden below lg breakpoint.
+ * Hero bottle — second iteration. More authentic Bordeaux silhouette,
+ * wax-drip cap (vintage feel), full editorial label with grape cluster
+ * + vine leaf, "VINNDEX MENDOZA · ARGENTINA" + EST 2026 stamp, glass
+ * refraction lines on the body. Hidden below lg breakpoint.
  */
 function HeroBottle() {
   return (
     <svg
-      viewBox="0 0 220 540"
-      className="w-[260px] xl:w-[300px] h-auto drop-shadow-[0_30px_60px_rgba(15,30,77,0.45)]"
+      viewBox="0 0 240 560"
+      className="w-[270px] xl:w-[310px] h-auto drop-shadow-[0_36px_60px_rgba(15,30,77,0.5)]"
       role="img"
-      aria-label="Ilustración de una botella de vino"
+      aria-label="Ilustración de una botella de vino con etiqueta Vinndex"
     >
       <defs>
         <linearGradient id="bottleBody" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stopColor="#4A1220" />
-          <stop offset="0.25" stopColor="#6B1E2E" />
-          <stop offset="0.65" stopColor="#6B1E2E" />
-          <stop offset="1" stopColor="#3D0F1C" />
+          <stop offset="0" stopColor="#3A0E1A" />
+          <stop offset="0.18" stopColor="#5A1828" />
+          <stop offset="0.5" stopColor="#6B1E2E" />
+          <stop offset="0.82" stopColor="#5A1828" />
+          <stop offset="1" stopColor="#2D0915" />
         </linearGradient>
         <linearGradient id="labelBg" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#F5EDE0" />
-          <stop offset="1" stopColor="#E8D47C" />
+          <stop offset="0" stopColor="#FAF4E8" />
+          <stop offset="0.7" stopColor="#F5EDE0" />
+          <stop offset="1" stopColor="#EBDFC4" />
+        </linearGradient>
+        <linearGradient id="waxCap" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#7A2235" />
+          <stop offset="1" stopColor="#5A1828" />
         </linearGradient>
       </defs>
 
       {/* Ground shadow */}
-      <ellipse cx="110" cy="520" rx="82" ry="10" fill="#0F1E4D" opacity="0.35" />
-
-      {/* Cap */}
-      <rect x="86" y="12" width="48" height="34" rx="1" fill="#1E3FBF" />
-      <rect x="86" y="12" width="48" height="8" fill="#0F1E4D" opacity="0.35" />
-
-      {/* Foil collar */}
-      <path
-        d="M 82 46 L 138 46 L 138 84 Q 138 88 134 88 L 86 88 Q 82 88 82 84 Z"
-        fill="#6B1E2E"
+      <ellipse
+        cx="120"
+        cy="544"
+        rx="92"
+        ry="8"
+        fill="#0F1E4D"
+        opacity="0.4"
       />
-      {/* Foil highlight */}
+
+      {/* Wax cap with irregular drips at the bottom edge */}
       <path
-        d="M 86 48 L 90 48 L 90 86 L 86 86 Z"
+        d="M 92 14
+           Q 90 14 90 16
+           L 90 60
+           L 94 64
+           L 98 60
+           L 102 65
+           L 106 60
+           L 112 66
+           L 118 60
+           L 124 67
+           L 130 60
+           L 136 64
+           L 142 60
+           L 146 64
+           L 150 60
+           L 150 16
+           Q 150 14 148 14
+           Z"
+        fill="url(#waxCap)"
+      />
+      {/* Wax highlight */}
+      <rect
+        x="94"
+        y="18"
+        width="6"
+        height="44"
         fill="#E8B547"
-        opacity="0.35"
+        opacity="0.4"
       />
+      {/* Top of wax (slight darker rim) */}
+      <rect x="90" y="14" width="60" height="5" fill="#3A0E1A" opacity="0.4" />
 
       {/* Neck */}
-      <rect x="92" y="88" width="36" height="52" fill="url(#bottleBody)" />
+      <rect x="100" y="68" width="40" height="60" fill="url(#bottleBody)" />
+      {/* Neck highlight */}
+      <rect
+        x="104"
+        y="70"
+        width="3"
+        height="56"
+        fill="#F5EDE0"
+        opacity="0.18"
+      />
 
-      {/* Shoulder + body */}
+      {/* Bordeaux shoulder + body — graceful curves instead of sharp Q */}
       <path
-        d="M 92 138 Q 52 160 52 220 L 52 490 Q 52 510 72 510 L 148 510 Q 168 510 168 490 L 168 220 Q 168 160 128 138 Z"
+        d="M 100 126
+           C 98 134, 92 140, 82 154
+           C 66 178, 58 204, 58 234
+           L 58 512
+           Q 58 532, 78 532
+           L 162 532
+           Q 182 532, 182 512
+           L 182 234
+           C 182 204, 174 178, 158 154
+           C 148 140, 142 134, 140 126
+           Z"
         fill="url(#bottleBody)"
       />
 
-      {/* Highlight stripe on body (subtle glass reflection) */}
+      {/* Glass refractions: wide soft highlight + thin sharp one */}
       <path
-        d="M 66 220 Q 66 195 82 175 L 82 495 Q 66 493 66 478 Z"
+        d="M 72 234 C 72 210, 76 190, 84 175 L 84 510 Q 70 508, 70 492 Z"
         fill="#F5EDE0"
-        opacity="0.08"
+        opacity="0.1"
+      />
+      <line
+        x1="170"
+        y1="260"
+        x2="170"
+        y2="490"
+        stroke="#0F1729"
+        strokeWidth="1.5"
+        opacity="0.2"
       />
 
-      {/* Label */}
-      <rect x="58" y="285" width="104" height="160" rx="3" fill="url(#labelBg)" />
-      {/* Label top/bottom bands */}
-      <rect x="58" y="285" width="104" height="8" fill="#0F1729" opacity="0.1" />
-      <rect x="58" y="437" width="104" height="8" fill="#0F1729" opacity="0.1" />
+      {/* Label backdrop */}
+      <rect
+        x="52"
+        y="282"
+        width="136"
+        height="200"
+        rx="2"
+        fill="url(#labelBg)"
+      />
+      {/* Top + bottom bands on label */}
+      <rect x="52" y="282" width="136" height="3" fill="#6B1E2E" />
+      <rect x="52" y="479" width="136" height="3" fill="#6B1E2E" />
+      {/* Inner border */}
+      <rect
+        x="58"
+        y="290"
+        width="124"
+        height="184"
+        rx="1"
+        fill="none"
+        stroke="#6B1E2E"
+        strokeWidth="0.5"
+        opacity="0.45"
+      />
 
-      {/* Mini sun on the label (rhymes with the big one behind) */}
-      <circle cx="110" cy="330" r="14" fill="#D97449" />
-      <g stroke="#0F1729" strokeWidth="1" opacity="0.4">
-        <line x1="110" y1="308" x2="110" y2="313" />
-        <line x1="110" y1="347" x2="110" y2="352" />
-        <line x1="88" y1="330" x2="93" y2="330" />
-        <line x1="127" y1="330" x2="132" y2="330" />
-        <line x1="93" y1="313" x2="96" y2="316" />
-        <line x1="124" y1="344" x2="127" y2="347" />
-        <line x1="127" y1="313" x2="124" y2="316" />
-        <line x1="96" y1="344" x2="93" y2="347" />
+      {/* Grape cluster + vine leaf — focal point of the label */}
+      <g transform="translate(120, 318)">
+        {/* Vine stem */}
+        <path
+          d="M 0 -14 Q -2 -22, -10 -24"
+          stroke="#3D6B47"
+          strokeWidth="1.4"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* Vine leaf */}
+        <path
+          d="M -10 -24
+             Q -16 -28, -20 -22
+             Q -22 -16, -16 -14
+             Q -12 -12, -10 -16
+             Z"
+          fill="#3D6B47"
+        />
+        {/* Grape cluster — 6 berries */}
+        <circle cx="0" cy="-8" r="3.6" fill="#6B1E2E" />
+        <circle cx="-4.5" cy="-2" r="3.6" fill="#6B1E2E" />
+        <circle cx="4.5" cy="-2" r="3.6" fill="#6B1E2E" />
+        <circle cx="-2.2" cy="5" r="3.6" fill="#6B1E2E" />
+        <circle cx="2.2" cy="5" r="3.6" fill="#6B1E2E" />
+        <circle cx="0" cy="12" r="3.6" fill="#6B1E2E" />
+        {/* Highlight on top berry */}
+        <ellipse
+          cx="-1.2"
+          cy="-9.5"
+          rx="1.2"
+          ry="0.8"
+          fill="#F5EDE0"
+          opacity="0.5"
+        />
       </g>
 
-      {/* Label divider */}
-      <line
-        x1="72"
-        y1="360"
-        x2="148"
-        y2="360"
-        stroke="#0F1729"
-        strokeWidth="0.6"
-        opacity="0.3"
-      />
-
-      {/* Monogram */}
+      {/* Brand wordmark */}
       <text
-        x="110"
-        y="397"
+        x="120"
+        y="368"
         textAnchor="middle"
         fontFamily="Fraunces, Georgia, serif"
-        fontSize="34"
+        fontSize="22"
         fontWeight="700"
-        fill="#6B1E2E"
+        letterSpacing="2.5"
+        fill="#0F1729"
       >
-        Vx
+        VINNDEX
+      </text>
+
+      {/* Divider line */}
+      <line
+        x1="76"
+        y1="383"
+        x2="164"
+        y2="383"
+        stroke="#6B1E2E"
+        strokeWidth="0.5"
+        opacity="0.55"
+      />
+
+      {/* Origin */}
+      <text
+        x="120"
+        y="402"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, sans-serif"
+        fontSize="7.5"
+        letterSpacing="3.5"
+        fontWeight="600"
+        fill="#0F1729"
+        opacity="0.78"
+      >
+        MENDOZA · ARGENTINA
       </text>
 
       {/* Tagline */}
       <text
-        x="110"
-        y="422"
+        x="120"
+        y="427"
         textAnchor="middle"
-        fontFamily="Inter, system-ui, sans-serif"
-        fontSize="8"
-        letterSpacing="3.5"
-        fill="#0F1729"
-        opacity="0.7"
+        fontFamily="Fraunces, Georgia, serif"
+        fontSize="10"
+        fontStyle="italic"
+        fill="#3D0F1C"
+        opacity="0.78"
       >
-        COMPARADOR
+        El comparador de vinos
+      </text>
+
+      {/* Vintage stamp */}
+      <text
+        x="120"
+        y="462"
+        textAnchor="middle"
+        fontFamily="Fraunces, Georgia, serif"
+        fontSize="13"
+        fontWeight="600"
+        letterSpacing="4"
+        fill="#6B1E2E"
+      >
+        EST · 2026
       </text>
     </svg>
   );
