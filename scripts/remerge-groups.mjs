@@ -249,6 +249,215 @@ function normalizeName(s) {
 const LEADING_NOISE =
   /^(?:vino|vinos?|espumante|champagne|champaña|champana|botella|bot|bote|tinto|blanco|rosado|rose|rosé|dulce|seco|brut|reserva|premium)\s+/i;
 
+// Generic descriptors stripped from the canonical-name secondary key
+// after the strict bucket key (brand+varietals+format+type) is set.
+// Excludes varietals — those live in their own field and are part of
+// the strict key. Includes "reserva", "gran", "clásico" (stylistic
+// qualifiers that don't define product identity).
+const SECONDARY_NOISE_TOKENS = new Set([
+  "vino",
+  "vinos",
+  "tinto",
+  "blanco",
+  "rosado",
+  "rose",
+  "espumante",
+  "champagne",
+  "brut",
+  "dulce",
+  "seco",
+  "reserva",
+  "gran",
+  "clasico",
+  "clásico",
+  "premium",
+  "750ml",
+  "750",
+  "ml",
+  "cc",
+  "750cc",
+  "1500ml",
+  "botella",
+  "bot",
+  "x",
+  "de",
+  "del",
+  "la",
+  "el",
+  "los",
+  "las",
+  "y",
+  "con",
+  "sin",
+  // Common varietals: still drop them from the secondary key — the
+  // varietals[] field handles discrimination at the strict-key level,
+  // and a name with the varietal vs without should still match.
+  "malbec",
+  "cabernet",
+  "sauvignon",
+  "chardonnay",
+  "bonarda",
+  "syrah",
+  "shiraz",
+  "pinot",
+  "noir",
+  "grigio",
+  "merlot",
+  "torrontes",
+  "torrontés",
+  "tempranillo",
+  "franc",
+  "petit",
+  "verdot",
+  "viognier",
+  "semillon",
+  "semillón",
+  "tannat",
+  "riesling",
+  "moscatel",
+  "criolla",
+  "blanc",
+  "blancs",
+]);
+
+// Producers that often appear as a leading word in canonicalNames where
+// the actual wine identity is the *next* token(s) (e.g., "Noemia A Lisa"
+// where the wine is A Lisa). Strip these from the start when bucketing.
+// Built dynamically from NAME_PREFIX_TO_BRAND values + a curated set of
+// well-known parent bodegas.
+const KNOWN_PRODUCERS = new Set(
+  [
+    ...Object.values(NAME_PREFIX_TO_BRAND).map((v) =>
+      stripAccents(v).toLowerCase(),
+    ),
+    "noemia",
+    "catena zapata",
+    "catena",
+    "trapiche",
+    "norton",
+    "salentein",
+    "zuccardi",
+    "rutini",
+    "luigi bosca",
+    "doña paula",
+    "dona paula",
+    "ernesto catena",
+    "viña cobos",
+    "vina cobos",
+    "mendel",
+    "achaval ferrer",
+    "etchart",
+    "colome",
+    "alta vista",
+    "lagarde",
+    "septima",
+    "séptima",
+    "bressia",
+    "riccitelli",
+    "atamisque",
+    "monteviejo",
+    "susana balbo",
+    "nieto senetiner",
+    "casa boher",
+    "rosell boher",
+    "garzon",
+    "garzón",
+    "argento",
+    "santa julia",
+    "familia zuccardi",
+    "sottano",
+    "humberto canale",
+    "casarena",
+    "bianchi",
+    "pulenta",
+    "pulenta estate",
+    "los haroldos",
+    "finca las moras",
+    "tikal",
+    "el porvenir",
+  ].sort((a, b) => b.length - a.length), // longest-first so "catena zapata" matches before "catena"
+);
+
+/**
+ * Compute the secondary discriminator from the canonical name.
+ * Iteratively strips leading producer names, then drops varietals and
+ * noise. Returns the remaining token list joined by space, or empty
+ * string if everything was noise (in which case the strict bucket key —
+ * brand + varietals + format + type — is the discriminator).
+ *
+ * "A LISA MALBEC" → strip producer "A LISA" → "MALBEC" → strip varietal → ""
+ * "Noemia A Lisa" → strip "Noemia" → "A Lisa" → strip "A Lisa" → ""
+ * "Catena Estate Malbec" → strip "Catena" → "Estate Malbec" → strip "Malbec" → "estate"
+ * "Catena Adrianna Malbec" → strip "Catena" → "Adrianna Malbec" → "adrianna"
+ */
+function secondaryKey(canonicalName) {
+  let s = normalizeName(canonicalName).replace(/[^a-z0-9\s.]/g, " ");
+  s = s.replace(/\s+/g, " ").trim();
+  // Peel up to 3 leading noise words ("Vino Espumante X" etc.)
+  for (let i = 0; i < 3; i++) {
+    const next = s.replace(LEADING_NOISE, "");
+    if (next === s) break;
+    s = next;
+  }
+  // Iteratively strip leading producer names — a name like "Noemia A
+  // Lisa" needs to strip both producers in sequence to land at empty.
+  for (let i = 0; i < 4; i++) {
+    let stripped = false;
+    for (const prod of KNOWN_PRODUCERS) {
+      if (s === prod) {
+        s = "";
+        stripped = true;
+        break;
+      }
+      if (s.startsWith(prod + " ")) {
+        s = s.slice(prod.length + 1);
+        stripped = true;
+        break;
+      }
+    }
+    if (!stripped) break;
+  }
+  // Drop varietals + noise tokens, keep only identity tokens.
+  const tokens = s
+    .split(/\s+/)
+    .map((t) => t.replace(/^\.+|\.+$/g, "")) // strip stray dots
+    .filter((t) => t && !SECONDARY_NOISE_TOKENS.has(t));
+  return tokens.join(" ").trim();
+}
+
+/**
+ * Strict bucket key: brand + varietals + format + type + secondary.
+ * Two groups bucket together only when ALL of these match. The strict
+ * varietals/format/type guard is what stops "Catena Malbec" and "Catena
+ * Cabernet" from accidentally merging under the secondary discriminator
+ * fallback.
+ */
+function strictBucketKey(g, resolvedBrand) {
+  const brand = stripAccents(String(resolvedBrand ?? ""))
+    .toLowerCase()
+    .trim();
+  const varietals = (g.varietals ?? [])
+    .map((v) => stripAccents(String(v)).toLowerCase().trim())
+    .sort()
+    .join(",");
+  const format = g.format ?? "";
+  const type = stripAccents(String(g.type ?? ""))
+    .toLowerCase()
+    .trim();
+  const sec = secondaryKey(g.canonicalName);
+  return `${brand}|${varietals}|${format}|${type}|${sec}`;
+}
+
+/** Two vintages are compatible if equal OR at least one is null/empty.
+ * Lets us merge a vintage-null umbrella group with a specific-vintage
+ * one when other criteria match. */
+function vintagesCompatible(vintages) {
+  const specific = vintages
+    .map((v) => (v == null || v === "" ? null : v))
+    .filter((v) => v !== null);
+  return new Set(specific).size <= 1;
+}
+
 function resolveBrandFromName(rawName, originalBrand) {
   if (!rawName) return originalBrand ?? null;
   let lower = stripAccents(String(rawName))
@@ -454,10 +663,17 @@ function main() {
   const groups = snapshot.productGroups ?? [];
   console.log(`Loaded ${groups.length} groups from snapshot.`);
 
-  // Bucket by (normalizedName, vintage, format)
+  // Bucket by strict key (brand + varietals + format + type + secondary).
+  // Vintage is checked separately so a vintage-null umbrella group can
+  // merge with a specific-vintage one (very common: some scrapers
+  // extract the year from the name, others don't).
+  // Skip groups that have no resolvable brand AND no varietal — they're
+  // too ambiguous to bucket safely.
   const buckets = new Map();
   for (const g of groups) {
-    const key = `${normalizeName(g.canonicalName)}|${g.vintage ?? ""}|${g.format ?? ""}`;
+    const resolved = resolveBrandFromName(g.canonicalName, g.brand);
+    if (!resolved && (!g.varietals || g.varietals.length === 0)) continue;
+    const key = strictBucketKey(g, resolved);
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push(g);
   }
@@ -469,6 +685,26 @@ function main() {
 
   for (const bucket of buckets.values()) {
     if (bucket.length < 2) continue;
+
+    // Vintage compat: at most ONE specific vintage in the bucket
+    // (others must be null). Otherwise we'd merge 2017 and 2018 vintages
+    // of the same wine, which is wrong for premium wines where vintage
+    // matters.
+    const vintages = bucket.map((g) => g.vintage ?? null);
+    if (!vintagesCompatible(vintages)) {
+      rejectedBuckets++;
+      if (examples.length < 50) {
+        examples.push({
+          reason: "vintage-conflict",
+          totalSc: bucket.reduce((s, g) => s + (g.storeCount ?? 0), 0),
+          names: bucket.map(
+            (g) =>
+              `sc=${g.storeCount ?? 0} · v=${g.vintage ?? "∅"} · ${g.brand ?? "∅"}: ${g.canonicalName}`,
+          ),
+        });
+      }
+      continue;
+    }
 
     // Brand compat: after NAME_PREFIX_TO_BRAND normalization, the brands
     // should either agree or be null. Reject anything with conflicting
@@ -500,6 +736,12 @@ function main() {
     }
 
     const { primary, droppedSlugs } = mergeBucket(bucket);
+    // The merged primary should keep the most informative vintage —
+    // if any group in the bucket had a specific vintage, that wins.
+    const specificVintage = bucket
+      .map((g) => g.vintage)
+      .find((v) => v != null && v !== "");
+    if (specificVintage) primary.vintage = specificVintage;
     for (const s of droppedSlugs) dropSet.add(s);
     mergedBuckets++;
     if (mergedBuckets <= 5) {
