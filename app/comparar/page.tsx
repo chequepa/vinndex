@@ -10,6 +10,7 @@ import {
   storeName,
   displayBrand,
 } from "@/lib/snapshot";
+import { displayWineName } from "@/lib/displayWineName";
 import type { ProductGroup } from "@/lib/matching";
 
 export const metadata: Metadata = {
@@ -134,7 +135,7 @@ function CompareCard({
         </p>
       )}
       <h2 className="display text-base md:text-lg font-semibold text-ink leading-tight line-clamp-2 min-h-[2.6rem]">
-        {g.canonicalName}
+        {displayWineName(g.canonicalName)}
         {g.vintage && (
           <span className="font-normal text-graphite"> · {g.vintage}</span>
         )}

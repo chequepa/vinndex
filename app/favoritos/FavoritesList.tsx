@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useFavorites, FavoriteButton } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
+import { displayWineName } from "@/lib/displayWineName";
 
 type Group = {
   groupSlug: string;
@@ -124,7 +125,7 @@ export function FavoritesList() {
                 </p>
               )}
               <h2 className="display text-lg font-semibold text-ink leading-tight mb-2 line-clamp-2">
-                {g.canonicalName}
+                {displayWineName(g.canonicalName)}
                 {g.vintage && (
                   <span className="text-graphite font-normal"> · {g.vintage}</span>
                 )}

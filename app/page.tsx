@@ -10,6 +10,7 @@ import {
   topDeals,
   formatArs,
   displayBrand,
+  displayWineName,
   brandSlug,
   varietalPages,
   regionPages,
@@ -585,7 +586,7 @@ export default function Home() {
                         Ahorrá {savingsPct}%
                       </div>
                       <h3 className="display text-lg font-semibold text-ink leading-tight line-clamp-2 mb-1">
-                        {g.canonicalName}
+                        {displayWineName(g.canonicalName)}
                       </h3>
                       <p className="text-xs text-graphite mb-3 truncate">
                         {g.brand ? `${displayBrand(g.brand)} · ` : ""}
