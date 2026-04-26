@@ -652,8 +652,17 @@ export default async function Buscar({ searchParams }: Params) {
                               {g.storeCount} vinotecas
                             </span>
                           ) : (
-                            <span className="tag tag-malbec">
-                              {storeName(g.offers[0].storeSlug)}
+                            <span
+                              className="tag"
+                              style={{
+                                background: "rgba(74, 84, 104, 0.12)",
+                                color: "#4A5468",
+                                fontWeight: 500,
+                                textTransform: "none",
+                                letterSpacing: 0,
+                              }}
+                            >
+                              en {storeName(g.offers[0].storeSlug)}
                             </span>
                           )}
                           {g.type && (
