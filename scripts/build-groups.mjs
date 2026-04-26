@@ -203,6 +203,8 @@ const NAME_PREFIX_TO_BRAND = {
 
   // ── Catena family (sometimes listed under Catena Zapata) ──
   "dv catena": "DV Catena",
+  "dv adrianna": "DV Catena",
+  "dv catena adrianna": "DV Catena",
   "alamos": "Alamos",
   "saint felicien": "Saint Felicien",
   "luca": "Luca",

@@ -39,6 +39,8 @@ const NAME_PREFIX_TO_BRAND = {
   "j. alberto": "J. Alberto",
   // Catena family
   "dv catena": "DV Catena",
+  "dv adrianna": "DV Catena",
+  "dv catena adrianna": "DV Catena",
   alamos: "Alamos",
   "saint felicien": "Saint Felicien",
   luca: "Luca",
@@ -318,6 +320,23 @@ const SECONDARY_NOISE_TOKENS = new Set([
   "criolla",
   "blanc",
   "blancs",
+  // Wine industry phrasing that's marketing fluff, not identity
+  "vineyard",
+  "vineyards",
+  "designated",
+  "designation",
+  "single",
+  "estate",
+  "edition",
+  "selection",
+  "seleccion",
+  "selección",
+  "limited",
+  "limitada",
+  "old",
+  "vines",
+  "viejas",
+  "natural",
 ]);
 
 // Producers that often appear as a leading word in canonicalNames where
@@ -327,6 +346,12 @@ const SECONDARY_NOISE_TOKENS = new Set([
 // well-known parent bodegas.
 const KNOWN_PRODUCERS = new Set(
   [
+    // Both KEYS (e.g., "adrianna") and VALUES (e.g., "Catena Zapata")
+    // of the prefix map count as strippable producer prefixes — adrianna
+    // is a Catena line so when it appears mid-name like "DV Catena
+    // Adrianna" the iterative strip should peel both "dv catena" and
+    // "adrianna".
+    ...Object.keys(NAME_PREFIX_TO_BRAND),
     ...Object.values(NAME_PREFIX_TO_BRAND).map((v) =>
       stripAccents(v).toLowerCase(),
     ),
