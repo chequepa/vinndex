@@ -12,6 +12,7 @@ import { StickyCTA } from "@/components/StickyCTA";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
+import { displayWineName } from "@/lib/displayWineName";
 import {
   findGroup,
   formatArs,
@@ -490,7 +491,7 @@ export default async function Vino({ params }: Params) {
 
               <div className="flex items-start gap-4 mb-3">
                 <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] flex-1">
-                  {group.canonicalName}
+                  {displayWineName(group.canonicalName)}
                 </h1>
                 <FavoriteButton
                   slug={group.groupSlug}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { findBrandPage, formatArs } from "@/lib/snapshot";
+import { displayWineName } from "@/lib/displayWineName";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
@@ -191,7 +192,7 @@ export default async function BodegaPage({ params }: Params) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="display text-lg font-semibold text-ink leading-tight line-clamp-2 min-h-[2.5em]">
-                      {g.canonicalName}
+                      {displayWineName(g.canonicalName)}
                     </div>
                     <div className="text-xs text-graphite mt-1">
                       <span
@@ -242,7 +243,7 @@ export default async function BodegaPage({ params }: Params) {
                     )}
                   </div>
                   <div className="display text-sm font-semibold line-clamp-2 min-h-[2.5em] text-ink">
-                    {g.canonicalName}
+                    {displayWineName(g.canonicalName)}
                   </div>
                   <div className="display text-lg font-semibold text-cobalt mt-2">
                     {formatArs(g.minPrice)}

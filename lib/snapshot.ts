@@ -336,6 +336,10 @@ export function formatArs(value: number | null): string {
   }).format(value);
 }
 
+// Re-export displayWineName from its own module (kept separate so
+// client components can import without pulling in snapshot.json).
+export { displayWineName } from "./displayWineName";
+
 /** Return a human-readable store name for a given storeSlug. */
 export function storeName(slug: string): string {
   return (
