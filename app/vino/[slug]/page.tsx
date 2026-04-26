@@ -811,7 +811,7 @@ export default async function Vino({ params }: Params) {
                   href={`/vino/${r.groupSlug}`}
                   className="bg-white rounded-2xl p-5 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
-                  <div className="w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
+                  <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
                     {r.imageUrl ? (
                       <Image
                         src={r.imageUrl}
