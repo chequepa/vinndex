@@ -409,15 +409,22 @@ function normalizeBrandCase(s: string): string {
     .trim();
   const alias = BRAND_ALIASES_DISPLAY[stripped];
   if (alias) return alias;
-  // Fallback: preserve original if it already has mixed case
-  if (/[a-z]/.test(trimmed)) return trimmed;
-  // ALLCAPS → Title Case
+  // Preserve only properly mixed-case strings (has both upper and lower).
+  // Strings that are all-lowercase ("zuccardi", "gran enemigo") need
+  // title-casing, just like ALLCAPS — they typically come from scrapers
+  // that lowercase brand keys.
+  const hasLower = /[a-z]/.test(trimmed);
+  const hasUpper = /[A-Z]/.test(trimmed);
+  if (hasLower && hasUpper) return trimmed;
+  // ALLCAPS or all-lowercase → Title Case
   return trimmed
     .toLowerCase()
     .split(/\s+/)
     .map((w) => {
       if (w.length === 0) return w;
       if (/^(de|del|la|el|las|los|y|&)$/.test(w)) return w;
+      // Acronyms like DV, II, III stay uppercase
+      if (/^(dv|doc|ii|iii|iv|vi|vii|viii|ix)$/i.test(w)) return w.toUpperCase();
       return w[0].toUpperCase() + w.slice(1);
     })
     .join(" ");

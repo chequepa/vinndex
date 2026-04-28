@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { displayWineName } from "@/lib/displayWineName";
 
 type Suggestion = {
   groupSlug: string;
@@ -185,7 +186,7 @@ export function SearchInput({
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink truncate">
-                    {s.canonicalName}
+                    {displayWineName(s.canonicalName)}
                     {s.vintage ? (
                       <span className="text-graphite font-normal"> · {s.vintage}</span>
                     ) : null}

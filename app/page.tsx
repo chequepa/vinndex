@@ -547,7 +547,10 @@ export default function Home() {
                   importan. Elegí la más barata — o la que te llega más rápido.
                 </p>
               </div>
-              <a href="/buscar?multi=1" className="chip !bg-ink !text-snow hover:!bg-malbec">
+              <a
+                href="/buscar?multi=1"
+                className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
+              >
                 Ver todos los comparables →
               </a>
             </div>
@@ -708,19 +711,15 @@ export default function Home() {
                   viewBox="0 0 40 40"
                   fill="none"
                   className="text-terracota"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  <path
-                    d="M12 8 L28 8 L26 28 L14 28 Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M16 8 L16 4 L24 4 L24 8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <circle cx="20" cy="20" r="3" fill="currentColor" />
+                  <path d="M14 18 L14 30 L30 30 L30 18" />
+                  <path d="M22 8 L30 8 L30 16" />
+                  <path d="M30 8 L18 20" />
                 </svg>
               </div>
               <h3 className="display text-2xl font-semibold mb-3">
@@ -752,7 +751,10 @@ export default function Home() {
                 pasando por Río Negro.
               </h2>
             </div>
-            <a href="/buscar" className="chip !bg-snow/10">
+            <a
+              href="/buscar"
+              className="chip !bg-[rgba(245,237,224,0.12)] !border-[rgba(245,237,224,0.3)] hover:!bg-[rgba(245,237,224,0.22)]"
+            >
               Ver todas las regiones →
             </a>
           </div>
