@@ -202,7 +202,10 @@ export function searchGroups(
 ): ProductGroup[] {
   const q = stripAccents(query.trim().toLowerCase());
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
-  let source = groups;
+  // Non-wines (beer, spirits, food items) are excluded from /buscar even
+  // when they're in the snapshot — Vinndex is a wine comparator, surfacing
+  // "Leffe cerveza" or "Grana Padano queso" as top results destroys trust.
+  let source = groups.filter(looksLikeWineGroup);
 
   if (options.multiStoreOnly) {
     source = source.filter((g) => g.storeCount >= 2);
@@ -305,6 +308,7 @@ export function facetCounts(): {
   const rCount = new Map<string, number>();
 
   for (const g of groups) {
+    if (!looksLikeWineGroup(g)) continue;
     for (const v of g.varietals ?? []) {
       vCount.set(v, (vCount.get(v) ?? 0) + 1);
     }
@@ -504,18 +508,98 @@ export function topBrands(limit = 12): BrandStat[] {
  * anything higher usually signals bad data (stale price, wrong SKU match,
  * promo-locked listing) rather than a real bargain.
  */
-// Keywords that signal the group is NOT wine (aperitivos, destilados,
-// cerveza, cidra, etc.). topDeals otherwise surfaces "Gancia Aperitivo"
-// or "Sidra Sáenz Briones" because they're stocked in 3+ supermarkets.
+// Keywords that signal the group is NOT wine: spirits, beer, soft drinks,
+// food items (some "wine" stores carry charcuterie/cheese/oil too — those
+// products end up in our snapshot when scrapers pull the full catalog).
 const NOT_WINE_RE =
-  /\b(sidra|gin|whisk[ey]+|vodka|ron|tequila|mezcal|vermut|vermouth|aperitivo|aperol|campari|fernet|gancia|cinzano|martini|cerveza|beer|jugo|licor|bailey|baileys|absolut|smirnoff|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|malibu|red\s+bull|coca|pepsi|agua|juice)\b/i;
+  /\b(sidra|gin|whisk[ey]+|vodka|ron(?!\s+(de\s+)?(la|los|las))|tequila|mezcal|vermut|vermouth|aperitivo|aperol|campari|fernet|gancia|cinzano|martini|cerveza|beer|ipa|lager|ale|stout|porter|pilsen|weiss|jugo|licor|bailey|baileys|absolut|smirnoff|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|malibu|red\s+bull|coca|pepsi|agua\b|juice|chocolate|cacao|grana\s+padano|parmes[aá]no|queso|salame|jam[oó]n|fiamb|conserva|aceite|vinagre|caf[eé]\b|t[eé]\b|miel|aceitunas|kombucha|sangr[ií]a)\b/i;
+
+// Bottle sizes that are NOT wine (wines are 375ml/750ml/1500ml/3L typically).
+// 33cl/35cl = beer cans, 200ml/250ml/500ml = small spirits/snack sizes.
+const NOT_WINE_SIZE_RE =
+  /\b(33|35|473)\s*cl\b|\b(?:100|150|200|250|330|355|473)\s*ml\b|\b200\s*gr\b/i;
+
+// Detects "case", "estuche", "pack", "caja x N" wines — different SKU
+// from a single bottle. Pooling them in the same group inflates max
+// price (e.g. "AHORRO MÁXIMO 95%" comparing 1 bottle vs a case of 6).
+const CASE_OFFER_RE =
+  /\b(estuche|caja\b|cajas\b|caj[ìí]n|pack|gift\s*box|6\s*pack|six\s*pack|x\s*[2-9]\d*\b|x[2-9]\d*\b)/i;
+
+/** True if the offer name suggests a multi-bottle pack/case, not a single bottle. */
+export function isCaseOffer(offerName: string | null | undefined): boolean {
+  if (!offerName) return false;
+  return CASE_OFFER_RE.test(offerName);
+}
+
+/**
+ * Bottle-only price + store stats for a group. Excludes case/estuche/pack
+ * offers from the calculation so "ahorro máximo" doesn't get inflated by
+ * comparing 1 bottle vs 1 case of 6.
+ *
+ * Falls back to the snapshot's minPrice/maxPrice/storeCount if there are
+ * no bottle offers (rare — case-only groups).
+ */
+export function bottleStats(g: ProductGroup): {
+  minPrice: number | null;
+  maxPrice: number | null;
+  storeCount: number;
+  hasCases: boolean;
+} {
+  const offers = g.offers ?? [];
+  const bottles = offers.filter((o) => !isCaseOffer(o.name));
+  const cases = offers.filter((o) => isCaseOffer(o.name));
+  if (bottles.length === 0) {
+    return {
+      minPrice: g.minPrice,
+      maxPrice: g.maxPrice,
+      storeCount: g.storeCount,
+      hasCases: cases.length > 0,
+    };
+  }
+  const inStockPrices = bottles
+    .filter((o) => o.inStock)
+    .map((o) => o.priceArs)
+    .filter((p): p is number => p != null && p > 0);
+  if (inStockPrices.length === 0) {
+    // Match the snapshot's behaviour: if no in-stock bottles, fall back
+    // to all bottle prices (still excluding cases).
+    const allBottlePrices = bottles
+      .map((o) => o.priceArs)
+      .filter((p): p is number => p != null && p > 0);
+    if (allBottlePrices.length === 0) {
+      return {
+        minPrice: null,
+        maxPrice: null,
+        storeCount: 0,
+        hasCases: cases.length > 0,
+      };
+    }
+    return {
+      minPrice: Math.min(...allBottlePrices),
+      maxPrice: Math.max(...allBottlePrices),
+      storeCount: new Set(bottles.map((o) => o.storeSlug)).size,
+      hasCases: cases.length > 0,
+    };
+  }
+  return {
+    minPrice: Math.min(...inStockPrices),
+    maxPrice: Math.max(...inStockPrices),
+    storeCount: new Set(
+      bottles.filter((o) => o.inStock).map((o) => o.storeSlug),
+    ).size,
+    hasCases: cases.length > 0,
+  };
+}
 
 function looksLikeWineGroup(g: ProductGroup): boolean {
+  // Sniff the canonical name for explicit non-wine keywords first — these
+  // override the varietal/type heuristic because some scrapers tag their
+  // beer/soda catalog with bogus type values.
+  if (NOT_WINE_RE.test(g.canonicalName)) return false;
+  if (NOT_WINE_SIZE_RE.test(g.canonicalName)) return false;
   // If the group has a varietal or a wine type, trust that.
   if (g.varietals && g.varietals.length > 0) return true;
   if (g.type && g.type !== null) return true;
-  // Otherwise sniff the canonical name for non-wine keywords
-  if (NOT_WINE_RE.test(g.canonicalName)) return false;
   return true;
 }
 
