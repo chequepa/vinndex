@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Pedir opt-out — Vinndex",
@@ -11,12 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default function OptOutPage() {
-  const mailSubject = encodeURIComponent(
-    "Pedido de opt-out desde Vinndex",
-  );
-  const mailBody = encodeURIComponent(
-    "Hola,\n\nSoy dueño/a de la vinoteca [NOMBRE] (URL: [https://tusitio.com]) y solicito que NO aparezca en Vinndex.\n\nDatos para verificar que soy responsable del dominio:\n- Email corporativo del mismo dominio\n- Nombre y apellido del responsable\n\nGracias!",
-  );
   return (
     <div className="bg-white min-h-[100dvh]">
       <SiteHeader />
@@ -67,20 +62,18 @@ export default function OptOutPage() {
           </h2>
           <ol className="space-y-3 text-ink/80 leading-relaxed list-decimal ml-5">
             <li>
-              Mandá un mail a{" "}
-              <a
-                href="mailto:hola@vinndex.com.ar"
-                className="underline hover:text-cobalt"
-              >
-                hola@vinndex.com.ar
-              </a>{" "}
-              <strong>desde un email corporativo del mismo dominio</strong> que
-              tu tienda (ej. <code className="bg-snow px-1 rounded text-sm">vos@tuvinoteca.com.ar</code>).
-              Esto nos deja verificar que sos efectivamente responsable.
+              Completá el formulario abajo con el{" "}
+              <strong>nombre de la vinoteca</strong> y la <strong>URL</strong>{" "}
+              que querés sacar.
             </li>
             <li>
-              En el mail, incluí el <strong>nombre de la vinoteca</strong> y la{" "}
-              <strong>URL</strong> que querés sacar.
+              Indicá un <strong>email corporativo del mismo dominio</strong> que
+              tu tienda (ej.{" "}
+              <code className="bg-snow px-1 rounded text-sm">
+                vos@tuvinoteca.com.ar
+              </code>
+              ). Te escribo desde mi mail personal para confirmar y dejar el
+              registro de quién pidió el opt-out.
             </li>
             <li>
               En máximo <strong>48 horas hábiles</strong> te confirmamos y
@@ -93,16 +86,56 @@ export default function OptOutPage() {
           </ol>
         </section>
 
-        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10 text-center">
-          <a
-            href={`mailto:hola@vinndex.com.ar?subject=${mailSubject}&body=${mailBody}`}
-            className="cursor-wine inline-flex items-center gap-2 bg-snow text-ink font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors"
-          >
-            Pedir opt-out →
-          </a>
-          <p className="text-snow/60 text-xs mt-4">
-            Template de mail pre-llenado con los datos que necesitamos.
-          </p>
+        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10">
+          <div className="text-center mb-8">
+            <h2 className="display text-3xl font-semibold mb-3">
+              Pedir opt-out
+            </h2>
+            <p className="text-snow/80 max-w-2xl mx-auto">
+              Sin vueltas. Lo confirmamos en menos de 48hs y removemos la
+              vinoteca del próximo scrape.
+            </p>
+          </div>
+          <ContactForm
+            kind="opt-out"
+            submitLabel="Pedir opt-out"
+            successText="Pedido recibido. Te confirmo por mail desde mi cuenta personal en menos de 48hs."
+            fields={[
+              {
+                name: "vinoteca",
+                label: "Nombre de la vinoteca",
+                required: true,
+              },
+              {
+                name: "url",
+                label: "URL de la tienda",
+                type: "url",
+                required: true,
+                placeholder: "https://tuvinoteca.com.ar",
+              },
+              {
+                name: "email_corporativo",
+                label: "Email corporativo (mismo dominio que la tienda)",
+                type: "email",
+                required: true,
+                placeholder: "vos@tuvinoteca.com.ar",
+                helper:
+                  "Necesario para verificar que sos responsable del dominio.",
+              },
+              {
+                name: "nombre",
+                label: "Tu nombre y apellido",
+                required: true,
+              },
+              {
+                name: "motivo",
+                label: "Motivo (opcional)",
+                type: "textarea",
+                placeholder:
+                  "Si querés contarnos por qué, nos sirve para mejorar.",
+              },
+            ]}
+          />
         </section>
       </main>
 

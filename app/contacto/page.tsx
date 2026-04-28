@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contacto — Vinndex",
@@ -36,18 +37,40 @@ export default function ContactoPage() {
       <main className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-10">
         <section className="bg-snow border border-ink/10 rounded-2xl p-8 md:p-10">
           <h2 className="display text-2xl font-semibold text-ink mb-6">
-            Por email
+            Mandame un mensaje
           </h2>
-          <a
-            href="mailto:hola@vinndex.com.ar"
-            className="display text-3xl md:text-4xl text-cobalt font-semibold hover:underline break-all"
-          >
-            hola@vinndex.com.ar
-          </a>
-          <p className="text-graphite text-sm mt-4">
-            Respondo desde ese email personalmente. Típicamente en &lt; 24hs
-            (días hábiles).
-          </p>
+          <ContactForm
+            kind="contacto"
+            variant="light"
+            submitLabel="Enviar"
+            successText="Mensaje recibido. Respondo personalmente en menos de 24hs (días hábiles)."
+            fields={[
+              {
+                name: "nombre",
+                label: "Tu nombre",
+                required: true,
+              },
+              {
+                name: "email",
+                label: "Email para responderte",
+                type: "email",
+                required: true,
+              },
+              {
+                name: "asunto",
+                label: "Asunto",
+                placeholder: "De qué se trata",
+              },
+              {
+                name: "mensaje",
+                label: "Mensaje",
+                type: "textarea",
+                required: true,
+                placeholder:
+                  "Sugerencia, problema, pregunta, feedback... lo que sea.",
+              },
+            ]}
+          />
         </section>
 
         <section>
