@@ -41,13 +41,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       ? Math.round(((g.maxPrice - g.minPrice) / g.maxPrice) * 100)
       : null;
 
-  // Title: include brand only if not already part of the canonical name
+  // Title: include brand only if not already part of the canonical name.
+  // Both brand and canonicalName get pretty-cased — many scrapers return
+  // CAPS LOCK / lowercase strings that look shouty in <title> and OG tags.
+  const prettyName = displayWineName(g.canonicalName);
+  const prettyBrand = displayBrand(g.brand);
   const canonicalLower = g.canonicalName.toLowerCase();
   const brandNotInName =
     g.brand && !canonicalLower.includes(g.brand.toLowerCase());
   const titleName = brandNotInName
-    ? `${g.brand} ${g.canonicalName}`
-    : g.canonicalName;
+    ? `${prettyBrand} ${prettyName}`
+    : prettyName;
   const titleVintage = g.vintage ? ` ${g.vintage}` : "";
 
   let titleTail: string;
@@ -825,7 +829,7 @@ export default async function Vino({ params }: Params) {
                     )}
                   </div>
                   <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
-                    {r.canonicalName}
+                    {displayWineName(r.canonicalName)}
                   </div>
                   <div className="text-xs text-graphite mt-0.5">
                     {r.storeCount} vinoteca{r.storeCount === 1 ? "" : "s"}

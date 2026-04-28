@@ -12,6 +12,7 @@ import {
   snapshot,
   facetCounts,
   displayBrand,
+  displayWineName,
   type SortKey,
 } from "@/lib/snapshot";
 
@@ -622,7 +623,7 @@ export default async function Buscar({ searchParams }: Params) {
                         <div className="flex items-start justify-between gap-4 mb-1">
                           <div className="min-w-0">
                             <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight truncate">
-                              {g.canonicalName}
+                              {displayWineName(g.canonicalName)}
                             </h3>
                             <p className="text-sm text-graphite mt-0.5 truncate">
                               {g.brand ? displayBrand(g.brand) : "Sin bodega identificada"}
