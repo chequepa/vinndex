@@ -220,7 +220,11 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           </form>
 
-          <div className="hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow border border-ink/10 rounded-full px-3 py-2 font-medium text-ink">
+          <a
+            href="/preguntas"
+            className="cursor-wine hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow hover:bg-mustard/20 border border-ink/10 rounded-full px-3 py-2 font-medium text-ink transition-colors"
+            title="Por qué decimos CABA"
+          >
             <svg
               width="14"
               height="14"
@@ -236,7 +240,7 @@ export default async function Buscar({ searchParams }: Params) {
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span>Precios en CABA</span>
-          </div>
+          </a>
           <FavoritesNavLink className="text-ink shrink-0" />
           <ThemeToggle className="text-ink shrink-0" />
         </div>

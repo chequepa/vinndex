@@ -315,13 +315,11 @@ export default function Home() {
               Bodegas
             </a>
           </div>
-          {/*
-            "Enviando a" estático por ahora — la filtración por zona de envío
-            llega cuando tengamos cálculo de costo real por tienda. Era un
-            <select> pero (1) no hacía nada (2) su dropdown nativo se superponía
-            mal sobre el hero. Lo dejamos como indicador visual.
-          */}
-          <div className="hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium">
+          <a
+            href="/preguntas"
+            className="cursor-wine hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium transition-colors"
+            title="Por qué decimos CABA"
+          >
             <svg
               width="14"
               height="14"
@@ -336,7 +334,7 @@ export default function Home() {
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span>Precios en CABA</span>
-          </div>
+          </a>
           <FavoritesNavLink className="text-snow shrink-0" />
           <ThemeToggle className="text-snow shrink-0" />
         </div>
