@@ -7,6 +7,7 @@ import {
   regionPages,
 } from "@/lib/snapshot";
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
+import { RANKINGS } from "@/lib/rankings";
 
 const SITE = "https://vinndex.com.ar";
 
@@ -90,7 +91,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    {
+      url: `${SITE}/ranking`,
+      lastModified: generatedAt,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
   ];
+
+  const rankingPagesUrls: MetadataRoute.Sitemap = RANKINGS.map((r) => ({
+    url: `${SITE}/ranking/${r.slug}`,
+    lastModified: generatedAt,
+    // Daily — los rankings dependen del precio y stock que cambian día
+    // a día con el daily-scrape.
+    changeFrequency: "daily" as const,
+    // Alta prioridad — son páginas SEO de descubrimiento con queries
+    // de alto intent ("malbec barato", "top espumantes").
+    priority: 0.85,
+  }));
 
   const blogPostsRoutes: MetadataRoute.Sitemap = blogPosts.map(
     ({ slug, meta }) => ({
@@ -156,6 +174,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    ...rankingPagesUrls,
     ...blogPostsRoutes,
     ...bodegaPages,
     ...varietalPagesUrls,

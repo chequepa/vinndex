@@ -548,12 +548,20 @@ export default function Home() {
                   importan. Elegí la más barata — o la que te llega más rápido.
                 </p>
               </div>
-              <Link
-                href="/buscar?multi=1"
-                className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
-              >
-                Ver todos los comparables →
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/buscar?multi=1"
+                  className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
+                >
+                  Ver todos los comparables →
+                </Link>
+                <Link
+                  href="/ranking"
+                  className="chip !bg-snow !text-ink !border-ink/15 hover:!bg-mustard"
+                >
+                  Rankings curados
+                </Link>
+              </div>
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
