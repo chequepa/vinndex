@@ -150,6 +150,16 @@ const SPLIT_STOPWORDS = new Set([
   "por",
 ]);
 
+// EAN-13 / EAN-12 / GTIN-14 — ancla física inequívoca. Si dos ofertas
+// dentro del grupo comparten el mismo EAN, son la misma SKU física y
+// NUNCA pueden separarse en clusters distintos.
+const EAN_RE = /^[0-9]{12,14}$/;
+
+function eanOfOffer(o) {
+  const sku = o?.externalSku;
+  return sku && EAN_RE.test(sku) ? sku : null;
+}
+
 function stripAccents(s) {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
@@ -232,6 +242,28 @@ function trySplit(group, sink) {
   // Need at least 2 clusters with ≥3 offers each to call it a chimera.
   const meaningful = [...clusters.values()].filter((c) => c.length >= 3);
   if (meaningful.length < 2) return false;
+
+  // EAN safety net — abort split si el resultado partiría un mismo EAN
+  // entre clusters distintos. Si dos ofertas tienen el mismo EAN-13 son
+  // la misma SKU física, sin importar las diferencias del nombre. Caso
+  // típico que esto previene: una vinoteca renombra el producto
+  // (e.g., agrega "Reserva") y la otra no — los tokens divergen pero el
+  // EAN del fabricante es idéntico.
+  const eanToCluster = new Map();
+  for (const [clusterKey, offers] of clusters) {
+    for (const o of offers) {
+      const ean = eanOfOffer(o);
+      if (!ean) continue;
+      const prev = eanToCluster.get(ean);
+      if (prev && prev !== clusterKey) {
+        console.log(
+          `  ⊘ ${group.groupSlug}: split abortado — EAN ${ean} aparece en clusters [${prev}] y [${clusterKey}]`,
+        );
+        return false;
+      }
+      eanToCluster.set(ean, clusterKey);
+    }
+  }
 
   console.log(
     `\nSplitting chimera ${group.groupSlug} (${N} offers) by tokens [${splitters.join(", ")}]:`,
