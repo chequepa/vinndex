@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { snapshotStats } from "@/lib/snapshot";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Preguntas frecuentes — Vinndex",
@@ -100,9 +101,9 @@ export default function PreguntasPage() {
           vs &ldquo;Don David Malbec Reserva&rdquo;, y por último un LLM
           (GPT-4o-mini) decide los casos ambiguos. Tiene un ratio de falso
           positivo muy bajo, pero si ves un match raro,{" "}
-          <a href="/contacto" className="underline hover:text-cobalt">
+          <Link href="/contacto" className="underline hover:text-cobalt">
             avisanos
-          </a>
+          </Link>
           .
         </>
       ),
@@ -136,9 +137,9 @@ export default function PreguntasPage() {
           VTEX (Cencosud, Carrefour, Día), Magento, PrestaShop y Mercado Libre.
           Si una vinoteca usa una plataforma distinta o tiene un desarrollo
           custom, evaluamos caso por caso. Ver{" "}
-          <a href="/admin/fuentes" className="underline hover:text-cobalt">
+          <Link href="/admin/fuentes" className="underline hover:text-cobalt">
             /admin/fuentes
-          </a>{" "}
+          </Link>{" "}
           para el listado completo y el estado de cada una.
         </>
       ),
@@ -150,12 +151,12 @@ export default function PreguntasPage() {
       a: (
         <>
           Escribinos a{" "}
-          <a
+          <Link
             href="/sumate"
             className="underline hover:text-cobalt"
           >
             /sumate
-          </a>
+          </Link>
           . Si tu tienda online usa una plataforma estándar con catálogo
           público (Tiendanube, WooCommerce, Shopify, VTEX, Magento, PrestaShop)
           la integración es rápida y gratuita. Sin comisiones, sin exclusividad,
@@ -173,9 +174,9 @@ export default function PreguntasPage() {
           mismo dominio que tu tienda (para verificar que sos responsable) con
           el nombre de la vinoteca y la URL. En &le; 48hs la removemos del
           próximo scrape nocturno. Más detalles en{" "}
-          <a href="/opt-out" className="underline hover:text-cobalt">
+          <Link href="/opt-out" className="underline hover:text-cobalt">
             /opt-out
-          </a>
+          </Link>
           .
         </>
       ),
@@ -225,9 +226,9 @@ export default function PreguntasPage() {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 py-14 lg:py-20">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-6">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
             <span>Preguntas</span>
           </div>
@@ -236,7 +237,7 @@ export default function PreguntasPage() {
           </h1>
           <p className="text-graphite text-xl leading-relaxed max-w-3xl">
             Lo que suelen preguntarnos usuarios y vinotecas. Si no ves lo tuyo
-            acá, <a href="/contacto" className="underline hover:text-ink">escribinos</a>.
+            acá, <Link href="/contacto" className="underline hover:text-ink">escribinos</Link>.
           </p>
         </div>
       </section>
@@ -271,12 +272,12 @@ export default function PreguntasPage() {
             Todo mail se lee y se responde. Si te encontraste con algo que no
             funciona o una duda que no resolvimos, escribinos.
           </p>
-          <a
+          <Link
             href="/contacto"
             className="cursor-wine inline-flex items-center gap-2 bg-snow text-ink font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors"
           >
             Ir a contacto →
-          </a>
+          </Link>
         </section>
       </main>
 

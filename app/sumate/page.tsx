@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Sos vinoteca? Sumate a Vinndex",
@@ -21,9 +22,9 @@ export default function SumatePage() {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 py-14 lg:py-20">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-6">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
             <span>Sumate</span>
           </div>

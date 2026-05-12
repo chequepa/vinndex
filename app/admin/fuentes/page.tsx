@@ -4,6 +4,7 @@ import { STORES } from "@/lib/stores";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import type { StorePlatform } from "@/lib/adapters/types";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Auditoría de fuentes — Vinndex",
@@ -142,7 +143,7 @@ export default function AdminFuentes() {
       {/* NAV */}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
+          <Link href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
               <path
                 d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
@@ -159,11 +160,11 @@ export default function AdminFuentes() {
             <span className="text-xs text-graphite ml-2 hidden sm:inline">
               · Admin / Auditoría
             </span>
-          </a>
+          </Link>
           <div className="flex gap-2 text-sm">
-            <a href="/" className="text-graphite hover:text-ink">
+            <Link href="/" className="text-graphite hover:text-ink">
               ← Volver al sitio
-            </a>
+            </Link>
             <FavoritesNavLink className="text-ink shrink-0" />
             <ThemeToggle className="text-ink shrink-0" />
           </div>
@@ -414,9 +415,9 @@ export default function AdminFuentes() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
           <p>
             © 2026 Vinndex · Admin ·{" "}
-            <a href="/" className="hover:text-snow">
+            <Link href="/" className="hover:text-snow">
               Volver al sitio
-            </a>
+            </Link>
           </p>
           <p>
             Snapshot:{" "}

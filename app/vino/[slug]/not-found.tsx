@@ -8,6 +8,7 @@ import {
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
+import Link from "next/link";
 
 export default function NotFound() {
   const brands = topBrands(8);
@@ -22,7 +23,7 @@ export default function NotFound() {
     <div className="bg-white min-h-[100dvh] flex flex-col">
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
@@ -39,7 +40,7 @@ export default function NotFound() {
             <span className="display text-xl font-semibold text-ink">
               Vinndex
             </span>
-          </a>
+          </Link>
           <form action="/buscar" className="flex-1 max-w-xl ml-auto">
             <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
               <svg
@@ -88,18 +89,18 @@ export default function NotFound() {
             más buscados.
           </p>
           <div className="flex flex-wrap gap-3 justify-center mt-8">
-            <a
+            <Link
               href="/buscar?multi=1"
               className="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Ver vinos comparables
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="cursor-wine border border-ink/20 hover:border-cobalt text-ink font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Volver al inicio
-            </a>
+            </Link>
           </div>
         </div>
 

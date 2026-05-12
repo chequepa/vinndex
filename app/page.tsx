@@ -4,6 +4,7 @@ import { BottleFallback } from "@/components/BottleFallback";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
+import Link from "next/link";
 import {
   snapshotStats,
   topBrands,
@@ -289,7 +290,7 @@ export default function Home() {
       {/* NAV */}
       <nav className="absolute top-0 left-0 right-0 z-30 px-6 py-5 lg:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 text-snow cursor-wine">
+          <Link href="/" className="flex items-center gap-2 text-snow cursor-wine">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <path
                 d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
@@ -303,7 +304,7 @@ export default function Home() {
             <span className="display text-2xl font-semibold tracking-tight">
               Vinndex
             </span>
-          </a>
+          </Link>
           <div className="hidden md:flex items-center gap-2">
             <a href="#como-funciona" className="chip">
               Cómo funciona
@@ -464,27 +465,27 @@ export default function Home() {
 
                 <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-snow/80 text-sm">
                   <span className="opacity-70">Popular hoy:</span>
-                  <a href="/varietal/malbec" className="chip text-xs !py-1.5">
+                  <Link href="/varietal/malbec" className="chip text-xs !py-1.5">
                     Malbec
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/varietal/cabernet-sauvignon"
                     className="chip text-xs !py-1.5"
                   >
                     Cabernet Sauvignon
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/region/valle-de-uco"
                     className="chip text-xs !py-1.5"
                   >
                     Valle de Uco
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/buscar?tipo=Espumante"
                     className="chip text-xs !py-1.5"
                   >
                     Espumantes
-                  </a>
+                  </Link>
                 </div>
               </form>
             </div>
@@ -547,12 +548,12 @@ export default function Home() {
                   importan. Elegí la más barata — o la que te llega más rápido.
                 </p>
               </div>
-              <a
+              <Link
                 href="/buscar?multi=1"
                 className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
               >
                 Ver todos los comparables →
-              </a>
+              </Link>
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -751,16 +752,16 @@ export default function Home() {
                 pasando por Río Negro.
               </h2>
             </div>
-            <a
+            <Link
               href="/buscar"
               className="chip !bg-[rgba(245,237,224,0.12)] !border-[rgba(245,237,224,0.3)] hover:!bg-[rgba(245,237,224,0.22)]"
             >
               Ver todas las regiones →
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a
+            <Link
               href="/buscar?region=valle-de-uco"
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
@@ -793,9 +794,9 @@ export default function Home() {
                   <div className="text-snow/70 text-sm mt-1">4.123 vinos</div>
                 </div>
               </div>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/buscar?region=lujan"
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
@@ -828,9 +829,9 @@ export default function Home() {
                   <div className="text-snow/70 text-sm mt-1">3.847 vinos</div>
                 </div>
               </div>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/buscar?region=cafayate"
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
@@ -863,9 +864,9 @@ export default function Home() {
                   <div className="text-ink/70 text-sm mt-1">847 vinos</div>
                 </div>
               </div>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/buscar?region=patagonia"
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
@@ -903,7 +904,7 @@ export default function Home() {
                   <div className="text-snow/70 text-sm mt-1">612 vinos</div>
                 </div>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -1096,44 +1097,44 @@ export default function Home() {
               <h4 className="display text-snow font-semibold mb-4">Explorar</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a
+                  <Link
                     href="/buscar?varietal=malbec"
                     className="hover:text-snow"
                   >
                     Malbec
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/buscar?varietal=cabernet"
                     className="hover:text-snow"
                   >
                     Cabernet Sauvignon
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/buscar?varietal=chardonnay"
                     className="hover:text-snow"
                   >
                     Chardonnay
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/buscar?varietal=espumante"
                     className="hover:text-snow"
                   >
                     Espumantes
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/buscar?region=valle-de-uco"
                     className="hover:text-snow"
                   >
                     Valle de Uco
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -1141,29 +1142,29 @@ export default function Home() {
               <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="/sobre" className="hover:text-snow">
+                  <Link href="/sobre" className="hover:text-snow">
                     Sobre el proyecto
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/como-funciona" className="hover:text-snow">
+                  <Link href="/como-funciona" className="hover:text-snow">
                     Cómo funciona
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/sumate" className="hover:text-snow">
+                  <Link href="/sumate" className="hover:text-snow">
                     Sos vinoteca? Sumate
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/opt-out" className="hover:text-snow">
+                  <Link href="/opt-out" className="hover:text-snow">
                     Pedir opt-out
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/contacto" className="hover:text-snow">
+                  <Link href="/contacto" className="hover:text-snow">
                     Contacto
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

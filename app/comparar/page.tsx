@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { BottleFallback } from "@/components/BottleFallback";
 import { CompareRemoveButton } from "./CompareRemoveButton";
+import Link from "next/link";
 import {
   findGroup,
   formatArs,
@@ -247,12 +248,12 @@ function EmptyState() {
         En cualquier ficha de vino vas a ver un botón "Comparar". Tocalo en 2
         a 4 etiquetas y después volvé acá para verlas lado a lado.
       </p>
-      <a
+      <Link
         href="/buscar?multi=1"
         className="cursor-wine inline-flex bg-cobalt hover:bg-ink text-snow font-semibold px-6 py-3 rounded-full transition-colors"
       >
         Explorar catálogo
-      </a>
+      </Link>
     </div>
   );
 }

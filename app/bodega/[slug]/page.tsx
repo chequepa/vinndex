@@ -7,6 +7,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
+import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -61,7 +62,7 @@ export default async function BodegaPage({ params }: Params) {
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <a href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
+          <Link href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
               <path
                 d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
@@ -75,7 +76,7 @@ export default async function BodegaPage({ params }: Params) {
             <span className="display text-xl font-semibold text-ink hidden sm:block">
               Vinndex
             </span>
-          </a>
+          </Link>
           <form action="/buscar" className="flex-1 max-w-2xl">
             <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
               <svg
@@ -109,13 +110,13 @@ export default async function BodegaPage({ params }: Params) {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-4">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
-            <a href="/buscar" className="hover:text-ink">
+            <Link href="/buscar" className="hover:text-ink">
               Bodegas
-            </a>
+            </Link>
             <span>/</span>
             <span>{b.name}</span>
           </div>
@@ -259,9 +260,9 @@ export default async function BodegaPage({ params }: Params) {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
           <p>
             © 2026 Vinndex ·{" "}
-            <a href="/" className="hover:text-snow">
+            <Link href="/" className="hover:text-snow">
               Inicio
-            </a>
+            </Link>
           </p>
           <p>Precios relevados una vez por día · Beber con moderación</p>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { snapshotStats } from "@/lib/snapshot";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Sobre Vinndex — Comparador de precios de vinos en Argentina",
@@ -19,9 +20,9 @@ export default function SobrePage() {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 py-14 lg:py-20">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-6">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
             <span>Sobre</span>
           </div>
@@ -108,9 +109,9 @@ export default function SobrePage() {
           <p className="text-ink/80 leading-relaxed mt-6">
             Los datos se refrescan todas las noches (hora Argentina). Podés ver
             el estado actual en{" "}
-            <a href="/admin/fuentes" className="underline hover:text-cobalt">
+            <Link href="/admin/fuentes" className="underline hover:text-cobalt">
               /admin/fuentes
-            </a>
+            </Link>
             .
           </p>
         </section>
@@ -127,7 +128,7 @@ export default function SobrePage() {
           </p>
           <p className="text-ink/80 leading-relaxed">
             Si algo no funciona, una vinoteca no aparece, o tenés una sugerencia
-            concreta, <a href="/contacto" className="underline hover:text-cobalt">escribime</a>.
+            concreta, <Link href="/contacto" className="underline hover:text-cobalt">escribime</Link>.
           </p>
         </section>
 
@@ -151,9 +152,9 @@ export default function SobrePage() {
             <li>
               · Si sos dueño/a de una vinoteca y no querés aparecer, podés
               pedirlo en{" "}
-              <a href="/opt-out" className="underline hover:text-mustard">
+              <Link href="/opt-out" className="underline hover:text-mustard">
                 /opt-out
-              </a>
+              </Link>
               .
             </li>
           </ul>
