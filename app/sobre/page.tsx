@@ -142,12 +142,12 @@ export default function SobrePage() {
               sus propias tiendas online. Nada es negociado aparte.
             </li>
             <li>
-              · Las ofertas con "sin stock" se marcan claramente y no cuentan
-              para el "Desde $X" de cada vino.
+              · Las ofertas con &ldquo;sin stock&rdquo; se marcan claramente
+              y no cuentan para el &ldquo;Desde $X&rdquo; de cada vino.
             </li>
             <li>
-              · Cuando tocás "Visitar" vas directo a la tienda: no hay
-              redirecciones ni tracking de afiliado.
+              · Cuando tocás &ldquo;Visitar&rdquo; vas directo a la tienda:
+              no hay redirecciones ni tracking de afiliado.
             </li>
             <li>
               · Si sos dueño/a de una vinoteca y no querés aparecer, podés
