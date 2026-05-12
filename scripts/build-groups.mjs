@@ -181,6 +181,8 @@ const BRAND_ALIASES = [
   ["kaiken", "kaiken"],
   ["chandon", "chandon"],
   ["baron b", "baronb"],
+  // Typos identificados en QA round 5 (find-duplicates.mjs)
+  ["piatelli", "piattelli"],
 ];
 
 /**
@@ -237,7 +239,11 @@ const NAME_PREFIX_TO_BRAND = {
   "angélica zapata": "Catena Zapata",
   adrianna: "Catena Zapata",
   nicasia: "Catena Zapata",
-  argentino: "Catena Zapata",
+  // "argentino" como prefix es demasiado genérico — captura "Vino
+  // Argentino Perro Callejero" → Catena Zapata (falso positivo).
+  // Si Catena tiene una etiqueta "Argentino", el matcher textual la
+  // captura igual por la palabra "catena" en el resto del nombre.
+  // Mantener removido — discovered en audit/dupes-residuals.
 
   // ── Ernesto Catena (Catena Zapata's brother's winery) ──
   "alma negra": "Alma Negra",
@@ -324,7 +330,10 @@ const NAME_PREFIX_TO_BRAND = {
   amalaya: "Amalaya",
   chandon: "Chandon",
   araucana: "Araucana",
-  "perro callejero": "Perro Callejero",
+  // Perro Callejero es la línea más visible de Mosquita Muerta —
+  // forzamos al productor para que merge con grupos atribuídos a la
+  // bodega directamente (algunos scrapers usan una, otros la otra).
+  "perro callejero": "Mosquita Muerta",
   monteagrelo: "Monteagrelo",
   festivo: "Festivo",
   "terrazas reserva": "Terrazas de los Andes",
@@ -422,19 +431,94 @@ const NAME_PREFIX_TO_BRAND = {
   kriptos: "Kriptos Wines",
   "de mono rojo": "De Moño Rojo",
   "de moño rojo": "De Moño Rojo",
+  // Round 5 — identificados en QA audit/dupes-residuals
+  // "Marchiori & Barraud" aparece atribuído a "Cobos" (distribuidor)
+  // en algunos productos VTEX — forzamos al productor real.
+  "marchiori barraud": "Marchiori & Barraud",
+  "marchiori & barraud": "Marchiori & Barraud",
+  piattelli: "Piattelli",
+  "los haroldos": "Los Haroldos",
+  "alma mora": "Alma Mora",
+  "mora negra": "Mora Negra",
+  "estancia mendoza": "Estancia Mendoza",
+  // Mosquita Muerta es el productor; Perro Callejero su línea más
+  // visible. Coherente con el resto del codebase, forzamos al productor.
+  // Override anterior `"perro callejero": "Perro Callejero"` quedaba a
+  // mitad de camino — algunos scrapers usan la línea y otros la bodega,
+  // así que partía el grupo.
+  "perro callejero": "Mosquita Muerta",
+  // Toro Viejo / Resero / Uvita son brands de vinos de mesa en brick;
+  // las dejamos como están — son productores distintos.
 };
 
-/** Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel. */
-function resolveBrandFromName(rawName, originalBrand) {
-  if (!rawName) return originalBrand;
-  const lower = stripAccents(String(rawName))
+/**
+ * Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel.
+ *
+ * Antes el matching era estricto sobre el nombre completo lowercased,
+ * por eso "Vino Colome Estate Torrontés…" no matcheaba con el prefix
+ * "colome" — y el grupo terminaba con brand="Estate" (el label) en
+ * lugar de "Colome" (la bodega). Probamos contra el nombre completo
+ * Y contra variantes con stripes de prefijos comunes ("vino", "vino
+ * tinto", etc.) para que el override agarre todos los casos.
+ */
+const COMMON_NAME_PREFIXES = [
+  "vino tinto ",
+  "vino blanco ",
+  "vino rosado ",
+  "vino espumante ",
+  "vino dulce ",
+  "vino fino ",
+  "vino ",
+  "tinto ",
+  "blanco ",
+  "rosado ",
+  "espumante ",
+  "champagne ",
+];
+function normalizeForBrandMatch(name) {
+  return stripAccents(String(name))
     .toLowerCase()
     .replace(/[^a-z0-9\s.]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
-    if (lower === prefix || lower.startsWith(prefix + " ")) {
-      return NAME_PREFIX_TO_BRAND[prefix];
+}
+/**
+ * Labels MUY distintivos: si el nombre los contiene EN CUALQUIER
+ * posición (no sólo al inicio), fuerza el brand. Sólo para casos
+ * donde el label es inequívoco en el mercado argentino — el riesgo
+ * de falso positivo tiene que ser cercano a cero.
+ *
+ * Caso típico que esto resuelve: "Vino Argentino Perro Callejero
+ * Blend De Malbec" — un mercadolibre listing donde el productor real
+ * (Mosquita Muerta) no aparece en el título.
+ */
+const NAME_CONTAINS_TO_BRAND = {
+  "perro callejero": "Mosquita Muerta",
+};
+
+function resolveBrandFromName(rawName, originalBrand) {
+  if (!rawName) return originalBrand;
+  const lower = normalizeForBrandMatch(rawName);
+  // Generamos hasta 2 candidatos: el nombre como viene y el nombre con
+  // el primer prefijo común eliminado. No anidamos más (es 99% de casos).
+  const candidates = [lower];
+  for (const pfx of COMMON_NAME_PREFIXES) {
+    if (lower.startsWith(pfx)) {
+      candidates.push(lower.slice(pfx.length));
+      break;
+    }
+  }
+  for (const cand of candidates) {
+    for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
+      if (cand === prefix || cand.startsWith(prefix + " ")) {
+        return NAME_PREFIX_TO_BRAND[prefix];
+      }
+    }
+  }
+  // Fallback: substring match para labels muy distintivos (NAME_CONTAINS).
+  for (const sub of Object.keys(NAME_CONTAINS_TO_BRAND)) {
+    if (lower.includes(` ${sub} `) || lower.startsWith(sub + " ") || lower.endsWith(" " + sub)) {
+      return NAME_CONTAINS_TO_BRAND[sub];
     }
   }
   return originalBrand;
