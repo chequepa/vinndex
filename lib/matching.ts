@@ -177,6 +177,15 @@ export type ProductOffer = {
   priceArs: number | null;
   inStock: boolean;
   imageUrl: string | null;
+  /**
+   * Marca ofertas con vintage explícito ≥ 5 años atrás como "de
+   * colección" — la UI las ordena al final y las muestra con badge
+   * en lugar de mezclarlas con el precio actual. El cálculo de min/max
+   * del grupo las excluye (a menos que TODAS las ofertas sean de
+   * colección, en cuyo caso son la única señal de precio disponible).
+   * Set por build-groups.mjs en base a COLLECTOR_CUTOFF_YEAR.
+   */
+  isCollector?: boolean;
 };
 
 /** Turn a list of scraped products into deduped groups. */

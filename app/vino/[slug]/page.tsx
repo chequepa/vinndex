@@ -727,6 +727,14 @@ export default async function Vino({ params }: Params) {
                             Sin stock
                           </span>
                         )}
+                        {offer.isCollector && (
+                          <span
+                            className="text-[10px] bg-malbec/15 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
+                            title="Cosecha vieja — precio de colección, no comparable con el precio actual"
+                          >
+                            Colección
+                          </span>
+                        )}
                         {(() => {
                           const v = extractVintage(offer.name);
                           return v ? (
@@ -785,6 +793,18 @@ export default async function Vino({ params }: Params) {
             vino — al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
             vinoteca.
           </p>
+
+          {offers.some((o) => o.isCollector) && (
+            <p className="text-xs text-graphite mt-3 max-w-2xl">
+              Las ofertas marcadas como{" "}
+              <span className="text-[10px] bg-malbec/15 text-malbec px-1.5 py-0.5 rounded font-bold uppercase tracking-wide">
+                Colección
+              </span>{" "}
+              son cosechas viejas a precio de bodega; quedan al final de la
+              tabla y no entran en el cálculo del &ldquo;ahorro hasta X%&rdquo;
+              del hero.
+            </p>
+          )}
         </section>
 
         {priceSeries.length >= 2 && (
