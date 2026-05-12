@@ -134,8 +134,19 @@ function compatibleToMerge(a, b) {
   // Type mismatch (Tinto vs Blanco vs Espumante vs Rosado vs Dulce) — block
   if (a.type && b.type && a.type !== b.type) return false;
 
-  // Format mismatch (caja vs bottle vs magnum) — block
+  // Format mismatch (caja vs bottle vs magnum) — block. Antes sólo
+  // bloqueábamos si ambos lados tenían format explícito, pero eso
+  // dejaba pasar el caso "format=null" (= 750ml default) vs
+  // "format=1500ml": Stage 2 los fusionaba porque los embeddings de
+  // "Saint Felicien Malbec" y "Saint Felicien Malbec 1500" son muy
+  // cercanos. Ahora si UNO tiene un format de volumen explícito
+  // (Xml o Xl) y el otro no, asumimos que son volúmenes distintos
+  // y bloqueamos.
+  const isVolFormat = (f) => /^\d+(?:ml|l)$/.test(f ?? "");
+  const aVol = isVolFormat(a.format);
+  const bVol = isVolFormat(b.format);
   if (a.format && b.format && a.format !== b.format) return false;
+  if (aVol !== bVol && (aVol || bVol)) return false;
 
   // Explicit color / sweetness disagreement even when type is missing
   const aname = a.canonicalName.toLowerCase();
