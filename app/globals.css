@@ -39,6 +39,12 @@
   --color-ink: #ece4d2;
   --color-graphite: #9aa3b8;
   --color-stone2: #2a3142;
+  /* En dark mode aclaramos cobalt y malbec — los originales (#1e3fbf,
+   * #6b1e2e) sobre --vx-surface (#141b2d) dan contraste ≤2.1, fail WCAG
+   * AA. Estos tonos más saturados pasan ≥4.5 contra surface dark sin
+   * desentonar contra los acentos (mustard/terracota) de la paleta. */
+  --color-cobalt: #6b8fff;
+  --color-malbec: #d96a82;
   --vx-bg: #0b1020;
   --vx-surface: #141b2d;
   --vx-surface-2: #1a2240;
@@ -65,11 +71,79 @@ body {
 /* bg-ink is used for footer — force it to stay dark even though --color-ink flipped */
 .dark .bg-ink { background-color: var(--vx-bg); }
 .dark .bg-ink\/10 { background-color: rgba(0, 0, 0, 0.25); }
+/* Tailwind v4 emite `!bg-ink` con !important para los chips que necesitan
+ * sobreescribir el background semi-transparente del `.chip` base. Sin
+ * este override en dark mode, el var(--color-ink) flipea a cream y el
+ * !important del bg gana, produciendo cream-on-cream (fail contraste). */
+.dark .\!bg-ink { background-color: var(--vx-bg) !important; }
 /* text-snow and border-snow stay light — used on dark gradients (hero, footer). No override needed. */
+/*
+ * Cobalt y malbec — en dark mode aclaramos `text-*` (vía --color-*)
+ * para que sobre surface dark tengan contraste ≥4.5. PERO los `bg-*`
+ * deben mantenerse en sus tonos oscuros originales porque encima va
+ * `text-snow` (cream claro), y un bg claro + texto claro da fail.
+ */
+.dark .bg-cobalt { background-color: #1e3fbf; }
+.dark .bg-malbec { background-color: #6b1e2e; }
+.dark .bg-cobalt\/10 { background-color: rgba(30, 63, 191, 0.12); }
+.dark .bg-cobalt\/15 { background-color: rgba(30, 63, 191, 0.18); }
+.dark .bg-cobalt\/20 { background-color: rgba(30, 63, 191, 0.22); }
+.dark .bg-malbec\/15 { background-color: rgba(107, 30, 46, 0.18); }
+.dark .bg-malbec\/20 { background-color: rgba(107, 30, 46, 0.22); }
 
 .display {
   font-family: var(--font-display);
   font-optical-sizing: auto;
+}
+
+/* Visually hidden pero accesible para screen readers. Lo usamos para
+ * landmark headings que mejoran la estructura sin afectar el diseño
+ * (ej. "Filtros de búsqueda" sobre el sidebar en /buscar). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible global — sólo se muestra cuando el usuario navega
+ * con teclado (no en clicks de mouse). Antes el navegador usaba sus
+ * defaults inconsistentes; algunos elementos como los `<a>` con
+ * className arbitrario perdían el indicador. Usamos `outline` con
+ * `outline-offset` para que no quede pegado al borde. */
+:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* En dark mode el cobalt aclarado se mezcla con el surface oscuro;
+ * subimos a un cyan más visible. */
+.dark :focus-visible {
+  outline-color: #8eb4ff;
+}
+/* Skip-to-content link — invisible hasta focus por teclado. Permite
+ * que usuarios con teclado salteen el nav y vayan directo al
+ * contenido principal sin tab-tab-tab-tab a través de cada link. */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 12px 20px;
+  background: var(--color-ink);
+  color: var(--color-snow);
+  font-weight: 600;
+  border-radius: 0 0 12px 0;
+  text-decoration: none;
+}
+.skip-to-content:focus {
+  left: 0;
+  top: 0;
 }
 
 .grain::before {
@@ -266,6 +340,11 @@ body {
   font-size: 14px;
   color: #f5ede0;
   flex-shrink: 0;
+  /* Algunos backgrounds del array STORE_COLORS son claros (mustard,
+   * verde) y daban contraste insuficiente con texto cream. El
+   * text-shadow oscuro restaura legibilidad sin tocar la paleta. */
+  text-shadow: 0 1px 2px rgba(15, 23, 41, 0.55);
+  border: 1px solid rgba(15, 23, 41, 0.12);
 }
 
 .shipping-tab {

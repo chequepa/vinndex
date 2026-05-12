@@ -342,6 +342,7 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
+      <main id="contenido">
       <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
         {/* Sun (larger, behind the bottle on desktop) */}
         <div className="absolute top-[18%] right-[8%] lg:right-[15%] float pointer-events-none">
@@ -1064,6 +1065,7 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
+      </main>
       <footer className="bg-ink text-snow/80 px-6 py-16 relative grain">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
@@ -1094,7 +1096,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <h4 className="display text-snow font-semibold mb-4">Explorar</h4>
+              <h3 className="display text-snow font-semibold mb-4">Explorar</h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
@@ -1139,7 +1141,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
+              <h3 className="display text-snow font-semibold mb-4">Vinndex</h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/sobre" className="hover:text-snow">

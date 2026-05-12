@@ -318,8 +318,11 @@ export default async function Buscar({ searchParams }: Params) {
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 grid lg:grid-cols-[260px_1fr] gap-10">
-        <aside className="hidden lg:block">
+      <main id="contenido" className="max-w-7xl mx-auto px-4 lg:px-8 py-8 grid lg:grid-cols-[260px_1fr] gap-10">
+        <aside className="hidden lg:block" aria-labelledby="filtros-titulo">
+          <h2 id="filtros-titulo" className="sr-only">
+            Filtros de búsqueda
+          </h2>
           <div className="sticky top-24 space-y-8">
             {/* VARIETAL */}
             <div>

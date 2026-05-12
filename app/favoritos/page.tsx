@@ -14,7 +14,7 @@ export default function FavoritosPage() {
   return (
     <div className="bg-white min-h-[100dvh] flex flex-col">
       <SiteHeader />
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 lg:px-8 py-10">
+      <main id="contenido" className="flex-1 max-w-6xl w-full mx-auto px-4 lg:px-8 py-10">
         <header className="mb-8">
           <h1 className="display text-4xl md:text-5xl font-semibold text-ink leading-[1.05]">
             Mis vinos

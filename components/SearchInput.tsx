@@ -144,6 +144,8 @@ export function SearchInput({
         <ul
           ref={dropdownRef}
           role="listbox"
+          id="search-suggestions"
+          aria-label="Sugerencias de búsqueda"
           className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[50vh] overflow-y-auto"
         >
           <li className="sm:hidden flex items-center justify-between px-4 py-2 border-b border-ink/10 sticky top-0 bg-white z-10">
@@ -209,11 +211,19 @@ export function SearchInput({
       </>
     ) : null;
 
+  // Si el caller no pasa aria-label, derivamos uno desde el placeholder
+  // para que el input nunca quede sin nombre accesible — Lighthouse
+  // a11y check `aria-input-field-name` falla cuando ambos faltan.
+  const ariaLabel =
+    rest["aria-label"] ?? placeholder ?? "Buscar vinos";
+  // Eliminamos aria-label del spread para no setearlo dos veces.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { "aria-label": _ignored, ...restOther } = rest;
   return (
     <>
       <input
         ref={ref}
-        type="text"
+        type="search"
         name={name}
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -232,7 +242,12 @@ export function SearchInput({
         className={className}
         autoFocus={autoFocus}
         autoComplete="off"
-        {...rest}
+        aria-label={ariaLabel}
+        aria-autocomplete={withAutocomplete ? "list" : undefined}
+        aria-expanded={withAutocomplete ? open : undefined}
+        aria-controls={withAutocomplete ? "search-suggestions" : undefined}
+        role={withAutocomplete ? "combobox" : undefined}
+        {...restOther}
       />
       {dropdown}
     </>

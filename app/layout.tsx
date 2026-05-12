@@ -77,6 +77,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-[100dvh]">
+        <a href="#contenido" className="skip-to-content">
+          Saltar al contenido
+        </a>
         {children}
         <CompareFloatingButton />
         {CF_ANALYTICS_TOKEN && (
