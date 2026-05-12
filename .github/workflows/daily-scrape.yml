@@ -68,6 +68,9 @@ jobs:
       - name: Build groups (Stage 1 matching)
         run: node scripts/build-groups.mjs
 
+      - name: Stage 1.5 — merge por imagen (URL-match + brand/varietal gate)
+        run: node scripts/stage1b-image-merge.mjs
+
       - name: Restore embeddings cache
         id: embeddings-cache
         uses: actions/cache@v4
