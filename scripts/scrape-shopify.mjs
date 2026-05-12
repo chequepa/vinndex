@@ -92,10 +92,26 @@ function normalize(p, store) {
     if (brandTag) brand = brandTag.split(":")[1].trim();
   }
 
+  // Shopify expone `barcode` aparte del `sku` interno — cuando la tienda
+  // lo carga es un EAN-13 estable cross-tienda y debería tener prioridad.
+  // El sku puede ser cualquier cosa (incluso el slug de URL en algunas
+  // bodegas). Validamos 12-14 dígitos antes de aceptar.
+  const barcode = variant?.barcode
+    ? String(variant.barcode).replace(/[\s-]/g, "")
+    : null;
+  const gtin = barcode && /^\d{12,14}$/.test(barcode) ? barcode : null;
+  // Si el sku mismo viene como EAN-13 (caso frecuente en bodegas que
+  // copian el código del fabricante al SKU) lo aceptamos como tal.
+  const skuClean = variant?.sku ? String(variant.sku).trim() : null;
+  const skuAsEan =
+    skuClean && /^\d{12,14}$/.test(skuClean.replace(/[\s-]/g, ""))
+      ? skuClean.replace(/[\s-]/g, "")
+      : null;
+
   return {
     storeSlug: store.slug,
     externalUrl: url,
-    externalSku: variant?.sku || null,
+    externalSku: gtin || skuAsEan || skuClean || null,
     name,
     brand,
     imageUrl,

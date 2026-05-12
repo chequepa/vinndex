@@ -106,15 +106,37 @@ function priceToNumber(p: WcPrices | undefined): number | null {
   return asNum / Math.pow(10, minor);
 }
 
+/**
+ * Algunas tiendas WC argentinas exponen el EAN como atributo custom
+ * (taxonomies tipo `pa_ean`, `pa_codigo_barras`, `pa_gtin`) además del
+ * SKU interno. Si está, lo preferimos sobre el SKU porque es estable
+ * cross-tienda. Caso fallback: el sku mismo es un EAN-13.
+ */
+function extractGtin(p: WcProduct): string | null {
+  const gtinTaxRe = /(ean|gtin|barcode|codigo[_-]?barra|codigo[_-]?de[_-]?barra)/i;
+  for (const a of p.attributes ?? []) {
+    const tax = (a.taxonomy ?? a.name ?? "").toLowerCase();
+    if (!gtinTaxRe.test(tax)) continue;
+    for (const term of a.terms ?? []) {
+      const v = (term.name ?? "").replace(/[\s-]/g, "");
+      if (/^\d{8,14}$/.test(v)) return v;
+    }
+  }
+  const sku = p.sku?.trim();
+  if (sku && /^\d{12,14}$/.test(sku)) return sku;
+  return null;
+}
+
 function normalize(p: WcProduct, storeSlug: string): ScrapedProduct | null {
   const url = p.permalink;
   const name = p.name?.trim();
   if (!url || !name) return null;
 
+  const gtin = extractGtin(p);
   return {
     storeSlug,
     externalUrl: url,
-    externalSku: p.sku ? p.sku.trim() || null : null,
+    externalSku: gtin ?? (p.sku ? p.sku.trim() || null : null),
     name,
     brand: extractBrand(p),
     imageUrl: p.images?.[0]?.src ?? null,

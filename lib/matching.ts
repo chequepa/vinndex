@@ -24,6 +24,11 @@ export function extractVintage(name: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
+// Catálogos argentinos usan ml, cc, cm3 y cm³ indistintamente para volumen
+// en mililitros ("Saint Felicien Malbec 375 Cc", "Norton 750cm3", etc.).
+// Las tres son la misma unidad — normalizamos a "ml" en el output del format.
+const VOL_ML_SUFFIX = /(ml|cc|cm3|cm³)/;
+
 /** Detect format hints (caja/box/magnum/pack) so we don't collapse them. */
 export function extractFormat(name: string): string | null {
   const lower = name.toLowerCase();
@@ -32,7 +37,15 @@ export function extractFormat(name: string): string | null {
   const mMagnum = lower.match(/\bmagnum\b/);
   const mHalf = lower.match(/\b(media|half)\b/);
   const mVolL = lower.match(/\b(\d+(?:[.,]\d+)?)\s*l\b/);
-  const mVolMl = lower.match(/\b(\d{3,4})\s*ml\b/);
+  // 187/250/375/500/750/1000/1500/3000/5000 ml|cc|cm3|cm³ — tolera espacio
+  // entre número y unidad ("375 Cc") o pegado ("750cc"). Lookahead en vez
+  // de \b al final porque "cm³" termina en char Unicode (no word-char) y
+  // \b no matchea esa transición.
+  const mVolMl = lower.match(
+    new RegExp(
+      `\\b(\\d{3,4})\\s*${VOL_ML_SUFFIX.source}(?=\\s|$|[^a-z0-9])`,
+    ),
+  );
 
   const parts: string[] = [];
   if (mPack) parts.push(mPack[1]);
@@ -40,7 +53,8 @@ export function extractFormat(name: string): string | null {
   if (mMagnum) parts.push("magnum");
   if (mHalf) parts.push("half");
   if (mVolL) parts.push(`${mVolL[1].replace(",", ".")}l`);
-  // ignore 750ml as it's the default
+  // 750ml es default; tampoco emitimos format para variantes equivalentes
+  // (cc, cm3) ni reportamos magnitudes < 750 a través del slot vol.
   if (mVolMl && mVolMl[1] !== "750") parts.push(`${mVolMl[1]}ml`);
 
   return parts.length > 0 ? parts.sort().join("-") : null;
@@ -57,7 +71,11 @@ export function canonicalize(
   let s = stripAccents(name).toLowerCase().trim();
 
   s = s.replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ");
-  s = s.replace(/\d+\s*ml\b/g, " ");
+  // Borramos el slot de volumen *coherente con extractFormat* — si capturamos
+  // 375cc como format, también lo sacamos del base, sino quedan tokens "375"
+  // y "cc" sueltos contaminando la canonical key. Lookahead en vez de \b al
+  // final por la misma razón (cm³ termina en char Unicode).
+  s = s.replace(/\b\d+\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/g, " ");
   s = s.replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ");
   s = s.replace(/\bx\s*\d+\b/g, " ");
   s = s.replace(
