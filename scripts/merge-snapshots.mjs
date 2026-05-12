@@ -22,6 +22,7 @@ const INPUTS = [
   { path: "data/snapshot-mercadolibre.json", platform: "mercadolibre" },
   { path: "data/snapshot-magento.json", platform: "magento" },
   { path: "data/snapshot-prestashop.json", platform: "prestashop" },
+  { path: "data/snapshot-ambar.json", platform: "custom" },
 ];
 
 function loadIfExists(path) {
