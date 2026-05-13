@@ -116,6 +116,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/ranking" className="hover:text-snow">
+                  Rankings
+                </Link>
+              </li>
+              <li>
                 <Link href="/preguntas" className="hover:text-snow">
                   Preguntas frecuentes
                 </Link>
