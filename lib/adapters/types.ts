@@ -33,7 +33,10 @@ export type StorePlatform =
   | "bigcommerce"
   | "magento"
   | "prestashop"
-  | "mercadolibre";
+  | "mercadolibre"
+  // SPAs custom con backend propio (caso típico: catálogo entero en una
+  // fila JSON de Supabase). Cada una necesita su scraper a medida.
+  | "custom";
 
 export type StoreConfig = {
   slug: string;
@@ -48,4 +51,7 @@ export type StoreConfig = {
   categoryPaths?: string[] | null;
   /** Magento (/search/vino). */
   searchPath?: string;
+  /** Custom adapters: identifier para que el scraper sepa qué plugin
+   * usar. Ej. "ambar-supabase". */
+  customAdapter?: string;
 };
