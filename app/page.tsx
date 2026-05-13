@@ -4,6 +4,7 @@ import { BottleFallback } from "@/components/BottleFallback";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
+import { HomeFavoriteDrops } from "@/components/HomeFavoriteDrops";
 import Link from "next/link";
 import {
   snapshotStats,
@@ -535,6 +536,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAVORITOS QUE BAJARON (client-side; hidden si no hay favs o no hay drops cross) */}
+      <HomeFavoriteDrops />
 
       {/* VISTOS RECIENTEMENTE (client-side, hidden for zero-state) */}
       <RecentlyViewedSection />
