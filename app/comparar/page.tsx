@@ -245,8 +245,9 @@ function EmptyState() {
         Tu lista de comparar está vacía
       </h2>
       <p className="text-graphite max-w-md mx-auto mb-6">
-        En cualquier ficha de vino vas a ver un botón "Comparar". Tocalo en 2
-        a 4 etiquetas y después volvé acá para verlas lado a lado.
+        En cualquier ficha de vino vas a ver un botón &ldquo;Comparar&rdquo;.
+        Tocalo en 2 a 4 etiquetas y después volvé acá para verlas lado a
+        lado.
       </p>
       <Link
         href="/buscar?multi=1"

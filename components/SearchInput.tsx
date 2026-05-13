@@ -48,9 +48,12 @@ export function SearchInput({
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selected, setSelected] = useState(-1);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  // Antes había un `mounted` state seteado a true en useEffect(()=>{}, [])
+  // para guardar el dropdown durante SSR. Es redundante: `open` arranca
+  // en false y sólo se vuelve true por interacción del usuario (focus,
+  // typing), así que `showDropdown` ya es siempre false en SSR sin
+  // necesidad del guard extra.
 
   useEffect(() => {
     if (!withAutocomplete) return;
@@ -132,7 +135,7 @@ export function SearchInput({
   );
 
   const dropdown =
-    showDropdown && mounted ? (
+    showDropdown ? (
       <>
         {/* Backdrop: only on mobile, so tap anywhere closes. */}
         <div
