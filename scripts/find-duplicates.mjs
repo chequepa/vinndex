@@ -143,10 +143,23 @@ function brandsCompatible(b1, b2) {
   return false;
 }
 
+// Si se pasa `--out=path.json`, el script escribe el report como JSON
+// estructurado a esa ruta — usado por el daily-scrape para alimentar
+// el dashboard /admin/duplicates. Si NO se pasa el flag, el comportamiento
+// es el histórico (output legible a stdout para hacer `node ... | less`).
+const args = process.argv.slice(2);
+const outArg = args.find((a) => a.startsWith("--out="));
+const OUT_PATH = outArg ? outArg.slice("--out=".length) : null;
+const JSON_ONLY = !!OUT_PATH;
+
+function maybeLog(...m) {
+  if (!JSON_ONLY) console.log(...m);
+}
+
 function main() {
   const snapshot = JSON.parse(fs.readFileSync(SNAPSHOT, "utf8"));
   const groups = snapshot.productGroups ?? [];
-  console.log(`Analyzing ${groups.length} groups...\n`);
+  maybeLog(`Analyzing ${groups.length} groups...\n`);
 
   // Enrich each group with tokens + distinctive set
   const enriched = groups.map((g) => {
@@ -157,7 +170,7 @@ function main() {
 
   // Filter to groups with ≥2 distinctive tokens (otherwise too noisy)
   const good = enriched.filter((e) => e.distinctive.length >= 2);
-  console.log(
+  maybeLog(
     `${good.length} groups have ≥2 distinctive tokens (of ${groups.length}).\n`,
   );
 
@@ -215,8 +228,8 @@ function main() {
     clustersByPair.push({ key, members });
   }
 
-  console.log(`\n===== HEURISTIC A: Distinctive-token overlap =====`);
-  console.log(
+  maybeLog(`\n===== HEURISTIC A: Distinctive-token overlap =====`);
+  maybeLog(
     `${clustersByPair.length} candidate clusters with ≥2 shared distinctive tokens and brand conflict.\n`,
   );
 
@@ -232,14 +245,14 @@ function main() {
       (sum, m) => sum + (m.g.storeCount ?? 0),
       0,
     );
-    console.log(`  [${c.key}] — total stores if merged: ${total}`);
+    maybeLog(`  [${c.key}] — total stores if merged: ${total}`);
     for (const m of c.members) {
       const brand = m.g.brand ?? "∅";
-      console.log(
+      maybeLog(
         `    sc=${m.g.storeCount ?? 0}  ${brand.padEnd(22)}  ${m.g.canonicalName}`,
       );
     }
-    console.log("");
+    maybeLog("");
   }
 
   // ===== Heuristic B: Jaccard ≥ 0.75 on distinctive tokens =====
@@ -268,8 +281,8 @@ function main() {
     }
   }
 
-  console.log(`\n===== HEURISTIC B: Jaccard ≥ 0.75 on distinctive tokens =====`);
-  console.log(`${jaccardCandidates.length} candidate pairs.\n`);
+  maybeLog(`\n===== HEURISTIC B: Jaccard ≥ 0.75 on distinctive tokens =====`);
+  maybeLog(`${jaccardCandidates.length} candidate pairs.\n`);
 
   jaccardCandidates.sort((x, y) => {
     const sa = (x.a.g.storeCount ?? 0) + (x.b.g.storeCount ?? 0);
@@ -278,16 +291,71 @@ function main() {
   });
 
   for (const { a, b, sim } of jaccardCandidates.slice(0, 40)) {
-    console.log(
+    maybeLog(
       `  jaccard=${sim.toFixed(2)}  total_sc=${(a.g.storeCount ?? 0) + (b.g.storeCount ?? 0)}`,
     );
-    console.log(
+    maybeLog(
       `    sc=${a.g.storeCount ?? 0}  ${(a.g.brand ?? "∅").padEnd(22)}  ${a.g.canonicalName}`,
     );
-    console.log(
+    maybeLog(
       `    sc=${b.g.storeCount ?? 0}  ${(b.g.brand ?? "∅").padEnd(22)}  ${b.g.canonicalName}`,
     );
-    console.log("");
+    maybeLog("");
+  }
+
+  // ===== JSON output mode ====
+  // Cuando se pasa --out=path.json escribimos un payload estructurado
+  // para que /admin/duplicates lo consuma sin re-correr el detector.
+  if (OUT_PATH) {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      snapshotGeneratedAt: snapshot.generatedAt ?? null,
+      groupCount: groups.length,
+      groupsWithDistinctiveTokens: good.length,
+      heuristicA: {
+        description:
+          "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
+        total: clustersByPair.length,
+        items: clustersByPair.slice(0, 80).map((c) => ({
+          key: c.key,
+          totalStoresIfMerged: c.members.reduce(
+            (sum, m) => sum + (m.g.storeCount ?? 0),
+            0,
+          ),
+          members: c.members.map((m) => ({
+            slug: m.g.groupSlug,
+            brand: m.g.brand ?? null,
+            canonicalName: m.g.canonicalName,
+            storeCount: m.g.storeCount ?? 0,
+          })),
+        })),
+      },
+      heuristicB: {
+        description:
+          "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
+        total: jaccardCandidates.length,
+        items: jaccardCandidates.slice(0, 80).map(({ a, b, sim }) => ({
+          jaccard: Number(sim.toFixed(3)),
+          totalStoresIfMerged: (a.g.storeCount ?? 0) + (b.g.storeCount ?? 0),
+          a: {
+            slug: a.g.groupSlug,
+            brand: a.g.brand ?? null,
+            canonicalName: a.g.canonicalName,
+            storeCount: a.g.storeCount ?? 0,
+          },
+          b: {
+            slug: b.g.groupSlug,
+            brand: b.g.brand ?? null,
+            canonicalName: b.g.canonicalName,
+            storeCount: b.g.storeCount ?? 0,
+          },
+        })),
+      },
+    };
+    fs.writeFileSync(OUT_PATH, JSON.stringify(payload, null, 2));
+    console.log(
+      `wrote ${OUT_PATH} — heuristicA: ${payload.heuristicA.total} clusters, heuristicB: ${payload.heuristicB.total} pairs`,
+    );
   }
 }
 
