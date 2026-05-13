@@ -185,8 +185,18 @@ export function SearchInput({
                 {s.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={s.imageUrl}
+                    // Pasamos por el proxy de Next/Image para que el browser
+                    // nunca fetch directo al CDN externo. Antes hacíamos
+                    // `src={s.imageUrl}` directo y Lighthouse detectaba
+                    // cookies __cf_bm de mitiendanube/vteximg en el flag
+                    // third-party-cookies (best-practices 73 en /buscar).
+                    src={`/_next/image?url=${encodeURIComponent(s.imageUrl)}&w=64&q=75`}
                     alt=""
+                    width={32}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
                     className="w-8 h-12 object-contain shrink-0"
                   />
                 ) : (
