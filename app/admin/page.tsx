@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { snapshotStats } from "@/lib/snapshot";
 import { readPageviewStats } from "@/lib/pageviews";
 import { readDuplicatesReport } from "@/lib/duplicatesReport";
+import { readPriceDrops } from "@/lib/priceDrops";
 
 export const metadata: Metadata = {
   title: "Admin — Vinndex",
@@ -23,9 +24,10 @@ type Card = {
 
 export default async function AdminIndex() {
   const stats = snapshotStats();
-  const [views, dupes] = await Promise.all([
+  const [views, dupes, drops] = await Promise.all([
     readPageviewStats(),
     readDuplicatesReport(),
+    readPriceDrops(),
   ]);
 
   const cards: Card[] = [
@@ -59,6 +61,16 @@ export default async function AdminIndex() {
           ? dupes.heuristicA.total.toLocaleString("es-AR")
           : "—",
         label: dupes ? "clusters heurística A" : "sin reporte",
+      },
+    },
+    {
+      href: "/admin/price-drops",
+      title: "Price drops",
+      description:
+        "Bajas ≥15% vs mediana 7d. Detectadas en el daily-scrape, filtros anti-noise aplicados.",
+      metric: {
+        value: drops ? drops.drops.length.toLocaleString("es-AR") : "—",
+        label: drops ? "drops hoy" : "sin reporte",
       },
     },
   ];

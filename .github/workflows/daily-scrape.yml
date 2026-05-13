@@ -133,6 +133,10 @@ jobs:
         run: node scripts/track-prices.mjs
         continue-on-error: true
 
+      - name: Detect price drops (alimenta /admin/price-drops + home)
+        run: node scripts/detect-price-drops.mjs
+        continue-on-error: true
+
       - name: Healthcheck del snapshot
         id: healthcheck
         run: |
@@ -194,7 +198,7 @@ jobs:
       - name: Check for changes
         id: diff
         run: |
-          git add data/snapshot.json data/price-history.json data/duplicates-report.json
+          git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json
           if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
