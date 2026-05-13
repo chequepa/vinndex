@@ -36,7 +36,12 @@ export function StickyCTA({
 
   return (
     <div
+      // `inert` saca el subtree del tab order y del accessibility tree
+      // cuando no es visible. `aria-hidden` solo no alcanza — sin `inert`
+      // los <a> internos siguen siendo focuseables con Tab y Lighthouse
+      // marca aria-hidden-focus fail.
       aria-hidden={!visible}
+      inert={!visible}
       className={`lg:hidden fixed left-0 right-0 bottom-0 z-30 transition-transform duration-200 ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}

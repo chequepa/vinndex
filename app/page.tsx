@@ -290,7 +290,11 @@ export default function Home() {
       {/* NAV */}
       <nav className="absolute top-0 left-0 right-0 z-30 px-6 py-5 lg:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-snow cursor-wine">
+          <Link
+            href="/"
+            aria-label="Vinndex — inicio"
+            className="flex items-center gap-2 text-snow cursor-wine"
+          >
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <path
                 d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
