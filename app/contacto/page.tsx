@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Contacto — Vinndex",
@@ -17,9 +18,9 @@ export default function ContactoPage() {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 py-14 lg:py-20">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-6">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
             <span>Contacto</span>
           </div>
@@ -73,9 +74,9 @@ export default function ContactoPage() {
                 Decime el nombre + URL. Si tiene tienda online con catálogo
                 público, la sumo al siguiente ciclo. También podés mandarme a
                 la vinoteca directo a{" "}
-                <a href="/sumate" className="underline hover:text-cobalt">
+                <Link href="/sumate" className="underline hover:text-cobalt">
                   /sumate
-                </a>
+                </Link>
                 .
               </p>
             </div>
@@ -94,9 +95,9 @@ export default function ContactoPage() {
               </h3>
               <p className="text-ink/70 text-sm leading-relaxed">
                 Ver{" "}
-                <a href="/opt-out" className="underline hover:text-cobalt">
+                <Link href="/opt-out" className="underline hover:text-cobalt">
                   /opt-out
-                </a>
+                </Link>
                 .
               </p>
             </div>

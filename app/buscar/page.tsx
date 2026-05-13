@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
+import Link from "next/link";
 import {
   searchGroups,
   formatArs,
@@ -175,7 +176,7 @@ export default async function Buscar({ searchParams }: Params) {
       {/* NAV */}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
@@ -192,7 +193,7 @@ export default async function Buscar({ searchParams }: Params) {
             <span className="display text-xl font-semibold text-ink hidden sm:block">
               Vinndex
             </span>
-          </a>
+          </Link>
 
           <form action="/buscar" className="flex-1 max-w-2xl">
             <div className="relative flex items-center bg-snow rounded-full border border-ink/10 focus-within:border-cobalt p-1 pl-4">
@@ -250,9 +251,9 @@ export default async function Buscar({ searchParams }: Params) {
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
           <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wider mb-3">
-            <a href="/" className="hover:text-ink">
+            <Link href="/" className="hover:text-ink">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
             <span>Búsqueda</span>
           </div>
@@ -307,9 +308,9 @@ export default async function Buscar({ searchParams }: Params) {
               Sólo comparables (2+ tiendas)
             </a>
             {hasAnyFilter && (
-              <a href="/buscar" className="filter-chip">
+              <Link href="/buscar" className="filter-chip">
                 Limpiar filtros ×
-              </a>
+              </Link>
             )}
             {!hasAnyFilter && <LastSearchChip />}
           </div>
@@ -566,21 +567,21 @@ export default async function Buscar({ searchParams }: Params) {
                     en Vinndex.
                   </p>
                   <p>
-                    <a
+                    <Link
                       href="/contacto"
                       className="text-cobalt hover:underline"
                     >
                       Avisanos
-                    </a>{" "}
+                    </Link>{" "}
                     qué vino es y dónde lo viste, y en el próximo ciclo lo
                     intentamos. También podés ver la lista completa de
                     vinotecas integradas en{" "}
-                    <a
+                    <Link
                       href="/admin/fuentes"
                       className="text-cobalt hover:underline"
                     >
                       /admin/fuentes
-                    </a>
+                    </Link>
                     .
                   </p>
                 </div>
@@ -716,9 +717,9 @@ export default async function Buscar({ searchParams }: Params) {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
           <p>
             © 2026 Vinndex ·{" "}
-            <a href="/" className="hover:text-snow">
+            <Link href="/" className="hover:text-snow">
               Inicio
-            </a>
+            </Link>
           </p>
           <p>Precios relevados una vez por día · Beber con moderación</p>
         </div>

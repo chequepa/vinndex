@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 /**
  * Site-wide footer. Includes the 4 columns of links used in the home
  * page + the copyright + drinking-responsibly disclaimer. Imported by
@@ -13,30 +15,30 @@ export function SiteFooter() {
             <h4 className="display text-snow font-semibold mb-4">Catálogo</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/buscar?varietal=malbec" className="hover:text-snow">
+                <Link href="/buscar?varietal=malbec" className="hover:text-snow">
                   Malbec
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="/buscar?varietal=cabernet-sauvignon"
                   className="hover:text-snow"
                 >
                   Cabernet Sauvignon
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="/buscar?varietal=chardonnay"
                   className="hover:text-snow"
                 >
                   Chardonnay
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/buscar?varietal=bonarda" className="hover:text-snow">
+                <Link href="/buscar?varietal=bonarda" className="hover:text-snow">
                   Bonarda
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -44,24 +46,24 @@ export function SiteFooter() {
             <h4 className="display text-snow font-semibold mb-4">Regiones</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/region/mendoza" className="hover:text-snow">
+                <Link href="/region/mendoza" className="hover:text-snow">
                   Mendoza
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/region/valle-de-uco" className="hover:text-snow">
+                <Link href="/region/valle-de-uco" className="hover:text-snow">
                   Valle de Uco
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/region/lujan-de-cuyo" className="hover:text-snow">
+                <Link href="/region/lujan-de-cuyo" className="hover:text-snow">
                   Luján de Cuyo
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/region/salta" className="hover:text-snow">
+                <Link href="/region/salta" className="hover:text-snow">
                   Salta
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -69,24 +71,24 @@ export function SiteFooter() {
             <h4 className="display text-snow font-semibold mb-4">Más</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/buscar?tipo=espumante" className="hover:text-snow">
+                <Link href="/buscar?tipo=espumante" className="hover:text-snow">
                   Espumantes
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/buscar?tipo=blanco" className="hover:text-snow">
+                <Link href="/buscar?tipo=blanco" className="hover:text-snow">
                   Vinos blancos
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/buscar?tipo=rosado" className="hover:text-snow">
+                <Link href="/buscar?tipo=rosado" className="hover:text-snow">
                   Rosados
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/region/patagonia" className="hover:text-snow">
+                <Link href="/region/patagonia" className="hover:text-snow">
                   Patagonia
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -94,44 +96,44 @@ export function SiteFooter() {
             <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/favoritos" className="hover:text-snow">
+                <Link href="/favoritos" className="hover:text-snow">
                   Mis vinos
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/sobre" className="hover:text-snow">
+                <Link href="/sobre" className="hover:text-snow">
                   Sobre el proyecto
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/como-funciona" className="hover:text-snow">
+                <Link href="/como-funciona" className="hover:text-snow">
                   Cómo funciona
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/blog" className="hover:text-snow">
+                <Link href="/blog" className="hover:text-snow">
                   Blog
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/preguntas" className="hover:text-snow">
+                <Link href="/preguntas" className="hover:text-snow">
                   Preguntas frecuentes
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/sumate" className="hover:text-snow">
+                <Link href="/sumate" className="hover:text-snow">
                   Sos vinoteca? Sumate
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/opt-out" className="hover:text-snow">
+                <Link href="/opt-out" className="hover:text-snow">
                   Pedir opt-out
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contacto" className="hover:text-snow">
+                <Link href="/contacto" className="hover:text-snow">
                   Contacto
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -13,7 +13,7 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
-import { extractVintage } from "@/lib/matching";
+import Link from "next/link";
 import {
   findGroup,
   formatArs,
@@ -336,7 +336,7 @@ export default async function Vino({ params }: Params) {
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
@@ -353,7 +353,7 @@ export default async function Vino({ params }: Params) {
             <span className="display text-xl font-semibold text-ink hidden sm:block">
               Vinndex
             </span>
-          </a>
+          </Link>
 
           <form action="/buscar" className="flex-1 max-w-2xl">
             <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
@@ -406,13 +406,13 @@ export default async function Vino({ params }: Params) {
 
         <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
           <div className="flex items-center gap-2 text-xs text-snow/70 uppercase tracking-wider mb-5">
-            <a href="/" className="hover:text-snow">
+            <Link href="/" className="hover:text-snow">
               Inicio
-            </a>
+            </Link>
             <span>/</span>
-            <a href="/buscar" className="hover:text-snow">
+            <Link href="/buscar" className="hover:text-snow">
               Catálogo
-            </a>
+            </Link>
             <span>/</span>
             <span className="truncate">{group.canonicalName}</span>
           </div>
@@ -900,9 +900,9 @@ export default async function Vino({ params }: Params) {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
           <p>
             © 2026 Vinndex ·{" "}
-            <a href="/" className="hover:text-snow">
+            <Link href="/" className="hover:text-snow">
               Inicio
-            </a>
+            </Link>
           </p>
           <p>Precios relevados una vez por día · Beber con moderación</p>
         </div>

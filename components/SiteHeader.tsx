@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { FavoritesNavLink } from "./Favorites";
@@ -11,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-        <a href="/" className="flex items-center gap-2 shrink-0 cursor-wine text-ink">
+        <Link href="/" className="flex items-center gap-2 shrink-0 cursor-wine text-ink">
           <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
             <path
               d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
@@ -25,7 +26,7 @@ export function SiteHeader() {
           <span className="display text-xl font-semibold hidden sm:block">
             Vinndex
           </span>
-        </a>
+        </Link>
         <form action="/buscar" className="flex-1 max-w-2xl">
           <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
             <svg

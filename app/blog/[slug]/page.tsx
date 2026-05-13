@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { POST_SLUGS, type PostMeta, type PostSlug } from "@/content/blog/posts";
+import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -85,13 +86,13 @@ export default async function BlogPostPage({ params }: Params) {
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wide mb-5">
-              <a href="/" className="hover:text-ink">
+              <Link href="/" className="hover:text-ink">
                 Inicio
-              </a>
+              </Link>
               <span>/</span>
-              <a href="/blog" className="hover:text-ink">
+              <Link href="/blog" className="hover:text-ink">
                 Blog
-              </a>
+              </Link>
             </div>
             <time className="text-xs text-terracota uppercase tracking-[0.2em] font-semibold">
               {formatDate(meta.publishedAt)}
