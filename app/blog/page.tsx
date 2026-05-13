@@ -48,7 +48,7 @@ export default async function BlogIndex() {
   return (
     <div className="bg-white min-h-[100dvh] flex flex-col">
       <SiteHeader />
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 lg:px-8 py-10">
+      <main id="contenido" className="flex-1 max-w-3xl w-full mx-auto px-4 lg:px-8 py-10">
         <header className="mb-10 flex items-start justify-between gap-6 flex-wrap">
           <div>
             <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-3">

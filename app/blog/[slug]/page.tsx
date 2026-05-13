@@ -82,7 +82,7 @@ export default async function BlogPostPage({ params }: Params) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <SiteHeader />
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 lg:px-8 py-10">
+      <main id="contenido" className="flex-1 max-w-3xl w-full mx-auto px-4 lg:px-8 py-10">
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-2 text-xs text-graphite uppercase tracking-wide mb-5">

@@ -72,7 +72,7 @@ export default function NotFound() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-16 lg:py-20">
+      <main id="contenido" className="flex-1 max-w-4xl mx-auto px-6 py-16 lg:py-20">
         <div className="text-center mb-14">
           <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-4">
             404 · Este vino no está en el catálogo

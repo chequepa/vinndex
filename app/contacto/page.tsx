@@ -34,7 +34,7 @@ export default function ContactoPage() {
         </div>
       </section>
 
-      <main className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-10">
+      <main id="contenido" className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-10">
         <section className="bg-snow border border-ink/10 rounded-2xl p-8 md:p-10">
           <h2 className="display text-2xl font-semibold text-ink mb-6">
             Por email

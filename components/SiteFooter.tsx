@@ -12,7 +12,7 @@ export function SiteFooter() {
       <div className="max-w-7xl mx-auto">
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <div>
-            <h4 className="display text-snow font-semibold mb-4">Catálogo</h4>
+            <h3 className="display text-snow font-semibold mb-4">Catálogo</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/buscar?varietal=malbec" className="hover:text-snow">
@@ -43,7 +43,7 @@ export function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h4 className="display text-snow font-semibold mb-4">Regiones</h4>
+            <h3 className="display text-snow font-semibold mb-4">Regiones</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/region/mendoza" className="hover:text-snow">
@@ -68,7 +68,7 @@ export function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h4 className="display text-snow font-semibold mb-4">Más</h4>
+            <h3 className="display text-snow font-semibold mb-4">Más</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/buscar?tipo=espumante" className="hover:text-snow">
@@ -93,7 +93,7 @@ export function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h4 className="display text-snow font-semibold mb-4">Vinndex</h4>
+            <h3 className="display text-snow font-semibold mb-4">Vinndex</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/favoritos" className="hover:text-snow">

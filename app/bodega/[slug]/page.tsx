@@ -157,7 +157,7 @@ export default async function BodegaPage({ params }: Params) {
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
+      <main id="contenido" className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
         {multiStore.length > 0 && (
           <section className="mb-12">
             <div className="flex items-end justify-between flex-wrap gap-4 mb-6">

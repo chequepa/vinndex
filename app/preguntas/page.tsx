@@ -242,7 +242,7 @@ export default function PreguntasPage() {
         </div>
       </section>
 
-      <main className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+      <main id="contenido" className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
         <div className="space-y-4">
           {faqs.map((f, i) => (
             <details

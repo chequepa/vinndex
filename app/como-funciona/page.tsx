@@ -41,7 +41,7 @@ export default function ComoFuncionaPage() {
         </div>
       </section>
 
-      <main className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+      <main id="contenido" className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
         <ol className="space-y-10">
           <li className="flex gap-5">
             <div className="display text-5xl font-semibold text-cobalt leading-none shrink-0 w-16">

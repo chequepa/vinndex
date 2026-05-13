@@ -37,7 +37,7 @@ export default function SobrePage() {
         </div>
       </section>
 
-      <main className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-12">
+      <main id="contenido" className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-12">
         <section>
           <h2 className="display text-3xl font-semibold text-ink mb-4">
             Por qué existe
