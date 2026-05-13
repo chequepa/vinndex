@@ -98,6 +98,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    {
+      url: `${SITE}/bodegas`,
+      lastModified: generatedAt,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE}/data`,
+      lastModified: generatedAt,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
   ];
 
   const vsPairsFile = await readVsPairs();
