@@ -121,6 +121,16 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/bodegas" className="hover:text-snow">
+                  Bodegas
+                </Link>
+              </li>
+              <li>
+                <Link href="/data" className="hover:text-snow">
+                  Datos del mercado
+                </Link>
+              </li>
+              <li>
                 <Link href="/preguntas" className="hover:text-snow">
                   Preguntas frecuentes
                 </Link>
