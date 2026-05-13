@@ -16,6 +16,7 @@ import {
   varietalPages,
   regionPages,
 } from "@/lib/snapshot";
+import { readPriceDrops } from "@/lib/priceDrops";
 
 function formatCount(n: number): string {
   if (n >= 1000) {
@@ -279,12 +280,16 @@ function HeroBottle() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
   const deals = topDeals(6);
   const varietals = varietalPages().slice(0, 8);
   const regions = regionPages().slice(0, 6);
+  // Price drops generados por scripts/detect-price-drops.mjs en el
+  // daily-scrape. Sólo top 4 acá; el resto se ve en /admin/price-drops.
+  const dropsReport = await readPriceDrops();
+  const topDrops = dropsReport?.drops.slice(0, 4) ?? [];
   return (
     <>
       {/* NAV */}
@@ -533,6 +538,82 @@ export default function Home() {
 
       {/* VISTOS RECIENTEMENTE (client-side, hidden for zero-state) */}
       <RecentlyViewedSection />
+
+      {/* PRICE DROPS — only show when there's signal */}
+      {topDrops.length > 0 && (
+        <section id="bajaron" className="py-20 lg:py-28 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
+              <div className="max-w-2xl">
+                <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-3">
+                  Bajaron de precio
+                </p>
+                <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
+                  Vinos en oferta
+                  <br />
+                  <span className="italic font-normal">vs la semana pasada.</span>
+                </h2>
+                <p className="text-graphite mt-4 text-base leading-relaxed">
+                  Drops ≥15% sobre la mediana de los últimos 7 días.
+                  Comparado entre vinotecas online — el precio bajó realmente,
+                  no es un cambio de SKU.
+                </p>
+              </div>
+              <Link
+                href="/admin/price-drops"
+                className="text-xs uppercase tracking-wider text-graphite hover:text-ink"
+              >
+                Ver todos →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {topDrops.map((d) => (
+                <Link
+                  key={d.slug}
+                  href={`/vino/${d.slug}`}
+                  className="postcard p-5 flex flex-col"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="display text-2xl font-bold text-terracota tabular-nums">
+                      −{Math.round(d.dropPct * 100)}%
+                    </span>
+                    <div className="relative w-14 h-20 rounded overflow-hidden bg-snow border border-ink/10 shrink-0">
+                      {d.imageUrl ? (
+                        <Image
+                          src={d.imageUrl}
+                          alt={d.canonicalName}
+                          fill
+                          sizes="56px"
+                          className="object-contain"
+                        />
+                      ) : (
+                        <BottleFallback
+                          name={d.canonicalName}
+                          brand={d.brand}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-[10px] uppercase tracking-wide text-graphite truncate">
+                    {displayBrand(d.brand)}
+                  </p>
+                  <p className="display text-base font-semibold text-ink leading-tight line-clamp-2 min-h-[2.4em]">
+                    {displayWineName(d.canonicalName)}
+                  </p>
+                  <div className="mt-3 pt-3 border-t border-ink/5">
+                    <p className="display text-lg font-semibold text-cobalt tabular-nums">
+                      {formatArs(d.currentPrice)}
+                    </p>
+                    <p className="text-xs text-graphite line-through tabular-nums">
+                      {formatArs(d.medianPrice7d)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* TOP OFERTAS */}
       {deals.length > 0 && (
