@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { Suspense } from "react";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { CompareFloatingButton } from "@/components/Compare";
-
-// Cloudflare Web Analytics (free, no cookies, no PII). Active when
-// NEXT_PUBLIC_CF_ANALYTICS_TOKEN is set in the environment — get one at
-// https://dash.cloudflare.com → Analytics → Web Analytics → Add site.
-const CF_ANALYTICS_TOKEN = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
+import { Analytics } from "@/components/Analytics";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -82,14 +78,14 @@ export default function RootLayout({
         </a>
         {children}
         <CompareFloatingButton />
-        {CF_ANALYTICS_TOKEN && (
-          <Script
-            id="cf-beacon"
-            strategy="afterInteractive"
-            src="https://static.cloudflareinsights.com/beacon.min.js"
-            data-cf-beacon={JSON.stringify({ token: CF_ANALYTICS_TOKEN })}
-          />
-        )}
+        {/* Server-side pageview tracker — reemplaza el beacon de
+            Cloudflare Web Analytics (que cargaba un script de
+            terceros con cookies, penalizando best-practices en
+            Lighthouse). Sin librerías, sin cookies — solo path +
+            referrer + timestamp logueado a stdout. */}
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
       </body>
     </html>
   );
