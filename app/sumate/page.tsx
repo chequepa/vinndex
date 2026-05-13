@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Sos vinoteca? Sumate a Vinndex",
@@ -10,10 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default function SumatePage() {
-  const mailSubject = encodeURIComponent("Quiero sumar mi vinoteca a Vinndex");
-  const mailBody = encodeURIComponent(
-    "Hola,\n\nTengo una vinoteca online y me gustaría sumarla a Vinndex.\n\nNombre de la vinoteca:\nURL del sitio:\nPlataforma (Tiendanube / WooCommerce / Shopify / VTEX / otra):\nPersona de contacto:\n\nGracias!",
-  );
   return (
     <div className="bg-white min-h-[100dvh]">
       <SiteHeader />
@@ -127,19 +124,49 @@ export default function SumatePage() {
           </ul>
         </section>
 
-        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10 text-center">
-          <h2 className="display text-3xl font-semibold mb-4">Contanos</h2>
-          <p className="text-snow/85 mb-6 max-w-2xl mx-auto">
-            Mandanos un mail con el nombre de tu vinoteca, la URL y la
-            plataforma. Te confirmamos en &le; 48hs si podemos integrarla y te
-            avisamos cuando ya estés en el comparador.
-          </p>
-          <a
-            href={`mailto:hola@vinndex.com.ar?subject=${mailSubject}&body=${mailBody}`}
-            className="cursor-wine inline-flex items-center gap-2 bg-snow text-ink font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors"
-          >
-            Escribinos →
-          </a>
+        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10">
+          <div className="text-center mb-8">
+            <h2 className="display text-3xl font-semibold mb-3">Contanos</h2>
+            <p className="text-snow/80 max-w-2xl mx-auto">
+              Pasanos la URL de tu tienda y un par de datos. Te respondemos en
+              &le; 48hs si podemos integrarla y te avisamos cuando ya estés en
+              el comparador.
+            </p>
+          </div>
+          <ContactForm
+            kind="sumate"
+            submitLabel="Enviar"
+            successText="Recibimos tu pedido. Te respondemos en menos de 48hs."
+            fields={[
+              {
+                name: "vinoteca",
+                label: "Nombre de la vinoteca",
+                required: true,
+                placeholder: "Ej. Vinoteca del Centro",
+              },
+              {
+                name: "url",
+                label: "URL de la tienda online",
+                type: "url",
+                required: true,
+                placeholder: "https://tuvinoteca.com.ar",
+                helper:
+                  "Con eso solo ya alcanza — chequeamos la plataforma del lado nuestro.",
+              },
+              {
+                name: "contacto",
+                label: "Email o WhatsApp",
+                required: true,
+                placeholder: "Para responderte",
+              },
+              {
+                name: "notas",
+                label: "Algo más que quieras contar (opcional)",
+                type: "textarea",
+                placeholder: "Plataforma, tamaño del catálogo, lo que sea...",
+              },
+            ]}
+          />
         </section>
       </main>
 
