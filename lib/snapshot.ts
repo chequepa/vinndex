@@ -1,6 +1,7 @@
 import snapshotJson from "@/data/snapshot.json";
 import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup } from "./matching";
+import { bestScoreFor } from "./scores";
 
 export type SnapshotStore = {
   storeSlug: string;
@@ -73,7 +74,8 @@ export type SortKey =
   | "price-asc"
   | "price-desc"
   | "stores-desc"
-  | "name-asc";
+  | "name-asc"
+  | "score-desc";
 
 export type SearchOptions = {
   multiStoreOnly?: boolean;
@@ -81,6 +83,20 @@ export type SearchOptions = {
   type?: string | null;
   region?: string | null;
   sort?: SortKey;
+  /**
+   * Sólo grupos con al menos 1 oferta in-stock (típicamente lo que el
+   * usuario quiere — vinos comprables hoy). Mantenemos opt-in para no
+   * romper páginas que sí muestran out-of-stock (e.g. ficha).
+   */
+  inStockOnly?: boolean;
+  /** Filtro de rango de precio sobre `g.minPrice`. */
+  priceMin?: number | null;
+  priceMax?: number | null;
+  /**
+   * Filtro multi-bodega: array de brand keys (lowercased). Si hay >=1,
+   * el grupo tiene que matchear alguna.
+   */
+  brands?: string[] | null;
 };
 
 function stripAccents(s: string): string {
@@ -175,6 +191,17 @@ function groupComparator(
     case "name-asc":
       return (a, b) =>
         a.canonicalName.localeCompare(b.canonicalName, "es-AR");
+    case "score-desc": {
+      // Mejor puntaje de crítico primero — usamos la pivot 100 de
+      // James Suckling / Robert Parker / etc. Si no hay scores en
+      // ningún crítico, el grupo cae al final ordenado por price.
+      return (a, b) => {
+        const sa = bestScoreFor(a.groupSlug);
+        const sb = bestScoreFor(b.groupSlug);
+        if (sa !== sb) return sb - sa;
+        return groupPriceKey(a) - groupPriceKey(b);
+      };
+    }
     case "relevance": {
       const phrase = stripAccents(query.toLowerCase().trim());
       const tokens = phrase ? phrase.split(/\s+/).filter(Boolean) : [];
@@ -210,6 +237,11 @@ export function searchGroups(
   if (options.multiStoreOnly) {
     source = source.filter((g) => g.storeCount >= 2);
   }
+  if (options.inStockOnly) {
+    // storeCount > 0 implica al menos una oferta in-stock (ver
+    // build-groups.mjs: el statsBasis se calcula sólo con in-stock).
+    source = source.filter((g) => (g.storeCount ?? 0) >= 1);
+  }
   if (options.varietal) {
     const v = options.varietal.toLowerCase();
     source = source.filter((g) =>
@@ -223,6 +255,24 @@ export function searchGroups(
   if (options.region) {
     const r = options.region.toLowerCase();
     source = source.filter((g) => g.region?.toLowerCase() === r);
+  }
+  if (options.brands && options.brands.length > 0) {
+    const set = new Set(options.brands.map((b) => b.toLowerCase()));
+    source = source.filter((g) =>
+      g.brand ? set.has(g.brand.toLowerCase()) : false,
+    );
+  }
+  if (typeof options.priceMin === "number") {
+    const min = options.priceMin;
+    source = source.filter(
+      (g) => typeof g.minPrice === "number" && g.minPrice >= min,
+    );
+  }
+  if (typeof options.priceMax === "number") {
+    const max = options.priceMax;
+    source = source.filter(
+      (g) => typeof g.minPrice === "number" && g.minPrice <= max,
+    );
   }
 
   const filtered = q

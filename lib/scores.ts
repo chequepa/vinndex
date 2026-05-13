@@ -31,6 +31,19 @@ export function formatScore(s: WineScore): string {
   return `${s.score}/${s.maxScore}`;
 }
 
+/**
+ * Mejor puntaje normalizado /100 que tenemos para un slug — usado
+ * para ordenar resultados por "más premiado primero". Devuelve 0 si
+ * no hay scores. Es O(1) por la memoization implícita del MAP.
+ */
+export function bestScoreFor(slug: string): number {
+  const list = getScoresForSlug(slug);
+  if (list.length === 0) return 0;
+  // getScoresForSlug ya viene sorted desc por score/maxScore.
+  const top = list[0];
+  return (top.score / top.maxScore) * 100;
+}
+
 /** For aggregate summary "Tiene puntaje alto en X y Y". */
 export function scoreSummary(scores: WineScore[]): string | null {
   if (scores.length === 0) return null;
