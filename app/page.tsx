@@ -315,13 +315,11 @@ export default function Home() {
               Bodegas
             </a>
           </div>
-          {/*
-            "Enviando a" estático por ahora — la filtración por zona de envío
-            llega cuando tengamos cálculo de costo real por tienda. Era un
-            <select> pero (1) no hacía nada (2) su dropdown nativo se superponía
-            mal sobre el hero. Lo dejamos como indicador visual.
-          */}
-          <div className="hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium">
+          <a
+            href="/preguntas"
+            className="cursor-wine hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium transition-colors"
+            title="Por qué decimos CABA"
+          >
             <svg
               width="14"
               height="14"
@@ -336,7 +334,7 @@ export default function Home() {
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span>Precios en CABA</span>
-          </div>
+          </a>
           <FavoritesNavLink className="text-snow shrink-0" />
           <ThemeToggle className="text-snow shrink-0" />
         </div>
@@ -549,7 +547,10 @@ export default function Home() {
                   importan. Elegí la más barata — o la que te llega más rápido.
                 </p>
               </div>
-              <a href="/buscar?multi=1" className="chip !bg-ink !text-snow hover:!bg-malbec">
+              <a
+                href="/buscar?multi=1"
+                className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
+              >
                 Ver todos los comparables →
               </a>
             </div>
@@ -710,19 +711,15 @@ export default function Home() {
                   viewBox="0 0 40 40"
                   fill="none"
                   className="text-terracota"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  <path
-                    d="M12 8 L28 8 L26 28 L14 28 Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M16 8 L16 4 L24 4 L24 8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <circle cx="20" cy="20" r="3" fill="currentColor" />
+                  <path d="M14 18 L14 30 L30 30 L30 18" />
+                  <path d="M22 8 L30 8 L30 16" />
+                  <path d="M30 8 L18 20" />
                 </svg>
               </div>
               <h3 className="display text-2xl font-semibold mb-3">
@@ -754,7 +751,10 @@ export default function Home() {
                 pasando por Río Negro.
               </h2>
             </div>
-            <a href="/buscar" className="chip !bg-snow/10">
+            <a
+              href="/buscar"
+              className="chip !bg-[rgba(245,237,224,0.12)] !border-[rgba(245,237,224,0.3)] hover:!bg-[rgba(245,237,224,0.22)]"
+            >
               Ver todas las regiones →
             </a>
           </div>

@@ -13,6 +13,7 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
+import { extractVintage } from "@/lib/matching";
 import {
   findGroup,
   formatArs,
@@ -20,6 +21,8 @@ import {
   groups as allGroups,
   displayBrand,
   relatedGroups,
+  isCaseOffer,
+  bottleStats,
 } from "@/lib/snapshot";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -36,18 +39,26 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   });
   const allOutOfStock = !g.offers?.some((o) => o.inStock);
   const totalStores = g.totalStoreCount ?? g.storeCount;
+  // Use bottle-only stats (excluding cases/packs) so the metadata title
+  // doesn't advertise inflated savings like "ahorrá hasta 95%" when the
+  // 95% comes from comparing 1 bottle vs a 6-pack.
+  const bs = bottleStats(g);
   const savingsPct =
-    g.minPrice && g.maxPrice && g.maxPrice > g.minPrice
-      ? Math.round(((g.maxPrice - g.minPrice) / g.maxPrice) * 100)
+    bs.minPrice && bs.maxPrice && bs.maxPrice > bs.minPrice
+      ? Math.round(((bs.maxPrice - bs.minPrice) / bs.maxPrice) * 100)
       : null;
 
-  // Title: include brand only if not already part of the canonical name
+  // Title: include brand only if not already part of the canonical name.
+  // Both brand and canonicalName get pretty-cased — many scrapers return
+  // CAPS LOCK / lowercase strings that look shouty in <title> and OG tags.
+  const prettyName = displayWineName(g.canonicalName);
+  const prettyBrand = displayBrand(g.brand);
   const canonicalLower = g.canonicalName.toLowerCase();
   const brandNotInName =
     g.brand && !canonicalLower.includes(g.brand.toLowerCase());
   const titleName = brandNotInName
-    ? `${g.brand} ${g.canonicalName}`
-    : g.canonicalName;
+    ? `${prettyBrand} ${prettyName}`
+    : prettyName;
   const titleVintage = g.vintage ? ` ${g.vintage}` : "";
 
   let titleTail: string;
@@ -71,9 +82,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     description = `${titleName}${titleVintage} en ${g.storeCount} vinoteca${
       g.storeCount === 1 ? "" : "s"
     } online de Argentina.`;
-    if (g.minPrice != null) {
-      const bestStore = g.offers?.find((o) => o.inStock);
-      description += ` Desde ${fmt.format(g.minPrice)}`;
+    if (bs.minPrice != null) {
+      const bestStore = g.offers?.find(
+        (o) => o.inStock && !isCaseOffer(o.name),
+      );
+      description += ` Desde ${fmt.format(bs.minPrice)}`;
       if (bestStore) {
         description += ` en ${storeName(bestStore.storeSlug)}`;
       }
@@ -160,10 +173,8 @@ function colorForStore(slug: string): string {
   return STORE_COLORS[h % STORE_COLORS.length];
 }
 
-function extractVintageFromName(name: string): number | null {
-  const m = name.match(/\b(19\d{2}|20[0-2]\d)\b/);
-  return m ? Number(m[1]) : null;
-}
+// Vintage extraction se reusa de lib/matching.ts (mismo regex). Si la
+// canonicalización cambia, queremos que la ficha cambie con ella.
 
 /** Strip vintage + volume + redundant brand mentions from an offer name for cleaner display. */
 function prettyOfferName(name: string, brand: string | null): string {
@@ -187,7 +198,17 @@ export default async function Vino({ params }: Params) {
   const group = findGroup(slug);
   if (!group) notFound();
 
-  const offers = group.offers;
+  // Cases (estuche, caja, pack x6) y botellas viven en el mismo group
+  // por la pipeline de matching pero no son el mismo SKU — comparar precio
+  // botella vs caja x6 infla el "ahorro" hasta 95%. Acá los separamos:
+  // la tabla y el hero solo usan botellas; las cajas se muestran después
+  // en una sección aparte (si las hay).
+  const allOffers = group.offers;
+  const bottleOffersAll = allOffers.filter((o) => !isCaseOffer(o.name));
+  const caseOffersAll = allOffers.filter((o) => isCaseOffer(o.name));
+  // Si por alguna razón TODAS son cases, caemos para atrás a la lista
+  // completa para no romper la ficha.
+  const offers = bottleOffersAll.length > 0 ? bottleOffersAll : allOffers;
   // build-groups.mjs ya ordena in-stock primero, así que offers[0] es el
   // mejor precio con stock real. Si todas están sin stock (raro pero
   // posible con catálogos abandonados), fallback al primero de la lista.
@@ -195,10 +216,16 @@ export default async function Vino({ params }: Params) {
   const allOutOfStock = inStockOffers.length === 0;
   const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
 
+  // Bottle-only stats: el snapshot tiene minPrice/maxPrice contando cases
+  // también. Acá los recomputamos para el hero y la metadata.
+  const bottleStatsLocal = bottleStats(group);
+  const heroMinPrice = bottleStatsLocal.minPrice;
+  const heroMaxPrice = bottleStatsLocal.maxPrice;
+
   // Compute distinct vintages across offers in this group
   const vintageSet = new Set<number>();
   for (const o of offers) {
-    const v = extractVintageFromName(o.name);
+    const v = extractVintage(o.name);
     if (v) vintageSet.add(v);
   }
   const vintagesSorted = [...vintageSet].sort((a, b) => b - a);
@@ -568,15 +595,15 @@ export default async function Vino({ params }: Params) {
                       Desde
                     </div>
                     <div className="display text-4xl md:text-5xl font-semibold leading-none">
-                      {formatArs(group.minPrice)}
+                      {formatArs(heroMinPrice)}
                     </div>
                     <div className="text-xs text-snow/70 mt-1.5">
                       en {storeName(bestOffer.storeSlug)}
                     </div>
                   </div>
-                  {group.maxPrice != null &&
-                    group.minPrice != null &&
-                    group.maxPrice > group.minPrice && (
+                  {heroMaxPrice != null &&
+                    heroMinPrice != null &&
+                    heroMaxPrice > heroMinPrice && (
                       <>
                         <div className="h-14 w-px bg-snow/25" />
                         <div>
@@ -585,14 +612,14 @@ export default async function Vino({ params }: Params) {
                           </div>
                           <div className="display text-4xl md:text-5xl font-semibold leading-none text-mustard">
                             {Math.round(
-                              ((group.maxPrice - group.minPrice) /
-                                group.maxPrice) *
+                              ((heroMaxPrice - heroMinPrice) /
+                                heroMaxPrice) *
                                 100,
                             )}
                             %
                           </div>
                           <div className="text-xs text-snow/70 mt-1.5">
-                            vs {formatArs(group.maxPrice)}
+                            vs {formatArs(heroMaxPrice)}
                           </div>
                         </div>
                       </>
@@ -728,8 +755,16 @@ export default async function Vino({ params }: Params) {
                             Sin stock
                           </span>
                         )}
+                        {offer.isCollector && (
+                          <span
+                            className="text-[10px] bg-malbec/15 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
+                            title="Cosecha vieja — precio de colección, no comparable con el precio actual"
+                          >
+                            Colección
+                          </span>
+                        )}
                         {(() => {
-                          const v = extractVintageFromName(offer.name);
+                          const v = extractVintage(offer.name);
                           return v ? (
                             <span className="text-[10px] bg-cobalt/15 text-cobalt px-2 py-0.5 rounded-full font-semibold">
                               Cosecha {v}
@@ -785,7 +820,27 @@ export default async function Vino({ params }: Params) {
             Matching determinístico por nombre + añada + formato. No vendemos
             vino — al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
             vinoteca.
+            {caseOffersAll.length > 0 && (
+              <>
+                {" "}
+                Comparamos solo botellas individuales — los estuches y cajas
+                ({caseOffersAll.length}) los podés encontrar en la tienda
+                directamente.
+              </>
+            )}
           </p>
+
+          {offers.some((o) => o.isCollector) && (
+            <p className="text-xs text-graphite mt-3 max-w-2xl">
+              Las ofertas marcadas como{" "}
+              <span className="text-[10px] bg-malbec/15 text-malbec px-1.5 py-0.5 rounded font-bold uppercase tracking-wide">
+                Colección
+              </span>{" "}
+              son cosechas viejas a precio de bodega; quedan al final de la
+              tabla y no entran en el cálculo del &ldquo;ahorro hasta X%&rdquo;
+              del hero.
+            </p>
+          )}
         </section>
 
         {priceSeries.length >= 2 && (
@@ -825,7 +880,7 @@ export default async function Vino({ params }: Params) {
                     )}
                   </div>
                   <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
-                    {r.canonicalName}
+                    {displayWineName(r.canonicalName)}
                   </div>
                   <div className="text-xs text-graphite mt-0.5">
                     {r.storeCount} vinoteca{r.storeCount === 1 ? "" : "s"}

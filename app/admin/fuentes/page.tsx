@@ -76,6 +76,13 @@ const PLATFORM_META: Record<
     difficulty: "easy",
     notes: "Catalog API",
   },
+  custom: {
+    label: "Custom",
+    color: "#6B7280",
+    className: "plat-custom",
+    difficulty: "med",
+    notes: "Scraper a medida por tienda",
+  },
 };
 
 function DifficultyPill({ d }: { d: "easy" | "med" | "hard" }) {
@@ -117,6 +124,7 @@ export default function AdminFuentes() {
     prestashop: 6,
     mercadolibre: 7,
     bigcommerce: 8,
+    custom: 9,
   };
   const rows = [...STORES].sort((a, b) => {
     const pa = platformOrder[a.platform] ?? 99;

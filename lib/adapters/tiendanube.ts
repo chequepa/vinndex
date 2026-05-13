@@ -25,6 +25,16 @@ type JsonLdProduct = {
   image?: string | string[];
   description?: string;
   sku?: string;
+  // schema.org/Product expone códigos GTIN globales además del SKU interno
+  // de la tienda. Cuando la bodega los carga (cosa frecuente en Tiendanube
+  // porque el formulario de "publicar producto" lo pide aparte del SKU),
+  // son nuestra ancla de matching más fuerte.
+  gtin?: string;
+  gtin8?: string;
+  gtin12?: string;
+  gtin13?: string;
+  gtin14?: string;
+  mpn?: string;
   brand?: { name?: string } | string;
   mainEntityOfPage?: { "@id"?: string };
   "@id"?: string;
@@ -34,6 +44,30 @@ type JsonLdProduct = {
     availability?: string;
   };
 };
+
+/**
+ * Devuelve el GTIN/EAN explícito si el JSON-LD lo trae en cualquiera de
+ * sus slots schema.org. Validamos 8-14 dígitos para evitar basura.
+ * Si no hay GTIN explícito pero el `sku` parece un EAN (12-14 dígitos)
+ * lo aceptamos también — muchas tiendas argentinas cargan el EAN en el
+ * campo SKU porque su backend no tiene un slot separado.
+ */
+function extractGtin(ld: JsonLdProduct): string | null {
+  const candidates = [
+    ld.gtin13,
+    ld.gtin14,
+    ld.gtin12,
+    ld.gtin8,
+    ld.gtin,
+    ld.sku,
+  ];
+  for (const raw of candidates) {
+    if (!raw) continue;
+    const clean = String(raw).replace(/[\s-]/g, "");
+    if (/^\d{8,14}$/.test(clean)) return clean;
+  }
+  return null;
+}
 
 function isJsonLdProduct(obj: unknown): obj is JsonLdProduct {
   if (!obj || typeof obj !== "object") return false;
@@ -93,10 +127,16 @@ function normalize(
   const availability = ld.offers?.availability ?? "";
   const inStock = /InStock/i.test(availability);
 
+  // Preferimos GTIN sobre SKU porque cross-tienda el GTIN es estable y el
+  // SKU es interno de cada vinoteca. `lib/snapshot` y Stage 0 EAN matchean
+  // todo lo que tenga 12-14 dígitos en externalSku, así que poblar acá
+  // con el GTIN real hace que Stage 0 absorba más matches sin tocar nada
+  // río abajo. Fallback al sku original si no detectamos GTIN.
+  const gtin = extractGtin(ld);
   return {
     storeSlug,
     externalUrl: url,
-    externalSku: ld.sku ?? null,
+    externalSku: gtin ?? ld.sku ?? null,
     name,
     brand: brand ?? null,
     imageUrl: image ?? null,

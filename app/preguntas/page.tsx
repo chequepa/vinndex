@@ -18,6 +18,25 @@ export default function PreguntasPage() {
 
   const faqs: QA[] = [
     {
+      q: "¿Por qué dice “Precios en CABA”?",
+      a: (
+        <>
+          Hoy comparamos solo ofertas online disponibles para envío a Ciudad de
+          Buenos Aires. Es la zona con más vinotecas integradas y donde el
+          stock cambia más seguido, así arrancamos con un dataset confiable.
+          En las próximas iteraciones vamos a sumar zonas (GBA, interior) y
+          el costo de envío real por vinoteca, así el ranking refleja el
+          precio total puerta-a-puerta. Si querés que avisemos cuando salga,{" "}
+          <a href="/contacto" className="underline hover:text-cobalt">
+            escribinos
+          </a>
+          .
+        </>
+      ),
+      aForSchema:
+        "Hoy comparamos solo ofertas online disponibles para envío a Ciudad de Buenos Aires. Es la zona con más vinotecas integradas y donde el stock cambia más seguido. En las próximas iteraciones vamos a sumar zonas (GBA, interior) y el costo de envío real por vinoteca.",
+    },
+    {
       q: "¿Qué es Vinndex?",
       a: (
         <>

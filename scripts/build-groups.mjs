@@ -118,6 +118,13 @@ function extractVintage(name) {
   return m ? Number(m[1]) : null;
 }
 
+// Volúmenes canónicos sin sufijo aceptados — ver comentario en
+// lib/matching.ts BARE_VOLUMES_ML.
+const BARE_VOLUMES_ML = ["187", "250", "375", "500", "1000", "1500", "3000", "5000"];
+const BARE_VOL_RE = new RegExp(
+  `\\b(?:x\\s*)?(${BARE_VOLUMES_ML.join("|")})(?=\\s|$|[^a-z0-9.,])`,
+);
+
 function extractFormat(name) {
   const lower = name.toLowerCase();
   const parts = [];
@@ -126,13 +133,30 @@ function extractFormat(name) {
   const mMagnum = lower.match(/\bmagnum\b/);
   const mHalf = lower.match(/\b(media|half)\b/);
   const mVolL = lower.match(/\b(\d+(?:[.,]\d+)?)\s*l\b/);
-  const mVolMl = lower.match(/\b(\d{3,4})\s*ml\b/);
+  // Catálogos argentinos usan ml/cc/cm3/cm³ como sinónimos para ml.
+  // El bug histórico era capturar sólo "ml", lo que dejaba que "Saint
+  // Felicien Malbec 375 Cc" entrara al mismo grupo que el 750ml por no
+  // tener slot de format. Lookahead (no \b) al final por el char Unicode
+  // del "cm³".
+  const mVolMl = lower.match(
+    /\b(\d{3,4})\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/,
+  );
+  // Volumen sin sufijo (whitelist). Sólo gana cuando no hubo match con
+  // sufijo arriba — caso típico: "Salentein Reserve Malbec 375".
+  const mVolBare = !mVolMl ? lower.match(BARE_VOL_RE) : null;
+
+  // Si mXN.N es un volumen canónico, lo tratamos como volumen, no
+  // como pack ("Saint Felicien X 375" → 375ml, no x375).
+  const xnIsBareVolume =
+    !!mXN && BARE_VOLUMES_ML.includes(mXN[1]) && !mVolMl;
+
   if (mPack) parts.push(mPack[1]);
-  if (mXN) parts.push(`x${mXN[1]}`);
+  if (mXN && !xnIsBareVolume) parts.push(`x${mXN[1]}`);
   if (mMagnum) parts.push("magnum");
   if (mHalf) parts.push("half");
   if (mVolL) parts.push(`${mVolL[1].replace(",", ".")}l`);
   if (mVolMl && mVolMl[1] !== "750") parts.push(`${mVolMl[1]}ml`);
+  if (mVolBare) parts.push(`${mVolBare[1]}ml`);
   return parts.length > 0 ? parts.sort().join("-") : null;
 }
 
@@ -157,6 +181,8 @@ const BRAND_ALIASES = [
   ["kaiken", "kaiken"],
   ["chandon", "chandon"],
   ["baron b", "baronb"],
+  // Typos identificados en QA round 5 (find-duplicates.mjs)
+  ["piatelli", "piattelli"],
 ];
 
 /**
@@ -213,7 +239,11 @@ const NAME_PREFIX_TO_BRAND = {
   "angélica zapata": "Catena Zapata",
   adrianna: "Catena Zapata",
   nicasia: "Catena Zapata",
-  argentino: "Catena Zapata",
+  // "argentino" como prefix es demasiado genérico — captura "Vino
+  // Argentino Perro Callejero" → Catena Zapata (falso positivo).
+  // Si Catena tiene una etiqueta "Argentino", el matcher textual la
+  // captura igual por la palabra "catena" en el resto del nombre.
+  // Mantener removido — discovered en audit/dupes-residuals.
 
   // ── Ernesto Catena (Catena Zapata's brother's winery) ──
   "alma negra": "Alma Negra",
@@ -300,7 +330,10 @@ const NAME_PREFIX_TO_BRAND = {
   amalaya: "Amalaya",
   chandon: "Chandon",
   araucana: "Araucana",
-  "perro callejero": "Perro Callejero",
+  // Perro Callejero es la línea más visible de Mosquita Muerta —
+  // forzamos al productor para que merge con grupos atribuídos a la
+  // bodega directamente (algunos scrapers usan una, otros la otra).
+  "perro callejero": "Mosquita Muerta",
   monteagrelo: "Monteagrelo",
   festivo: "Festivo",
   "terrazas reserva": "Terrazas de los Andes",
@@ -398,19 +431,94 @@ const NAME_PREFIX_TO_BRAND = {
   kriptos: "Kriptos Wines",
   "de mono rojo": "De Moño Rojo",
   "de moño rojo": "De Moño Rojo",
+  // Round 5 — identificados en QA audit/dupes-residuals
+  // "Marchiori & Barraud" aparece atribuído a "Cobos" (distribuidor)
+  // en algunos productos VTEX — forzamos al productor real.
+  "marchiori barraud": "Marchiori & Barraud",
+  "marchiori & barraud": "Marchiori & Barraud",
+  piattelli: "Piattelli",
+  "los haroldos": "Los Haroldos",
+  "alma mora": "Alma Mora",
+  "mora negra": "Mora Negra",
+  "estancia mendoza": "Estancia Mendoza",
+  // Mosquita Muerta es el productor; Perro Callejero su línea más
+  // visible. Coherente con el resto del codebase, forzamos al productor.
+  // Override anterior `"perro callejero": "Perro Callejero"` quedaba a
+  // mitad de camino — algunos scrapers usan la línea y otros la bodega,
+  // así que partía el grupo.
+  "perro callejero": "Mosquita Muerta",
+  // Toro Viejo / Resero / Uvita son brands de vinos de mesa en brick;
+  // las dejamos como están — son productores distintos.
 };
 
-/** Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel. */
-function resolveBrandFromName(rawName, originalBrand) {
-  if (!rawName) return originalBrand;
-  const lower = stripAccents(String(rawName))
+/**
+ * Apply NAME_PREFIX_TO_BRAND. Runs before isBadBrand / resolveBrandLabel.
+ *
+ * Antes el matching era estricto sobre el nombre completo lowercased,
+ * por eso "Vino Colome Estate Torrontés…" no matcheaba con el prefix
+ * "colome" — y el grupo terminaba con brand="Estate" (el label) en
+ * lugar de "Colome" (la bodega). Probamos contra el nombre completo
+ * Y contra variantes con stripes de prefijos comunes ("vino", "vino
+ * tinto", etc.) para que el override agarre todos los casos.
+ */
+const COMMON_NAME_PREFIXES = [
+  "vino tinto ",
+  "vino blanco ",
+  "vino rosado ",
+  "vino espumante ",
+  "vino dulce ",
+  "vino fino ",
+  "vino ",
+  "tinto ",
+  "blanco ",
+  "rosado ",
+  "espumante ",
+  "champagne ",
+];
+function normalizeForBrandMatch(name) {
+  return stripAccents(String(name))
     .toLowerCase()
     .replace(/[^a-z0-9\s.]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
-    if (lower === prefix || lower.startsWith(prefix + " ")) {
-      return NAME_PREFIX_TO_BRAND[prefix];
+}
+/**
+ * Labels MUY distintivos: si el nombre los contiene EN CUALQUIER
+ * posición (no sólo al inicio), fuerza el brand. Sólo para casos
+ * donde el label es inequívoco en el mercado argentino — el riesgo
+ * de falso positivo tiene que ser cercano a cero.
+ *
+ * Caso típico que esto resuelve: "Vino Argentino Perro Callejero
+ * Blend De Malbec" — un mercadolibre listing donde el productor real
+ * (Mosquita Muerta) no aparece en el título.
+ */
+const NAME_CONTAINS_TO_BRAND = {
+  "perro callejero": "Mosquita Muerta",
+};
+
+function resolveBrandFromName(rawName, originalBrand) {
+  if (!rawName) return originalBrand;
+  const lower = normalizeForBrandMatch(rawName);
+  // Generamos hasta 2 candidatos: el nombre como viene y el nombre con
+  // el primer prefijo común eliminado. No anidamos más (es 99% de casos).
+  const candidates = [lower];
+  for (const pfx of COMMON_NAME_PREFIXES) {
+    if (lower.startsWith(pfx)) {
+      candidates.push(lower.slice(pfx.length));
+      break;
+    }
+  }
+  for (const cand of candidates) {
+    for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
+      if (cand === prefix || cand.startsWith(prefix + " ")) {
+        return NAME_PREFIX_TO_BRAND[prefix];
+      }
+    }
+  }
+  // Fallback: substring match para labels muy distintivos (NAME_CONTAINS).
+  for (const sub of Object.keys(NAME_CONTAINS_TO_BRAND)) {
+    if (lower.includes(` ${sub} `) || lower.startsWith(sub + " ") || lower.endsWith(" " + sub)) {
+      return NAME_CONTAINS_TO_BRAND[sub];
     }
   }
   return originalBrand;
@@ -657,9 +765,18 @@ function tokenize(name) {
   const s = stripAccents(name)
     .toLowerCase()
     .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
-    .replace(/\d+\s*ml\b/g, " ")
-    .replace(/\d+\s*cc\b/g, " ")
+    // Coherente con extractFormat: borramos volumen en ml/cc/cm3/cm³
+    // para que no aparezcan tokens "375" y "cc" sueltos en el base.
+    .replace(/\b\d+\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/g, " ")
     .replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ")
+    // Volúmenes whitelist sin sufijo — coherente con BARE_VOL_RE.
+    .replace(
+      new RegExp(
+        `\\b(?:x\\s*)?(${BARE_VOLUMES_ML.join("|")})(?=\\s|$|[^a-z0-9.,])`,
+        "g",
+      ),
+      " ",
+    )
     .replace(/\bx\s*\d+\b/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
@@ -1063,9 +1180,29 @@ function main() {
     // acordada con Sebi, 2026-04-21). Los offers crudos siguen en el
     // detalle para que la tabla muestre las tiendas que lo tienen (con
     // badge "sin stock") pero sin sugerir un precio vigente.
+    //
+    // Vintages de colección: por diseño (ver `keyToString`) todos los
+    // vintages del mismo vino caen en un mismo grupo — Emma Bonarda
+    // 2010/12/14 colapsan, lo cual da buena cobertura. Pero ofertas
+    // como "Saint Felicien Malbec 1996" a $150.000 distorsionan
+    // min/max y rompen el "ahorrá hasta X%" en la ficha. Marcamos
+    // como collector las ofertas con vintage explícito ≥ 5 años atrás
+    // y las excluimos del cálculo de min/max/storeCount visible —
+    // siguen en la lista de offers pero con flag para que la UI las
+    // muestre aparte. Si TODAS las ofertas in-stock son collector,
+    // hacemos fallback al set completo para no quedar en null.
+    const COLLECTOR_CUTOFF_YEAR = new Date().getFullYear() - 5;
     const inStockItems = items.filter((i) => i.inStock);
-    const uniqueStores = new Set(inStockItems.map((i) => i.storeSlug));
-    const prices = inStockItems
+    const inStockCommercial = inStockItems.filter((i) => {
+      const v = extractVintage(i.name);
+      return v === null || v > COLLECTOR_CUTOFF_YEAR;
+    });
+    // Si quedaron commercial offers usamos esas; sino todo el inStock
+    // (el grupo es 100% vintage viejo, raro pero posible).
+    const statsBasis =
+      inStockCommercial.length > 0 ? inStockCommercial : inStockItems;
+    const uniqueStores = new Set(statsBasis.map((i) => i.storeSlug));
+    const prices = statsBasis
       .map((i) => i.priceArs)
       .filter((p) => typeof p === "number" && p > 0);
 
@@ -1076,17 +1213,34 @@ function main() {
     const imageUrl = items.find((i) => i.imageUrl)?.imageUrl ?? null;
 
     const offers = items
-      .map((i) => ({
-        storeSlug: i.storeSlug,
-        externalUrl: i.externalUrl,
-        externalSku: i.externalSku,
-        name: i.name,
-        priceArs: i.priceArs,
-        inStock: i.inStock,
-        imageUrl: i.imageUrl,
-      }))
+      .map((i) => {
+        const vYear = extractVintage(i.name);
+        return {
+          storeSlug: i.storeSlug,
+          externalUrl: i.externalUrl,
+          externalSku: i.externalSku,
+          name: i.name,
+          priceArs: i.priceArs,
+          inStock: i.inStock,
+          imageUrl: i.imageUrl,
+          // Cosechas viejas explícitas → la UI las ordena al final y
+          // las muestra con badge "Colección" en lugar de mezclarlas
+          // con el precio actual. Ver criterio en COLLECTOR_CUTOFF_YEAR
+          // arriba.
+          isCollector:
+            vYear !== null && vYear <= COLLECTOR_CUTOFF_YEAR
+              ? true
+              : undefined,
+        };
+      })
       .sort((a, b) => {
         if (a.inStock !== b.inStock) return a.inStock ? -1 : 1;
+        // Collectors al final dentro del grupo in-stock — el comprador
+        // típico viene por el precio actual, no por los vinos de
+        // bodega.
+        const aColl = a.isCollector ? 1 : 0;
+        const bColl = b.isCollector ? 1 : 0;
+        if (aColl !== bColl) return aColl - bColl;
         const pa = a.priceArs ?? Number.POSITIVE_INFINITY;
         const pb = b.priceArs ?? Number.POSITIVE_INFINITY;
         return pa - pb;

@@ -12,6 +12,7 @@ import {
   snapshot,
   facetCounts,
   displayBrand,
+  displayWineName,
   type SortKey,
 } from "@/lib/snapshot";
 
@@ -220,7 +221,11 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           </form>
 
-          <div className="hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow border border-ink/10 rounded-full px-3 py-2 font-medium text-ink">
+          <a
+            href="/preguntas"
+            className="cursor-wine hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow hover:bg-mustard/20 border border-ink/10 rounded-full px-3 py-2 font-medium text-ink transition-colors"
+            title="Por qué decimos CABA"
+          >
             <svg
               width="14"
               height="14"
@@ -236,7 +241,7 @@ export default async function Buscar({ searchParams }: Params) {
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span>Precios en CABA</span>
-          </div>
+          </a>
           <FavoritesNavLink className="text-ink shrink-0" />
           <ThemeToggle className="text-ink shrink-0" />
         </div>
@@ -618,7 +623,7 @@ export default async function Buscar({ searchParams }: Params) {
                         <div className="flex items-start justify-between gap-4 mb-1">
                           <div className="min-w-0">
                             <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight truncate">
-                              {g.canonicalName}
+                              {displayWineName(g.canonicalName)}
                             </h3>
                             <p className="text-sm text-graphite mt-0.5 truncate">
                               {g.brand ? displayBrand(g.brand) : "Sin bodega identificada"}
