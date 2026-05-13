@@ -1096,9 +1096,29 @@ function main() {
     // acordada con Sebi, 2026-04-21). Los offers crudos siguen en el
     // detalle para que la tabla muestre las tiendas que lo tienen (con
     // badge "sin stock") pero sin sugerir un precio vigente.
+    //
+    // Vintages de colección: por diseño (ver `keyToString`) todos los
+    // vintages del mismo vino caen en un mismo grupo — Emma Bonarda
+    // 2010/12/14 colapsan, lo cual da buena cobertura. Pero ofertas
+    // como "Saint Felicien Malbec 1996" a $150.000 distorsionan
+    // min/max y rompen el "ahorrá hasta X%" en la ficha. Marcamos
+    // como collector las ofertas con vintage explícito ≥ 5 años atrás
+    // y las excluimos del cálculo de min/max/storeCount visible —
+    // siguen en la lista de offers pero con flag para que la UI las
+    // muestre aparte. Si TODAS las ofertas in-stock son collector,
+    // hacemos fallback al set completo para no quedar en null.
+    const COLLECTOR_CUTOFF_YEAR = new Date().getFullYear() - 5;
     const inStockItems = items.filter((i) => i.inStock);
-    const uniqueStores = new Set(inStockItems.map((i) => i.storeSlug));
-    const prices = inStockItems
+    const inStockCommercial = inStockItems.filter((i) => {
+      const v = extractVintage(i.name);
+      return v === null || v > COLLECTOR_CUTOFF_YEAR;
+    });
+    // Si quedaron commercial offers usamos esas; sino todo el inStock
+    // (el grupo es 100% vintage viejo, raro pero posible).
+    const statsBasis =
+      inStockCommercial.length > 0 ? inStockCommercial : inStockItems;
+    const uniqueStores = new Set(statsBasis.map((i) => i.storeSlug));
+    const prices = statsBasis
       .map((i) => i.priceArs)
       .filter((p) => typeof p === "number" && p > 0);
 
@@ -1109,17 +1129,34 @@ function main() {
     const imageUrl = items.find((i) => i.imageUrl)?.imageUrl ?? null;
 
     const offers = items
-      .map((i) => ({
-        storeSlug: i.storeSlug,
-        externalUrl: i.externalUrl,
-        externalSku: i.externalSku,
-        name: i.name,
-        priceArs: i.priceArs,
-        inStock: i.inStock,
-        imageUrl: i.imageUrl,
-      }))
+      .map((i) => {
+        const vYear = extractVintage(i.name);
+        return {
+          storeSlug: i.storeSlug,
+          externalUrl: i.externalUrl,
+          externalSku: i.externalSku,
+          name: i.name,
+          priceArs: i.priceArs,
+          inStock: i.inStock,
+          imageUrl: i.imageUrl,
+          // Cosechas viejas explícitas → la UI las ordena al final y
+          // las muestra con badge "Colección" en lugar de mezclarlas
+          // con el precio actual. Ver criterio en COLLECTOR_CUTOFF_YEAR
+          // arriba.
+          isCollector:
+            vYear !== null && vYear <= COLLECTOR_CUTOFF_YEAR
+              ? true
+              : undefined,
+        };
+      })
       .sort((a, b) => {
         if (a.inStock !== b.inStock) return a.inStock ? -1 : 1;
+        // Collectors al final dentro del grupo in-stock — el comprador
+        // típico viene por el precio actual, no por los vinos de
+        // bodega.
+        const aColl = a.isCollector ? 1 : 0;
+        const bColl = b.isCollector ? 1 : 0;
+        if (aColl !== bColl) return aColl - bColl;
         const pa = a.priceArs ?? Number.POSITIVE_INFINITY;
         const pb = b.priceArs ?? Number.POSITIVE_INFINITY;
         return pa - pb;
