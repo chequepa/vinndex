@@ -22,6 +22,7 @@ const SORT_OPTIONS_WITH_QUERY: { key: SortKey; label: string }[] = [
   { key: "price-asc", label: "Precio · menor a mayor" },
   { key: "price-desc", label: "Precio · mayor a menor" },
   { key: "stores-desc", label: "Más vinotecas primero" },
+  { key: "score-desc", label: "Mejor puntaje de crítico" },
   { key: "name-asc", label: "Nombre A-Z" },
 ];
 
@@ -29,6 +30,7 @@ const SORT_OPTIONS_NO_QUERY: { key: SortKey; label: string }[] = [
   { key: "price-asc", label: "Precio · menor a mayor" },
   { key: "price-desc", label: "Precio · mayor a menor" },
   { key: "stores-desc", label: "Más vinotecas primero" },
+  { key: "score-desc", label: "Mejor puntaje de crítico" },
   { key: "name-asc", label: "Nombre A-Z" },
 ];
 
@@ -38,8 +40,29 @@ function isValidSort(s: string | undefined): s is SortKey {
     s === "price-asc" ||
     s === "price-desc" ||
     s === "stores-desc" ||
+    s === "score-desc" ||
     s === "name-asc"
   );
+}
+
+// Presets de rango — fáciles de pickear de un click sin abrir keyboard.
+// Cada uno mapea a (min, max) en pesos. `max=null` significa "sin tope".
+const PRICE_RANGES: {
+  id: string;
+  label: string;
+  min: number | null;
+  max: number | null;
+}[] = [
+  { id: "lt-5k", label: "Hasta $5.000", min: null, max: 5_000 },
+  { id: "5k-10k", label: "$5.000 — $10.000", min: 5_000, max: 10_000 },
+  { id: "10k-20k", label: "$10.000 — $20.000", min: 10_000, max: 20_000 },
+  { id: "20k-40k", label: "$20.000 — $40.000", min: 20_000, max: 40_000 },
+  { id: "gt-40k", label: "Más de $40.000", min: 40_000, max: null },
+];
+
+function findRangeById(id: string | null | undefined) {
+  if (!id) return null;
+  return PRICE_RANGES.find((r) => r.id === id) ?? null;
 }
 
 export const metadata: Metadata = {
@@ -54,6 +77,8 @@ type Params = {
     tipo?: string;
     region?: string;
     sort?: string;
+    instock?: string;
+    precio?: string; // id de PRICE_RANGES
   }>;
 };
 
@@ -79,6 +104,8 @@ export default async function Buscar({ searchParams }: Params) {
   const params = await searchParams;
   const query = (params.q ?? "").trim();
   const multiOnly = params.multi === "1";
+  const inStockOnly = params.instock === "1";
+  const priceRange = findRangeById(params.precio);
   const varietal = params.varietal ?? null;
   const type = params.tipo ?? null;
   const region = params.region ?? null;
@@ -92,6 +119,9 @@ export default async function Buscar({ searchParams }: Params) {
 
   const results = searchGroups(query, 48, {
     multiStoreOnly: multiOnly,
+    inStockOnly,
+    priceMin: priceRange?.min ?? null,
+    priceMax: priceRange?.max ?? null,
     varietal,
     type,
     region,
@@ -101,7 +131,8 @@ export default async function Buscar({ searchParams }: Params) {
   const totalMulti = snapshot.multiStoreGroupCount ?? 0;
   const facets = facetCounts();
 
-  const hasAnyFilter = query || multiOnly || varietal || type || region;
+  const hasAnyFilter =
+    query || multiOnly || inStockOnly || priceRange || varietal || type || region;
 
   const headerTitle = query ? (
     <>
@@ -129,44 +160,52 @@ export default async function Buscar({ searchParams }: Params) {
     </>
   );
 
-  // Build "with" / "without" URLs for a given filter
-  function filterHref(key: string, value: string | null): string {
+  // Helper para mantener el set actual de filtros + opcionalmente
+  // sobreescribir/quitar uno. Si `value === null` quitamos esa key
+  // del URL. Si `value === <string>` la seteamos. Si no se pasa el
+  // `key` específico, el helper se comporta como "preservar todo".
+  function buildHref(
+    override?: Partial<Record<string, string | null>>,
+  ): string {
     const sp = new URLSearchParams();
     if (query) sp.set("q", query);
-    if (multiOnly && key !== "multi") sp.set("multi", "1");
-    if (varietal && key !== "varietal") sp.set("varietal", varietal);
-    if (type && key !== "tipo") sp.set("tipo", type);
-    if (region && key !== "region") sp.set("region", region);
-    // Default sort (relevance when query, price-asc otherwise) stays
-    // out of the URL so links are cleaner. Only surface explicit ones.
-    const defaultSort: SortKey = query ? "relevance" : "price-asc";
-    if (sort !== defaultSort && key !== "sort") sp.set("sort", sort);
-    if (value !== null) sp.set(key, value);
-    return `/buscar${buildQS(sp)}`;
-  }
-
-  function toggleMulti(): string {
-    const sp = new URLSearchParams();
-    if (query) sp.set("q", query);
-    if (!multiOnly) sp.set("multi", "1");
+    if (multiOnly) sp.set("multi", "1");
+    if (inStockOnly) sp.set("instock", "1");
+    if (priceRange) sp.set("precio", priceRange.id);
     if (varietal) sp.set("varietal", varietal);
     if (type) sp.set("tipo", type);
     if (region) sp.set("region", region);
     const defaultSort: SortKey = query ? "relevance" : "price-asc";
     if (sort !== defaultSort) sp.set("sort", sort);
+
+    if (override) {
+      for (const [k, v] of Object.entries(override)) {
+        if (v === null || v === undefined) sp.delete(k);
+        else sp.set(k, v);
+      }
+    }
     return `/buscar${buildQS(sp)}`;
   }
 
+  // Compatibilidad con el resto del file que usaba filterHref/toggleMulti/sortHref.
+  function filterHref(key: string, value: string | null): string {
+    return buildHref({ [key]: value });
+  }
+  function toggleMulti(): string {
+    return buildHref({ multi: multiOnly ? null : "1" });
+  }
   function sortHref(newSort: SortKey): string {
-    const sp = new URLSearchParams();
-    if (query) sp.set("q", query);
-    if (multiOnly) sp.set("multi", "1");
-    if (varietal) sp.set("varietal", varietal);
-    if (type) sp.set("tipo", type);
-    if (region) sp.set("region", region);
     const defaultSort: SortKey = query ? "relevance" : "price-asc";
-    if (newSort !== defaultSort) sp.set("sort", newSort);
-    return `/buscar${buildQS(sp)}`;
+    return buildHref({ sort: newSort === defaultSort ? null : newSort });
+  }
+  function toggleInStock(): string {
+    return buildHref({ instock: inStockOnly ? null : "1" });
+  }
+  function priceRangeHref(rangeId: string | null): string {
+    return buildHref({ precio: rangeId });
+  }
+  function clearAllHref(): string {
+    return "/buscar";
   }
 
   const sortOptions = query ? SORT_OPTIONS_WITH_QUERY : SORT_OPTIONS_NO_QUERY;
@@ -308,8 +347,22 @@ export default async function Buscar({ searchParams }: Params) {
             >
               Sólo comparables (2+ tiendas)
             </a>
+            <a
+              href={toggleInStock()}
+              className={`filter-chip ${inStockOnly ? "active" : ""}`}
+            >
+              Sólo con stock
+            </a>
+            {priceRange && (
+              <a
+                href={priceRangeHref(null)}
+                className="filter-chip active"
+              >
+                {priceRange.label} ×
+              </a>
+            )}
             {hasAnyFilter && (
-              <Link href="/buscar" className="filter-chip">
+              <Link href={clearAllHref()} className="filter-chip">
                 Limpiar filtros ×
               </Link>
             )}
@@ -325,6 +378,59 @@ export default async function Buscar({ searchParams }: Params) {
             Filtros de búsqueda
           </h2>
           <div className="sticky top-24 space-y-8">
+            {/* QUICK FILTERS — stock, multi-tienda, precio (estos 3 se
+                tocan más seguido que varietal/tipo/región) */}
+            <div>
+              <h3 className="display text-lg font-semibold mb-3">Filtros rápidos</h3>
+              <div className="flex flex-col gap-2 text-sm">
+                <a
+                  href={toggleInStock()}
+                  className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
+                    inStockOnly
+                      ? "bg-ink text-snow font-semibold"
+                      : "bg-snow hover:bg-snow border border-ink/15"
+                  }`}
+                >
+                  <span>Solo con stock</span>
+                  {inStockOnly && <span className="text-xs">✓</span>}
+                </a>
+                <a
+                  href={toggleMulti()}
+                  className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
+                    multiOnly
+                      ? "bg-ink text-snow font-semibold"
+                      : "bg-snow hover:bg-snow border border-ink/15"
+                  }`}
+                >
+                  <span>Comparables (2+ tiendas)</span>
+                  {multiOnly && <span className="text-xs">✓</span>}
+                </a>
+              </div>
+            </div>
+
+            {/* RANGO DE PRECIO */}
+            <div>
+              <h3 className="display text-lg font-semibold mb-3">Precio</h3>
+              <div className="space-y-1.5 text-sm">
+                {PRICE_RANGES.map((r) => {
+                  const active = priceRange?.id === r.id;
+                  return (
+                    <a
+                      key={r.id}
+                      href={priceRangeHref(active ? null : r.id)}
+                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                        active
+                          ? "bg-ink text-snow font-semibold"
+                          : "hover:bg-snow"
+                      }`}
+                    >
+                      <span>{r.label}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* VARIETAL */}
             <div>
               <h3 className="display text-lg font-semibold mb-4">Varietal</h3>
