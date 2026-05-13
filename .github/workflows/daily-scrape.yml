@@ -9,6 +9,9 @@ on:
 
 permissions:
   contents: write
+  # `issues: write` permite que el step de healthcheck abra/comente
+  # un issue cuando algún scraper rompe (label "scrape-failure").
+  issues: write
 
 jobs:
   scrape:
@@ -128,6 +131,54 @@ jobs:
 
       - name: Track prices (30-day rolling history)
         run: node scripts/track-prices.mjs
+        continue-on-error: true
+
+      - name: Healthcheck del snapshot
+        id: healthcheck
+        run: |
+          node scripts/scrape-healthcheck.mjs --json > /tmp/healthcheck.json || true
+          # Si el script tira exit=1 (errores serios) lo capturamos en
+          # el output del step para gatear el siguiente paso.
+          node scripts/scrape-healthcheck.mjs > /tmp/healthcheck.txt
+          STATUS=$?
+          echo "ok=$([ $STATUS -eq 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          cat /tmp/healthcheck.txt
+        continue-on-error: true
+
+      - name: Open GitHub issue si el healthcheck falla
+        if: steps.healthcheck.outputs.ok == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Idempotente: si el label no existe, lo creamos. gh exit=1
+          # cuando ya existe, así que swallow.
+          gh label create "scrape-failure" --color "d93f0b" \
+            --description "Daily scrape healthcheck detectó un problema" || true
+
+          # Construimos el body del issue. Inline el healthcheck.txt
+          # para que el equipo vea el detalle sin abrir el run.
+          HC=$(cat /tmp/healthcheck.txt)
+          BODY="El healthcheck del daily-scrape detectó issues serios.
+
+          \`\`\`
+          ${HC}
+          \`\`\`
+
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Para resolver: chequear el log del run, identificar qué scraper se rompió (típicamente cambios en el HTML/JSON del CDN destino) y actualizar el adapter."
+
+          # Reusa el issue abierto con label "scrape-failure" si existe;
+          # sino crea uno nuevo. Evita spam (1 issue, N comments).
+          EXISTING=$(gh issue list --label "scrape-failure" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create \
+              --title "Daily scrape: healthcheck falló ($(date -u +%Y-%m-%d))" \
+              --label "scrape-failure" \
+              --body "$BODY"
+          fi
         continue-on-error: true
 
       - name: Stats
