@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { appendFile, mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
 
 /**
  * Server-side pageview tracker — reemplaza al beacon de Cloudflare Web
@@ -6,19 +8,26 @@ import { NextResponse } from "next/server";
  * en Lighthouse → best-practices 77 en /buscar).
  *
  * Recibe POST con `{ path, ref?, ts? }` desde el cliente, loggea
- * a stdout y vuelve 204. Sin cookies, sin sesiones, sin tracking
- * persistente — solo el conteo de pageviews por URL.
+ * a stdout, y best-effort escribe a `data/pageviews.ndjson` para que
+ * el dashboard `/admin/analytics` pueda agregarlo. Sin cookies, sin
+ * sesiones — solo el conteo de pageviews por URL.
  *
- * En Railway los logs se leen desde el dashboard; si más adelante se
- * quiere persistir, este es el único punto donde escribir a Postgres /
- * Redis / KV.
+ * Persistencia:
+ *   - stdout (siempre) — Railway / CF / Vercel lo expone en sus logs
+ *   - data/pageviews.ndjson (best-effort) — sirve al dashboard. En
+ *     Railway persiste durante el container life. En filesystem
+ *     read-only (CF Pages, algunos edge runtimes) falla silenciosamente
+ *     y el dashboard muestra solo lo que hay.
  *
  * IP y user-agent NO se guardan — la analítica de Vinndex es deliberadamente
  * mínima.
  */
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
+// Cambiado de "edge" a "nodejs" para tener acceso a fs y poder
+// persistir a archivo. Edge tendría mejor latencia pero el dashboard
+// pierde valor sin persistencia.
+export const runtime = "nodejs";
 
 type Body = {
   path?: unknown;
@@ -30,6 +39,21 @@ function s(v: unknown, max = 200): string | undefined {
   if (typeof v !== "string") return undefined;
   const t = v.slice(0, max).trim();
   return t || undefined;
+}
+
+// Path del NDJSON. Lo definimos acá y NO en una constante exportada
+// para que el dashboard tampoco lo importe — el endpoint es el único
+// dueño del archivo.
+const NDJSON_PATH = resolve(process.cwd(), "data/pageviews.ndjson");
+
+async function persist(entry: Record<string, unknown>): Promise<void> {
+  try {
+    await mkdir(resolve(process.cwd(), "data"), { recursive: true });
+    await appendFile(NDJSON_PATH, JSON.stringify(entry) + "\n", "utf8");
+  } catch {
+    // FS read-only o permisos — solo nos quedamos con stdout. No
+    // fallar el request por algo de housekeeping.
+  }
 }
 
 export async function POST(req: Request) {
@@ -48,17 +72,19 @@ export async function POST(req: Request) {
   const ref = s(body.ref, 500);
   const ts = typeof body.ts === "number" ? body.ts : Date.now();
 
+  const entry = {
+    kind: "pageview" as const,
+    ts,
+    path,
+    ref: ref ?? null,
+  };
+
   // Log estructurado — Railway / Vercel / Cloudflare Pages capturan
-  // stdout y lo exponen en su UI. Si más adelante se enchufa con
-  // una base de datos, este es el punto único de escritura.
-  console.log(
-    JSON.stringify({
-      kind: "pageview",
-      ts,
-      path,
-      ref: ref ?? null,
-    }),
-  );
+  // stdout y lo exponen en su UI.
+  console.log(JSON.stringify(entry));
+
+  // Persistencia best-effort, NO awaited para no bloquear el response.
+  void persist(entry);
 
   return new NextResponse(null, { status: 204 });
 }

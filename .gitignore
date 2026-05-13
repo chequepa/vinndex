@@ -47,6 +47,10 @@ next-env.d.ts
 # Stage 3 gray-zone candidates (emitted by Stage 2, consumed by Stage 3)
 /data/stage3-candidates.json
 
+# Server-side pageview store (regenerated at runtime, persists during
+# container life only).
+/data/pageviews.ndjson
+
 # Env files (secrets!)
 .env
 .env.local
