@@ -118,6 +118,13 @@ function extractVintage(name) {
   return m ? Number(m[1]) : null;
 }
 
+// Volúmenes canónicos sin sufijo aceptados — ver comentario en
+// lib/matching.ts BARE_VOLUMES_ML.
+const BARE_VOLUMES_ML = ["187", "250", "375", "500", "1000", "1500", "3000", "5000"];
+const BARE_VOL_RE = new RegExp(
+  `\\b(?:x\\s*)?(${BARE_VOLUMES_ML.join("|")})(?=\\s|$|[^a-z0-9.,])`,
+);
+
 function extractFormat(name) {
   const lower = name.toLowerCase();
   const parts = [];
@@ -134,12 +141,22 @@ function extractFormat(name) {
   const mVolMl = lower.match(
     /\b(\d{3,4})\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/,
   );
+  // Volumen sin sufijo (whitelist). Sólo gana cuando no hubo match con
+  // sufijo arriba — caso típico: "Salentein Reserve Malbec 375".
+  const mVolBare = !mVolMl ? lower.match(BARE_VOL_RE) : null;
+
+  // Si mXN.N es un volumen canónico, lo tratamos como volumen, no
+  // como pack ("Saint Felicien X 375" → 375ml, no x375).
+  const xnIsBareVolume =
+    !!mXN && BARE_VOLUMES_ML.includes(mXN[1]) && !mVolMl;
+
   if (mPack) parts.push(mPack[1]);
-  if (mXN) parts.push(`x${mXN[1]}`);
+  if (mXN && !xnIsBareVolume) parts.push(`x${mXN[1]}`);
   if (mMagnum) parts.push("magnum");
   if (mHalf) parts.push("half");
   if (mVolL) parts.push(`${mVolL[1].replace(",", ".")}l`);
   if (mVolMl && mVolMl[1] !== "750") parts.push(`${mVolMl[1]}ml`);
+  if (mVolBare) parts.push(`${mVolBare[1]}ml`);
   return parts.length > 0 ? parts.sort().join("-") : null;
 }
 
@@ -668,6 +685,14 @@ function tokenize(name) {
     // para que no aparezcan tokens "375" y "cc" sueltos en el base.
     .replace(/\b\d+\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/g, " ")
     .replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ")
+    // Volúmenes whitelist sin sufijo — coherente con BARE_VOL_RE.
+    .replace(
+      new RegExp(
+        `\\b(?:x\\s*)?(${BARE_VOLUMES_ML.join("|")})(?=\\s|$|[^a-z0-9.,])`,
+        "g",
+      ),
+      " ",
+    )
     .replace(/\bx\s*\d+\b/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
