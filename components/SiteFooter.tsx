@@ -131,6 +131,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/developers" className="hover:text-snow">
+                  API para devs
+                </Link>
+              </li>
+              <li>
                 <Link href="/preguntas" className="hover:text-snow">
                   Preguntas frecuentes
                 </Link>

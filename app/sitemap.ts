@@ -110,6 +110,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    {
+      url: `${SITE}/developers`,
+      lastModified: generatedAt,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 
   const vsPairsFile = await readVsPairs();
