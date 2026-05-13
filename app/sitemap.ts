@@ -8,6 +8,7 @@ import {
 } from "@/lib/snapshot";
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 import { RANKINGS } from "@/lib/rankings";
+import { readVsPairs } from "@/lib/vsPairs";
 
 const SITE = "https://vinndex.com.ar";
 
@@ -99,6 +100,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  const vsPairsFile = await readVsPairs();
+  const vsPagesUrls: MetadataRoute.Sitemap = (vsPairsFile?.pairs ?? []).map(
+    (p) => ({
+      url: `${SITE}/vs/${p.slug}`,
+      lastModified: generatedAt,
+      // Daily — los precios y stores cambian a diario, las pages Vs
+      // muestran ese delta. Priority alto porque son SEO de cola larga
+      // con queries de alto intent ("X vs Y wine argentina").
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    }),
+  );
+
   const rankingPagesUrls: MetadataRoute.Sitemap = RANKINGS.map((r) => ({
     url: `${SITE}/ranking/${r.slug}`,
     lastModified: generatedAt,
@@ -175,6 +189,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes,
     ...rankingPagesUrls,
+    ...vsPagesUrls,
     ...blogPostsRoutes,
     ...bodegaPages,
     ...varietalPagesUrls,

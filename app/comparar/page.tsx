@@ -13,6 +13,7 @@ import {
 } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
 import type { ProductGroup } from "@/lib/matching";
+import { readVsPairs } from "@/lib/vsPairs";
 
 export const metadata: Metadata = {
   title: "Comparar vinos — Vinndex",
@@ -72,7 +73,10 @@ export default async function Comparar({ searchParams }: Params) {
         </header>
 
         {groups.length === 0 ? (
-          <EmptyState />
+          <>
+            <EmptyState />
+            <PopularVsPairs />
+          </>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {groups.map((g) => (
@@ -256,5 +260,61 @@ function EmptyState() {
         Explorar catálogo
       </Link>
     </div>
+  );
+}
+
+async function PopularVsPairs() {
+  const file = await readVsPairs();
+  const top = file?.pairs.slice(0, 8) ?? [];
+  if (top.length === 0) return null;
+
+  // Resolve nombres legibles desde el snapshot. Si alguno está
+  // colgando (raro: el snapshot tiene los slugs pero acá los miramos
+  // separadamente), skipeamos.
+  const items = top
+    .map((p) => {
+      const a = findGroup(p.slugA);
+      const b = findGroup(p.slugB);
+      if (!a || !b) return null;
+      return {
+        slug: p.slug,
+        aName: displayWineName(a.canonicalName),
+        bName: displayWineName(b.canonicalName),
+        varietal: p.varietal,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  if (items.length === 0) return null;
+
+  return (
+    <section className="mt-12">
+      <h2 className="display text-2xl font-semibold text-ink mb-2">
+        Comparaciones populares
+      </h2>
+      <p className="text-sm text-graphite mb-6 max-w-2xl">
+        Pares de vinos del mismo varietal con precio comparable, listos para
+        ver lado a lado. Generados automáticamente desde el catálogo.
+      </p>
+      <ul className="grid sm:grid-cols-2 gap-3">
+        {items.map((it) => (
+          <li key={it.slug}>
+            <Link
+              href={`/vs/${it.slug}`}
+              className="block bg-white rounded-2xl border border-ink/10 hover:border-cobalt hover:shadow-md p-4 transition-all"
+            >
+              <p className="text-xs uppercase tracking-wider text-graphite font-semibold mb-1 capitalize">
+                {it.varietal}
+              </p>
+              <p className="text-sm text-ink leading-snug">
+                <span className="font-semibold">{it.aName}</span>{" "}
+                <span className="italic text-graphite">vs</span>{" "}
+                <span className="font-semibold">{it.bName}</span>
+              </p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
