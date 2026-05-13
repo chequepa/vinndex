@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { snapshotStats } from "@/lib/snapshot";
 import { readPageviewStats } from "@/lib/pageviews";
+import { readDuplicatesReport } from "@/lib/duplicatesReport";
 
 export const metadata: Metadata = {
   title: "Admin — Vinndex",
@@ -22,7 +23,10 @@ type Card = {
 
 export default async function AdminIndex() {
   const stats = snapshotStats();
-  const views = await readPageviewStats();
+  const [views, dupes] = await Promise.all([
+    readPageviewStats(),
+    readDuplicatesReport(),
+  ]);
 
   const cards: Card[] = [
     {
@@ -43,6 +47,18 @@ export default async function AdminIndex() {
       metric: {
         value: views.total.toLocaleString("es-AR"),
         label: "pageviews registrados",
+      },
+    },
+    {
+      href: "/admin/duplicates",
+      title: "Duplicados sospechosos",
+      description:
+        "Output del find-duplicates.mjs corrido en el daily-scrape. Sirve para iterar sobre NAME_PREFIX_TO_BRAND y aliases.",
+      metric: {
+        value: dupes
+          ? dupes.heuristicA.total.toLocaleString("es-AR")
+          : "—",
+        label: dupes ? "clusters heurística A" : "sin reporte",
       },
     },
   ];
