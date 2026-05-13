@@ -13,6 +13,7 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
+import { extractVintage } from "@/lib/matching";
 import {
   findGroup,
   formatArs,
@@ -172,10 +173,8 @@ function colorForStore(slug: string): string {
   return STORE_COLORS[h % STORE_COLORS.length];
 }
 
-function extractVintageFromName(name: string): number | null {
-  const m = name.match(/\b(19\d{2}|20[0-2]\d)\b/);
-  return m ? Number(m[1]) : null;
-}
+// Vintage extraction se reusa de lib/matching.ts (mismo regex). Si la
+// canonicalización cambia, queremos que la ficha cambie con ella.
 
 /** Strip vintage + volume + redundant brand mentions from an offer name for cleaner display. */
 function prettyOfferName(name: string, brand: string | null): string {
@@ -226,7 +225,7 @@ export default async function Vino({ params }: Params) {
   // Compute distinct vintages across offers in this group
   const vintageSet = new Set<number>();
   for (const o of offers) {
-    const v = extractVintageFromName(o.name);
+    const v = extractVintage(o.name);
     if (v) vintageSet.add(v);
   }
   const vintagesSorted = [...vintageSet].sort((a, b) => b - a);
@@ -757,7 +756,7 @@ export default async function Vino({ params }: Params) {
                           </span>
                         )}
                         {(() => {
-                          const v = extractVintageFromName(offer.name);
+                          const v = extractVintage(offer.name);
                           return v ? (
                             <span className="text-[10px] bg-cobalt/15 text-cobalt px-2 py-0.5 rounded-full font-semibold">
                               Cosecha {v}

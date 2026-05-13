@@ -126,7 +126,14 @@ function extractFormat(name) {
   const mMagnum = lower.match(/\bmagnum\b/);
   const mHalf = lower.match(/\b(media|half)\b/);
   const mVolL = lower.match(/\b(\d+(?:[.,]\d+)?)\s*l\b/);
-  const mVolMl = lower.match(/\b(\d{3,4})\s*ml\b/);
+  // Catálogos argentinos usan ml/cc/cm3/cm³ como sinónimos para ml.
+  // El bug histórico era capturar sólo "ml", lo que dejaba que "Saint
+  // Felicien Malbec 375 Cc" entrara al mismo grupo que el 750ml por no
+  // tener slot de format. Lookahead (no \b) al final por el char Unicode
+  // del "cm³".
+  const mVolMl = lower.match(
+    /\b(\d{3,4})\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/,
+  );
   if (mPack) parts.push(mPack[1]);
   if (mXN) parts.push(`x${mXN[1]}`);
   if (mMagnum) parts.push("magnum");
@@ -657,8 +664,9 @@ function tokenize(name) {
   const s = stripAccents(name)
     .toLowerCase()
     .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
-    .replace(/\d+\s*ml\b/g, " ")
-    .replace(/\d+\s*cc\b/g, " ")
+    // Coherente con extractFormat: borramos volumen en ml/cc/cm3/cm³
+    // para que no aparezcan tokens "375" y "cc" sueltos en el base.
+    .replace(/\b\d+\s*(ml|cc|cm3|cm³)(?=\s|$|[^a-z0-9])/g, " ")
     .replace(/\b\d+(?:[.,]\d+)?\s*l\b/g, " ")
     .replace(/\bx\s*\d+\b/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
