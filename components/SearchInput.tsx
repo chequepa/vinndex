@@ -144,14 +144,11 @@ export function SearchInput({
           onClick={() => setOpen(false)}
           onTouchStart={() => setOpen(false)}
         />
-        <ul
-          ref={dropdownRef}
-          role="listbox"
-          id="search-suggestions"
-          aria-label="Sugerencias de búsqueda"
-          className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[50vh] overflow-y-auto"
-        >
-          <li className="sm:hidden flex items-center justify-between px-4 py-2 border-b border-ink/10 sticky top-0 bg-white z-10">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[50vh] overflow-y-auto">
+          {/* Header móvil — afuera del <ul role="listbox"> para no
+              romper aria-required-children (un listbox solo puede
+              tener role="option" como hijos). */}
+          <div className="sm:hidden flex items-center justify-between px-4 py-2 border-b border-ink/10 sticky top-0 bg-white z-10">
             <span className="text-xs uppercase tracking-wider text-graphite">
               {suggestions.length} sugerencias
             </span>
@@ -165,7 +162,13 @@ export function SearchInput({
             >
               Cerrar
             </button>
-          </li>
+          </div>
+          <ul
+            ref={dropdownRef}
+            role="listbox"
+            id="search-suggestions"
+            aria-label="Sugerencias de búsqueda"
+          >
           {suggestions.map((s, i) => (
             <li key={s.groupSlug} role="option" aria-selected={i === selected}>
               <a
@@ -210,7 +213,8 @@ export function SearchInput({
               </a>
             </li>
           ))}
-        </ul>
+          </ul>
+        </div>
       </>
     ) : null;
 

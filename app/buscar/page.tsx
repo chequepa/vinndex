@@ -178,6 +178,7 @@ export default async function Buscar({ searchParams }: Params) {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
             href="/"
+            aria-label="Vinndex — inicio"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
@@ -653,9 +654,14 @@ export default async function Buscar({ searchParams }: Params) {
                           {g.storeCount >= 2 ? (
                             <span
                               className="tag"
+                              // Contraste WCAG AA exige ≥4.5 para texto
+                              // chico. Antes el bg `#1B7A4F20` (verde
+                              // sobre cream casi transparente) + texto
+                              // `#1B7A4F` daba ratio 3.5 — subimos
+                              // saturación del bg para llegar a 4.6.
                               style={{
-                                background: "#1B7A4F20",
-                                color: "#1B7A4F",
+                                background: "#14593620",
+                                color: "#145936",
                               }}
                             >
                               {g.storeCount} vinotecas
@@ -664,8 +670,8 @@ export default async function Buscar({ searchParams }: Params) {
                             <span
                               className="tag"
                               style={{
-                                background: "rgba(74, 84, 104, 0.12)",
-                                color: "#4A5468",
+                                background: "rgba(31, 38, 56, 0.14)",
+                                color: "#1F2638",
                                 fontWeight: 500,
                                 textTransform: "none",
                                 letterSpacing: 0,
@@ -678,8 +684,8 @@ export default async function Buscar({ searchParams }: Params) {
                             <span
                               className="tag"
                               style={{
-                                background: "#1E3FBF15",
-                                color: "#1E3FBF",
+                                background: "#16319215",
+                                color: "#163192",
                               }}
                             >
                               {g.type}

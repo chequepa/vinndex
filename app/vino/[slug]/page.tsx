@@ -343,6 +343,7 @@ export default async function Vino({ params }: Params) {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
             href="/"
+            aria-label="Vinndex — inicio"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
