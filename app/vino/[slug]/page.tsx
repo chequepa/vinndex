@@ -13,6 +13,7 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
+import { extractVintage } from "@/lib/matching";
 import Link from "next/link";
 import {
   findGroup,
