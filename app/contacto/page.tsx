@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -35,20 +36,15 @@ export default function ContactoPage() {
       </section>
 
       <main id="contenido" className="max-w-4xl mx-auto px-4 lg:px-8 py-12 lg:py-16 space-y-10">
-        <section className="bg-snow border border-ink/10 rounded-2xl p-8 md:p-10">
-          <h2 className="display text-2xl font-semibold text-ink mb-6">
-            Por email
+        <section className="bg-white border border-ink/10 rounded-2xl p-8 md:p-10">
+          <h2 className="display text-2xl font-semibold text-ink mb-2">
+            Escribime
           </h2>
-          <a
-            href="mailto:hola@vinndex.com.ar"
-            className="display text-3xl md:text-4xl text-cobalt font-semibold hover:underline break-all"
-          >
-            hola@vinndex.com.ar
-          </a>
-          <p className="text-graphite text-sm mt-4">
-            Respondo desde ese email personalmente. Típicamente en &lt; 24hs
-            (días hábiles).
+          <p className="text-graphite text-sm mb-6">
+            Lo leo y respondo personalmente, típicamente en &lt; 24hs (días
+            hábiles).
           </p>
+          <ContactForm kind="contacto" />
         </section>
 
         <section>

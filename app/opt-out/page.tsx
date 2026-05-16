@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -12,12 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default function OptOutPage() {
-  const mailSubject = encodeURIComponent(
-    "Pedido de opt-out desde Vinndex",
-  );
-  const mailBody = encodeURIComponent(
-    "Hola,\n\nSoy dueño/a de la vinoteca [NOMBRE] (URL: [https://tusitio.com]) y solicito que NO aparezca en Vinndex.\n\nDatos para verificar que soy responsable del dominio:\n- Email corporativo del mismo dominio\n- Nombre y apellido del responsable\n\nGracias!",
-  );
   return (
     <div className="bg-white min-h-[100dvh]">
       <SiteHeader />
@@ -64,24 +59,16 @@ export default function OptOutPage() {
 
         <section>
           <h2 className="display text-2xl font-semibold text-ink mb-4">
-            Cómo pedirlo
+            Cómo funciona
           </h2>
           <ol className="space-y-3 text-ink/80 leading-relaxed list-decimal ml-5">
             <li>
-              Mandá un mail a{" "}
-              <a
-                href="mailto:hola@vinndex.com.ar"
-                className="underline hover:text-cobalt"
-              >
-                hola@vinndex.com.ar
-              </a>{" "}
-              <strong>desde un email corporativo del mismo dominio</strong> que
-              tu tienda (ej. <code className="bg-snow px-1 rounded text-sm">vos@tuvinoteca.com.ar</code>).
-              Esto nos deja verificar que sos efectivamente responsable.
-            </li>
-            <li>
-              En el mail, incluí el <strong>nombre de la vinoteca</strong> y la{" "}
-              <strong>URL</strong> que querés sacar.
+              Completá el form de abajo.{" "}
+              <strong>
+                Usá un email del mismo dominio que tu tienda
+              </strong>{" "}
+              (ej. <code className="bg-snow px-1 rounded text-sm">vos@tuvinoteca.com.ar</code>)
+              — así verificamos que sos responsable.
             </li>
             <li>
               En máximo <strong>48 horas hábiles</strong> te confirmamos y
@@ -94,16 +81,15 @@ export default function OptOutPage() {
           </ol>
         </section>
 
-        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10 text-center">
-          <a
-            href={`mailto:hola@vinndex.com.ar?subject=${mailSubject}&body=${mailBody}`}
-            className="cursor-wine inline-flex items-center gap-2 bg-snow text-ink font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors"
-          >
-            Pedir opt-out →
-          </a>
-          <p className="text-snow/60 text-xs mt-4">
-            Template de mail pre-llenado con los datos que necesitamos.
+        <section className="bg-white border border-ink/10 rounded-2xl p-8 md:p-10">
+          <h2 className="display text-2xl font-semibold text-ink mb-2">
+            Pedir la baja
+          </h2>
+          <p className="text-graphite text-sm mb-6">
+            Email del mismo dominio que tu tienda, así verificamos que sos
+            responsable.
           </p>
+          <ContactForm kind="opt-out" />
         </section>
       </main>
 

@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ContactForm } from "@/components/ContactForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sos vinoteca? Sumate a Vinndex",
+  title: "¿Sos vinoteca? Sumate a Vinndex",
   description:
     "Si tenés una vinoteca online en Argentina, sumala gratis a Vinndex. Tráfico cualificado de usuarios que ya decidieron qué vino quieren comprar.",
   alternates: { canonical: "https://vinndex.com.ar/sumate" },
 };
 
 export default function SumatePage() {
-  const mailSubject = encodeURIComponent("Quiero sumar mi vinoteca a Vinndex");
-  const mailBody = encodeURIComponent(
-    "Hola,\n\nTengo una vinoteca online y me gustaría sumarla a Vinndex.\n\nNombre de la vinoteca:\nURL del sitio:\nPlataforma (Tiendanube / WooCommerce / Shopify / VTEX / otra):\nPersona de contacto:\n\nGracias!",
-  );
   return (
     <div className="bg-white min-h-[100dvh]">
       <SiteHeader />
@@ -29,7 +26,7 @@ export default function SumatePage() {
             <span>Sumate</span>
           </div>
           <h1 className="display text-4xl md:text-6xl font-semibold text-ink leading-[1.05] mb-6">
-            Sos vinoteca?
+            ¿Sos vinoteca?
             <br />
             <span className="italic font-normal">Sumate.</span>
           </h1>
@@ -128,19 +125,16 @@ export default function SumatePage() {
           </ul>
         </section>
 
-        <section className="bg-ink text-snow rounded-2xl p-8 md:p-10 text-center">
-          <h2 className="display text-3xl font-semibold mb-4">Contanos</h2>
-          <p className="text-snow/85 mb-6 max-w-2xl mx-auto">
-            Mandanos un mail con el nombre de tu vinoteca, la URL y la
-            plataforma. Te confirmamos en &le; 48hs si podemos integrarla y te
-            avisamos cuando ya estés en el comparador.
+        <section className="bg-white border border-ink/10 rounded-2xl p-8 md:p-10">
+          <h2 className="display text-3xl font-semibold text-ink mb-2">
+            Contanos
+          </h2>
+          <p className="text-graphite mb-6 max-w-2xl">
+            Nombre de la vinoteca, URL y plataforma. Te confirmamos en
+            &le; 48hs si podemos integrarla y te avisamos cuando ya estés en el
+            comparador.
           </p>
-          <a
-            href={`mailto:hola@vinndex.com.ar?subject=${mailSubject}&body=${mailBody}`}
-            className="cursor-wine inline-flex items-center gap-2 bg-snow text-ink font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors"
-          >
-            Escribinos →
-          </a>
+          <ContactForm kind="sumate" />
         </section>
       </main>
 
