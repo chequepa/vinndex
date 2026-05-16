@@ -142,7 +142,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link href="/sumate" className="hover:text-snow">
-                  Sos vinoteca? Sumate
+                  ¿Sos vinoteca? Sumate
                 </Link>
               </li>
               <li>

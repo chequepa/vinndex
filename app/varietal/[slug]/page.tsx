@@ -29,6 +29,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       siteName: "Vinndex",
       images: p.topGroups[0]?.imageUrl ? [{ url: p.topGroups[0].imageUrl }] : undefined,
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${p.name} — Vinndex`,
+      description: `${p.groupCount} etiquetas de ${p.name} en ${p.storeCount} vinotecas online de Argentina.`,
+      images: p.topGroups[0]?.imageUrl ? [p.topGroups[0].imageUrl] : undefined,
+    },
   };
 }
 

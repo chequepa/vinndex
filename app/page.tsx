@@ -286,13 +286,59 @@ export default async function Home() {
   const brands = topBrands(12);
   const deals = topDeals(6);
   const varietals = varietalPages().slice(0, 8);
-  const regions = regionPages().slice(0, 6);
-  // Price drops generados por scripts/detect-price-drops.mjs en el
-  // daily-scrape. Sólo top 4 acá; el resto se ve en /admin/price-drops.
+  const allRegions = regionPages();
+  const regions = allRegions.slice(0, 6);
+  const findRegion = (name: string) =>
+    allRegions.find(
+      (r) => r.name.toLowerCase() === name.toLowerCase(),
+    ) ?? null;
+  const regionUco = findRegion("Valle de Uco");
+  const regionLujan = findRegion("Luján de Cuyo");
+  // Cafayate no aparece como región en el snapshot — usamos Salta (que la
+  // contiene). Cafayate como ciudad icónica queda en el subtítulo del tile.
+  const regionSalta = findRegion("Salta");
+  const regionPatagonia = findRegion("Patagonia");
   const dropsReport = await readPriceDrops();
   const topDrops = dropsReport?.drops.slice(0, 4) ?? [];
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Vinndex",
+    url: "https://vinndex.com.ar",
+    description:
+      "Comparador de precios de vinos online en Argentina. Buscás un vino y te mostramos todas las vinotecas que lo venden online, ordenadas por precio.",
+    areaServed: { "@type": "Country", name: "Argentina" },
+  };
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Vinndex",
+    url: "https://vinndex.com.ar",
+    inLanguage: "es-AR",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate:
+          "https://vinndex.com.ar/buscar?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       {/* NAV */}
       <nav className="absolute top-0 left-0 right-0 z-30 px-6 py-5 lg:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -563,12 +609,6 @@ export default async function Home() {
                   no es un cambio de SKU.
                 </p>
               </div>
-              <Link
-                href="/admin/price-drops"
-                className="text-xs uppercase tracking-wider text-graphite hover:text-ink"
-              >
-                Ver todos →
-              </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {topDrops.map((d) => (
@@ -860,7 +900,7 @@ export default async function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
-              href="/buscar?region=valle-de-uco"
+              href={regionUco ? `/region/${regionUco.slug}` : "/buscar?region=Valle+de+Uco"}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
@@ -889,13 +929,17 @@ export default async function Home() {
                   <div className="display text-2xl font-semibold">
                     Valle de Uco
                   </div>
-                  <div className="text-snow/70 text-sm mt-1">4.123 vinos</div>
+                  <div className="text-snow/70 text-sm mt-1">
+                    {regionUco
+                      ? `${regionUco.groupCount.toLocaleString("es-AR")} vinos`
+                      : "Explorar región"}
+                  </div>
                 </div>
               </div>
             </Link>
 
             <Link
-              href="/buscar?region=lujan"
+              href={regionLujan ? `/region/${regionLujan.slug}` : "/buscar?region=Luj%C3%A1n+de+Cuyo"}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
@@ -924,13 +968,17 @@ export default async function Home() {
                   <div className="display text-2xl font-semibold">
                     Luján de Cuyo
                   </div>
-                  <div className="text-snow/70 text-sm mt-1">3.847 vinos</div>
+                  <div className="text-snow/70 text-sm mt-1">
+                    {regionLujan
+                      ? `${regionLujan.groupCount.toLocaleString("es-AR")} vinos`
+                      : "Explorar región"}
+                  </div>
                 </div>
               </div>
             </Link>
 
             <Link
-              href="/buscar?region=cafayate"
+              href={regionSalta ? `/region/${regionSalta.slug}` : "/buscar?region=Salta"}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
@@ -953,19 +1001,23 @@ export default async function Home() {
               </svg>
               <div className="absolute inset-0 p-5 flex flex-col justify-between">
                 <span className="text-xs text-ink/70 tracking-widest uppercase">
-                  Salta
+                  Norte
                 </span>
                 <div>
                   <div className="display text-2xl font-semibold text-ink">
-                    Cafayate
+                    Salta y Cafayate
                   </div>
-                  <div className="text-ink/70 text-sm mt-1">847 vinos</div>
+                  <div className="text-ink/70 text-sm mt-1">
+                    {regionSalta
+                      ? `${regionSalta.groupCount.toLocaleString("es-AR")} vinos`
+                      : "Explorar región"}
+                  </div>
                 </div>
               </div>
             </Link>
 
             <Link
-              href="/buscar?region=patagonia"
+              href={regionPatagonia ? `/region/${regionPatagonia.slug}` : "/buscar?region=Patagonia"}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
@@ -999,7 +1051,11 @@ export default async function Home() {
                   <div className="display text-2xl font-semibold">
                     Patagonia
                   </div>
-                  <div className="text-snow/70 text-sm mt-1">612 vinos</div>
+                  <div className="text-snow/70 text-sm mt-1">
+                    {regionPatagonia
+                      ? `${regionPatagonia.groupCount.toLocaleString("es-AR")} vinos`
+                      : "Explorar región"}
+                  </div>
                 </div>
               </div>
             </Link>
@@ -1252,7 +1308,7 @@ export default async function Home() {
                 </li>
                 <li>
                   <Link href="/sumate" className="hover:text-snow">
-                    Sos vinoteca? Sumate
+                    ¿Sos vinoteca? Sumate
                   </Link>
                 </li>
                 <li>

@@ -108,9 +108,9 @@ export default function SobrePage() {
           </div>
           <p className="text-ink/80 leading-relaxed mt-6">
             Los datos se refrescan todas las noches (hora Argentina). Podés ver
-            el estado actual en{" "}
-            <Link href="/admin/fuentes" className="underline hover:text-cobalt">
-              /admin/fuentes
+            la lista completa de{" "}
+            <Link href="/bodegas" className="underline hover:text-cobalt">
+              bodegas y vinotecas integradas
             </Link>
             .
           </p>

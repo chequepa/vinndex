@@ -136,11 +136,11 @@ export default function PreguntasPage() {
           Las 7 más comunes de Argentina: Tiendanube, WooCommerce, Shopify,
           VTEX (Cencosud, Carrefour, Día), Magento, PrestaShop y Mercado Libre.
           Si una vinoteca usa una plataforma distinta o tiene un desarrollo
-          custom, evaluamos caso por caso. Ver{" "}
-          <Link href="/admin/fuentes" className="underline hover:text-cobalt">
-            /admin/fuentes
+          custom, evaluamos caso por caso. Ver el{" "}
+          <Link href="/bodegas" className="underline hover:text-cobalt">
+            listado completo de bodegas
           </Link>{" "}
-          para el listado completo y el estado de cada una.
+          para conocer todas las vinotecas integradas.
         </>
       ),
       aForSchema:

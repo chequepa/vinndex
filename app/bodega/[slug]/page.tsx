@@ -32,6 +32,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
         ? [{ url: b.topGroups[0].imageUrl }]
         : undefined,
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${b.name} en Vinndex`,
+      description: `${b.groupCount} etiquetas en ${b.storeCount} vinotecas online de Argentina.`,
+      images: b.topGroups[0]?.imageUrl ? [b.topGroups[0].imageUrl] : undefined,
+    },
   };
 }
 
@@ -48,7 +54,7 @@ export default async function BodegaPage({ params }: Params) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Inicio", item: "https://vinndex.com.ar" },
-      { "@type": "ListItem", position: 2, name: "Bodegas", item: "https://vinndex.com.ar/buscar" },
+      { "@type": "ListItem", position: 2, name: "Bodegas", item: "https://vinndex.com.ar/bodegas" },
       { "@type": "ListItem", position: 3, name: b.name, item: `https://vinndex.com.ar/bodega/${slug}` },
     ],
   };
@@ -114,7 +120,7 @@ export default async function BodegaPage({ params }: Params) {
               Inicio
             </Link>
             <span>/</span>
-            <Link href="/buscar" className="hover:text-ink">
+            <Link href="/bodegas" className="hover:text-ink">
               Bodegas
             </Link>
             <span>/</span>

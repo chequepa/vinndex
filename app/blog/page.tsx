@@ -14,6 +14,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "/blog",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog — Vinndex",
+    description:
+      "Notas sobre vinos argentinos: regiones, varietales, bodegas y cómo comparar precios de forma honesta.",
+  },
   alternates: {
     canonical: "/blog",
     types: {

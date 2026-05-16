@@ -25,6 +25,7 @@ import {
   isCaseOffer,
   bottleStats,
 } from "@/lib/snapshot";
+import { isJunkSlug } from "@/lib/junkSlugs";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -128,9 +129,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     alternates: {
       canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
     },
-    robots: allOutOfStock
-      ? { index: true, follow: true, nocache: true }
-      : { index: true, follow: true },
+    robots: isJunkSlug(g.groupSlug)
+      ? { index: false, follow: false }
+      : allOutOfStock
+        ? { index: true, follow: true, nocache: true }
+        : { index: true, follow: true },
   };
 }
 
@@ -259,7 +262,11 @@ export default async function Vino({ params }: Params) {
   const scores = getScoresForSlug(group.groupSlug);
   const priceSeries = getPriceHistory(group.groupSlug);
 
-  // JSON-LD Product schema for rich search snippets
+  // JSON-LD Product schema for rich search snippets. Usamos `bottleStats`
+  // (precios sin cajas) para evitar que Google muestre el precio de un
+  // pack x6 como si fuese el precio del vino — los rich snippets son
+  // engañosos cuando "$48.000" en realidad es la caja.
+  const bottleStatsForJsonLd = bottleStats(group);
   const productJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -272,9 +279,9 @@ export default async function Vino({ params }: Params) {
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "ARS",
-      lowPrice: group.minPrice ?? undefined,
-      highPrice: group.maxPrice ?? undefined,
-      offerCount: group.offerCount,
+      lowPrice: bottleStatsForJsonLd.minPrice ?? undefined,
+      highPrice: bottleStatsForJsonLd.maxPrice ?? undefined,
+      offerCount: offers.length,
       offers: offers.map((o) => ({
         "@type": "Offer",
         price: o.priceArs ?? undefined,

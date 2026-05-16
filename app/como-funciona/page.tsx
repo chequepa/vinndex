@@ -156,9 +156,13 @@ export default function ComoFuncionaPage() {
             comparables en 2+ tiendas.
           </p>
           <p className="text-ink/60 text-xs mt-3">
-            Podés ver el breakdown completo por plataforma en{" "}
-            <Link href="/admin/fuentes" className="underline hover:text-cobalt">
-              /admin/fuentes
+            Podés ver las{" "}
+            <Link href="/bodegas" className="underline hover:text-cobalt">
+              bodegas y vinotecas integradas
+            </Link>{" "}
+            o explorar{" "}
+            <Link href="/data" className="underline hover:text-cobalt">
+              estadísticas del mercado argentino
             </Link>
             .
           </p>

@@ -9,6 +9,7 @@ import {
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 import { RANKINGS } from "@/lib/rankings";
 import { readVsPairs } from "@/lib/vsPairs";
+import { isJunkSlug } from "@/lib/junkSlugs";
 
 const SITE = "https://vinndex.com.ar";
 
@@ -79,12 +80,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: generatedAt,
       changeFrequency: "monthly",
       priority: 0.4,
-    },
-    {
-      url: `${SITE}/admin/fuentes`,
-      lastModified: generatedAt,
-      changeFrequency: "weekly",
-      priority: 0.3,
     },
     {
       url: `${SITE}/blog`,
@@ -164,6 +159,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    * but with low priority and weekly freq since nothing is purchasable. */
   const winePages: MetadataRoute.Sitemap = groups
     .filter((g) => g.imageUrl !== null)
+    .filter((g) => !isJunkSlug(g.groupSlug))
     .map((g) => {
       const allOut = !g.offers?.some((o) => o.inStock);
       return {
