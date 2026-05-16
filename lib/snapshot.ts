@@ -56,8 +56,33 @@ export function snapshotStats() {
   };
 }
 
-/** All productGroups (sorted by relevance — multi-store first, then price). */
-export const groups: ProductGroup[] = snapshot.productGroups ?? [];
+/** All productGroups (sorted by relevance — multi-store first, then price).
+ *
+ * Dos normalizaciones runtime sobre el snapshot:
+ *
+ * 1. **`offerCount`** — el pipeline tiene 4 stages que setean el campo y
+ *    dos de ellas (build-groups, stage1b, stage3) lo computan como
+ *    `inStock.length` mientras que stage2 / remerge / split usan
+ *    `offers.length`. Resultado: ~28% del catálogo termina desincronizado.
+ *    Lo recomputamos como `offers.length` (total) que es lo que el campo
+ *    dice ser. Para "ofertas con stock" usar `inStockOfferCount`.
+ *
+ * 2. **`inStock` vs `priceArs`** — varios adapters marcan ofertas como
+ *    `inStock=true` aunque no pudieron extraer el precio (priceArs=null),
+ *    lo que hace que la UI muestre "Consultar precio" para algo
+ *    teóricamente disponible. Si no hay precio no es realmente comprable,
+ *    así que forzamos inStock a false. El fix correcto sería en cada
+ *    adapter pero son 8 platforms y este punto cubre todos.
+ */
+export const groups: ProductGroup[] = (snapshot.productGroups ?? []).map(
+  (g: ProductGroup) => ({
+    ...g,
+    offers: (g.offers ?? []).map((o) =>
+      o.inStock && o.priceArs == null ? { ...o, inStock: false } : o,
+    ),
+    offerCount: g.offers?.length ?? 0,
+  }),
+);
 
 export function findGroup(slug: string): ProductGroup | undefined {
   return groups.find((g) => g.groupSlug === slug);

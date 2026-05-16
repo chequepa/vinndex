@@ -87,17 +87,30 @@ function main() {
     history[key] = series;
   }
 
-  // Drop series that haven't been updated in 30 days — the slug probably
-  // fell out of the multi-store set.
+  // Set de TODOS los slugs vigentes (sin el filtro de tracking — un slug
+  // con storeCount bajo hoy igual es válido, su histórico sirve). Lo
+  // usamos para podar series huérfanas: slugs que ya no existen en el
+  // snapshot porque el re-matching los renombró. El prune por tiempo
+  // solo no alcanza — un slug renombrado ayer tiene last.date reciente y
+  // sobrevive ~30 días como serie fantasma.
+  const liveSlugs = new Set(groups.map((g) => g.groupSlug));
+
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - MAX_DAYS - 1);
   const cutoffIso = cutoff.toISOString().slice(0, 10);
   let pruned = 0;
+  let prunedOrphan = 0;
   for (const k of Object.keys(history)) {
     const series = history[k];
     if (!series || series.length === 0) {
       delete history[k];
       pruned++;
+      continue;
+    }
+    // Huérfano: el slug ya no está en el snapshot (re-matcheado/eliminado).
+    if (!liveSlugs.has(k)) {
+      delete history[k];
+      prunedOrphan++;
       continue;
     }
     const last = series[series.length - 1];
@@ -118,7 +131,7 @@ function main() {
   const bytes = fs.statSync(HISTORY).size;
 
   console.log(
-    `Tracked ${tracked} · Appended ${updated} · Same-day overwrite ${skippedToday} · Pruned ${pruned} stale`,
+    `Tracked ${tracked} · Appended ${updated} · Same-day overwrite ${skippedToday} · Pruned ${pruned} stale · ${prunedOrphan} orphan`,
   );
   console.log(`File size: ${(bytes / 1024 / 1024).toFixed(2)} MB`);
   console.log(`Entries: ${Object.keys(history).length} slugs tracked`);

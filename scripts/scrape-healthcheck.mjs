@@ -83,6 +83,32 @@ if (storesWithErrors.length > 0) {
   });
 }
 
+// 1b. Silent zero: store con 0 productos y SIN errores reportados. El
+//     check #2 (store_zero) sólo dispara en la transición ≥50→0, así que
+//     una tienda rota hace varios días pasa desapercibida (su baseline en
+//     HEAD ya es 0). Este caso cubre exactamente Enoteca Privada (302 →
+//     /password, el scraper ve vacío y no tira error) y ML con token
+//     expirado. Una tienda configurada que devuelve 0 sin un solo error
+//     siempre es sospechosa.
+const silentZero = (current.stores ?? []).filter(
+  (s) =>
+    (s.productCount ?? 0) === 0 &&
+    Array.isArray(s.errors) &&
+    s.errors.length === 0,
+);
+if (silentZero.length > 0) {
+  issues.push({
+    severity: "warn",
+    kind: "store_silent_zero",
+    title: `${silentZero.length} tiendas con 0 productos y SIN errores (scraper roto en silencio)`,
+    items: silentZero.map((s) => ({
+      slug: s.storeSlug,
+      name: s.storeName,
+      productCount: 0,
+    })),
+  });
+}
+
 // 2-3. Diff per-store contra el snapshot anterior.
 if (previous) {
   const prevMap = new Map(

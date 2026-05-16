@@ -11,6 +11,24 @@ import { dirname, resolve } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
 
+/**
+ * Diccionario bodega→región. La región casi nunca está en el nombre del
+ * producto (es atributo de la bodega), así que el match textual sólo
+ * cubre ~4% del catálogo. Este dict completa por bodega conocida.
+ * Keys = output de normalizeBrandAlias(). Curado a mano, sólo bodegas
+ * de región indiscutible.
+ */
+let BODEGA_REGIONS = {};
+try {
+  const raw = readFileSync(
+    resolve(REPO_ROOT, "data/bodega-regions.json"),
+    "utf8",
+  );
+  BODEGA_REGIONS = JSON.parse(raw).regions ?? {};
+} catch {
+  // Sin el dict el pipeline sigue — sólo perdemos el backfill por bodega.
+}
+
 function stripAccents(s) {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -100,6 +118,13 @@ function extractRegion(name, brand) {
   const haystack = `${name} ${brand ?? ""}`;
   for (const r of REGIONS) {
     if (r.re.test(haystack)) return r.name;
+  }
+  // Fallback por bodega: la región rara vez está en el nombre del
+  // producto pero sí la conocemos por la bodega. normalizeBrandAlias
+  // está hoisteada (function declaration) así que se puede llamar acá.
+  if (brand) {
+    const key = normalizeBrandAlias(brand);
+    if (key && BODEGA_REGIONS[key]) return BODEGA_REGIONS[key];
   }
   return null;
 }

@@ -117,7 +117,10 @@ function normalize(p, store) {
     imageUrl,
     priceArs: price,
     currency: "ARS",
-    inStock: variant?.available ?? false,
+    // Si no pudimos extraer precio (price === null porque < 500 o NaN)
+    // forzamos inStock a false — un producto sin precio no es realmente
+    // comprable y la UI termina mostrando "Consultar" en lugar de un valor.
+    inStock: price != null && (variant?.available ?? false),
     description:
       p.body_html
         ?.replace(/<[^>]+>/g, " ")
