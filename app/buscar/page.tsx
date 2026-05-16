@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
+import { MobileFiltersDrawer } from "@/components/MobileFiltersDrawer";
 import Link from "next/link";
 import {
   searchGroups,
@@ -67,6 +68,8 @@ function findRangeById(id: string | null | undefined) {
 
 export const metadata: Metadata = {
   title: "Buscar — Vinndex",
+  alternates: { canonical: "https://vinndex.com.ar/buscar" },
+  robots: { index: true, follow: true },
 };
 
 type Params = {
@@ -133,6 +136,15 @@ export default async function Buscar({ searchParams }: Params) {
 
   const hasAnyFilter =
     query || multiOnly || inStockOnly || priceRange || varietal || type || region;
+
+  const activeFilterCount = [
+    multiOnly,
+    inStockOnly,
+    !!priceRange,
+    !!varietal,
+    !!type,
+    !!region,
+  ].filter(Boolean).length;
 
   const headerTitle = query ? (
     <>
@@ -209,6 +221,175 @@ export default async function Buscar({ searchParams }: Params) {
   }
 
   const sortOptions = query ? SORT_OPTIONS_WITH_QUERY : SORT_OPTIONS_NO_QUERY;
+
+  const filtersInner = (
+    <>
+      {/* QUICK FILTERS — stock, multi-tienda, precio (estos 3 se
+          tocan más seguido que varietal/tipo/región) */}
+      <div>
+        <h3 className="display text-lg font-semibold mb-3">Filtros rápidos</h3>
+        <div className="flex flex-col gap-2 text-sm">
+          <a
+            href={toggleInStock()}
+            className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
+              inStockOnly
+                ? "bg-ink text-snow font-semibold"
+                : "bg-snow hover:bg-snow border border-ink/15"
+            }`}
+          >
+            <span>Solo con stock</span>
+            {inStockOnly && <span className="text-xs">✓</span>}
+          </a>
+          <a
+            href={toggleMulti()}
+            className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
+              multiOnly
+                ? "bg-ink text-snow font-semibold"
+                : "bg-snow hover:bg-snow border border-ink/15"
+            }`}
+          >
+            <span>Comparables (2+ tiendas)</span>
+            {multiOnly && <span className="text-xs">✓</span>}
+          </a>
+        </div>
+      </div>
+
+      {/* RANGO DE PRECIO */}
+      <div>
+        <h3 className="display text-lg font-semibold mb-3">Precio</h3>
+        <div className="space-y-1.5 text-sm">
+          {PRICE_RANGES.map((r) => {
+            const active = priceRange?.id === r.id;
+            return (
+              <a
+                key={r.id}
+                href={priceRangeHref(active ? null : r.id)}
+                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                  active
+                    ? "bg-ink text-snow font-semibold"
+                    : "hover:bg-snow"
+                }`}
+              >
+                <span>{r.label}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* VARIETAL */}
+      <div>
+        <h3 className="display text-lg font-semibold mb-4">Varietal</h3>
+        <div className="space-y-1.5 text-sm">
+          {facets.varietals.slice(0, 12).map((f) => {
+            const active =
+              varietal?.toLowerCase() === f.name.toLowerCase();
+            return (
+              <a
+                key={f.name}
+                href={filterHref("varietal", active ? null : f.name)}
+                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                  active
+                    ? "bg-ink text-snow font-semibold"
+                    : "hover:bg-snow"
+                }`}
+              >
+                <span className="truncate">{f.name}</span>
+                <span
+                  className={`ml-auto text-xs ${
+                    active ? "text-snow/70" : "text-graphite"
+                  }`}
+                >
+                  {f.count}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* TIPO */}
+      <div>
+        <h3 className="display text-lg font-semibold mb-4">Tipo</h3>
+        <div className="space-y-1.5 text-sm">
+          {facets.types.map((f) => {
+            const active = type?.toLowerCase() === f.name.toLowerCase();
+            return (
+              <a
+                key={f.name}
+                href={filterHref("tipo", active ? null : f.name)}
+                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                  active
+                    ? "bg-ink text-snow font-semibold"
+                    : "hover:bg-snow"
+                }`}
+              >
+                <span>{f.name}</span>
+                <span
+                  className={`ml-auto text-xs ${
+                    active ? "text-snow/70" : "text-graphite"
+                  }`}
+                >
+                  {f.count}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* REGIÓN */}
+      {facets.regions.length > 0 && (
+        <div>
+          <h3 className="display text-lg font-semibold mb-4">Región</h3>
+          <div className="space-y-1.5 text-sm">
+            {facets.regions.slice(0, 10).map((f) => {
+              const active =
+                region?.toLowerCase() === f.name.toLowerCase();
+              return (
+                <a
+                  key={f.name}
+                  href={filterHref("region", active ? null : f.name)}
+                  className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                    active
+                      ? "bg-ink text-snow font-semibold"
+                      : "hover:bg-snow"
+                  }`}
+                >
+                  <span>{f.name}</span>
+                  <span
+                    className={`ml-auto text-xs ${
+                      active ? "text-snow/70" : "text-graphite"
+                    }`}
+                  >
+                    {f.count}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VINOTECAS */}
+      <div>
+        <h3 className="display text-lg font-semibold mb-4">
+          Vinotecas sincronizando
+        </h3>
+        <div className="space-y-1 text-sm text-graphite max-h-64 overflow-y-auto">
+          {snapshot.stores.map((s) => (
+            <div
+              key={s.storeSlug}
+              className="flex items-center justify-between"
+            >
+              <span className="truncate">{s.storeName}</span>
+              <span className="text-xs">{s.productCount}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <div className="bg-white min-h-[100dvh]">
@@ -377,183 +558,20 @@ export default async function Buscar({ searchParams }: Params) {
           <h2 id="filtros-titulo" className="sr-only">
             Filtros de búsqueda
           </h2>
-          <div className="sticky top-24 space-y-8">
-            {/* QUICK FILTERS — stock, multi-tienda, precio (estos 3 se
-                tocan más seguido que varietal/tipo/región) */}
-            <div>
-              <h3 className="display text-lg font-semibold mb-3">Filtros rápidos</h3>
-              <div className="flex flex-col gap-2 text-sm">
-                <a
-                  href={toggleInStock()}
-                  className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
-                    inStockOnly
-                      ? "bg-ink text-snow font-semibold"
-                      : "bg-snow hover:bg-snow border border-ink/15"
-                  }`}
-                >
-                  <span>Solo con stock</span>
-                  {inStockOnly && <span className="text-xs">✓</span>}
-                </a>
-                <a
-                  href={toggleMulti()}
-                  className={`cursor-wine py-1.5 px-3 rounded-full inline-flex items-center gap-2 justify-between transition-colors ${
-                    multiOnly
-                      ? "bg-ink text-snow font-semibold"
-                      : "bg-snow hover:bg-snow border border-ink/15"
-                  }`}
-                >
-                  <span>Comparables (2+ tiendas)</span>
-                  {multiOnly && <span className="text-xs">✓</span>}
-                </a>
-              </div>
-            </div>
-
-            {/* RANGO DE PRECIO */}
-            <div>
-              <h3 className="display text-lg font-semibold mb-3">Precio</h3>
-              <div className="space-y-1.5 text-sm">
-                {PRICE_RANGES.map((r) => {
-                  const active = priceRange?.id === r.id;
-                  return (
-                    <a
-                      key={r.id}
-                      href={priceRangeHref(active ? null : r.id)}
-                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
-                        active
-                          ? "bg-ink text-snow font-semibold"
-                          : "hover:bg-snow"
-                      }`}
-                    >
-                      <span>{r.label}</span>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* VARIETAL */}
-            <div>
-              <h3 className="display text-lg font-semibold mb-4">Varietal</h3>
-              <div className="space-y-1.5 text-sm">
-                {facets.varietals.slice(0, 12).map((f) => {
-                  const active =
-                    varietal?.toLowerCase() === f.name.toLowerCase();
-                  return (
-                    <a
-                      key={f.name}
-                      href={filterHref(
-                        "varietal",
-                        active ? null : f.name,
-                      )}
-                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
-                        active
-                          ? "bg-ink text-snow font-semibold"
-                          : "hover:bg-snow"
-                      }`}
-                    >
-                      <span className="truncate">{f.name}</span>
-                      <span
-                        className={`ml-auto text-xs ${
-                          active ? "text-snow/70" : "text-graphite"
-                        }`}
-                      >
-                        {f.count}
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* TIPO */}
-            <div>
-              <h3 className="display text-lg font-semibold mb-4">Tipo</h3>
-              <div className="space-y-1.5 text-sm">
-                {facets.types.map((f) => {
-                  const active = type?.toLowerCase() === f.name.toLowerCase();
-                  return (
-                    <a
-                      key={f.name}
-                      href={filterHref("tipo", active ? null : f.name)}
-                      className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
-                        active
-                          ? "bg-ink text-snow font-semibold"
-                          : "hover:bg-snow"
-                      }`}
-                    >
-                      <span>{f.name}</span>
-                      <span
-                        className={`ml-auto text-xs ${
-                          active ? "text-snow/70" : "text-graphite"
-                        }`}
-                      >
-                        {f.count}
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* REGIÓN */}
-            {facets.regions.length > 0 && (
-              <div>
-                <h3 className="display text-lg font-semibold mb-4">Región</h3>
-                <div className="space-y-1.5 text-sm">
-                  {facets.regions.slice(0, 10).map((f) => {
-                    const active =
-                      region?.toLowerCase() === f.name.toLowerCase();
-                    return (
-                      <a
-                        key={f.name}
-                        href={filterHref("region", active ? null : f.name)}
-                        className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
-                          active
-                            ? "bg-ink text-snow font-semibold"
-                            : "hover:bg-snow"
-                        }`}
-                      >
-                        <span>{f.name}</span>
-                        <span
-                          className={`ml-auto text-xs ${
-                            active ? "text-snow/70" : "text-graphite"
-                          }`}
-                        >
-                          {f.count}
-                        </span>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* VINOTECAS */}
-            <div>
-              <h3 className="display text-lg font-semibold mb-4">
-                Vinotecas sincronizando
-              </h3>
-              <div className="space-y-1 text-sm text-graphite max-h-64 overflow-y-auto">
-                {snapshot.stores.map((s) => (
-                  <div
-                    key={s.storeSlug}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="truncate">{s.storeName}</span>
-                    <span className="text-xs">{s.productCount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <div className="sticky top-24 space-y-8">{filtersInner}</div>
         </aside>
 
         <section>
           <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-ink/10 flex-wrap">
-            <p className="text-sm text-graphite shrink-0">
-              <span className="font-semibold text-ink">{results.length}</span>{" "}
-              resultados
-            </p>
+            <div className="flex items-center gap-3 shrink-0">
+              <p className="text-sm text-graphite">
+                <span className="font-semibold text-ink">{results.length}</span>{" "}
+                resultados
+              </p>
+              <MobileFiltersDrawer activeCount={activeFilterCount}>
+                {filtersInner}
+              </MobileFiltersDrawer>
+            </div>
             <div
               role="tablist"
               aria-label="Ordenar por"
@@ -684,13 +702,12 @@ export default async function Buscar({ searchParams }: Params) {
                       Avisanos
                     </Link>{" "}
                     qué vino es y dónde lo viste, y en el próximo ciclo lo
-                    intentamos. También podés ver la lista completa de
-                    vinotecas integradas en{" "}
+                    intentamos. También podés ver la lista completa de{" "}
                     <Link
-                      href="/admin/fuentes"
+                      href="/bodegas"
                       className="text-cobalt hover:underline"
                     >
-                      /admin/fuentes
+                      bodegas y vinotecas integradas
                     </Link>
                     .
                   </p>
@@ -821,8 +838,8 @@ export default async function Buscar({ searchParams }: Params) {
 
           {results.length >= 48 && (
             <p className="text-xs text-graphite mt-8 text-center">
-              Mostrando los primeros 48. La paginación real llega con Postgres
-              + Meilisearch.
+              Mostrando los primeros 48 resultados. Refiná con filtros para ver
+              más opciones.
             </p>
           )}
         </section>

@@ -148,7 +148,7 @@ export function CompareFloatingButton() {
   return (
     <a
       href={href}
-      className="cursor-wine fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 bg-ink text-snow font-semibold px-5 py-3 rounded-full shadow-2xl hover:bg-cobalt transition-colors text-sm"
+      className="cursor-wine fixed bottom-20 right-5 lg:bottom-5 z-40 inline-flex items-center gap-2 bg-ink text-snow font-semibold px-5 py-3 rounded-full shadow-2xl hover:bg-cobalt transition-colors text-sm"
     >
       <svg
         width="16"

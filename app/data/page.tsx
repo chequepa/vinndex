@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_AR",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Estado del mercado · datos del vino argentino — Vinndex",
+    description:
+      "Distribución por varietal, región y precio. Precio mediana por varietal. Top bodegas. Actualizado a diario.",
+  },
 };
 
 function formatPct(p: number): string {
@@ -126,13 +132,13 @@ export default function DataPage() {
             blancos (Chardonnay, Torrontés, Sauvignon Blanc) muestran un share
             importante. Precio mediana calculado sobre el mínimo de cada vino.
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2 -mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
             {stats.varietals.map((v) => {
               const pct = v.count / maxVarietalCount;
               return (
                 <li
                   key={v.name}
-                  className="grid grid-cols-[180px_1fr_80px_90px] gap-3 items-center text-sm"
+                  className="grid grid-cols-[180px_minmax(140px,1fr)_80px_90px] gap-3 items-center text-sm"
                 >
                   <Link
                     href={`/buscar?varietal=${encodeURIComponent(v.name)}`}
@@ -172,13 +178,13 @@ export default function DataPage() {
             que sólo contamos vinos con región identificada en el nombre o la
             etiqueta — el resto cuenta como &ldquo;sin región&rdquo;.
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2 -mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
             {stats.regions.map((r) => {
               const pct = r.count / maxRegionCount;
               return (
                 <li
                   key={r.name}
-                  className="grid grid-cols-[180px_1fr_80px_90px] gap-3 items-center text-sm"
+                  className="grid grid-cols-[180px_minmax(140px,1fr)_80px_90px] gap-3 items-center text-sm"
                 >
                   <Link
                     href={`/region/${encodeURIComponent(
@@ -219,13 +225,13 @@ export default function DataPage() {
             comparable. La banda con más oferta indica el rango donde se
             concentra el catálogo accesible.
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2 -mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
             {stats.priceBands.map((b) => {
               const pct = b.count / maxBandCount;
               return (
                 <li
                   key={b.label}
-                  className="grid grid-cols-[180px_1fr_120px] gap-3 items-center text-sm"
+                  className="grid grid-cols-[180px_minmax(140px,1fr)_120px] gap-3 items-center text-sm"
                 >
                   <span className="text-ink font-medium">{b.label}</span>
                   <div className="h-3 bg-snow rounded overflow-hidden">
@@ -260,11 +266,11 @@ export default function DataPage() {
             </Link>
             .
           </p>
-          <ol className="space-y-1.5">
+          <ol className="space-y-1.5 -mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
             {stats.topBrands.map((b, i) => (
               <li
                 key={b.slug}
-                className="grid grid-cols-[32px_1fr_100px_120px] gap-3 items-center text-sm border-b border-ink/5 pb-1.5"
+                className="grid grid-cols-[32px_minmax(140px,1fr)_100px_120px] gap-3 items-center text-sm border-b border-ink/5 pb-1.5"
               >
                 <span className="text-graphite tabular-nums">
                   {String(i + 1).padStart(2, "0")}
