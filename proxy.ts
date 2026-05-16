@@ -34,11 +34,30 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // El App Router prefetchea cualquier <Link href="/admin/..."> que
+  // aparezca en una página pública. Ese prefetch es un request de
+  // fondo (RSC) que igual cae acá y, si le mandamos WWW-Authenticate,
+  // el browser abre el popup de credenciales sobre el sitio público
+  // aunque el usuario nunca pidió entrar al admin.
+  //
+  // Sólo mandamos el challenge en navegaciones top-level reales
+  // (Sec-Fetch-Dest: document, o requests sin el header como curl/
+  // scripts/API). Para prefetch/RSC/fetch devolvemos 401 pelado: el
+  // request falla en silencio, sin popup, y el admin sigue protegido
+  // (nunca servimos su contenido sin credenciales).
+  //
+  // Nota: Next stripea los headers RSC/Next-Router-Prefetch dentro del
+  // proxy, así que Sec-Fetch-Dest es la única señal confiable.
+  const dest = request.headers.get("sec-fetch-dest");
+  const isBackgroundRequest = dest !== null && dest !== "document";
+
   return new NextResponse("Authentication required", {
     status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Vinndex admin", charset="UTF-8"',
-    },
+    headers: isBackgroundRequest
+      ? {}
+      : {
+          "WWW-Authenticate": 'Basic realm="Vinndex admin", charset="UTF-8"',
+        },
   });
 }
 
