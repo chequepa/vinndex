@@ -46,6 +46,42 @@ function s(v: unknown, max = 200): string | undefined {
 // dueño del archivo.
 const NDJSON_PATH = resolve(process.cwd(), "data/pageviews.ndjson");
 
+// Rate limit in-memory por IP. Suficiente mientras corramos en una sola
+// instancia en Railway; si scaleamos, hay que mover a Redis.
+// 60 req/min cubre la navegación humana razonable (un usuario abriendo
+// 60 tabs en un minuto ya es sospechoso) sin romper UX legítima.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 60;
+const ipBuckets = new Map<string, number[]>();
+
+function getClientIp(req: Request): string {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]!.trim();
+  const xri = req.headers.get("x-real-ip");
+  if (xri) return xri.trim();
+  return "unknown";
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const recent = (ipBuckets.get(ip) ?? []).filter((t) => t > cutoff);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    ipBuckets.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  ipBuckets.set(ip, recent);
+  // Stochastic GC: 1% de las inserciones limpia IPs viejas. Evita que el
+  // Map crezca sin límite con IPs que ya no envían eventos.
+  if (Math.random() < 0.01) {
+    for (const [k, v] of ipBuckets) {
+      if (v.length === 0 || v[v.length - 1]! < cutoff) ipBuckets.delete(k);
+    }
+  }
+  return false;
+}
+
 async function persist(entry: Record<string, unknown>): Promise<void> {
   try {
     await mkdir(resolve(process.cwd(), "data"), { recursive: true });
@@ -57,6 +93,9 @@ async function persist(entry: Record<string, unknown>): Promise<void> {
 }
 
 export async function POST(req: Request) {
+  if (isRateLimited(getClientIp(req))) {
+    return new NextResponse(null, { status: 429 });
+  }
   let body: Body;
   try {
     body = (await req.json()) as Body;

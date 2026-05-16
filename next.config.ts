@@ -68,11 +68,37 @@ const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "mdx"],
   images: {
     // Hostnames derivados del snapshot — ver loadAllowedHosts() arriba.
-    // Solo HTTPS, sin http://. Sin search params arbitrarios así nadie puede
-    // pasarle URLs con tracking/payload extraño al optimizer.
-    remotePatterns: loadAllowedHosts().map((p) => ({ ...p, search: "" })),
+    // Solo HTTPS, sin http://. Nota: NO usamos `search: ""` porque
+    // VTEX/Shopify/Tiendanube envían sus URLs con `?v=` para cache
+    // busting y eso rompía `next/image` (500 en /buscar). El whitelist
+    // de hostnames sigue activo, que es la defensa principal contra
+    // SSRF/abuso de bandwidth.
+    remotePatterns: loadAllowedHosts(),
     // 1 día de cache — los precios cambian a diario, las imágenes casi nunca.
     minimumCacheTTL: 86400,
+  },
+  // Defensa básica a nivel header. SAMEORIGIN bloquea clickjacking del
+  // panel /admin/*. nosniff evita MIME sniffing. Referrer + Permissions
+  // son higiene general.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+        ],
+      },
+    ];
   },
 };
 

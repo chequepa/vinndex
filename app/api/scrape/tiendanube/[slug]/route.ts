@@ -11,10 +11,14 @@ type Params = { params: Promise<{ slug: string }> };
 export async function GET(req: Request, { params }: Params) {
   const { slug } = await params;
 
-  // `_list` es read-only — devuelve sólo metadata estática de tiendas
-  // y no dispara fetch externo, así que lo dejamos sin auth para
-  // facilitar diagnóstico/UI interna. Cualquier slug real que sí
-  // gatille scraping pasa por el guard.
+  // Auth primero — incluso `_list`. Aunque sólo devuelve metadata
+  // estática (sin fetch externo), exponer slug+platform+baseUrl de las
+  // 62 vinotecas sin auth es un mapa de recon gratis para scraping
+  // competitivo o para atacar el pipeline. Ningún consumidor interno lo
+  // usa sin token.
+  const authFail = requireScrapeAuth(req);
+  if (authFail) return authFail;
+
   if (slug === "_list") {
     return NextResponse.json({
       stores: STORES.map(({ slug, name, platform, baseUrl }) => ({
@@ -25,9 +29,6 @@ export async function GET(req: Request, { params }: Params) {
       })),
     });
   }
-
-  const authFail = requireScrapeAuth(req);
-  if (authFail) return authFail;
 
   const store = getStore(slug);
   if (!store) {
