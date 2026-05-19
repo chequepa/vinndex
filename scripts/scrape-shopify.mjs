@@ -46,6 +46,15 @@ async function fetchJson(url) {
 }
 
 const WINE_TYPE = /vino|wine|champagne|champa/i;
+// Muchas vinotecas Shopify dejan product_type/tags vacíos y nombran los
+// productos por etiqueta ("Catena Malbec 2021"), sin la palabra "vino".
+// El filtro viejo (solo WINE_TYPE) descartaba 80-98% del catálogo en esas
+// tiendas (aldos: 42/250+, que-vino: 5/250+). Añadimos varietales y
+// términos vínicos inequívocos como señal positiva. Son específicos de
+// uva/vino (no genéricos como "reserva"/"blend") para no traer no-vinos;
+// EXCLUDE_TYPE sigue corriendo primero y saca spirits/cerveza.
+const WINE_GRAPE =
+  /malbec|cabernet|bonarda|syrah|shiraz|merlot|pinot|chardonnay|sauvignon|torront[eé]s|tannat|sangiovese|tempranillo|semill[oó]n|viognier|riesling|gew[uü]rztraminer|petit verdot|criolla|marselan|garnacha|nebbiolo|barbera|moscat|pedro gim[eé]nez|espumante|espumoso|vendimia|assemblage|blend tinto|corte tinto/i;
 const EXCLUDE_TYPE = /spirits|whisky|gin|vodka|ron|tequila|mezcal|licor|vermut|fern|aperit|cerveza|beer/i;
 
 function looksLikeWine(p) {
@@ -59,6 +68,9 @@ function looksLikeWine(p) {
   if (WINE_TYPE.test(type)) return true;
   if (WINE_TYPE.test(tags)) return true;
   if (WINE_TYPE.test(name)) return true;
+  // Señal por varietal/término vínico en nombre o tags.
+  if (WINE_GRAPE.test(name)) return true;
+  if (WINE_GRAPE.test(tags)) return true;
   return false;
 }
 
