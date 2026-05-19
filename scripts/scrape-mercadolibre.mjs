@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { createHash } from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -157,18 +158,115 @@ const STORE = JSON.parse(
   readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
 ).find((s) => s.platform === "mercadolibre");
 
-async function fetchWithTimeout(url) {
+// ===== Bot Manager challenge bypass =====
+//
+// ML pone un interstitial anti-bot (cookies `_bm*`, server Tengine) delante
+// de listado.mercadolibre.com.ar: responde 200 con una página chica que
+// exige JS y resuelve un proof-of-work SHA-256. Sin resolverlo nunca llega
+// el listado real y parseListingPage() devuelve [] (el "silently broken").
+//
+// El challenge (extraído del JS servido) es:
+//   - cookie `_bmstate` = `${seed};${difficulty};...` (URL-encoded)
+//   - buscar el menor entero `a` tal que sha256(seed + a) empiece con
+//     `difficulty` ceros hex
+//   - mandar cookie `_bmc = encodeURIComponent(`${seed};${a}`)` + el flag
+//     `_bm_skipml=true`, reintentar la misma URL
+//
+// Mantenemos un cookie jar a nivel módulo: una vez resuelto, las páginas
+// siguientes reusan las cookies. Si el challenge reaparece (la cookie de
+// bypass dura ~5min) se resuelve de nuevo solo — el PoW es ~1ms.
+
+const cookieJar = new Map();
+
+function sha256hex(s) {
+  return createHash("sha256").update(s, "utf8").digest("hex");
+}
+
+function ingestSetCookies(res) {
+  const list = res.headers.getSetCookie?.() ?? [];
+  for (const line of list) {
+    const first = line.split(";")[0];
+    const eq = first.indexOf("=");
+    if (eq === -1) continue;
+    const name = first.slice(0, eq).trim();
+    const value = first.slice(eq + 1).trim();
+    if (name) cookieJar.set(name, value);
+  }
+}
+
+function jarToHeader() {
+  return [...cookieJar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
+}
+
+function isChallenge(html) {
+  return html.includes("verifyChallenge") || html.includes("_bm_skipml");
+}
+
+// Replica verifyChallenge()+navigateToContinue() del JS de ML.
+function solveChallenge() {
+  const raw = cookieJar.get("_bmstate");
+  if (!raw) return false;
+  const parts = decodeURIComponent(raw).split(";");
+  const seed = parts[0];
+  const difficulty = parts[1];
+  if (!seed) return false;
+  let answer = 0;
+  if (difficulty && difficulty !== "0" && Number(difficulty) > 0) {
+    const target = "0".repeat(Number(difficulty));
+    let found = false;
+    for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
+      if (sha256hex(seed + i).startsWith(target)) {
+        answer = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found) return false;
+  }
+  cookieJar.set("_bmc", encodeURIComponent(`${seed};${answer}`));
+  cookieJar.set("_bm_skipml", "true");
+  return true;
+}
+
+async function rawFetch(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
+    const headers = { ...HEADERS };
+    const cookie = jarToHeader();
+    if (cookie) headers.cookie = cookie;
     return await fetch(url, {
-      headers: HEADERS,
+      headers,
       signal: ctrl.signal,
       redirect: "follow",
     });
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Devuelve un objeto Response-like: { ok, status, text() } — el body ya
+// viene leído (resuelto el challenge si hacía falta). El resto del scraper
+// usa res.ok / res.status / await res.text() sin cambios.
+async function fetchWithTimeout(url) {
+  let res = await rawFetch(url);
+  ingestSetCookies(res);
+  let body = await res.text();
+
+  // Hasta 2 intentos de resolver el challenge (evita loop si ML cambia
+  // el esquema). El PoW es ~1ms, así que reintentar es barato.
+  for (let attempt = 0; attempt < 2 && isChallenge(body); attempt++) {
+    if (!solveChallenge()) break;
+    res = await rawFetch(url);
+    ingestSetCookies(res);
+    body = await res.text();
+  }
+
+  return {
+    ok: res.ok,
+    status: res.status,
+    text: async () => body,
+  };
 }
 
 /**
@@ -204,8 +302,20 @@ function parseListingPage(html) {
     );
     const imageUrl = imgMatch ? imgMatch[1].replace(/&amp;/g, "&") : null;
 
-    // Price — look for first aria-label="NNNNN pesos" in this chunk
-    const priceMatch = chunk.match(/aria-label="(\d[\d\.]*)\s*pesos?"/);
+    // Price — ML markup actual:
+    //   - sin descuento: <span aria-label="26499 pesos argentinos">
+    //   - con descuento: <s aria-label="Antes: 326900 pesos…"> (tachado)
+    //       luego <div class="poly-price__current">
+    //           <span aria-label="Ahora: 271503 pesos…"> (vigente)
+    // El precio vigente SIEMPRE vive dentro de `poly-price__current`, así
+    // que anclamos ahí: deja afuera el <s> tachado (va antes) y las cuotas
+    // (van después). Toleramos el prefijo "Ahora: " y el sufijo
+    // "argentinos". Sin poly-price__current, caemos al chunk completo.
+    const pcIdx = chunk.indexOf("poly-price__current");
+    const priceZone = pcIdx >= 0 ? chunk.slice(pcIdx) : chunk;
+    const priceMatch = priceZone.match(
+      /aria-label="(?:Ahora:\s*)?(\d[\d.]*)\s*pesos/,
+    );
     let priceArs = null;
     if (priceMatch) {
       const raw = priceMatch[1].replace(/\./g, "");
