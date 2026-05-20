@@ -51,6 +51,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: "LhD6bCskzpq9-bmAlrw0T4TJvhd5La2xKWdYYOXluY8",
+  },
 };
 
 // Runs before React hydrates: reads the stored theme (or prefers-color-scheme)
