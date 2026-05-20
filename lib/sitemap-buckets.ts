@@ -156,12 +156,17 @@ export async function entriesForBucket(
       }));
 
     case "bodegas":
-      return brandPages().map((b) => ({
-        url: `${SITE}/bodega/${b.slug}`,
-        lastModified: generatedAt,
-        changeFrequency: "daily",
-        priority: bodegaPriority(b.storeCount),
-      }));
+      // storeCount<2 = bodega con catálogo en 1 sola tienda → la página
+      // marca `noindex` en su generateMetadata. No la mandamos al sitemap
+      // para no dar señales contradictorias a Google.
+      return brandPages()
+        .filter((b) => b.storeCount >= 2)
+        .map((b) => ({
+          url: `${SITE}/bodega/${b.slug}`,
+          lastModified: generatedAt,
+          changeFrequency: "daily",
+          priority: bodegaPriority(b.storeCount),
+        }));
 
     case "vs": {
       const vsPairsFile = await readVsPairs();

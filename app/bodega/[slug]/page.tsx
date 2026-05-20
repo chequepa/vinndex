@@ -15,12 +15,19 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const b = findBrandPage(slug);
   if (!b) return { title: "Bodega no encontrada — Vinndex" };
+  // Bodegas con catálogo en 1 sola tienda son "thin" para el comparador:
+  // no hay comparación de precios que mostrar. Las dejamos accesibles y
+  // linkeables internamente pero noindex para no diluir crawl budget en
+  // 147 páginas marginales (mejor concentrar señal en las ~1.039 con ≥2
+  // tiendas). Sigue follow para que Google las descubra como links.
+  const isThin = b.storeCount < 2;
   return {
     title: `${b.name} — ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
     description: `Compará precios de ${b.name}. ${b.groupCount} etiquetas relevadas en ${b.storeCount} vinotecas online de Argentina.`,
     alternates: {
       canonical: `https://vinndex.com.ar/bodega/${slug}`,
     },
+    robots: isThin ? { index: false, follow: true } : { index: true, follow: true },
     openGraph: {
       title: `${b.name} en Vinndex`,
       description: `${b.groupCount} etiquetas en ${b.storeCount} vinotecas`,
