@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { findBrandPage, formatArs } from "@/lib/snapshot";
+import {
+  findBrandPage,
+  formatArs,
+  varietalUrl,
+  regionUrl,
+} from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -146,25 +151,31 @@ export default async function BodegaPage({ params }: Params) {
           </p>
           {(b.varietals.length > 0 || b.regions.length > 0) && (
             <div className="mt-4 flex gap-2 flex-wrap">
-              {b.varietals.map((v) => (
-                <a
-                  key={v}
-                  href={`/buscar?varietal=${encodeURIComponent(v)}`}
-                  className="tag tag-malbec"
-                >
-                  {v}
-                </a>
-              ))}
-              {b.regions.map((r) => (
-                <a
-                  key={r}
-                  href={`/buscar?region=${encodeURIComponent(r)}`}
-                  className="tag"
-                  style={{ background: "#1E3FBF15", color: "#1E3FBF" }}
-                >
-                  {r}
-                </a>
-              ))}
+              {b.varietals.map((v) => {
+                // Preferimos /varietal/{slug} (página SEO) sobre
+                // /buscar?varietal=… (no rankea).
+                const href =
+                  varietalUrl(v) ?? `/buscar?varietal=${encodeURIComponent(v)}`;
+                return (
+                  <a key={v} href={href} className="tag tag-malbec">
+                    {v}
+                  </a>
+                );
+              })}
+              {b.regions.map((r) => {
+                const href =
+                  regionUrl(r) ?? `/buscar?region=${encodeURIComponent(r)}`;
+                return (
+                  <a
+                    key={r}
+                    href={href}
+                    className="tag"
+                    style={{ background: "#1E3FBF15", color: "#1E3FBF" }}
+                  >
+                    {r}
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>

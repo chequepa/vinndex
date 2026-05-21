@@ -24,6 +24,9 @@ import {
   relatedGroups,
   isCaseOffer,
   bottleStats,
+  bodegaUrl,
+  varietalUrl,
+  regionUrl,
 } from "@/lib/snapshot";
 import { isJunkSlug } from "@/lib/junkSlugs";
 
@@ -460,28 +463,57 @@ export default async function Vino({ params }: Params) {
                   slug={group.groupSlug}
                   className="px-3 py-1 text-snow"
                 />
-                {group.brand && (
-                  <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
-                    {displayBrand(group.brand)}
-                  </span>
-                )}
-                {(group.varietals ?? []).slice(0, 2).map((v) => (
-                  <a
-                    key={v}
-                    href={`/buscar?varietal=${encodeURIComponent(v)}`}
-                    className="px-2.5 py-1 rounded-full bg-mustard/30 border border-mustard/50 text-xs font-semibold uppercase tracking-wide hover:bg-mustard/50 transition-colors"
-                  >
-                    {v}
-                  </a>
-                ))}
-                {group.region && (
-                  <a
-                    href={`/buscar?region=${encodeURIComponent(group.region)}`}
-                    className="px-2.5 py-1 rounded-full bg-snow/15 border border-snow/25 text-xs font-semibold uppercase tracking-wide hover:bg-snow/30 transition-colors"
-                  >
-                    {group.region}
-                  </a>
-                )}
+                {group.brand && (() => {
+                  // Si la bodega tiene página propia (≥3 vinos), el chip
+                  // es un link a /bodega/{slug}. Sino queda como span sin
+                  // link (no le pegamos un 404 a Google). Esto suma ~21k
+                  // links internos /vino → /bodega para la cobertura SEO.
+                  const href = bodegaUrl(group.brand);
+                  const label = displayBrand(group.brand);
+                  return href ? (
+                    <a
+                      href={href}
+                      className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide hover:bg-snow/30 transition-colors"
+                    >
+                      {label}
+                    </a>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-full bg-snow/15 backdrop-blur border border-snow/25 text-xs font-semibold uppercase tracking-wide">
+                      {label}
+                    </span>
+                  );
+                })()}
+                {(group.varietals ?? []).slice(0, 2).map((v) => {
+                  // Preferimos /varietal/{slug} (página SEO indexable) sobre
+                  // /buscar?varietal=… (canonical a sí misma, no rankea).
+                  // Fallback a /buscar si el varietal no tiene página.
+                  const href =
+                    varietalUrl(v) ??
+                    `/buscar?varietal=${encodeURIComponent(v)}`;
+                  return (
+                    <a
+                      key={v}
+                      href={href}
+                      className="px-2.5 py-1 rounded-full bg-mustard/30 border border-mustard/50 text-xs font-semibold uppercase tracking-wide hover:bg-mustard/50 transition-colors"
+                    >
+                      {v}
+                    </a>
+                  );
+                })}
+                {group.region && (() => {
+                  // Idem para región: preferir /region/{slug} sobre /buscar.
+                  const href =
+                    regionUrl(group.region) ??
+                    `/buscar?region=${encodeURIComponent(group.region)}`;
+                  return (
+                    <a
+                      href={href}
+                      className="px-2.5 py-1 rounded-full bg-snow/15 border border-snow/25 text-xs font-semibold uppercase tracking-wide hover:bg-snow/30 transition-colors"
+                    >
+                      {group.region}
+                    </a>
+                  );
+                })()}
                 {group.vintage && (
                   <>
                     <span className="text-snow/70">·</span>

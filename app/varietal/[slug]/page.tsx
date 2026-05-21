@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { findFacetPage, formatArs } from "@/lib/snapshot";
+import { findFacetPage, formatArs, bodegaUrl } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -139,6 +139,41 @@ function FacetLayout({
             <span className="font-semibold text-ink">{facet.storeCount}</span>{" "}
             vinotecas.
           </p>
+          {(() => {
+            // Top bodegas con este varietal: cuenta de vinos en topGroups
+            // por marca, filtra las que tienen página (≥3 vinos) y top 8.
+            // Internal linking /varietal → /bodega para distribuir
+            // autoridad y ayudar al crawler.
+            const counts = new Map<string, number>();
+            for (const g of facet.topGroups) {
+              if (!g.brand) continue;
+              counts.set(g.brand, (counts.get(g.brand) ?? 0) + 1);
+            }
+            const top = [...counts.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .map(([brand]) => ({ brand, href: bodegaUrl(brand) }))
+              .filter((b): b is { brand: string; href: string } => b.href !== null)
+              .slice(0, 8);
+            if (top.length === 0) return null;
+            return (
+              <div className="mt-5">
+                <p className="text-xs uppercase tracking-wider text-graphite mb-2">
+                  Top bodegas con {facet.name}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {top.map((b) => (
+                    <Link
+                      key={b.brand}
+                      href={b.href}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-white border border-ink/15 hover:border-cobalt hover:text-cobalt transition-colors"
+                    >
+                      {b.brand}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 

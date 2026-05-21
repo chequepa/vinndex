@@ -888,3 +888,36 @@ export function findFacetPage(
   const source = kind === "varietal" ? varietalPages() : regionPages();
   return source.find((p) => p.slug === slug);
 }
+
+// ===== Helpers de URL para internal linking =====
+//
+// El gran hueco SEO detectado el 2026-05-21: las páginas /vino, /bodega,
+// /varietal, /region casi no se enlazaban entre sí. Estos helpers
+// convierten un brand/varietal/region en su URL de página SEO **si la
+// página existe** (sino devuelven null para que el caller decida — ej.
+// renderizar un span sin link en vez de linkear a un 404).
+//
+// Pre-computamos los sets de slugs válidos a nivel módulo: el snapshot
+// es estático, así que esto se evalúa una sola vez al cargar.
+
+const _validBrandSlugs = new Set(brandPages().map((b) => b.slug));
+const _validVarietalSlugs = new Set(varietalPages().map((v) => v.slug));
+const _validRegionSlugs = new Set(regionPages().map((r) => r.slug));
+
+export function bodegaUrl(brand: string | null | undefined): string | null {
+  if (!brand) return null;
+  const s = brandSlug(brand);
+  return _validBrandSlugs.has(s) ? `/bodega/${s}` : null;
+}
+
+export function varietalUrl(varietal: string | null | undefined): string | null {
+  if (!varietal) return null;
+  const s = slugify(varietal);
+  return _validVarietalSlugs.has(s) ? `/varietal/${s}` : null;
+}
+
+export function regionUrl(region: string | null | undefined): string | null {
+  if (!region) return null;
+  const s = slugify(region);
+  return _validRegionSlugs.has(s) ? `/region/${s}` : null;
+}
