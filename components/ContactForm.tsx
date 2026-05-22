@@ -158,6 +158,8 @@ export function ContactForm({ kind }: { kind: Kind }) {
             type="text"
             required
             autoComplete="name"
+            enterKeyHint="next"
+            autoCapitalize="words"
             className={fieldClass()}
           />
         </div>
@@ -174,6 +176,8 @@ export function ContactForm({ kind }: { kind: Kind }) {
             type="email"
             required
             autoComplete="email"
+            inputMode="email"
+            enterKeyHint={kind === "contacto" ? "next" : "next"}
             className={fieldClass()}
           />
         </div>
@@ -233,6 +237,9 @@ export function ContactForm({ kind }: { kind: Kind }) {
               type="url"
               required
               placeholder="https://"
+              inputMode="url"
+              autoComplete="url"
+              enterKeyHint="next"
               className={fieldClass()}
             />
           </div>
@@ -253,6 +260,8 @@ export function ContactForm({ kind }: { kind: Kind }) {
             type="text"
             required
             placeholder="Nombre o https://…"
+            inputMode="url"
+            enterKeyHint="next"
             className={fieldClass()}
           />
         </div>
@@ -274,6 +283,7 @@ export function ContactForm({ kind }: { kind: Kind }) {
           name="mensaje"
           rows={kind === "contacto" ? 5 : 3}
           required={kind === "contacto"}
+          enterKeyHint="send"
           className={`${fieldClass()} resize-y`}
         />
       </div>

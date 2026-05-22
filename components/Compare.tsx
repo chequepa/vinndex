@@ -148,7 +148,11 @@ export function CompareFloatingButton() {
   return (
     <a
       href={href}
-      className="cursor-wine fixed bottom-20 right-5 lg:bottom-5 z-40 inline-flex items-center gap-2 bg-ink text-snow font-semibold px-5 py-3 rounded-full shadow-2xl hover:bg-cobalt transition-colors text-sm"
+      // Mobile: bottom-28 (7rem = 112px) — deja ~30-40px de aire sobre
+      // el StickyCTA que ocupa ~70px (mx-3 mb-3 + content) desde bottom-0.
+      // Antes era bottom-20 que casi se solapaba con el StickyCTA cuando
+      // ambos estaban visibles. Audit mobile 22/05.
+      className="cursor-wine fixed bottom-28 right-5 lg:bottom-5 z-40 inline-flex items-center gap-2 bg-ink text-snow font-semibold px-5 py-3 rounded-full shadow-2xl hover:bg-cobalt transition-colors text-sm"
     >
       <svg
         width="16"
