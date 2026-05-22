@@ -259,6 +259,12 @@ export function SearchInput({
         className={className}
         autoFocus={autoFocus}
         autoComplete="off"
+        // Mobile keyboard: Android Chrome ignora `type=search` para el
+        // enter key — sin enterKeyHint muestra "Enter" en vez de "Buscar".
+        // inputMode="search" complementa para layouts no-Latin.
+        // Audit mobile 22/05.
+        inputMode="search"
+        enterKeyHint="search"
         aria-label={ariaLabel}
         aria-autocomplete={withAutocomplete ? "list" : undefined}
         aria-expanded={withAutocomplete ? open : undefined}

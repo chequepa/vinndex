@@ -461,7 +461,7 @@ export default async function Vino({ params }: Params) {
               <div className="mb-4 flex items-center gap-2 text-sm flex-wrap">
                 <CompareButton
                   slug={group.groupSlug}
-                  className="px-3 py-1 text-snow"
+                  className="px-4 py-2 text-sm text-snow"
                 />
                 {group.brand && (() => {
                   // Si la bodega tiene página propia (≥3 vinos), el chip

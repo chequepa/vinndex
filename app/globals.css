@@ -268,6 +268,13 @@ body {
   font-weight: 500;
   transition: all 0.2s;
 }
+/* Mobile: bump padding + font-size para 44px touch target — audit 22/05 */
+@media (max-width: 640px) {
+  .filter-chip {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
 .filter-chip:hover {
   border-color: #1e3fbf;
   color: #1e3fbf;

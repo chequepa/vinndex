@@ -264,7 +264,7 @@ export default async function Buscar({ searchParams }: Params) {
               <a
                 key={r.id}
                 href={priceRangeHref(active ? null : r.id)}
-                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                className={`flex items-center gap-2 cursor-wine py-2.5 px-3 rounded -mx-2 ${
                   active
                     ? "bg-ink text-snow font-semibold"
                     : "hover:bg-snow"
@@ -288,7 +288,7 @@ export default async function Buscar({ searchParams }: Params) {
               <a
                 key={f.name}
                 href={filterHref("varietal", active ? null : f.name)}
-                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                className={`flex items-center gap-2 cursor-wine py-2.5 px-3 rounded -mx-2 ${
                   active
                     ? "bg-ink text-snow font-semibold"
                     : "hover:bg-snow"
@@ -318,7 +318,7 @@ export default async function Buscar({ searchParams }: Params) {
               <a
                 key={f.name}
                 href={filterHref("tipo", active ? null : f.name)}
-                className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                className={`flex items-center gap-2 cursor-wine py-2.5 px-3 rounded -mx-2 ${
                   active
                     ? "bg-ink text-snow font-semibold"
                     : "hover:bg-snow"
@@ -350,7 +350,7 @@ export default async function Buscar({ searchParams }: Params) {
                 <a
                   key={f.name}
                   href={filterHref("region", active ? null : f.name)}
-                  className={`flex items-center gap-2 cursor-wine py-1 px-2 rounded -mx-2 ${
+                  className={`flex items-center gap-2 cursor-wine py-2.5 px-3 rounded -mx-2 ${
                     active
                       ? "bg-ink text-snow font-semibold"
                       : "hover:bg-snow"
@@ -575,7 +575,7 @@ export default async function Buscar({ searchParams }: Params) {
             <div
               role="tablist"
               aria-label="Ordenar por"
-              className="flex items-center gap-1.5 flex-wrap"
+              className="flex items-center gap-2 flex-wrap"
             >
               <span className="text-xs text-graphite mr-1 uppercase tracking-wide">
                 Ordenar
@@ -586,7 +586,7 @@ export default async function Buscar({ searchParams }: Params) {
                   href={sortHref(o.key)}
                   role="tab"
                   aria-selected={sort === o.key}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  className={`text-sm px-3.5 py-2 rounded-full border transition ${
                     sort === o.key
                       ? "bg-ink text-snow border-ink font-semibold"
                       : "bg-white text-graphite border-ink/15 hover:border-ink/30 hover:text-ink"

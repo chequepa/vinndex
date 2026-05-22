@@ -58,7 +58,10 @@ export function SiteHeader() {
           </div>
         </form>
         <FavoritesNavLink className="text-ink shrink-0" />
-        <ThemeToggle className="text-ink shrink-0" />
+        {/* ThemeToggle oculto en <sm para no apretar el header en 375px
+            (logo svg + form flex-1 + favoritos + toggle = 4 items en
+            barra). Poca gente cambia tema en mobile. Audit 22/05. */}
+        <ThemeToggle className="text-ink shrink-0 hidden sm:flex" />
       </div>
     </header>
   );

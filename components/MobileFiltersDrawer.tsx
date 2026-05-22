@@ -29,7 +29,7 @@ export function MobileFiltersDrawer({ children, activeCount = 0 }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="lg:hidden inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-ink/15 bg-white hover:border-ink/30 transition cursor-wine"
+        className="lg:hidden inline-flex items-center gap-2 text-sm px-4 py-2.5 rounded-full border border-ink/15 bg-white hover:border-ink/30 transition cursor-wine font-semibold"
         aria-haspopup="dialog"
         aria-expanded={open}
       >
@@ -49,7 +49,7 @@ export function MobileFiltersDrawer({ children, activeCount = 0 }: Props) {
           <line x1="10" y1="18" x2="20" y2="18" />
           <circle cx="6" cy="12" r="1.5" fill="currentColor" />
         </svg>
-        <span className="font-semibold uppercase tracking-wide">Filtros</span>
+        <span className="uppercase tracking-wide">Filtros</span>
         {activeCount > 0 && (
           <span className="bg-ink text-snow text-[10px] font-bold rounded-full min-w-[18px] h-[18px] inline-flex items-center justify-center px-1.5">
             {activeCount}
@@ -71,7 +71,7 @@ export function MobileFiltersDrawer({ children, activeCount = 0 }: Props) {
             className="absolute inset-0 bg-ink/40 backdrop-blur-sm cursor-default"
           />
 
-          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl max-h-[88vh] flex flex-col">
+          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col pb-[env(safe-area-inset-bottom)]">
             <div className="pt-3 pb-2 flex justify-center">
               <span
                 className="w-10 h-1.5 bg-ink/15 rounded-full"
