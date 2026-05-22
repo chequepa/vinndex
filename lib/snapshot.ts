@@ -1,7 +1,17 @@
 import snapshotJson from "@/data/snapshot.json";
+import storesConfig from "@/data/stores.json";
 import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup } from "./matching";
 import { bestScoreFor } from "./scores";
+
+// Stores actualmente VIGENTES según `data/stores.json` — fuente de verdad.
+// Sirve para filtrar offers fantasma: cuando sacamos una tienda del config
+// (porque no tiene compra online, está rota, etc.) las ofertas del último
+// snapshot siguen ahí hasta el próximo daily-scrape regenerar el archivo.
+// Self-heal en runtime: excluimos esas offers de la UI inmediatamente.
+const ACTIVE_STORE_SLUGS = new Set(
+  (storesConfig as Array<{ slug: string }>).map((s) => s.slug),
+);
 
 export type SnapshotStore = {
   storeSlug: string;
@@ -80,21 +90,45 @@ export function snapshotStats() {
  *    `inStock=false` cuando `priceArs<1000` para que no contaminen el
  *    lowPrice del JSON-LD ni la columna de precios. La oferta sigue en la
  *    lista pero con badge "Consultar".
+ *
+ * 4. **Stores fantasma** — cuando sacamos un store del config (catalog
+ *    mode, sin compra real, etc.), las offers siguen en el snapshot hasta
+ *    el próximo daily-scrape. Filtramos esas offers acá para que no
+ *    aparezcan con links rotos hacia tiendas que ya no soportamos.
+ *    Audit 23/05.
  */
 const MIN_VALID_PRICE_ARS = 1000;
-export const groups: ProductGroup[] = (snapshot.productGroups ?? []).map(
-  (g: ProductGroup) => ({
-    ...g,
-    offers: (g.offers ?? []).map((o) => {
-      if (o.inStock && o.priceArs == null) return { ...o, inStock: false };
-      if (o.inStock && typeof o.priceArs === "number" && o.priceArs < MIN_VALID_PRICE_ARS) {
-        return { ...o, inStock: false };
-      }
-      return o;
-    }),
-    offerCount: g.offers?.length ?? 0,
-  }),
-);
+export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
+  .map((g: ProductGroup) => {
+    // Filtrá offers de stores que ya no están en `data/stores.json`.
+    const liveOffers = (g.offers ?? []).filter((o) =>
+      ACTIVE_STORE_SLUGS.has(o.storeSlug),
+    );
+    // Recalcular agregados sin las offers fantasma.
+    const inStockLive = liveOffers.filter(
+      (o) => o.inStock && o.priceArs != null && o.priceArs > 0,
+    );
+    const prices = inStockLive
+      .map((o) => o.priceArs)
+      .filter((p): p is number => p != null);
+    return {
+      ...g,
+      offers: liveOffers.map((o) => {
+        if (o.inStock && o.priceArs == null) return { ...o, inStock: false };
+        if (o.inStock && typeof o.priceArs === "number" && o.priceArs < MIN_VALID_PRICE_ARS) {
+          return { ...o, inStock: false };
+        }
+        return o;
+      }),
+      offerCount: liveOffers.length,
+      inStockOfferCount: inStockLive.length,
+      storeCount: new Set(inStockLive.map((o) => o.storeSlug)).size,
+      minPrice: prices.length > 0 ? Math.min(...prices) : null,
+      maxPrice: prices.length > 0 ? Math.max(...prices) : null,
+    };
+  })
+  // Grupo huérfano: ninguna offer activa → no mostrar.
+  .filter((g) => g.offers.length > 0);
 
 export function findGroup(slug: string): ProductGroup | undefined {
   return groups.find((g) => g.groupSlug === slug);
