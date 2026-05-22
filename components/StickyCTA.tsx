@@ -42,7 +42,10 @@ export function StickyCTA({
       // marca aria-hidden-focus fail.
       aria-hidden={!visible}
       inert={!visible}
-      className={`lg:hidden fixed left-0 right-0 bottom-0 z-30 transition-transform duration-200 ${
+      // pb-[env(safe-area-inset-bottom)] empuja el bar arriba del home
+      // indicator en iPhone X+. Sin esto el bar quedaba TAPADO por el
+      // gesture-area en iOS, costaba tocarlo bien. Audit mobile cierre 22/05.
+      className={`lg:hidden fixed left-0 right-0 bottom-0 z-30 pb-[env(safe-area-inset-bottom)] transition-transform duration-200 ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
