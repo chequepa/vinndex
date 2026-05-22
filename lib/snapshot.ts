@@ -73,13 +73,25 @@ export function snapshotStats() {
  *    teóricamente disponible. Si no hay precio no es realmente comprable,
  *    así que forzamos inStock a false. El fix correcto sería en cada
  *    adapter pero son 8 platforms y este punto cubre todos.
+ *
+ * 3. **Precios basura (<$1000)** — algunos adapters parsean mal y emiten
+ *    ofertas con `priceArs=20` o similar (parsing del símbolo $ + ID, por
+ *    ejemplo). Una botella 750ml en AR 2026 no baja de ~$1.500. Forzamos
+ *    `inStock=false` cuando `priceArs<1000` para que no contaminen el
+ *    lowPrice del JSON-LD ni la columna de precios. La oferta sigue en la
+ *    lista pero con badge "Consultar".
  */
+const MIN_VALID_PRICE_ARS = 1000;
 export const groups: ProductGroup[] = (snapshot.productGroups ?? []).map(
   (g: ProductGroup) => ({
     ...g,
-    offers: (g.offers ?? []).map((o) =>
-      o.inStock && o.priceArs == null ? { ...o, inStock: false } : o,
-    ),
+    offers: (g.offers ?? []).map((o) => {
+      if (o.inStock && o.priceArs == null) return { ...o, inStock: false };
+      if (o.inStock && typeof o.priceArs === "number" && o.priceArs < MIN_VALID_PRICE_ARS) {
+        return { ...o, inStock: false };
+      }
+      return o;
+    }),
     offerCount: g.offers?.length ?? 0,
   }),
 );
@@ -607,13 +619,25 @@ export function isCaseOffer(offerName: string | null | undefined): boolean {
 }
 
 /**
- * Bottle-only price + store stats for a group. Excludes case/estuche/pack
- * offers from the calculation so "ahorro máximo" doesn't get inflated by
- * comparing 1 bottle vs 1 case of 6.
+ * Bottle-only price + store stats for a group. Excludes:
+ *   - case/estuche/pack offers (no inflar "ahorro máximo" 1 vs 6)
+ *   - collector offers (vintages >5 años atrás — un Rutini 1996 a
+ *     $395.120 distorsiona el highPrice del JSON-LD del Rutini actual)
+ *   - precios <$1000 (parsing-basura, ya self-healed pero por defensa)
  *
- * Falls back to the snapshot's minPrice/maxPrice/storeCount if there are
- * no bottle offers (rare — case-only groups).
+ * Falls back to the snapshot's minPrice/maxPrice/storeCount si no quedan
+ * bottles válidas (raro — grupos 100% caja o 100% collector).
  */
+const MIN_BOTTLE_PRICE_ARS = 1000;
+function isCommercialBottle(
+  o: { name: string | null | undefined; isCollector?: boolean; priceArs: number | null },
+): boolean {
+  if (isCaseOffer(o.name)) return false;
+  if (o.isCollector) return false;
+  if (o.priceArs != null && o.priceArs > 0 && o.priceArs < MIN_BOTTLE_PRICE_ARS) return false;
+  return true;
+}
+
 export function bottleStats(g: ProductGroup): {
   minPrice: number | null;
   maxPrice: number | null;
@@ -621,14 +645,14 @@ export function bottleStats(g: ProductGroup): {
   hasCases: boolean;
 } {
   const offers = g.offers ?? [];
-  const bottles = offers.filter((o) => !isCaseOffer(o.name));
-  const cases = offers.filter((o) => isCaseOffer(o.name));
+  const bottles = offers.filter(isCommercialBottle);
+  const hasCases = offers.some((o) => isCaseOffer(o.name));
   if (bottles.length === 0) {
     return {
       minPrice: g.minPrice,
       maxPrice: g.maxPrice,
       storeCount: g.storeCount,
-      hasCases: cases.length > 0,
+      hasCases,
     };
   }
   const inStockPrices = bottles
@@ -636,8 +660,7 @@ export function bottleStats(g: ProductGroup): {
     .map((o) => o.priceArs)
     .filter((p): p is number => p != null && p > 0);
   if (inStockPrices.length === 0) {
-    // Match the snapshot's behaviour: if no in-stock bottles, fall back
-    // to all bottle prices (still excluding cases).
+    // Match snapshot behaviour: fallback a todos los precios bottle-válidos.
     const allBottlePrices = bottles
       .map((o) => o.priceArs)
       .filter((p): p is number => p != null && p > 0);
@@ -646,14 +669,14 @@ export function bottleStats(g: ProductGroup): {
         minPrice: null,
         maxPrice: null,
         storeCount: 0,
-        hasCases: cases.length > 0,
+        hasCases,
       };
     }
     return {
       minPrice: Math.min(...allBottlePrices),
       maxPrice: Math.max(...allBottlePrices),
       storeCount: new Set(bottles.map((o) => o.storeSlug)).size,
-      hasCases: cases.length > 0,
+      hasCases,
     };
   }
   return {
@@ -662,7 +685,7 @@ export function bottleStats(g: ProductGroup): {
     storeCount: new Set(
       bottles.filter((o) => o.inStock).map((o) => o.storeSlug),
     ).size,
-    hasCases: cases.length > 0,
+    hasCases,
   };
 }
 
