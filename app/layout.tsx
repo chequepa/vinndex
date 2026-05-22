@@ -41,12 +41,13 @@ export const metadata: Metadata = {
     description:
       "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
   },
+  // Sin `index: true, follow: true` explícito — es el default de Google
+  // y emitirlo a nivel root creaba señales conflictivas cuando una page
+  // hace notFound() o setea `robots: { index: false }` (terminaban
+  // saliendo 2 meta robots tags en el HTML). Audit 22/05.
+  // Las directivas googleBot quedan como configuración de snippets.
   robots: {
-    index: true,
-    follow: true,
     googleBot: {
-      index: true,
-      follow: true,
       "max-image-preview": "large",
       "max-snippet": -1,
     },

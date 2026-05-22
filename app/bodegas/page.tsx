@@ -34,7 +34,11 @@ export default async function BodegasIndex({ searchParams }: Params) {
   const params = await searchParams;
   const sort: SortKey = isValidSort(params.sort) ? params.sort : "stores";
 
-  const pages = brandPages();
+  // Filtramos bodegas con storeCount<2 (mismo gate que el sitemap en
+  // `lib/sitemap-buckets.ts:163`). Antes este hub linkeaba a ~235
+  // brand pages que tenían `noindex` interno → crawl budget burning
+  // por links indexables apuntando a páginas thin. Audit 22/05.
+  const pages = brandPages().filter((p) => p.storeCount >= 2);
   const sorted = [...pages].sort((a, b) => {
     switch (sort) {
       case "groups":

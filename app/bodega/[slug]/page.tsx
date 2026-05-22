@@ -71,12 +71,29 @@ export default async function BodegaPage({ params }: Params) {
     ],
   };
 
+  // Brand JSON-LD para queries de marca de alta intención (Luigi Bosca,
+  // Susana Balbo, Rutini, Catena, etc). El BreadcrumbList solo no le
+  // dice a Google que la página representa una marca específica.
+  // Audit 22/05.
+  const brandJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Brand",
+    name: b.name,
+    url: `https://vinndex.com.ar/bodega/${slug}`,
+    description: `${b.name} — ${b.groupCount} vino${b.groupCount === 1 ? "" : "s"} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina.`,
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(brandJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

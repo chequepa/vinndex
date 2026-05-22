@@ -697,7 +697,7 @@ export default async function Vino({ params }: Params) {
                   Compartir
                 </span>
                 <ShareButtons
-                  url={`/vino/${group.groupSlug}`}
+                  url={`https://vinndex.com.ar/vino/${group.groupSlug}`}
                   title={`${group.canonicalName}${group.vintage ? ` ${group.vintage}` : ""} en Vinndex`}
                   description={
                     group.minPrice != null
