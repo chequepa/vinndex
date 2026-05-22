@@ -62,15 +62,43 @@ function FacetLayout({
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Inicio", item: "https://vinndex.com.ar" },
       { "@type": "ListItem", position: 2, name: kindLabel === "varietal" ? "Varietal" : "Región", item: "https://vinndex.com.ar/buscar" },
-      { "@type": "ListItem", position: 3, name: facet.name, item: `https://vinndex.com.ar/varietal/${slug}` },
+      { "@type": "ListItem", position: 3, name: facet.name, item: `https://vinndex.com.ar/${kindLabel}/${slug}` },
     ],
   };
+
+  // CollectionPage + ItemList — la página representa una colección de
+  // vinos del varietal/región. Rich snippets de ItemList con posición
+  // y links para queries como "vinos malbec" o "vinos de mendoza".
+  // Top 30 para no sobrecargar el JSON-LD. Audit 22/05.
+  const itemListJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "CollectionPage",
+    name: `Vinos ${kindLabel === "varietal" ? "" : "de "}${facet.name}`,
+    description: `${facet.groupCount} etiquetas comparadas en ${facet.storeCount} vinotecas online`,
+    url: `https://vinndex.com.ar/${kindLabel}/${slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: Math.min(multi.length, 30),
+      itemListElement: multi.slice(0, 30).map((g, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `https://vinndex.com.ar/vino/${g.groupSlug}`,
+        name: g.canonicalName,
+      })),
+    },
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

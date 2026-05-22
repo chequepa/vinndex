@@ -122,7 +122,8 @@ export async function entriesForBucket(
         { url: `${SITE}/como-funciona`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
         { url: `${SITE}/preguntas`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.6 },
         { url: `${SITE}/sumate`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.4 },
-        { url: `${SITE}/opt-out`, lastModified: generatedAt, changeFrequency: "yearly", priority: 0.2 },
+        // `/opt-out` removido del sitemap (audit 22/05): form para
+        // vinotecas que piden ser excluidas; no debe rankear.
         { url: `${SITE}/contacto`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.4 },
         { url: `${SITE}/blog`, lastModified: generatedAt, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE}/ranking`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.8 },

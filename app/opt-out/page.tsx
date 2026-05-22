@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   description:
     "Si sos dueño o dueña de una vinoteca y preferís que no aparezca en Vinndex, te la sacamos. Así lo hacés.",
   alternates: { canonical: "https://vinndex.com.ar/opt-out" },
-  robots: { index: true, follow: true },
+  // Form de opt-out para vinotecas — no debe rankear ni ser scrapeada.
+  // index:false + follow:true para que pase link-juice si lo linkeamos
+  // pero la página en sí no salga en SERP. Audit 22/05.
+  robots: { index: false, follow: true },
 };
 
 export default function OptOutPage() {

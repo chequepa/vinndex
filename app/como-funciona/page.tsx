@@ -7,7 +7,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Cómo funciona Vinndex — Metodología del comparador",
   description:
-    "Cómo scrapeamos, matcheamos y comparamos los precios de vinos de 100+ vinotecas online de Argentina. Pipeline técnico sin adornos.",
+    "Cómo scrapeamos, matcheamos y comparamos los precios de vinos de 110+ vinotecas online de Argentina. Pipeline técnico sin adornos.",
   alternates: { canonical: "https://vinndex.com.ar/como-funciona" },
 };
 

@@ -56,12 +56,40 @@ export default async function RegionPage({ params }: Params) {
     ],
   };
 
+  // CollectionPage + ItemList — la página representa una colección de
+  // vinos de una región. Google rinde rich snippets de ItemList con
+  // posición y links — útil para queries como "vinos de Mendoza".
+  // Limitamos a top 30 (sino la ficha rich queda enorme y Google
+  // trunca igual). Audit 22/05.
+  const itemListJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "CollectionPage",
+    name: `Vinos de ${facet.name}`,
+    description: `${facet.groupCount} etiquetas de ${facet.name} comparadas en ${facet.storeCount} vinotecas online`,
+    url: `https://vinndex.com.ar/region/${slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: Math.min(multi.length, 30),
+      itemListElement: multi.slice(0, 30).map((g, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `https://vinndex.com.ar/vino/${g.groupSlug}`,
+        name: g.canonicalName,
+      })),
+    },
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

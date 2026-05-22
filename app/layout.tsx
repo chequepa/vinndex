@@ -40,6 +40,10 @@ export const metadata: Metadata = {
     title: "Vinndex — Comparador de precios de vinos en Argentina",
     description:
       "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
+    // Audit 22/05: card era summary_large_image pero sin twitter:image
+    // explícito → shares en X salían sin preview. metadataBase resuelve
+    // la ruta relativa al endpoint dinámico app/opengraph-image.tsx.
+    images: ["/opengraph-image"],
   },
   // Sin `index: true, follow: true` explícito — es el default de Google
   // y emitirlo a nivel root creaba señales conflictivas cuando una page
