@@ -368,6 +368,82 @@ export default async function Vino({ params }: Params) {
     },
   };
 
+  // FAQ JSON-LD — preguntas autogeneradas del snapshot. Todas las
+  // respuestas reflejan info visible en la ficha (precio, vinotecas,
+  // stock, varietal/región), requisito de Google para FAQ schema sin
+  // riesgo de "spammy structured data" flag. Skip de Q&As cuyo dato
+  // falte.
+  const wineLabel = displayWineName(group.canonicalName);
+  const faqEntities: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+  if (bottleStatsLocal.minPrice != null && bestOffer) {
+    faqEntities.push({
+      "@type": "Question",
+      name: `¿Cuánto cuesta ${wineLabel}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `Hoy se consigue desde ${formatArs(bottleStatsLocal.minPrice)} en ${storeName(bestOffer.storeSlug)}${
+          bottleStatsLocal.maxPrice && bottleStatsLocal.maxPrice > bottleStatsLocal.minPrice
+            ? `. El precio más alto entre las vinotecas que lo venden online es ${formatArs(bottleStatsLocal.maxPrice)}`
+            : ""
+        }.`,
+      },
+    });
+  }
+  if (group.storeCount >= 1) {
+    faqEntities.push({
+      "@type": "Question",
+      name: `¿En cuántas vinotecas online se vende ${wineLabel}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${wineLabel} está disponible en ${group.storeCount} vinoteca${group.storeCount === 1 ? "" : "s"} online de Argentina${
+          offers.length > 1
+            ? `: ${offers
+                .slice(0, 5)
+                .map((o) => storeName(o.storeSlug))
+                .join(", ")}${offers.length > 5 ? " y más" : ""}`
+            : ""
+        }.`,
+      },
+    });
+  }
+  faqEntities.push({
+    "@type": "Question",
+    name: `¿Hay stock de ${wineLabel}?`,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: allOutOfStock
+        ? `Actualmente ${wineLabel} está sin stock en todas las vinotecas online relevadas. Vinndex actualiza el stock todas las noches, volvé a chequear pronto.`
+        : `Sí, ${wineLabel} tiene stock disponible en ${inStockOffers.length} de las ${offers.length} vinotecas relevadas.`,
+    },
+  });
+  if (group.brand) {
+    const regionPart = group.region ? `, de ${group.region}` : "";
+    const varietalPart =
+      group.varietals && group.varietals.length > 0
+        ? ` Es un ${group.varietals[0]}${group.type ? ` (${group.type.toLowerCase()})` : ""}.`
+        : "";
+    faqEntities.push({
+      "@type": "Question",
+      name: `¿Qué bodega produce ${wineLabel}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${wineLabel} lo produce ${displayBrand(group.brand)}${regionPart}.${varietalPart}`,
+      },
+    });
+  }
+  const faqJsonLd =
+    faqEntities.length >= 2
+      ? {
+          "@context": "https://schema.org/",
+          "@type": "FAQPage",
+          mainEntity: faqEntities,
+        }
+      : null;
+
   // Breadcrumb JSON-LD → Google muestra breadcrumbs en SERPs
   const breadcrumbJsonLd = {
     "@context": "https://schema.org/",
@@ -419,6 +495,13 @@ export default async function Vino({ params }: Params) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
