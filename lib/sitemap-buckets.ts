@@ -170,12 +170,16 @@ export async function entriesForBucket(
         }));
 
     case "vs": {
+      // Las 400 páginas /vs/<a>-vs-<b> son SSG con ~208w cada una —
+      // thin pero pre-curadas. Priority alta antes (0.75) le robaba
+      // crawl budget a /vino que sí son money pages. Bajamos a 0.4
+      // y changeFreq weekly (el contenido no se renueva por scrape).
       const vsPairsFile = await readVsPairs();
       return (vsPairsFile?.pairs ?? []).map((p) => ({
         url: `${SITE}/vs/${p.slug}`,
         lastModified: generatedAt,
-        changeFrequency: "daily",
-        priority: 0.75,
+        changeFrequency: "weekly",
+        priority: 0.4,
       }));
     }
 
