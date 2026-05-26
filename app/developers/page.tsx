@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "API pública para desarrolladores — Vinndex",
   description:
-    "API REST pública de Vinndex: vinos, búsqueda, vinotecas, rankings, price drops. Sin auth, CORS abierto, JSON, cache 5min. Pensada para agentes IA, apps de delivery, scripts.",
+    "API REST pública de Vinndex: vinos, búsqueda, vinotecas, rankings, price drops. Sin auth, CORS abierto, JSON, cache 5min. Para agentes IA, apps y scripts.",
   keywords: [
     "vinndex api",
     "api vinos argentina",

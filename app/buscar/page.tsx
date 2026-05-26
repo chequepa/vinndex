@@ -67,7 +67,9 @@ function findRangeById(id: string | null | undefined) {
 }
 
 export const metadata: Metadata = {
-  title: "Buscar — Vinndex",
+  title: "Buscar vinos argentinos por precio — Vinndex",
+  description:
+    "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
   alternates: { canonical: "https://vinndex.com.ar/buscar" },
   robots: { index: true, follow: true },
 };

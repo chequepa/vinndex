@@ -7,7 +7,7 @@ import { RANKINGS, applyRanking, type Ranking } from "@/lib/rankings";
 export const metadata: Metadata = {
   title: "Rankings de vinos argentinos — Vinndex",
   description:
-    "Listas curadas de vinos argentinos: top malbecs por precio, top bodegas (Catena, Salentein, Rutini, Zuccardi, Trapiche), top regiones (Valle de Uco, Luján, Salta, Patagonia), y selecciones para asado, regalo o pescado. Comparados en múltiples vinotecas online.",
+    "Top malbecs por precio, top bodegas, top regiones y selecciones por momento (asado, regalo, pescado). Vinos argentinos comparados en 100+ vinotecas online.",
   keywords: [
     "rankings vinos argentinos",
     "top malbecs",

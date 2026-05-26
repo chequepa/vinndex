@@ -18,7 +18,7 @@ type Params = {
 export const metadata: Metadata = {
   title: "Todas las bodegas argentinas — Vinndex",
   description:
-    "Catálogo de bodegas argentinas relevadas en vinotecas online. Filtrá por nombre, ordená por cobertura, # de productos o alfabético. Más de 1.200 bodegas con precios comparados.",
+    "Catálogo de 1.200+ bodegas argentinas con vinos en vinotecas online. Filtrá por nombre, ordená por cobertura o cantidad de vinos. Precios comparados día a día.",
   keywords: [
     "bodegas argentinas",
     "bodegas vino argentina",

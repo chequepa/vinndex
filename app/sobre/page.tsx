@@ -7,7 +7,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Sobre Vinndex — Comparador de precios de vinos en Argentina",
   description:
-    "Qué es Vinndex, por qué lo hacemos, cómo se sostiene y quién está detrás. Un comparador de precios de vinos online de Argentina, sin comisiones, hecho con transparencia.",
+    "Qué es Vinndex, por qué lo hacemos y quién está detrás. Comparador de precios de vinos online de Argentina, sin comisiones, hecho con transparencia.",
   alternates: { canonical: "https://vinndex.com.ar/sobre" },
 };
 
