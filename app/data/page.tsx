@@ -57,8 +57,63 @@ export default function DataPage() {
     1,
   );
 
+  // Dataset schema — habilita aparición en Google Dataset Search.
+  // Audiencia natural: data journalists, analistas de e-commerce AR,
+  // estudiantes de marketing. Vector posible de backlinks editoriales.
+  const datasetJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    name: "Mercado de vinos online argentinos",
+    description:
+      "Dataset agregado con distribución por varietal, región, banda de precio y top bodegas del mercado de vinos online en Argentina. Actualizado a diario.",
+    url: "https://vinndex.com.ar/data",
+    keywords: [
+      "vino argentino",
+      "mercado vino Argentina",
+      "precio vino",
+      "varietales",
+      "Malbec",
+      "Mendoza",
+      "e-commerce vinos",
+    ],
+    creator: {
+      "@type": "Organization",
+      name: "Vinndex",
+      url: "https://vinndex.com.ar",
+    },
+    dateModified: stats.snapshotGeneratedAt,
+    temporalCoverage: new Date(stats.snapshotGeneratedAt)
+      .getFullYear()
+      .toString(),
+    spatialCoverage: {
+      "@type": "Place",
+      name: "Argentina",
+      address: { "@type": "PostalAddress", addressCountry: "AR" },
+    },
+    variableMeasured: [
+      "Cantidad de vinos por varietal",
+      "Cantidad de vinos por región",
+      "Distribución por banda de precio",
+      "Precio mediana por varietal",
+      "Cobertura por bodega",
+    ],
+    distribution: [
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: "https://vinndex.com.ar/api/v1/search",
+        name: "API REST pública (sin auth)",
+      },
+    ],
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+      />
       <SiteHeader />
 
       <section className="bg-snow border-b border-ink/10">
