@@ -296,6 +296,44 @@ export default async function Vino({ params }: Params) {
     returnPolicyCategory:
       "https://schema.org/MerchantReturnNotSpecified",
   };
+  // Si hay scores de críticos, emitir AggregateRating + Review[]. Cierra
+  // los warnings "optional" del Rich Results Test y habilita estrellas
+  // en SERP. Hoy hay 2 vinos en scores.json — para el resto los warnings
+  // siguen, no rompe nada.
+  const aggregateRating =
+    scores.length > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue:
+            Math.round(
+              (scores.reduce(
+                (sum, s) => sum + (s.score / s.maxScore) * 100,
+                0,
+              ) /
+                scores.length) *
+                10,
+            ) / 10,
+          bestRating: 100,
+          worstRating: 0,
+          ratingCount: scores.length,
+          reviewCount: scores.length,
+        }
+      : undefined;
+  const reviewArray =
+    scores.length > 0
+      ? scores.map((s) => ({
+          "@type": "Review",
+          author: { "@type": "Person", name: s.critic },
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: Math.round((s.score / s.maxScore) * 100),
+            bestRating: 100,
+            worstRating: 0,
+          },
+          reviewBody: s.note,
+          datePublished: String(s.year),
+        }))
+      : undefined;
   const productJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -303,6 +341,8 @@ export default async function Vino({ params }: Params) {
     image: group.imageUrl ?? undefined,
     description: group.offers[0]?.name ?? group.canonicalName,
     category,
+    aggregateRating,
+    review: reviewArray,
     brand: group.brand
       ? { "@type": "Brand", name: group.brand }
       : undefined,
