@@ -960,6 +960,8 @@ function main() {
 
   for (const [key, bucket] of expansionBuckets.entries()) {
     if (bucket.length < 2) continue;
+    // Parse label desde la bucket key (formato `${brand}|${format}|${label}`).
+    const label = key.split("|").slice(2).join("|");
     const empty = bucket.filter((g) => !g.varietals || g.varietals.length === 0);
     const populated = bucket.filter((g) => g.varietals && g.varietals.length > 0);
     if (empty.length === 0 || populated.length === 0) continue;
@@ -1005,6 +1007,65 @@ function main() {
     // específico admitido en el cluster combinado.
     const vintages = bucket.map((g) => g.vintage ?? null);
     if (!vintagesCompatible(vintages)) continue;
+
+    // Suffix-after-label compat: para distinguir sub-líneas del mismo
+    // brand+label. Caso: "Casa Boher Gran Reserva" (blend) vs "Casa
+    // Boher Gran Viognier" (Viognier line) — ambos brand=Casa Boher,
+    // label="casa boher gran". Pero "Reserva" vs "Viognier" son
+    // discriminadores de SUB-LÍNEA, no varietales descartables. Sin
+    // este check, mergearíamos un blend de tinto con un Viognier blanco.
+    //
+    // Computamos tokens del nombre DESPUÉS de strippear: label,
+    // varietales (cualquiera del bucket), parent bodegas mid-name,
+    // region noise, y un set MUY pequeño de noise puro (vino, ml, x,
+    // de, etc.). Conservamos "reserva", "gran", "estate", "vineyard",
+    // "blend", etc. — esos discriminan sub-líneas. Si tokens difieren
+    // entre grupos del bucket → reject.
+    const PURE_NOISE_TOKENS = new Set([
+      "vino", "vinos", "tinto", "blanco", "rosado", "rose",
+      "espumante", "champagne", "brut", "dulce", "seco",
+      "750", "750ml", "750cc", "ml", "cc", "1500ml", "1500",
+      "botella", "bot", "x", "de", "del", "la", "el", "los", "las",
+      "y", "con", "sin", "estuche", "pack", "caja", "magnum",
+      "media", "half", "premium",
+    ]);
+    const varietalTokens = new Set();
+    for (const v of allVarietals) {
+      for (const t of stripAccents(String(v)).toLowerCase().split(/\s+/)) {
+        if (t) varietalTokens.add(t);
+      }
+    }
+    const labelTokens = label.split(/\s+/);
+    function suffixTokens(canonicalName) {
+      let s = stripAccents(String(canonicalName ?? ""))
+        .toLowerCase()
+        .replace(/[^a-z0-9\s.]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      // Strip label desde cualquier posición (1 sola vez).
+      if (s === label) s = "";
+      else if (s.startsWith(label + " ")) s = s.slice(label.length + 1);
+      else if (s.includes(" " + label + " ")) s = s.replace(" " + label + " ", " ");
+      else if (s.endsWith(" " + label)) s = s.slice(0, -label.length - 1);
+      // Strip labelTokens individuales (cuando el label aparece
+      // partido o reordenado por el scraper).
+      for (const lt of labelTokens) {
+        s = s.replace(new RegExp(`\\b${lt}\\b`, "g"), " ");
+      }
+      s = s.replace(/\s+/g, " ").trim();
+      const toks = s.split(/\s+/).filter(
+        (t) =>
+          t &&
+          !PURE_NOISE_TOKENS.has(t) &&
+          !varietalTokens.has(t) &&
+          !MID_NAME_BODEGA_TOKENS.has(t) &&
+          !REGION_NOISE.has(t) &&
+          !/^\d{4}$/.test(t), // descartar años sueltos
+      );
+      return [...new Set(toks)].sort().join(" ");
+    }
+    const suffixes = bucket.map((g) => suffixTokens(g.canonicalName));
+    if (new Set(suffixes).size > 1) continue;
 
     // Mergeá empty + populated, primary = mayor storeCount. Heredamos
     // varietals + type donde falten.
