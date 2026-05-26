@@ -75,8 +75,47 @@ export default async function BodegasIndex({ searchParams }: Params) {
     return qs ? `/bodegas?${qs}` : "/bodegas";
   }
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: "https://vinndex.com.ar" },
+      { "@type": "ListItem", position: 2, name: "Bodegas", item: "https://vinndex.com.ar/bodegas" },
+    ],
+  };
+  // ItemList capeado a top 30 — 1.000+ items es pesado para el HTML y
+  // Google solo lee los primeros para entender la página.
+  const topForSchema = sorted.slice(0, 30);
+  const collectionJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "CollectionPage",
+    name: "Bodegas argentinas",
+    url: "https://vinndex.com.ar/bodegas",
+    description: `Catálogo de ${sorted.length.toLocaleString("es-AR")} bodegas argentinas con vinos en vinotecas online comparadas.`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: sorted.length,
+      itemListElement: topForSchema.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: p.name,
+        url: `https://vinndex.com.ar/bodega/${p.slug}`,
+      })),
+    },
+  };
+
   return (
     <div className="bg-white min-h-[100dvh]">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
       <SiteHeader />
 
       <section className="bg-snow border-b border-ink/10">

@@ -17,8 +17,63 @@ export default function ComoFuncionaPage() {
     dateStyle: "long",
     timeStyle: "short",
   });
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: "https://vinndex.com.ar" },
+      { "@type": "ListItem", position: 2, name: "Cómo funciona", item: "https://vinndex.com.ar/como-funciona" },
+    ],
+  };
+  const howToJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "HowTo",
+    name: "Cómo Vinndex compara precios de vinos online en Argentina",
+    description: `Pipeline automático que scrape ${stats.storeCount} vinotecas online cada noche, matchea el mismo vino entre tiendas y publica precios comparados. Sin intervención humana.`,
+    totalTime: "PT1H20M",
+    step: [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "Scrapeamos las vinotecas",
+        text: `Cada noche a las 3 AM (hora Argentina) corre un workflow contra las ${stats.storeCount} vinotecas integradas. Leemos catálogos públicos vía APIs estándar (Tiendanube, WooCommerce, Shopify, VTEX, Magento, PrestaShop) o HTML cuando no hay API.`,
+        url: "https://vinndex.com.ar/como-funciona#contenido",
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "Matcheamos el mismo vino",
+        text: "Pipeline de 4 stages: código de barras (EAN) cuando está, nombres normalizados con tokens ordenados, embeddings de OpenAI con similitud coseno, y LLM adjudicator (GPT-4o-mini) para resolver casos en zona gris.",
+        url: "https://vinndex.com.ar/como-funciona#contenido",
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "Filtramos ofertas reales",
+        text: "Los precios del grupo (min, max, ahorro) se calculan solo con ofertas in-stock. Las ofertas sin stock aparecen en la ficha con badge claro pero no inflan el ahorro.",
+        url: "https://vinndex.com.ar/como-funciona#contenido",
+      },
+      {
+        "@type": "HowToStep",
+        position: 4,
+        name: "Te mostramos la comparación",
+        text: "El snapshot se empaqueta y deploya automáticamente. Al entrar a una ficha ves las tiendas ordenadas de menor a mayor precio, con diferencia porcentual vs el mínimo y CTA directo a la compra.",
+        url: "https://vinndex.com.ar/como-funciona#contenido",
+      },
+    ],
+  };
   return (
     <div className="bg-white min-h-[100dvh]">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
+      />
       <SiteHeader />
 
       <section className="bg-snow border-b border-ink/10">

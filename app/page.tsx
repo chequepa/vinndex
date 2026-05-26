@@ -306,9 +306,23 @@ export default async function Home() {
     "@type": "Organization",
     name: "Vinndex",
     url: "https://vinndex.com.ar",
+    logo: "https://vinndex.com.ar/opengraph-image",
     description:
       "Comparador de precios de vinos online en Argentina. Buscás un vino y te mostramos todas las vinotecas que lo venden online, ordenadas por precio.",
+    slogan: "Compará precios de vinos online en Argentina",
     areaServed: { "@type": "Country", name: "Argentina" },
+    knowsAbout: [
+      "Vino argentino",
+      "Comparador de precios",
+      "Vinotecas online",
+      "Malbec",
+      "Cabernet Sauvignon",
+      "Chardonnay",
+      "Bonarda",
+      "Mendoza",
+      "Valle de Uco",
+      "Luján de Cuyo",
+    ],
   };
   const websiteJsonLd = {
     "@context": "https://schema.org",

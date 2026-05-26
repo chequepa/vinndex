@@ -27,6 +27,7 @@ import {
   bodegaUrl,
   varietalUrl,
   regionUrl,
+  snapshotStats,
 } from "@/lib/snapshot";
 import { isJunkSlug } from "@/lib/junkSlugs";
 
@@ -270,12 +271,38 @@ export default async function Vino({ params }: Params) {
   // pack x6 como si fuese el precio del vino — los rich snippets son
   // engañosos cuando "$48.000" en realidad es la caja.
   const bottleStatsForJsonLd = bottleStats(group);
+  // Precios válidos hasta el próximo daily-scrape (+24h del último snapshot).
+  // Google degrada el snippet sin `priceValidUntil`.
+  const snapStats = snapshotStats();
+  const priceValidUntil = new Date(
+    new Date(snapStats.generatedAt).getTime() + 24 * 60 * 60 * 1000,
+  )
+    .toISOString()
+    .slice(0, 10);
+  // Category armada desde type + varietal principal — clasifica el Product
+  // en el Knowledge Graph (ej: "Vino tinto > Malbec").
+  const categoryParts: string[] = [];
+  categoryParts.push(group.type ? `Vino ${group.type.toLowerCase()}` : "Vino");
+  if (group.varietals && group.varietals.length > 0) {
+    categoryParts.push(group.varietals[0]);
+  }
+  const category = categoryParts.join(" > ");
+  // Vinndex no es el seller — cada Offer apunta a la tienda. La política
+  // de devolución la define cada vinoteca; no la conocemos. Usamos
+  // `MerchantReturnNotSpecified` (categoría válida del schema) para no
+  // mentir pero igual cumplir el requisito de Google que pide el campo.
+  const returnPolicyStub = {
+    "@type": "MerchantReturnPolicy",
+    returnPolicyCategory:
+      "https://schema.org/MerchantReturnNotSpecified",
+  };
   const productJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: group.canonicalName,
     image: group.imageUrl ?? undefined,
     description: group.offers[0]?.name ?? group.canonicalName,
+    category,
     brand: group.brand
       ? { "@type": "Brand", name: group.brand }
       : undefined,
@@ -289,11 +316,14 @@ export default async function Vino({ params }: Params) {
         "@type": "Offer",
         price: o.priceArs ?? undefined,
         priceCurrency: "ARS",
+        priceValidUntil,
+        itemCondition: "https://schema.org/NewCondition",
         availability: o.inStock
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
         url: o.externalUrl,
         seller: { "@type": "Organization", name: storeName(o.storeSlug) },
+        hasMerchantReturnPolicy: returnPolicyStub,
       })),
     },
   };
