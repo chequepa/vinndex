@@ -233,6 +233,15 @@ const NAME_PREFIX_TO_BRAND = {
   "de moño rojo": "De Moño Rojo",
 };
 
+// Set de brand-values que aparecen en NAME_PREFIX_TO_BRAND. Lo usamos
+// para gatear la "varietal-empty inheritance" pass: s\u00f3lo heredamos
+// varietal cuando el brand resuelve a un label espec\u00edfico de esta
+// tabla (A Lisa, Saint Felicien, etc.), no a una bodega-padre gen\u00e9rica
+// (Catena Zapata, Trapiche) que cubre muchas l\u00edneas distintas.
+const NAME_PREFIX_TO_BRAND_VALUES = new Set(
+  Object.values(NAME_PREFIX_TO_BRAND),
+);
+
 function stripAccents(s) {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -403,15 +412,76 @@ const KNOWN_PRODUCERS = new Set(
   ].sort((a, b) => b.length - a.length), // longest-first so "catena zapata" matches before "catena"
 );
 
+// Parent bodegas que aparecen mid-name como atribución del fabricante,
+// no como identidad del wine. Caso de origen: "A LISA Malbec - Bodega
+// NOEMIA PATAGONIA" — "noemia" mid-name es el producer, no el SKU.
+//
+// ÚNICAMENTE tokens que JAMÁS son identidad por sí solos. NO incluir
+// keys de NAME_PREFIX_TO_BRAND (esos son LABELS: argentino, nicasia,
+// adrianna, fosil, concreto, aluvional, etc.) — strippearlos
+// colapsaría líneas distintas del mismo brand-padre (ej. "Malbec
+// Argentino" con "Angélica Zapata Malbec" → ambos brand=Catena
+// Zapata pero SKUs diferentes).
+//
+// Curación incremental: agregar sólo cuando aparece un caso concreto
+// donde el token es claramente parent producer y nunca identidad.
+// Verificar contra find-duplicates.mjs antes de agregar.
+const MID_NAME_BODEGA_TOKENS = new Set([
+  "noemia", // parent de A Lisa, J. Alberto
+]);
+
+// Region noise: SÓLO provincias/regiones AMPLIAS. NO subregiones ni
+// nombres de vineyard porque esos SÍ identifican SKUs distintos.
+//
+// Ejemplos del por qué:
+//   ✓ "A LISA Malbec - Bodega NOEMIA PATAGONIA" → strippear "patagonia"
+//     porque A Lisa SIEMPRE es de Patagonia. Stay = la marca.
+//   ✗ "Rutini Single Vineyard Altamira Malbec" vs "Rutini Encuentro
+//     Malbec": Altamira es un VINEYARD específico (Paraje Altamira),
+//     distingue al Single Vineyard del Encuentro entry-level. NO se
+//     debe strippear.
+//
+// Antes había acá Tupungato, Vistalba, Agrelo, Gualtallary, Altamira,
+// Vista Flores, Luján, Maipú — todos son sub-regiones/vineyards
+// específicos. Sacados. Si en el futuro se confirma que algún brand
+// reusa el mismo nombre de vineyard para SKUs distintos, agregar caso
+// por caso con cuidado.
+const REGION_NOISE = new Set([
+  // Provincias argentinas amplias (todas las bodegas de la provincia
+  // las usan; nunca discriminan SKU dentro de un brand).
+  "patagonia",
+  "mendoza",
+  "salta",
+  "rioja",
+  "cuyo",
+  "uco",
+  "tunuyan",
+  "tunuyán",
+  "catamarca",
+  "chubut",
+  "neuquen",
+  "neuquén",
+  // Markers de bodega que no discriminan SKU
+  "bodega",
+  "bodegas",
+  "winery",
+  "wines",
+  "wine",
+  // Argentina marker (a veces aparece tipo "Malbec Argentina")
+  "argentina",
+]);
+
 /**
  * Compute the secondary discriminator from the canonical name.
- * Iteratively strips leading producer names, then drops varietals and
- * noise. Returns the remaining token list joined by space, or empty
- * string if everything was noise (in which case the strict bucket key —
+ * Iteratively strips leading producer names, then drops varietals,
+ * noise, mid-name single-token producers, and region tokens. Returns
+ * the remaining token list joined by space, or empty string if
+ * everything was noise (in which case the strict bucket key —
  * brand + varietals + format + type — is the discriminator).
  *
  * "A LISA MALBEC" → strip producer "A LISA" → "MALBEC" → strip varietal → ""
  * "Noemia A Lisa" → strip "Noemia" → "A Lisa" → strip "A Lisa" → ""
+ * "A LISA Malbec - Bodega NOEMIA PATAGONIA" → strip "a lisa" → "malbec bodega noemia patagonia" → filter → ""
  * "Catena Estate Malbec" → strip "Catena" → "Estate Malbec" → strip "Malbec" → "estate"
  * "Catena Adrianna Malbec" → strip "Catena" → "Adrianna Malbec" → "adrianna"
  */
@@ -425,7 +495,7 @@ function secondaryKey(canonicalName) {
     s = next;
   }
   // Iteratively strip leading producer names — a name like "Noemia A
-  // Lisa" needs to strip both producers in sequence to land at empty.
+  // Lisa" needs to strip both producers en secuencia para landar vacío.
   for (let i = 0; i < 4; i++) {
     let stripped = false;
     for (const prod of KNOWN_PRODUCERS) {
@@ -442,11 +512,21 @@ function secondaryKey(canonicalName) {
     }
     if (!stripped) break;
   }
-  // Drop varietals + noise tokens, keep only identity tokens.
+  // Drop varietals + noise + region + parent bodega mid-name.
+  // Caso "A LISA Malbec Bodega NOEMIA PATAGONIA": leading-strip
+  // removes "a lisa" pero "noemia" queda atascada en posición 3 —
+  // filter token-level la limpia (sólo strippea PARENT bodegas, no
+  // labels). "bodega" y "patagonia" también caen por REGION_NOISE.
   const tokens = s
     .split(/\s+/)
     .map((t) => t.replace(/^\.+|\.+$/g, "")) // strip stray dots
-    .filter((t) => t && !SECONDARY_NOISE_TOKENS.has(t));
+    .filter(
+      (t) =>
+        t &&
+        !SECONDARY_NOISE_TOKENS.has(t) &&
+        !REGION_NOISE.has(t) &&
+        !MID_NAME_BODEGA_TOKENS.has(t),
+    );
   return tokens.join(" ").trim();
 }
 
@@ -780,7 +860,179 @@ function main() {
     }
   }
 
-  snapshot.productGroups = groups.filter((g) => !dropSet.has(g.groupSlug));
+  // Snapshot intermedio post-bucket-merge. La segunda pasada
+  // (varietal-empty inheritance) corre sobre esto.
+  let working = groups.filter((g) => !dropSet.has(g.groupSlug));
+
+  // ──────────────────────────────────────────────────────────────────
+  // Segunda pasada: varietal-empty inheritance.
+  //
+  // Caso real: el grupo "lisa" (canonicalName="A LISA", 2 ofertas) tenía
+  // varietals=[] porque las tiendas (luckywine, enofilo) listaron el
+  // producto como sólo "A LISA". Como el strict bucket key incluye
+  // varietals, nunca mergeaba con "lisa-malbec-noemia" (varietals=[Malbec]).
+  //
+  // Safety gate: heredamos el varietal SÓLO cuando el brand tiene un
+  // único varietal en todos sus grupos hermanos con secondaryKey=="" y
+  // mismo type/format. Si "A Lisa" sólo aparece como Malbec en todos
+  // los grupos donde el dato está poblado → safe to inherit. Para
+  // brands multi-varietal (Saint Felicien tiene Malbec + Cab Sauv +
+  // Chardonnay → 3+ varietals con secondaryKey=="") → no inferimos.
+  //
+  // El gate también exige brand resolved via NAME_PREFIX_TO_BRAND
+  // (= label específico), no brand de bodega-padre genérica como
+  // "Catena Zapata" que cubre muchas líneas distintas.
+  // ──────────────────────────────────────────────────────────────────
+
+  let inheritedBuckets = 0;
+  let inheritedDropped = 0;
+  const inheritExamples = [];
+
+  // Detecta el "label" (key específico de NAME_PREFIX_TO_BRAND) presente
+  // en el canonicalName. Nos sirve para distinguir labels distintos del
+  // mismo brand-padre: "Zuccardi Fosil" (label=fosil) vs "Zuccardi
+  // Aluvional" (label=aluvional) → no se deben mergear, aunque ambos
+  // resuelvan a brand="Zuccardi" en NAME_PREFIX_TO_BRAND_VALUES.
+  //
+  // Usamos longest-prefix-first para que "saint felicien" gane sobre
+  // "felicien" cuando ambos están en el map.
+  const PREFIX_KEYS_BY_LENGTH = Object.keys(NAME_PREFIX_TO_BRAND).sort(
+    (a, b) => b.length - a.length,
+  );
+  function detectLabel(canonicalName) {
+    const stripped = stripAccents(String(canonicalName ?? ""))
+      .toLowerCase()
+      .replace(/[^a-z0-9\s.]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!stripped) return null;
+    for (const k of PREFIX_KEYS_BY_LENGTH) {
+      // Match exact, leading-prefix, o mid-name (word-boundary).
+      if (stripped === k) return k;
+      if (stripped.startsWith(k + " ")) return k;
+      if (stripped.includes(" " + k + " ")) return k;
+      if (stripped.endsWith(" " + k)) return k;
+    }
+    return null;
+  }
+
+  // Cluster por (brand+format+detectedLabel) los grupos con label
+  // específico (NAME_PREFIX_TO_BRAND value) que tienen secondaryKey
+  // vacío. Incluir el label en la key evita que líneas distintas del
+  // mismo brand-padre (Fosil vs Aluvional → ambos Zuccardi) terminen
+  // en el mismo bucket de herencia.
+  const expansionBuckets = new Map();
+  for (const g of working) {
+    const resolved = resolveBrandFromName(g.canonicalName, g.brand);
+    if (!resolved) continue;
+    if (!NAME_PREFIX_TO_BRAND_VALUES.has(resolved)) continue;
+    if (secondaryKey(g.canonicalName) !== "") continue;
+    const label = detectLabel(g.canonicalName);
+    if (!label) continue; // sin label detectable, no podemos garantizar match
+    const bk = stripAccents(resolved).toLowerCase();
+    const fmt = g.format ?? "";
+    const key = `${bk}|${fmt}|${label}`;
+    if (!expansionBuckets.has(key)) expansionBuckets.set(key, []);
+    expansionBuckets.get(key).push(g);
+  }
+
+  const inheritDropSet = new Set();
+  // Keywords que indican color/type explícitamente en el nombre. Si el
+  // grupo empty los tiene y el populated no (o viceversa), son SKUs
+  // distintos. type=null en el snapshot no es señal suficiente: a veces
+  // el extractor no captó el keyword durante build-groups.
+  //
+  // Ojo: regex sobre el nombre con accents stripped — `\b` no funciona
+  // con char Unicode (é, ó), entonces "Rosé" terminaría sin matchear.
+  const COLOR_RE = /\b(rosado|rose|blush|blanco|white|espumante|extra\s*brut|brut\s*nature|nature|dulce|tardio|tardia|cosecha\s+tardia|late\s+harvest)\b/i;
+  function colorKeyword(name) {
+    const stripped = stripAccents(String(name ?? "")).toLowerCase();
+    const m = stripped.match(COLOR_RE);
+    if (!m) return null;
+    // Colapsá variantes equivalentes (rosado/rose → rose, etc.)
+    const raw = m[1].replace(/\s+/g, "");
+    if (raw === "rosado" || raw === "blush") return "rose";
+    if (raw === "white") return "blanco";
+    if (raw.startsWith("brut") || raw === "nature" || raw === "espumante") return "espumante";
+    if (raw === "tardio" || raw === "tardia" || raw.includes("tardia") || raw.includes("harvest")) return "dulce";
+    return raw;
+  }
+
+  for (const [key, bucket] of expansionBuckets.entries()) {
+    if (bucket.length < 2) continue;
+    const empty = bucket.filter((g) => !g.varietals || g.varietals.length === 0);
+    const populated = bucket.filter((g) => g.varietals && g.varietals.length > 0);
+    if (empty.length === 0 || populated.length === 0) continue;
+    // Monovarietal gate: todos los grupos con varietal poblado del
+    // bucket deben converger en exactamente 1 varietal.
+    const allVarietals = new Set();
+    for (const g of populated) for (const v of g.varietals) allVarietals.add(v);
+    if (allVarietals.size !== 1) continue;
+    const inferredVarietal = [...allVarietals][0];
+
+    // Type compat: si los grupos populated tienen type, debe ser único
+    // (Tinto, no mix Tinto+Blanco). Los empty con type=null heredan.
+    const allTypes = new Set(
+      bucket.map((g) => g.type ?? null).filter((t) => t != null && t !== ""),
+    );
+    if (allTypes.size > 1) continue;
+    const inferredType = allTypes.size === 1 ? [...allTypes][0] : null;
+
+    // Color/type keyword en el nombre: si la categoría inferida es
+    // Tinto pero el nombre del empty dice "Rose"/"Blanco"/"Espumante",
+    // son SKUs distintos. Lo mismo si el populated dice Tinto y el
+    // empty dice Rose. Reject. type=null en el snapshot no protege —
+    // el extractor durante build-groups puede haber fallado.
+    const colorConflict = (() => {
+      const colors = bucket.map((g) => colorKeyword(g.canonicalName));
+      const distinct = new Set(colors.filter(Boolean));
+      if (distinct.size > 1) return true; // dos colores distintos en el bucket
+      if (distinct.size === 1) {
+        const c = [...distinct][0];
+        // Si el grupo populated NO menciona el color pero el empty sí
+        // (o viceversa), también son SKUs distintos. Sólo permitimos
+        // merge cuando o bien todos lo mencionan, o bien nadie lo
+        // menciona Y el inferred type es coherente (Tinto sin "rose").
+        const populatedHas = populated.some((g) => colorKeyword(g.canonicalName) === c);
+        const emptyHas = empty.some((g) => colorKeyword(g.canonicalName) === c);
+        if (populatedHas !== emptyHas) return true;
+      }
+      return false;
+    })();
+    if (colorConflict) continue;
+
+    // Vintage compat: como en el bucket-merge principal, sólo 1 vintage
+    // específico admitido en el cluster combinado.
+    const vintages = bucket.map((g) => g.vintage ?? null);
+    if (!vintagesCompatible(vintages)) continue;
+
+    // Mergeá empty + populated, primary = mayor storeCount. Heredamos
+    // varietals + type donde falten.
+    const merged = mergeBucket(bucket);
+    const primary = merged.primary;
+    if (!primary.varietals || primary.varietals.length === 0) {
+      primary.varietals = [inferredVarietal];
+    }
+    if (!primary.type && inferredType) primary.type = inferredType;
+    const specificVintage = bucket.map((g) => g.vintage).find((v) => v != null && v !== "");
+    if (specificVintage) primary.vintage = specificVintage;
+    for (const s of merged.droppedSlugs) inheritDropSet.add(s);
+    inheritedBuckets++;
+    inheritedDropped += merged.droppedSlugs.length;
+    if (inheritExamples.length < 10) {
+      inheritExamples.push({
+        key,
+        inferredVarietal,
+        inferredType,
+        kept: primary.groupSlug,
+        dropped: merged.droppedSlugs,
+        name: primary.canonicalName,
+      });
+    }
+  }
+  working = working.filter((g) => !inheritDropSet.has(g.groupSlug));
+
+  snapshot.productGroups = working;
   snapshot.groupCount = snapshot.productGroups.length;
   snapshot.multiStoreGroupCount = snapshot.productGroups.filter(
     (g) => (g.storeCount ?? 0) >= 2,
@@ -794,9 +1046,16 @@ function main() {
   );
   console.log(`Rejected ${rejectedBuckets} buckets (brand conflict).`);
   console.log(
+    `Varietal-empty inheritance: ${inheritedBuckets} buckets, dropped ${inheritedDropped} groups.`,
+  );
+  console.log(
     `Groups: ${groups.length} → ${snapshot.groupCount} (−${groups.length - snapshot.groupCount})`,
   );
   console.log(`Multi-store: ${snapshot.multiStoreGroupCount}`);
+  if (inheritExamples.length > 0) {
+    console.log(`\nVarietal inheritance examples:`);
+    for (const e of inheritExamples) console.log(JSON.stringify(e));
+  }
 
   // Sort examples so the most impactful rejects appear first
   examples.sort((a, b) => (b.totalSc ?? 0) - (a.totalSc ?? 0));
