@@ -82,6 +82,32 @@ export default async function BodegaPage({ params }: Params) {
     url: `https://vinndex.com.ar/bodega/${slug}`,
     description: `${b.name} — ${b.groupCount} vino${b.groupCount === 1 ? "" : "s"} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina.`,
   };
+  // Una bodega es también una Organization real con ubicación. Brand no
+  // soporta `address` ni `foundingLocation`; Organization sí. Emitimos
+  // los dos: Brand para entity matching en queries de marca,
+  // Organization para Knowledge Graph con location.
+  const primaryRegion = b.regions[0];
+  const orgJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Organization",
+    name: b.name,
+    url: `https://vinndex.com.ar/bodega/${slug}`,
+    description: `Bodega argentina${primaryRegion ? ` de ${primaryRegion}` : ""} con ${b.groupCount} etiqueta${b.groupCount === 1 ? "" : "s"} en vinotecas online.`,
+    ...(primaryRegion
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressRegion: primaryRegion,
+            addressCountry: "AR",
+          },
+        }
+      : {
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "AR",
+          },
+        }),
+  };
 
   return (
     <div className="bg-white min-h-[100dvh]">
@@ -94,6 +120,11 @@ export default async function BodegaPage({ params }: Params) {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(brandJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">

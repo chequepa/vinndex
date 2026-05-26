@@ -56,11 +56,44 @@ export default async function RegionPage({ params }: Params) {
     ],
   };
 
-  // CollectionPage + ItemList — la página representa una colección de
-  // vinos de una región. Google rinde rich snippets de ItemList con
-  // posición y links — útil para queries como "vinos de Mendoza".
-  // Limitamos a top 30 (sino la ficha rich queda enorme y Google
-  // trunca igual). Audit 22/05.
+  // Coords de las top regiones AR para enriquecer el Place schema —
+  // Google ocasionalmente renderiza mapas en Knowledge Panel con esto.
+  // Para regiones sin coord hardcoded igual emitimos el Place sin geo.
+  const REGION_COORDS: Record<string, { lat: number; lng: number }> = {
+    mendoza: { lat: -32.89, lng: -68.84 },
+    "valle-de-uco": { lat: -33.78, lng: -69.18 },
+    "lujan-de-cuyo": { lat: -33.03, lng: -68.88 },
+    salta: { lat: -26.07, lng: -65.97 },
+    patagonia: { lat: -39.03, lng: -68.59 },
+    "san-juan": { lat: -31.54, lng: -68.53 },
+    neuquen: { lat: -38.95, lng: -68.06 },
+    "rio-negro": { lat: -39.03, lng: -68.59 },
+    catamarca: { lat: -28.47, lng: -65.78 },
+    "la-rioja": { lat: -29.41, lng: -66.85 },
+  };
+  const regionCoord = REGION_COORDS[slug];
+  const placeJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Place",
+    name: facet.name,
+    description: `Región vitivinícola de Argentina. ${facet.groupCount} etiquetas relevadas en ${facet.storeCount} vinotecas online.`,
+    url: `https://vinndex.com.ar/region/${slug}`,
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: facet.name,
+      addressCountry: "AR",
+    },
+    ...(regionCoord
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: regionCoord.lat,
+            longitude: regionCoord.lng,
+          },
+        }
+      : {}),
+  };
+
   const itemListJsonLd = {
     "@context": "https://schema.org/",
     "@type": "CollectionPage",
@@ -90,6 +123,11 @@ export default async function RegionPage({ params }: Params) {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
       />
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
