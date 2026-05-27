@@ -26,7 +26,7 @@ type Props = {
 
 /**
  * Search input with optional autocomplete dropdown. Default usage is
- * uncontrolled — the `<form>` submit navigates to /buscar?q=... The
+ * uncontrolled · the `<form>` submit navigates to /buscar?q=... The
  * autocomplete is opt-in (withAutocomplete) and adds a debounced fetch
  * to /api/search with keyboard nav (arrows, enter, escape) + click.
  *
@@ -48,17 +48,15 @@ export function SearchInput({
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selected, setSelected] = useState(-1);
-
-  // Antes había un `mounted` state seteado a true en useEffect(()=>{}, [])
-  // para guardar el dropdown durante SSR. Es redundante: `open` arranca
-  // en false y sólo se vuelve true por interacción del usuario (focus,
-  // typing), así que `showDropdown` ya es siempre false en SSR sin
-  // necesidad del guard extra.
+  // Only fetch + open the dropdown after the user actually types. Stops
+  // the autocomplete from auto-opening on /buscar?q=… loads where the
+  // input is hydrated with a defaultValue.
+  const [userTyped, setUserTyped] = useState(false);
 
   useEffect(() => {
-    if (!withAutocomplete) return;
+    if (!withAutocomplete || !userTyped) return;
     const q = value.trim();
-    if (q.length < 2) return; // UI gate handles the hide — no setState needed
+    if (q.length < 2) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
       fetch(`/api/search?q=${encodeURIComponent(q)}`, {
@@ -71,14 +69,14 @@ export function SearchInput({
           setSelected(-1);
         })
         .catch(() => {
-          /* aborted or network — silent */
+          /* aborted or network */
         });
     }, 200);
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [value, withAutocomplete]);
+  }, [value, withAutocomplete, userTyped]);
 
   const showDropdown =
     withAutocomplete &&
@@ -87,7 +85,7 @@ export function SearchInput({
     suggestions.length > 0;
 
   // Click / touch outside closes the dropdown. Covers the mobile case
-  // where onBlur isn't always reliable — users tap the backdrop and
+  // where onBlur isn't always reliable · users tap the backdrop and
   // expect the suggestions to dismiss.
   useEffect(() => {
     if (!showDropdown) return;
@@ -145,7 +143,7 @@ export function SearchInput({
           onTouchStart={() => setOpen(false)}
         />
         <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-ink/10 overflow-hidden z-40 max-h-[50vh] overflow-y-auto">
-          {/* Header móvil — afuera del <ul role="listbox"> para no
+          {/* Header móvil · afuera del <ul role="listbox"> para no
               romper aria-required-children (un listbox solo puede
               tener role="option" como hijos). */}
           <div className="sm:hidden flex items-center justify-between px-4 py-2 border-b border-ink/10 sticky top-0 bg-white z-10">
@@ -229,7 +227,7 @@ export function SearchInput({
     ) : null;
 
   // Si el caller no pasa aria-label, derivamos uno desde el placeholder
-  // para que el input nunca quede sin nombre accesible — Lighthouse
+  // para que el input nunca quede sin nombre accesible · Lighthouse
   // a11y check `aria-input-field-name` falla cuando ambos faltan.
   const ariaLabel =
     rest["aria-label"] ?? placeholder ?? "Buscar vinos";
@@ -243,11 +241,14 @@ export function SearchInput({
         type="search"
         name={name}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          if (!userTyped) setUserTyped(true);
+        }}
         onKeyDown={handleKey}
         onFocus={(e) => {
           e.currentTarget.select();
-          if (withAutocomplete && suggestions.length > 0) setOpen(true);
+          if (withAutocomplete && userTyped && suggestions.length > 0) setOpen(true);
         }}
         onBlur={() => {
           // Delay so click on a suggestion (mousedown → click) fires
@@ -260,7 +261,7 @@ export function SearchInput({
         autoFocus={autoFocus}
         autoComplete="off"
         // Mobile keyboard: Android Chrome ignora `type=search` para el
-        // enter key — sin enterKeyHint muestra "Enter" en vez de "Buscar".
+        // enter key · sin enterKeyHint muestra "Enter" en vez de "Buscar".
         // inputMode="search" complementa para layouts no-Latin.
         // Audit mobile 22/05.
         inputMode="search"

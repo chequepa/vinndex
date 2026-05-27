@@ -8,7 +8,7 @@ import { readDuplicatesReport } from "@/lib/duplicatesReport";
 import { readPriceDrops } from "@/lib/priceDrops";
 
 export const metadata: Metadata = {
-  title: "Admin — Vinndex",
+  title: "Admin · Vinndex",
   description: "Panel interno de Vinndex.",
   robots: { index: false, follow: false },
 };
@@ -92,7 +92,7 @@ export default async function AdminIndex() {
             Panel interno
           </h1>
           <p className="text-graphite text-base leading-relaxed max-w-2xl">
-            Páginas internas del equipo — auditoría de fuentes y pageviews
+            Páginas internas del equipo · auditoría de fuentes y pageviews
             agregados. Protegido con HTTP Basic Auth vía{" "}
             <code className="bg-white px-1.5 py-0.5 rounded text-xs">
               ADMIN_PASSWORD

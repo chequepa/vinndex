@@ -14,7 +14,7 @@ type Props = {
  * the hero (~450px). Shows min price + best store + "Ir a tienda"
  * (or "Ver tiendas" if the wine is all out of stock).
  *
- * Hidden on lg+ — on desktop the hero CTA stays in view as part of
+ * Hidden on lg+ · on desktop the hero CTA stays in view as part of
  * the top-of-page layout.
  */
 export function StickyCTA({
@@ -37,7 +37,7 @@ export function StickyCTA({
   return (
     <div
       // `inert` saca el subtree del tab order y del accessibility tree
-      // cuando no es visible. `aria-hidden` solo no alcanza — sin `inert`
+      // cuando no es visible. `aria-hidden` solo no alcanza · sin `inert`
       // los <a> internos siguen siendo focuseables con Tab y Lighthouse
       // marca aria-hidden-focus fail.
       aria-hidden={!visible}

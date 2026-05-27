@@ -136,7 +136,7 @@ export function FavoritesList() {
           url: shareUrl,
         })
         .catch(() => {
-          /* user cancelled — silent */
+          /* user cancelled · silent */
         });
       return;
     }
@@ -319,7 +319,7 @@ function EmptyState() {
       </h2>
       <p className="text-graphite max-w-md mx-auto mb-6">
         Tocá la estrella en cualquier ficha y se guarda acá. No te pedimos
-        cuenta ni email — queda en tu dispositivo.
+        cuenta ni email, queda en tu dispositivo.
       </p>
       <Link
         href="/buscar?multi=1"

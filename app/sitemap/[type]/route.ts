@@ -5,7 +5,7 @@ import { entriesForBucket, renderUrlset } from "@/lib/sitemap-buckets";
  * etc. El path param `type` viene con `.xml`; lo pelamos antes de mapear
  * al bucket id en lib/sitemap-buckets.ts.
  *
- * Next 16: `params` es `Promise<{...}>` — hay que await.
+ * Next 16: `params` es `Promise<{...}>` · hay que await.
  */
 export async function GET(
   _req: Request,

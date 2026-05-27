@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/ContactForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Contacto — Vinndex",
+  title: "Contacto · Vinndex",
   description:
     "Escribinos: sugerencias, problemas, vinotecas que debería estar, feedback. Todo se lee y se responde.",
   alternates: { canonical: "https://vinndex.com.ar/contacto" },
@@ -58,7 +58,7 @@ export default function ContactoPage() {
               </h3>
               <p className="text-ink/70 text-sm leading-relaxed">
                 Los precios se refrescan todas las noches (3 AM AR). Si ves
-                algo desfasado más de 24hs, avisame con el link — puede ser un
+                algo desfasado más de 24hs, avisame con el link. Puede ser un
                 scraper que quedó colgado.
               </p>
             </div>

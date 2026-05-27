@@ -46,7 +46,7 @@ function isValidSort(s: string | undefined): s is SortKey {
   );
 }
 
-// Presets de rango — fáciles de pickear de un click sin abrir keyboard.
+// Presets de rango · fáciles de pickear de un click sin abrir keyboard.
 // Cada uno mapea a (min, max) en pesos. `max=null` significa "sin tope".
 const PRICE_RANGES: {
   id: string;
@@ -55,9 +55,9 @@ const PRICE_RANGES: {
   max: number | null;
 }[] = [
   { id: "lt-5k", label: "Hasta $5.000", min: null, max: 5_000 },
-  { id: "5k-10k", label: "$5.000 — $10.000", min: 5_000, max: 10_000 },
-  { id: "10k-20k", label: "$10.000 — $20.000", min: 10_000, max: 20_000 },
-  { id: "20k-40k", label: "$20.000 — $40.000", min: 20_000, max: 40_000 },
+  { id: "5k-10k", label: "$5.000 a $10.000", min: 5_000, max: 10_000 },
+  { id: "10k-20k", label: "$10.000 a $20.000", min: 10_000, max: 20_000 },
+  { id: "20k-40k", label: "$20.000 a $40.000", min: 20_000, max: 40_000 },
   { id: "gt-40k", label: "Más de $40.000", min: 40_000, max: null },
 ];
 
@@ -67,7 +67,7 @@ function findRangeById(id: string | null | undefined) {
 }
 
 export const metadata: Metadata = {
-  title: "Buscar vinos argentinos por precio — Vinndex",
+  title: "Buscar vinos argentinos por precio · Vinndex",
   description:
     "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
   alternates: { canonical: "https://vinndex.com.ar/buscar" },
@@ -226,7 +226,7 @@ export default async function Buscar({ searchParams }: Params) {
 
   const filtersInner = (
     <>
-      {/* QUICK FILTERS — stock, multi-tienda, precio (estos 3 se
+      {/* QUICK FILTERS · stock, multi-tienda, precio (estos 3 se
           tocan más seguido que varietal/tipo/región) */}
       <div>
         <h3 className="display text-lg font-semibold mb-3">Filtros rápidos</h3>
@@ -400,7 +400,7 @@ export default async function Buscar({ searchParams }: Params) {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
             href="/"
-            aria-label="Vinndex — inicio"
+            aria-label="Vinndex · inicio"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
@@ -782,7 +782,7 @@ export default async function Buscar({ searchParams }: Params) {
                               // Contraste WCAG AA exige ≥4.5 para texto
                               // chico. Antes el bg `#1B7A4F20` (verde
                               // sobre cream casi transparente) + texto
-                              // `#1B7A4F` daba ratio 3.5 — subimos
+                              // `#1B7A4F` daba ratio 3.5 · subimos
                               // saturación del bg para llegar a 4.6.
                               style={{
                                 background: "#14593620",

@@ -13,17 +13,17 @@ export function OPTIONS() {
  * GET /api/v1/search
  *
  * Query params:
- *   q          string  — texto libre (opcional). Si vacío, devuelve
+ *   q          string  · texto libre (opcional). Si vacío, devuelve
  *                        catálogo completo paginado por relevance.
- *   varietal   string  — filtro exact (case-insensitive)
- *   region     string  — filtro exact
- *   type       string  — Tinto | Blanco | Rosado | Espumante | Dulce
- *   multi      "1"     — sólo vinos en ≥2 vinotecas
- *   instock    "1"     — sólo vinos con stock
- *   priceMin   number  — piso de precio
- *   priceMax   number  — techo de precio
- *   sort       string  — relevance | price-asc | price-desc | stores-desc | score-desc | name-asc
- *   limit      number  — máx 100 (default 24)
+ *   varietal   string  · filtro exact (case-insensitive)
+ *   region     string  · filtro exact
+ *   type       string  · Tinto | Blanco | Rosado | Espumante | Dulce
+ *   multi      "1"     · sólo vinos en ≥2 vinotecas
+ *   instock    "1"     · sólo vinos con stock
+ *   priceMin   number  · piso de precio
+ *   priceMax   number  · techo de precio
+ *   sort       string  · relevance | price-asc | price-desc | stores-desc | score-desc | name-asc
+ *   limit      number  · máx 100 (default 24)
  *
  * Devuelve { count, results: [{slug, name, brand, ...}] }
  */
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
   });
 
   // Shape consistente con /api/v1/wine pero más compacto (sin offers
-  // — sólo el bestStoreSlug para que el cliente sepa dónde comprar).
+  // · sólo el bestStoreSlug para que el cliente sepa dónde comprar).
   const shaped = results.map((g) => {
     const bestOffer = (g.offers ?? []).find(
       (o) => o.inStock && !o.isCollector,

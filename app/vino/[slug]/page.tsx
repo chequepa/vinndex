@@ -36,7 +36,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const g = findGroup(slug);
-  if (!g) return { title: "Vino no encontrado — Vinndex" };
+  if (!g) return { title: "Vino no encontrado · Vinndex" };
 
   const fmt = new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       : null;
 
   // Title: include brand only if not already part of the canonical name.
-  // Both brand and canonicalName get pretty-cased — many scrapers return
+  // Both brand and canonicalName get pretty-cased · many scrapers return
   // CAPS LOCK / lowercase strings that look shouty in <title> and OG tags.
   const prettyName = displayWineName(g.canonicalName);
   const prettyBrand = displayBrand(g.brand);
@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   } else {
     titleTail = "precio al día";
   }
-  const title = `${titleName}${titleVintage} — ${titleTail} | Vinndex`;
+  const title = `${titleName}${titleVintage} · ${titleTail} | Vinndex`;
 
   let description: string;
   if (allOutOfStock) {
@@ -97,7 +97,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
         description += ` en ${storeName(bestStore.storeSlug)}`;
       }
       if (savingsPct) {
-        description += ` — ahorrá hasta ${savingsPct}%`;
+        description += ` · ahorrá hasta ${savingsPct}%`;
       }
       description += ".";
     }
@@ -163,11 +163,11 @@ function storeInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-// Color determinístico por slug — cada tienda tiene su badge color.
+// Color determinístico por slug · cada tienda tiene su badge color.
 // Todos los tonos están oscurecidos lo suficiente para pasar contraste
 // WCAG AA (≥4.5) con el texto cream `#f5ede0`. Antes había mustard
 // (#E8B547), verde (#2FB344), terracota (#D97449), azul claro
-// (#7C8FD9) que daban ratios ≤4.5 — Lighthouse a11y los flaggeaba.
+// (#7C8FD9) que daban ratios ≤4.5 · Lighthouse a11y los flaggeaba.
 const STORE_COLORS = [
   "#6B1E2E", // malbec oscuro
   "#1E3FBF", // cobalt
@@ -211,7 +211,7 @@ export default async function Vino({ params }: Params) {
   if (!group) notFound();
 
   // Cases (estuche, caja, pack x6) y botellas viven en el mismo group
-  // por la pipeline de matching pero no son el mismo SKU — comparar precio
+  // por la pipeline de matching pero no son el mismo SKU · comparar precio
   // botella vs caja x6 infla el "ahorro" hasta 95%. Acá los separamos:
   // la tabla y el hero solo usan botellas; las cajas se muestran después
   // en una sección aparte (si las hay).
@@ -268,7 +268,7 @@ export default async function Vino({ params }: Params) {
 
   // JSON-LD Product schema for rich search snippets. Usamos `bottleStats`
   // (precios sin cajas) para evitar que Google muestre el precio de un
-  // pack x6 como si fuese el precio del vino — los rich snippets son
+  // pack x6 como si fuese el precio del vino · los rich snippets son
   // engañosos cuando "$48.000" en realidad es la caja.
   const bottleStatsForJsonLd = bottleStats(group);
   // Precios válidos hasta el próximo daily-scrape (+24h del último snapshot).
@@ -279,7 +279,7 @@ export default async function Vino({ params }: Params) {
   )
     .toISOString()
     .slice(0, 10);
-  // Category armada desde type + varietal principal — clasifica el Product
+  // Category armada desde type + varietal principal · clasifica el Product
   // en el Knowledge Graph (ej: "Vino tinto > Malbec").
   const categoryParts: string[] = [];
   categoryParts.push(group.type ? `Vino ${group.type.toLowerCase()}` : "Vino");
@@ -287,7 +287,7 @@ export default async function Vino({ params }: Params) {
     categoryParts.push(group.varietals[0]);
   }
   const category = categoryParts.join(" > ");
-  // Vinndex no es el seller — cada Offer apunta a la tienda. La política
+  // Vinndex no es el seller · cada Offer apunta a la tienda. La política
   // de devolución la define cada vinoteca; no la conocemos. Usamos
   // `MerchantReturnNotSpecified` (categoría válida del schema) para no
   // mentir pero igual cumplir el requisito de Google que pide el campo.
@@ -298,7 +298,7 @@ export default async function Vino({ params }: Params) {
   };
   // Si hay scores de críticos, emitir AggregateRating + Review[]. Cierra
   // los warnings "optional" del Rich Results Test y habilita estrellas
-  // en SERP. Hoy hay 2 vinos en scores.json — para el resto los warnings
+  // en SERP. Hoy hay 2 vinos en scores.json · para el resto los warnings
   // siguen, no rompe nada.
   const aggregateRating =
     scores.length > 0
@@ -368,7 +368,7 @@ export default async function Vino({ params }: Params) {
     },
   };
 
-  // FAQ JSON-LD — preguntas autogeneradas del snapshot. Todas las
+  // FAQ JSON-LD · preguntas autogeneradas del snapshot. Todas las
   // respuestas reflejan info visible en la ficha (precio, vinotecas,
   // stock, varietal/región), requisito de Google para FAQ schema sin
   // riesgo de "spammy structured data" flag. Skip de Q&As cuyo dato
@@ -506,7 +506,7 @@ export default async function Vino({ params }: Params) {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
             href="/"
-            aria-label="Vinndex — inicio"
+            aria-label="Vinndex · inicio"
             className="flex items-center gap-2 shrink-0 cursor-wine"
           >
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
@@ -725,7 +725,7 @@ export default async function Vino({ params }: Params) {
                 />
               </div>
 
-              <p className="text-snow/80 text-lg mb-8">
+              <p className="text-snow/80 text-lg mb-6">
                 {allOutOfStock ? (
                   <>
                     Relevado en{" "}
@@ -745,17 +745,25 @@ export default async function Vino({ params }: Params) {
                     online.
                   </>
                 )}
-                {vintagesSorted.length > 1 && (
-                  <>
-                    {" "}
-                    Cosechas relevadas:{" "}
-                    <span className="font-semibold text-snow">
-                      {vintagesSorted.join(", ")}
-                    </span>
-                    .
-                  </>
-                )}
               </p>
+
+              {vintagesSorted.length > 1 && (
+                <div className="mb-8 flex items-center gap-x-3 gap-y-2 flex-wrap">
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-snow/55 font-semibold">
+                    {vintagesSorted.length} cosechas
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {vintagesSorted.map((v) => (
+                      <span
+                        key={v}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md bg-snow/12 border border-snow/20 text-xs tabular-nums font-medium text-snow"
+                      >
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {allOutOfStock ? (
                 <div className="mb-10">
@@ -780,7 +788,7 @@ export default async function Vino({ params }: Params) {
                         Actualmente sin stock
                       </div>
                       <div className="text-sm text-snow/70 mt-1">
-                        Revisá en unos días — listamos abajo las tiendas que lo tienen en catálogo.
+                        Revisá en unos días. Listamos abajo las tiendas que lo tienen en catálogo.
                       </div>
                     </div>
                   </div>
@@ -956,7 +964,7 @@ export default async function Vino({ params }: Params) {
                         {offer.isCollector && (
                           <span
                             className="text-[10px] bg-malbec/15 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
-                            title="Cosecha vieja — precio de colección, no comparable con el precio actual"
+                            title="Cosecha vieja · precio de colección, no comparable con el precio actual"
                           >
                             Colección
                           </span>
@@ -1016,12 +1024,12 @@ export default async function Vino({ params }: Params) {
 
           <p className="text-xs text-graphite mt-4">
             Matching determinístico por nombre + añada + formato. No vendemos
-            vino — al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
+            vino. Al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
             vinoteca.
             {caseOffersAll.length > 0 && (
               <>
                 {" "}
-                Comparamos solo botellas individuales — los estuches y cajas
+                Comparamos solo botellas individuales. Los estuches y cajas
                 ({caseOffersAll.length}) los podés encontrar en la tienda
                 directamente.
               </>

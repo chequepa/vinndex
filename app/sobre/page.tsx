@@ -5,7 +5,7 @@ import { snapshotStats } from "@/lib/snapshot";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sobre Vinndex — Comparador de precios de vinos en Argentina",
+  title: "Sobre Vinndex · Comparador de precios de vinos en Argentina",
   description:
     "Qué es Vinndex, por qué lo hacemos y quién está detrás. Comparador de precios de vinos online de Argentina, sin comisiones, hecho con transparencia.",
   alternates: { canonical: "https://vinndex.com.ar/sobre" },

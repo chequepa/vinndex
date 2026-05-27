@@ -7,7 +7,7 @@ import type { ProductGroup } from "@/lib/matching";
 
 /**
  * Render server-side de una lista compartida (`/favoritos?slugs=a,b,c`).
- * No usa localStorage — el dueño armó la URL y nosotros la mostramos.
+ * No usa localStorage · el dueño armó la URL y nosotros la mostramos.
  * El visitante puede tocar cualquier vino para ver su ficha; si quiere
  * sumar a SU propia lista, usa la estrella de la ficha que vive con
  * useFavorites() en su browser.

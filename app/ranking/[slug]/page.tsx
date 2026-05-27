@@ -20,14 +20,14 @@ export async function generateMetadata({
 }: Params): Promise<Metadata> {
   const { slug } = await params;
   const r = findRanking(slug);
-  if (!r) return { title: "Ranking no encontrado — Vinndex" };
+  if (!r) return { title: "Ranking no encontrado · Vinndex" };
   return {
-    title: `${r.title} — Vinndex`,
+    title: `${r.title} · Vinndex`,
     description: r.description,
     keywords: r.keywords,
     alternates: { canonical: `https://vinndex.com.ar/ranking/${r.slug}` },
     openGraph: {
-      title: `${r.title} — Vinndex`,
+      title: `${r.title} · Vinndex`,
       description: r.description,
       url: `https://vinndex.com.ar/ranking/${r.slug}`,
       siteName: "Vinndex",
@@ -36,7 +36,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${r.title} — Vinndex`,
+      title: `${r.title} · Vinndex`,
       description: r.description,
     },
   };
@@ -49,7 +49,7 @@ export default async function RankingPage({ params }: Params) {
 
   const items = applyRanking(ranking);
 
-  // JSON-LD ItemList — Google entiende rankings y los muestra como
+  // JSON-LD ItemList · Google entiende rankings y los muestra como
   // rich snippet con la posición y los items. Combinado con Product
   // schema (que ya tiene cada /vino/[slug]) hace una buena foto del
   // contenido.
@@ -127,8 +127,8 @@ export default async function RankingPage({ params }: Params) {
             {ranking.subtitle}
           </p>
           <p className="text-xs text-graphite mt-6">
-            {items.length} vinos · Actualizado todos los días · Sin patrocinios
-            — el orden refleja el dato real del snapshot
+            {items.length} vinos · Actualizado todos los días · Sin patrocinios ·
+            el orden refleja el dato real del snapshot
           </p>
         </div>
       </section>
@@ -137,7 +137,7 @@ export default async function RankingPage({ params }: Params) {
         {items.length === 0 ? (
           <p className="text-graphite">
             No hay vinos que cumplan los criterios de este ranking hoy.
-            Volvé mañana — el snapshot se refresca a diario.
+            Volvé mañana. El snapshot se refresca a diario.
           </p>
         ) : (
           <ol className="space-y-3">

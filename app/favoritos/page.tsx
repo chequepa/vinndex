@@ -11,7 +11,7 @@ type Params = {
 };
 
 export const metadata: Metadata = {
-  title: "Mis vinos — Vinndex",
+  title: "Mis vinos · Vinndex",
   description:
     "Los vinos que guardaste. Seguí el precio y volvé cuando quieras comparar. También podés compartir tu lista con un link.",
   robots: { index: false, follow: true },
@@ -52,7 +52,7 @@ export default async function FavoritosPage({ searchParams }: Params) {
             </h1>
             <p className="text-graphite mt-3 max-w-2xl">
               Alguien te pasó este link. Estos son los vinos que armó como su
-              wishlist — tocá uno para ver precios en todas las vinotecas.
+              wishlist. Tocá uno para ver precios en todas las vinotecas.
             </p>
             <Link
               href="/favoritos"
@@ -81,7 +81,7 @@ export default async function FavoritosPage({ searchParams }: Params) {
           </h1>
           <p className="text-graphite mt-3 max-w-xl">
             Los vinos que guardaste con la estrella. Se quedan en tu
-            dispositivo — no subimos nada a ningún lado. Podés compartir tu
+            dispositivo, no subimos nada a ningún lado. Podés compartir tu
             lista con un link público o exportarla en JSON.
           </p>
         </header>

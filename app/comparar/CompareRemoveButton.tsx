@@ -5,7 +5,7 @@ import { toggleCompare } from "@/components/Compare";
 /**
  * "X" button in the corner of a compare card. Clicking it removes the
  * slug from the compare list AND updates the URL so the server page
- * re-renders with the new slugs list — no full refresh needed, Next.js
+ * re-renders with the new slugs list · no full refresh needed, Next.js
  * handles the navigation.
  */
 export function CompareRemoveButton({

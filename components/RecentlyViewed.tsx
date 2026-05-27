@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 /**
  * Recently-viewed wine slugs, persisted to localStorage. FIFO with a
- * cap of 20. Same useSyncExternalStore pattern as Favorites — any
+ * cap of 20. Same useSyncExternalStore pattern as Favorites · any
  * mutation via trackView() fires notify() so every subscribed component
  * re-renders without setState-in-effect.
  */

@@ -40,7 +40,7 @@ export async function GET() {
     },
     {
       headers: {
-        // 5 minutos de cache — el detector corre 1x/día, no necesita
+        // 5 minutos de cache · el detector corre 1x/día, no necesita
         // ser real-time.
         "cache-control": "public, max-age=300, s-maxage=300",
         "access-control-allow-origin": "*",

@@ -5,12 +5,12 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { readPageviewStats } from "@/lib/pageviews";
 
 export const metadata: Metadata = {
-  title: "Analytics — Admin · Vinndex",
+  title: "Analytics · Admin · Vinndex",
   description: "Dashboard interno de pageviews server-side.",
   robots: { index: false, follow: false },
 };
 
-// Force-dynamic — los datos cambian con cada request.
+// Force-dynamic · los datos cambian con cada request.
 export const dynamic = "force-dynamic";
 
 function formatNumber(n: number): string {
@@ -50,7 +50,7 @@ export default async function AnalyticsPage() {
             Pageviews
           </h1>
           <p className="text-graphite text-base leading-relaxed max-w-3xl">
-            Dashboard server-side de pageviews — lee directo de{" "}
+            Dashboard server-side de pageviews · lee directo de{" "}
             <code className="text-xs bg-white px-1.5 py-0.5 rounded">
               data/pageviews.ndjson
             </code>
@@ -182,7 +182,7 @@ export default async function AnalyticsPage() {
 
         <p className="text-xs text-graphite border-t border-ink/10 pt-6">
           Esta página es <code>noindex,nofollow</code> y solo es accesible para
-          el equipo. No tiene auth — está en una ruta privada que sólo conoce
+          el equipo. No tiene auth · está en una ruta privada que sólo conoce
           quien la creó. Si querés auth real, sumá HTTP basic auth en{" "}
           <code>middleware.ts</code>.
         </p>

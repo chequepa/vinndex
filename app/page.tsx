@@ -28,7 +28,7 @@ function formatCount(n: number): string {
 }
 
 /**
- * Hero bottle — second iteration. More authentic Bordeaux silhouette,
+ * Hero bottle · second iteration. More authentic Bordeaux silhouette,
  * wax-drip cap (vintage feel), full editorial label with grape cluster
  * + vine leaf, "VINNDEX MENDOZA · ARGENTINA" + EST 2026 stamp, glass
  * refraction lines on the body. Hidden below lg breakpoint.
@@ -116,7 +116,7 @@ function HeroBottle() {
         opacity="0.18"
       />
 
-      {/* Bordeaux shoulder + body — graceful curves instead of sharp Q */}
+      {/* Bordeaux shoulder + body · graceful curves instead of sharp Q */}
       <path
         d="M 100 126
            C 98 134, 92 140, 82 154
@@ -173,7 +173,7 @@ function HeroBottle() {
         opacity="0.45"
       />
 
-      {/* Grape cluster + vine leaf — focal point of the label */}
+      {/* Grape cluster + vine leaf · focal point of the label */}
       <g transform="translate(120, 318)">
         {/* Vine stem */}
         <path
@@ -192,7 +192,7 @@ function HeroBottle() {
              Z"
           fill="#3D6B47"
         />
-        {/* Grape cluster — 6 berries */}
+        {/* Grape cluster · 6 berries */}
         <circle cx="0" cy="-8" r="3.6" fill="#6B1E2E" />
         <circle cx="-4.5" cy="-2" r="3.6" fill="#6B1E2E" />
         <circle cx="4.5" cy="-2" r="3.6" fill="#6B1E2E" />
@@ -294,7 +294,7 @@ export default async function Home() {
     ) ?? null;
   const regionUco = findRegion("Valle de Uco");
   const regionLujan = findRegion("Luján de Cuyo");
-  // Cafayate no aparece como región en el snapshot — usamos Salta (que la
+  // Cafayate no aparece como región en el snapshot · usamos Salta (que la
   // contiene). Cafayate como ciudad icónica queda en el subtítulo del tile.
   const regionSalta = findRegion("Salta");
   const regionPatagonia = findRegion("Patagonia");
@@ -358,7 +358,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            aria-label="Vinndex — inicio"
+            aria-label="Vinndex · inicio"
             className="flex items-center gap-2 text-snow cursor-wine"
           >
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -414,10 +414,11 @@ export default async function Home() {
       {/* HERO */}
       <main id="contenido">
       <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
-        {/* Sun (larger, behind the bottle on desktop) */}
-        <div className="absolute top-[18%] right-[8%] lg:right-[15%] float pointer-events-none">
+        {/* Sun — on mobile sits as a corner ornament (no collision with the
+            headline); on desktop expands behind the bottle illustration. */}
+        <div className="absolute top-[5%] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
           <div
-            className="w-36 h-36 lg:w-48 lg:h-48 rounded-full"
+            className="w-24 h-24 lg:w-48 lg:h-48 rounded-full opacity-80 lg:opacity-100"
             style={{
               background:
                 "radial-gradient(circle at 40% 40%, #F5EDE0 0%, #E8B547 45%, #D97449 100%)",
@@ -522,13 +523,13 @@ export default async function Home() {
                     <path d="m21 21-4.3-4.3" />
                   </svg>
                   <SearchInput
-                    placeholder="Malbec, Luigi Bosca, Catena Zapata..."
-                    className="w-full bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
+                    placeholder="Malbec, Catena Zapata, Luigi Bosca..."
+                    className="flex-1 min-w-0 bg-transparent border-0 outline-none px-4 py-3 text-ink placeholder:text-graphite/70 text-base md:text-lg"
                     withAutocomplete
                   />
                   <button
                     type="submit"
-                    className="cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-6 md:px-8 py-3 rounded-full transition-colors text-sm md:text-base"
+                    className="cursor-wine shrink-0 bg-cobalt hover:bg-ink text-snow font-semibold px-5 md:px-8 py-3 rounded-full transition-colors text-sm md:text-base"
                   >
                     Buscar
                   </button>
@@ -603,7 +604,7 @@ export default async function Home() {
       {/* VISTOS RECIENTEMENTE (client-side, hidden for zero-state) */}
       <RecentlyViewedSection />
 
-      {/* PRICE DROPS — only show when there's signal */}
+      {/* PRICE DROPS · only show when there's signal */}
       {topDrops.length > 0 && (
         <section id="bajaron" className="py-20 lg:py-28 px-6">
           <div className="max-w-7xl mx-auto">
@@ -619,7 +620,7 @@ export default async function Home() {
                 </h2>
                 <p className="text-graphite mt-4 text-base leading-relaxed">
                   Drops ≥15% sobre la mediana de los últimos 7 días.
-                  Comparado entre vinotecas online — el precio bajó realmente,
+                  Comparado entre vinotecas online. El precio bajó realmente,
                   no es un cambio de SKU.
                 </p>
               </div>
@@ -689,7 +690,7 @@ export default async function Home() {
                 </h2>
                 <p className="text-graphite mt-5 text-lg leading-relaxed">
                   Vinos que aparecen en 2+ vinotecas con diferencias de precio que
-                  importan. Elegí la más barata — o la que te llega más rápido.
+                  importan. Elegí la más barata, o la que te llega más rápido.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -764,8 +765,11 @@ export default async function Home() {
         </section>
       )}
 
-      {/* CÓMO FUNCIONA */}
-      <section id="como-funciona" className="py-24 lg:py-32 px-6">
+      {/* CÓMO FUNCIONA — 3 momentos narrativos, sin postcards repetidas.
+          Cada paso tiene su propia ilustración inline (lupa con uvas →
+          botellas con tickets → copa + arrow al checkout). El connector
+          punteado en desktop refuerza la idea de flujo. */}
+      <section id="como-funciona" className="relative py-24 lg:py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-2xl mb-16">
             <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-4">
@@ -778,107 +782,195 @@ export default async function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="postcard p-8">
-              <div className="flex items-center justify-between mb-6">
-                <span className="display text-6xl font-semibold text-cobalt/25 leading-none">
-                  01
-                </span>
+          <div className="relative grid md:grid-cols-3 gap-12 md:gap-8 lg:gap-14">
+            {/* Connector — wavy dotted line tying the three steps together on
+                desktop. Anchored above the illustrations so it visually links
+                the focal points, not the headings. */}
+            <svg
+              aria-hidden="true"
+              className="hidden md:block absolute top-[58px] left-[16%] w-[68%] h-6 pointer-events-none"
+              viewBox="0 0 800 24"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M0 12 Q 200 -4 400 12 T 800 12"
+                stroke="#6B1E2E"
+                strokeWidth="1.4"
+                fill="none"
+                strokeDasharray="2 5"
+                opacity="0.45"
+              />
+            </svg>
+
+            {/* Step 01 — search. Strokes use currentColor so the ilustración
+                inviertea correctamente en dark mode (text-ink ↔ ink cream). */}
+            <div className="relative">
+              <div className="mb-7 flex justify-center md:justify-start">
                 <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 40 40"
+                  width="170"
+                  height="118"
+                  viewBox="0 0 170 118"
                   fill="none"
-                  className="text-cobalt"
+                  aria-hidden="true"
+                  className="text-ink"
                 >
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M26 26 L34 34"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
+                  <rect x="6" y="46" width="118" height="34" rx="17" fill="#F5EDE0" stroke="currentColor" strokeWidth="1.2" />
+                  <line x1="26" y1="63" x2="100" y2="63" stroke="currentColor" strokeWidth="1.1" strokeDasharray="3 4" opacity="0.45" />
+                  <circle cx="124" cy="63" r="22" fill="#FAF4EA" stroke="currentColor" strokeWidth="1.5" />
+                  <line x1="140" y1="79" x2="156" y2="98" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <g transform="translate(124, 63)">
+                    <path d="M -7 -10 Q -12 -13 -14 -9 Q -13 -5 -9 -6 Z" fill="#3D6B47" />
+                    <line x1="-4" y1="-7" x2="0" y2="-3" stroke="#3D6B47" strokeWidth="1" strokeLinecap="round" />
+                    <circle cx="-4" cy="-1" r="3" fill="#6B1E2E" />
+                    <circle cx="3" cy="-1" r="3" fill="#6B1E2E" />
+                    <circle cx="-2" cy="4" r="3" fill="#6B1E2E" />
+                    <circle cx="4" cy="5" r="3" fill="#6B1E2E" />
+                    <circle cx="1" cy="9" r="3" fill="#6B1E2E" />
+                  </g>
                 </svg>
               </div>
-              <h3 className="display text-2xl font-semibold mb-3">
+              <p className="display italic text-sm text-cobalt mb-2">paso 01</p>
+              <h3 className="display text-2xl font-semibold mb-3 text-ink">
                 Buscá el vino
               </h3>
-              <p className="text-graphite leading-relaxed">
-                Por nombre, bodega, varietal o región.
+              <p className="text-graphite leading-relaxed max-w-xs">
+                Por nombre, bodega, varietal o región. El autocomplete sugiere
+                a medida que escribís.
               </p>
             </div>
 
-            <div className="postcard p-8">
-              <div className="flex items-center justify-between mb-6">
-                <span className="display text-6xl font-semibold text-malbec/25 leading-none">
-                  02
-                </span>
+            {/* Step 02 — compare */}
+            <div className="relative">
+              <div className="mb-7 flex justify-center md:justify-start">
                 <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 40 40"
+                  width="170"
+                  height="118"
+                  viewBox="0 0 170 118"
                   fill="none"
-                  className="text-malbec"
+                  aria-hidden="true"
+                  className="text-ink"
                 >
-                  <rect
-                    x="8"
-                    y="10"
-                    width="24"
-                    height="22"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path d="M8 18 L32 18" stroke="currentColor" strokeWidth="2" />
+                  {[
+                    { x: 18, price: "$ 12k", winner: true },
+                    { x: 68, price: "$ 14k", winner: false },
+                    { x: 118, price: "$ 17k", winner: false },
+                  ].map((b, i) => (
+                    <g key={i}>
+                      {/* price tag — winner siempre cae sobre mustard, los
+                          otros sobre cream. Ambos llevan texto ink fijo
+                          (cream tag con texto cream en dark no se leería). */}
+                      <rect
+                        x={b.x - 4}
+                        y={4}
+                        width={32}
+                        height={20}
+                        rx={3}
+                        fill={b.winner ? "#E8B547" : "#FAF4EA"}
+                        stroke="#0F1729"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x={b.x + 12}
+                        y={18}
+                        fontSize="10"
+                        fontWeight="700"
+                        textAnchor="middle"
+                        fill="#0F1729"
+                        fontFamily="Fraunces, Georgia, serif"
+                      >
+                        {b.price}
+                      </text>
+                      {/* string from tag to bottle */}
+                      <line
+                        x1={b.x + 12}
+                        y1={24}
+                        x2={b.x + 12}
+                        y2={32}
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                      {/* bottle */}
+                      <rect x={b.x + 7} y={32} width={10} height={14} fill="#6B1E2E" />
+                      <rect x={b.x + 2} y={46} width={20} height={56} rx={3} fill="#6B1E2E" />
+                      <rect x={b.x + 3} y={66} width={18} height={18} fill="#F5EDE0" />
+                    </g>
+                  ))}
+                  {/* arrow + label under winner — cobalt funciona en ambos modos */}
                   <path
-                    d="M14 24 L20 24 M14 28 L26 28"
-                    stroke="currentColor"
-                    strokeWidth="2"
+                    d="M 12 110 L 36 110"
+                    stroke="#1E3FBF"
+                    strokeWidth="1.6"
+                    fill="none"
                     strokeLinecap="round"
+                  />
+                  <path
+                    d="M 30 105 L 36 110 L 30 115"
+                    stroke="#1E3FBF"
+                    strokeWidth="1.6"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </div>
-              <h3 className="display text-2xl font-semibold mb-3">
+              <p className="display italic text-sm text-malbec mb-2">paso 02</p>
+              <h3 className="display text-2xl font-semibold mb-3 text-ink">
                 Comparamos todo
               </h3>
-              <p className="text-graphite leading-relaxed">
+              <p className="text-graphite leading-relaxed max-w-xs">
                 Te mostramos todas las vinotecas que lo venden online con precio
                 actualizado y costo de envío a tu zona.
               </p>
             </div>
 
-            <div className="postcard p-8">
-              <div className="flex items-center justify-between mb-6">
-                <span className="display text-6xl font-semibold text-terracota/30 leading-none">
-                  03
-                </span>
+            {/* Step 03 — buy */}
+            <div className="relative">
+              <div className="mb-7 flex justify-center md:justify-start">
                 <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 40 40"
+                  width="170"
+                  height="118"
+                  viewBox="0 0 170 118"
                   fill="none"
-                  className="text-terracota"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
                   aria-hidden="true"
+                  className="text-ink"
                 >
-                  <path d="M14 18 L14 30 L30 30 L30 18" />
-                  <path d="M22 8 L30 8 L30 16" />
-                  <path d="M30 8 L18 20" />
+                  {/* wine glass */}
+                  <path
+                    d="M 56 22 L 104 22 L 100 58 Q 100 78 80 80 Q 60 78 60 58 Z"
+                    fill="#6B1E2E"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  />
+                  {/* wine surface highlight */}
+                  <ellipse cx="80" cy="26" rx="22" ry="3" fill="#3A0E1A" opacity="0.5" />
+                  {/* stem + base */}
+                  <line x1="80" y1="80" x2="80" y2="104" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  <line x1="66" y1="104" x2="94" y2="104" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  {/* check badge */}
+                  <circle cx="120" cy="34" r="15" fill="#1B7A4F" />
+                  <path
+                    d="M 113 34 L 118 39 L 127 30"
+                    stroke="#F5EDE0"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  {/* exit arrow — leaves to the vinoteca */}
+                  <path
+                    d="M 18 56 L 38 56 L 38 47 L 54 60 L 38 73 L 38 64 L 18 64 Z"
+                    fill="#E8B547"
+                    stroke="#0F1729"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
-              <h3 className="display text-2xl font-semibold mb-3">
+              <p className="display italic text-sm text-terracota mb-2">paso 03</p>
+              <h3 className="display text-2xl font-semibold mb-3 text-ink">
                 Comprás al mejor precio
               </h3>
-              <p className="text-graphite leading-relaxed">
+              <p className="text-graphite leading-relaxed max-w-xs">
                 Click y vas directo al sitio de la vinoteca a completar la
                 compra. Nosotros no te vendemos nada.
               </p>
@@ -1091,21 +1183,74 @@ export default async function Home() {
 
           {brands.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {brands.map((b) => (
-                <a
-                  key={b.name}
-                  href={`/bodega/${brandSlug(b.name)}`}
-                  className="postcard p-5 text-center"
-                >
-                  <div className="display text-xl font-semibold line-clamp-2 min-h-[2.5em] flex items-center justify-center">
-                    {b.name}
-                  </div>
-                  <div className="text-graphite text-xs mt-1">
-                    {b.count} vino{b.count === 1 ? "" : "s"} ·{" "}
-                    {b.storeCount} vinoteca{b.storeCount === 1 ? "" : "s"}
-                  </div>
-                </a>
-              ))}
+              {brands.map((b) => {
+                // Paleta de etiquetas — cada bodega cae siempre en el mismo
+                // color por hash del nombre (estable entre snapshots). Las
+                // combinaciones pasan WCAG AA con el texto fg correspondiente.
+                const palette = [
+                  { bg: "#6B1E2E", fg: "#F5EDE0" }, // malbec / snow
+                  { bg: "#1E3FBF", fg: "#F5EDE0" }, // cobalt / snow
+                  { bg: "#E8B547", fg: "#0F1729" }, // mustard / ink
+                  { bg: "#D97449", fg: "#F5EDE0" }, // terracota / snow
+                  { bg: "#F5EDE0", fg: "#6B1E2E" }, // snow / malbec
+                  { bg: "#D63A7A", fg: "#F5EDE0" }, // magenta / snow
+                  { bg: "#7C8FD9", fg: "#0F1729" }, // andes / ink
+                  { bg: "#E8859E", fg: "#0F1729" }, // rosado / ink
+                  { bg: "#E8D47C", fg: "#0F1729" }, // chardonnay / ink
+                ];
+                let h = 0;
+                for (let c = 0; c < b.name.length; c++) {
+                  h = (h * 31 + b.name.charCodeAt(c)) >>> 0;
+                }
+                const { bg, fg } = palette[h % palette.length];
+                // Monograma: iniciales de las palabras significativas
+                // (saltamos artículos / conectores). "el Enemigo" → "E",
+                // "DV Catena" → "DC", "Catena Zapata" → "CZ".
+                const stop = new Set([
+                  "de",
+                  "del",
+                  "la",
+                  "el",
+                  "las",
+                  "los",
+                  "y",
+                  "&",
+                ]);
+                const tokens = b.name
+                  .split(/\s+/)
+                  .filter((w) => w && !stop.has(w.toLowerCase()));
+                const monogram =
+                  tokens.length === 0
+                    ? (b.name[0] ?? "?").toUpperCase()
+                    : tokens.length === 1
+                      ? tokens[0].slice(0, 2).toUpperCase()
+                      : (tokens[0][0] + tokens[1][0]).toUpperCase();
+                return (
+                  <a
+                    key={b.name}
+                    href={`/bodega/${brandSlug(b.name)}`}
+                    className="cursor-wine group relative aspect-[5/6] rounded-2xl overflow-hidden border border-ink/10 p-4 flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(15,23,41,0.45)]"
+                    style={{ backgroundColor: bg, color: fg }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="display absolute inset-x-0 top-1/2 -translate-y-[58%] text-center font-semibold tracking-tight leading-none opacity-90"
+                      style={{ fontSize: "5rem" }}
+                    >
+                      {monogram}
+                    </span>
+                    <div className="mt-auto relative z-10">
+                      <p className="display text-sm font-semibold leading-tight line-clamp-2">
+                        {b.name}
+                      </p>
+                      <p className="text-[10px] opacity-75 mt-0.5 tabular-nums">
+                        {b.count} vino{b.count === 1 ? "" : "s"} ·{" "}
+                        {b.storeCount} vinoteca{b.storeCount === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           ) : (
             <p className="text-graphite">
@@ -1115,7 +1260,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* DESCUBRÍ — varietals + regiones */}
+      {/* DESCUBRÍ · varietals + regiones */}
       <section className="py-16 lg:py-24 px-6 bg-snow/50 border-y border-ink/10">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-2xl mb-10">
@@ -1254,7 +1399,7 @@ export default async function Home() {
               </div>
               <p className="max-w-md text-sm leading-relaxed">
                 Comparador independiente de precios de vinos online en
-                Argentina. No vendemos vino — te ayudamos a comprarlo al mejor
+                Argentina. No vendemos vino, te ayudamos a comprarlo al mejor
                 precio.
               </p>
               <p className="text-xs text-snow/50 mt-4">

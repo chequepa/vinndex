@@ -19,7 +19,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const b = findBrandPage(slug);
-  if (!b) return { title: "Bodega no encontrada — Vinndex" };
+  if (!b) return { title: "Bodega no encontrada · Vinndex" };
   // Bodegas con catálogo en 1 sola tienda son "thin" para el comparador:
   // no hay comparación de precios que mostrar. Las dejamos accesibles y
   // linkeables internamente pero noindex para no diluir crawl budget en
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // tiendas). Sigue follow para que Google las descubra como links.
   const isThin = b.storeCount < 2;
   return {
-    title: `${b.name} — ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
+    title: `${b.name} · ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
     description: `Compará precios de ${b.name}. ${b.groupCount} etiquetas relevadas en ${b.storeCount} vinotecas online de Argentina.`,
     alternates: {
       canonical: `https://vinndex.com.ar/bodega/${slug}`,
@@ -80,7 +80,7 @@ export default async function BodegaPage({ params }: Params) {
     "@type": "Brand",
     name: b.name,
     url: `https://vinndex.com.ar/bodega/${slug}`,
-    description: `${b.name} — ${b.groupCount} vino${b.groupCount === 1 ? "" : "s"} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina.`,
+    description: `${b.name} · ${b.groupCount} vino${b.groupCount === 1 ? "" : "s"} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina.`,
   };
   // Una bodega es también una Organization real con ubicación. Brand no
   // soporta `address` ni `foundingLocation`; Organization sí. Emitimos

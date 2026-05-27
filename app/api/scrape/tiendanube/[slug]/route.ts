@@ -11,7 +11,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function GET(req: Request, { params }: Params) {
   const { slug } = await params;
 
-  // Auth primero — incluso `_list`. Aunque sólo devuelve metadata
+  // Auth primero · incluso `_list`. Aunque sólo devuelve metadata
   // estática (sin fetch externo), exponer slug+platform+baseUrl de las
   // 62 vinotecas sin auth es un mapa de recon gratis para scraping
   // competitivo o para atacar el pipeline. Ningún consumidor interno lo

@@ -16,7 +16,7 @@ type Params = {
 };
 
 export const metadata: Metadata = {
-  title: "Todas las bodegas argentinas — Vinndex",
+  title: "Todas las bodegas argentinas · Vinndex",
   description:
     "Catálogo de 1.200+ bodegas argentinas con vinos en vinotecas online. Filtrá por nombre, ordená por cobertura o cantidad de vinos. Precios comparados día a día.",
   keywords: [
@@ -54,7 +54,7 @@ export default async function BodegasIndex({ searchParams }: Params) {
   // Pre-cómputo: precio promedio por bodega.
   // (No lo guardamos en BrandPage para no inflar el JSON exportado.)
   const avgPriceBySlug = new Map<string, number | null>();
-  // Recorremos topGroups que ya están en la BrandPage — alcanza para
+  // Recorremos topGroups que ya están en la BrandPage · alcanza para
   // una estimación, no recorremos todos los grupos otra vez.
   for (const p of pages) {
     const prices = p.topGroups
@@ -83,7 +83,7 @@ export default async function BodegasIndex({ searchParams }: Params) {
       { "@type": "ListItem", position: 2, name: "Bodegas", item: "https://vinndex.com.ar/bodegas" },
     ],
   };
-  // ItemList capeado a top 30 — 1.000+ items es pesado para el HTML y
+  // ItemList capeado a top 30 · 1.000+ items es pesado para el HTML y
   // Google solo lee los primeros para entender la página.
   const topForSchema = sorted.slice(0, 30);
   const collectionJsonLd = {
@@ -132,7 +132,7 @@ export default async function BodegasIndex({ searchParams }: Params) {
           </h1>
           <p className="text-graphite text-base md:text-lg leading-relaxed max-w-3xl">
             Catálogo completo de las bodegas relevadas en vinotecas online de
-            Argentina — {sorted.length.toLocaleString("es-AR")} bodegas con al
+            Argentina. {sorted.length.toLocaleString("es-AR")} bodegas con al
             menos 3 vinos en el snapshot. Filtrá por nombre, ordená por
             cobertura o tocá una para ver su catálogo y precios comparados.
           </p>

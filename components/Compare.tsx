@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Compare list — up to 4 wine slugs the user wants to see side by side.
- * Separate from Favorites (which is long-term) — this is ephemeral
+ * Compare list · up to 4 wine slugs the user wants to see side by side.
+ * Separate from Favorites (which is long-term) · this is ephemeral
  * "stuff I'm deciding between right now".
  *
  * localStorage key: vx:compare
@@ -66,7 +66,7 @@ export function toggleCompare(slug: string) {
   if (current.includes(slug)) {
     next = current.filter((s) => s !== slug);
   } else if (current.length >= MAX) {
-    // Bump the oldest out to make room — feels less punishing than a
+    // Bump the oldest out to make room · feels less punishing than a
     // "list is full" error on tap.
     next = [...current.slice(0, MAX - 1), slug];
   } else {
@@ -148,7 +148,7 @@ export function CompareFloatingButton() {
   return (
     <a
       href={href}
-      // Mobile: bottom-[calc(7rem+env(safe-area-inset-bottom))] — deja
+      // Mobile: bottom-[calc(7rem+env(safe-area-inset-bottom))] · deja
       // ~30-40px de aire sobre el StickyCTA (~70px desde bottom-0+safe)
       // y respeta el home indicator iPhone X+. Antes era bottom-20 que
       // casi se solapaba. Audit mobile 22/05.

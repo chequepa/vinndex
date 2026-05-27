@@ -48,7 +48,7 @@ export default function SumatePage() {
               <span>
                 <strong>Tráfico cualificado.</strong> Los usuarios que te
                 llegan desde Vinndex ya saben qué vino quieren y vos ya le
-                ganaste al precio — es un lead en la última milla.
+                ganaste al precio · es un lead en la última milla.
               </span>
             </li>
             <li className="flex gap-3">
@@ -92,7 +92,7 @@ export default function SumatePage() {
               todo el país o al menos a CABA/GBA).
             </li>
             <li>
-              · Catálogo público en tu sitio — no necesitamos credenciales ni
+              · Catálogo público en tu sitio · no necesitamos credenciales ni
               APIs privadas.
             </li>
             <li>
@@ -116,7 +116,7 @@ export default function SumatePage() {
             </li>
             <li>
               · <strong>No promocionamos.</strong> No hay &ldquo;destacados
-              pagos&rdquo; — el ranking es precio real.
+              pagos&rdquo; · el ranking es precio real.
             </li>
             <li>
               · <strong>No compartimos tus ventas.</strong> No tenemos acceso

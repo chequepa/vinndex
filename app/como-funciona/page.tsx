@@ -5,7 +5,7 @@ import { snapshotStats } from "@/lib/snapshot";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cómo funciona Vinndex — Metodología del comparador",
+  title: "Cómo funciona Vinndex · Metodología del comparador",
   description:
     "Cómo scrapeamos, matcheamos y comparamos los precios de vinos de 110+ vinotecas online de Argentina. Pipeline técnico sin adornos.",
   alternates: { canonical: "https://vinndex.com.ar/como-funciona" },
@@ -135,23 +135,23 @@ export default function ComoFuncionaPage() {
               </p>
               <ul className="space-y-2 text-sm text-ink/80 leading-relaxed ml-4 list-disc">
                 <li>
-                  <strong>Stage 0 — Código de barras (EAN):</strong> si dos
+                  <strong>Stage 0 · Código de barras (EAN):</strong> si dos
                   tiendas exponen el mismo GTIN, es el mismo vino. Zero falsos
                   positivos.
                 </li>
                 <li>
-                  <strong>Stage 1 — Nombres normalizados:</strong> tokens
+                  <strong>Stage 1 · Nombres normalizados:</strong> tokens
                   ordenados alfabéticamente + brand + cosecha + formato.
                   Colapsa la mayoría de casos.
                 </li>
                 <li>
-                  <strong>Stage 2 — Embeddings:</strong> pasamos los nombres
+                  <strong>Stage 2 · Embeddings:</strong> pasamos los nombres
                   por OpenAI text-embedding-3-small y medimos similitud
                   coseno. Captura casos como &ldquo;Don David Reserva
                   Malbec&rdquo; vs &ldquo;Don David Malbec Reserva&rdquo;.
                 </li>
                 <li>
-                  <strong>Stage 3 — LLM adjudicator:</strong> los pares en
+                  <strong>Stage 3 · LLM adjudicator:</strong> los pares en
                   &ldquo;zona gris&rdquo; (similitud entre 0.85 y 0.93) se los
                   preguntamos a GPT-4o-mini: &ldquo;¿es el mismo vino?&rdquo;.
                   Resuelve los casos difíciles.

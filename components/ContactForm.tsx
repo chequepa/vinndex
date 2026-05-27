@@ -131,7 +131,7 @@ export function ContactForm({ kind }: { kind: Kind }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
-      {/* Honeypot — invisible para humanos, los bots lo completan. */}
+      {/* Honeypot · invisible para humanos, los bots lo completan. */}
       <div aria-hidden="true" className="hidden">
         <label>
           No completar este campo

@@ -14,7 +14,7 @@ export function OPTIONS() {
 /**
  * GET /api/v1/rankings/<slug>
  *
- * Devuelve la lista expandida de items en un ranking — los mismos
+ * Devuelve la lista expandida de items en un ranking · los mismos
  * que se muestran en `/ranking/<slug>` pero como JSON listo para
  * consumir programáticamente.
  */

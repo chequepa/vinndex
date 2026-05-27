@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Client-side filter input para /bodegas. Filtra rows de la tabla
- * vía CSS — cada <tr> tiene data-search="<lowercase name>" y el
+ * vía CSS · cada <tr> tiene data-search="<lowercase name>" y el
  * componente alterna `display: none` por JS minimal.
  *
  * Ventajas vs SSR-only:
