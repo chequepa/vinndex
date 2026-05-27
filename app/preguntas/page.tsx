@@ -5,7 +5,7 @@ import { snapshotStats } from "@/lib/snapshot";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Preguntas frecuentes sobre Vinndex — Comparador de vinos",
+  title: "Preguntas frecuentes sobre Vinndex · Comparador de vinos",
   description:
     "Cómo funciona Vinndex, cada cuánto se actualizan los precios, por qué un vino dice 'sin stock' y todas las dudas comunes de usuarios y vinotecas.",
   alternates: { canonical: "https://vinndex.com.ar/preguntas" },

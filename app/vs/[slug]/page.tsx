@@ -32,14 +32,14 @@ export async function generateMetadata({
 }: Params): Promise<Metadata> {
   const { slug } = await params;
   const pair = await findVsPair(slug);
-  if (!pair) return { title: "Comparación no encontrada — Vinndex" };
+  if (!pair) return { title: "Comparación no encontrada · Vinndex" };
   const a = findGroup(pair.slugA);
   const b = findGroup(pair.slugB);
-  if (!a || !b) return { title: "Comparación no encontrada — Vinndex" };
+  if (!a || !b) return { title: "Comparación no encontrada · Vinndex" };
 
   const an = displayWineName(a.canonicalName);
   const bn = displayWineName(b.canonicalName);
-  const title = `${an} vs ${bn} — comparar precios | Vinndex`;
+  const title = `${an} vs ${bn} · comparar precios | Vinndex`;
   const description =
     `Comparamos ${an} y ${bn}: precio mínimo, cantidad de vinotecas, ` +
     `varietal, región. Encontrá el mejor precio para ambos en vinotecas ` +
@@ -80,7 +80,7 @@ export default async function VsPage({ params }: Params) {
 
   // Parse fallback: si el slug viene tal cual escrito por el usuario
   // pero NO está en la lista pre-generada, intentamos parsearlo
-  // dinámicamente — sirve para los pares que no entraron al top 400.
+  // dinámicamente · sirve para los pares que no entraron al top 400.
   const pair = await findVsPair(slug);
   let slugA: string;
   let slugB: string;
@@ -95,7 +95,7 @@ export default async function VsPage({ params }: Params) {
     if (idx < 0) notFound();
     slugA = slug.slice(0, idx);
     slugB = slug.slice(idx + 4);
-    // Canonicalizar orden alfabético — si el usuario llega a
+    // Canonicalizar orden alfabético · si el usuario llega a
     // /vs/b-vs-a, redirigimos a /vs/a-vs-b para no duplicar.
     if (slugA > slugB) {
       redirect(`/vs/${slugB}-vs-${slugA}`);
@@ -170,7 +170,7 @@ export default async function VsPage({ params }: Params) {
           <Card wine={b} bestPriceOf={a.minPrice && b.minPrice && b.minPrice < a.minPrice ? b : a} other={a} />
         </div>
 
-        {/* Compare table — desglose punto por punto */}
+        {/* Compare table · desglose punto por punto */}
         <section className="mt-12">
           <h2 className="display text-2xl font-semibold text-ink mb-4">
             Comparación detallada

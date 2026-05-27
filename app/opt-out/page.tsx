@@ -5,11 +5,11 @@ import { ContactForm } from "@/components/ContactForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pedir opt-out — Vinndex",
+  title: "Pedir opt-out · Vinndex",
   description:
     "Si sos dueño o dueña de una vinoteca y preferís que no aparezca en Vinndex, te la sacamos. Así lo hacés.",
   alternates: { canonical: "https://vinndex.com.ar/opt-out" },
-  // Form de opt-out para vinotecas — no debe rankear ni ser scrapeada.
+  // Form de opt-out para vinotecas · no debe rankear ni ser scrapeada.
   // index:false + follow:true para que pase link-juice si lo linkeamos
   // pero la página en sí no salga en SERP. Audit 22/05.
   robots: { index: false, follow: true },
@@ -70,8 +70,8 @@ export default function OptOutPage() {
               <strong>
                 Usá un email del mismo dominio que tu tienda
               </strong>{" "}
-              (ej. <code className="bg-snow px-1 rounded text-sm">vos@tuvinoteca.com.ar</code>)
-              — así verificamos que sos responsable.
+              (ej. <code className="bg-snow px-1 rounded text-sm">vos@tuvinoteca.com.ar</code>),
+              así verificamos que sos responsable.
             </li>
             <li>
               En máximo <strong>48 horas hábiles</strong> te confirmamos y

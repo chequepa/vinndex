@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "API pública para desarrolladores — Vinndex",
+  title: "API pública para desarrolladores · Vinndex",
   description:
     "API REST pública de Vinndex: vinos, búsqueda, vinotecas, rankings, price drops. Sin auth, CORS abierto, JSON, cache 5min. Para agentes IA, apps y scripts.",
   keywords: [
@@ -188,7 +188,7 @@ export default function DevelopersPage() {
           <ul className="space-y-2 text-sm text-graphite leading-relaxed">
             <li>
               · <strong>Sin auth, sin rate limit estricto</strong>. Pedimos
-              que seas razonable — cache local cuando puedas, respetá los
+              que seas razonable · cache local cuando puedas, respetá los
               headers de <code>cache-control</code> que mandamos (5 min en
               cliente / 15 min en edge).
             </li>

@@ -20,7 +20,7 @@ type Group = {
  * the user hasn't viewed anything yet (so zero-state doesn't clutter
  * the layout for first-time visitors).
  *
- * The parent section header is also conditional — it only appears
+ * The parent section header is also conditional · it only appears
  * once there's at least 2 items to show (showing 1 recently-viewed
  * card feels incomplete).
  */
@@ -45,7 +45,7 @@ export function RecentlyViewedSection({ limit = 6 }: { limit?: number }) {
         setFetchKey(desiredKey);
       })
       .catch(() => {
-        /* silent — this is a nice-to-have section */
+        /* silent · this is a nice-to-have section */
       });
     return () => {
       cancelled = true;

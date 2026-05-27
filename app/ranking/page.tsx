@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { RANKINGS, applyRanking, type Ranking } from "@/lib/rankings";
 
 export const metadata: Metadata = {
-  title: "Rankings de vinos argentinos — Vinndex",
+  title: "Rankings de vinos argentinos · Vinndex",
   description:
     "Top malbecs por precio, top bodegas, top regiones y selecciones por momento (asado, regalo, pescado). Vinos argentinos comparados en 100+ vinotecas online.",
   keywords: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://vinndex.com.ar/ranking" },
 };
 
-// Agrupamos los rankings por categoría visual — el orden + grupo es
+// Agrupamos los rankings por categoría visual · el orden + grupo es
 // puramente cosmético, derivado del slug. Cualquier ranking nuevo
 // que se agregue a RANKINGS cae en su bucket por convención de slug.
 type Group = { title: string; description: string; predicate: (r: Ranking) => boolean };
@@ -38,7 +38,7 @@ const GROUPS: Group[] = [
   },
   {
     title: "Por momento u ocasión",
-    description: "Selecciones por uso — asado, regalo, mariscos, orgánicos.",
+    description: "Selecciones por uso · asado, regalo, mariscos, orgánicos.",
     predicate: (r) =>
       r.slug.startsWith("vinos-para-") ||
       r.slug === "vinos-blancos-para-pescado" ||
@@ -68,7 +68,7 @@ const GROUPS: Group[] = [
   {
     title: "Por región",
     description:
-      "Las zonas vinícolas más reconocidas de Argentina — terroir y geografía.",
+      "Las zonas vinícolas más reconocidas de Argentina · terroir y geografía.",
     predicate: (r) =>
       r.slug === "top-valle-de-uco" ||
       r.slug === "top-lujan-de-cuyo" ||
@@ -79,7 +79,7 @@ const GROUPS: Group[] = [
 
 export default function RankingIndex() {
   // Pre-cuento items por ranking para mostrar el badge "N vinos".
-  // ~20 rankings × ~13k groups con comparator simple — sub-100ms.
+  // ~20 rankings × ~13k groups con comparator simple · sub-100ms.
   const cards = RANKINGS.map((r) => ({
     ...r,
     count: applyRanking(r).length,
@@ -119,13 +119,13 @@ export default function RankingIndex() {
             Rankings de vinos
           </h1>
           <p className="text-graphite text-xl leading-relaxed max-w-3xl">
-            Listas curadas para descubrir el vino que estás buscando — por
+            Listas curadas para descubrir el vino que estás buscando, por
             precio, ocasión, varietal, bodega o región. Todas se actualizan
             con el snapshot diario y reflejan el dato real de las vinotecas
             online.
           </p>
           <p className="text-xs text-graphite mt-4">
-            {RANKINGS.length} rankings disponibles · sin patrocinios — el orden
+            {RANKINGS.length} rankings disponibles · sin patrocinios · el orden
             refleja el dato real bajo el criterio de cada lista.
           </p>
         </div>

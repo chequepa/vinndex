@@ -20,7 +20,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Vinndex — Comparador de precios de vinos en Argentina",
+    default: "Vinndex · Comparador de precios de vinos en Argentina",
     template: "%s",
   },
   description:
@@ -31,13 +31,13 @@ export const metadata: Metadata = {
     locale: "es_AR",
     siteName: "Vinndex",
     url: "https://vinndex.com.ar",
-    title: "Vinndex — Comparador de precios de vinos en Argentina",
+    title: "Vinndex · Comparador de precios de vinos en Argentina",
     description:
       "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vinndex — Comparador de precios de vinos en Argentina",
+    title: "Vinndex · Comparador de precios de vinos en Argentina",
     description:
       "Buscá un vino, encontrá todas las vinotecas online que lo venden ordenadas por precio.",
     // Audit 22/05: card era summary_large_image pero sin twitter:image
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     // la ruta relativa al endpoint dinámico app/opengraph-image.tsx.
     images: ["/opengraph-image"],
   },
-  // Sin `index: true, follow: true` explícito — es el default de Google
+  // Sin `index: true, follow: true` explícito · es el default de Google
   // y emitirlo a nivel root creaba señales conflictivas cuando una page
   // hace notFound() o setea `robots: { index: false }` (terminaban
   // saliendo 2 meta robots tags en el HTML). Audit 22/05.
@@ -86,10 +86,10 @@ export default function RootLayout({
         </a>
         {children}
         <CompareFloatingButton />
-        {/* Server-side pageview tracker — reemplaza el beacon de
+        {/* Server-side pageview tracker · reemplaza el beacon de
             Cloudflare Web Analytics (que cargaba un script de
             terceros con cookies, penalizando best-practices en
-            Lighthouse). Sin librerías, sin cookies — solo path +
+            Lighthouse). Sin librerías, sin cookies · solo path +
             referrer + timestamp logueado a stdout. */}
         <Suspense fallback={null}>
           <Analytics />

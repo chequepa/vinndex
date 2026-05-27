@@ -29,7 +29,7 @@ type GroupInfo = {
  *     en visitantes nuevos)
  *   - ningún favorito está en la lista de price-drops del día
  *
- * Es mínimo intencionalmente — top 3, sin badge de "más drops, ver
+ * Es mínimo intencionalmente · top 3, sin badge de "más drops, ver
  * lista" porque el visit a /favoritos es 1 click más.
  */
 export function HomeFavoriteDrops() {
@@ -77,7 +77,7 @@ export function HomeFavoriteDrops() {
   }, [favs]);
 
   // Hidden cuando: aún no terminó de cargar, no hay favs, o no hay drops.
-  // Cero salto de layout — la sección se renderiza dentro de un fragment
+  // Cero salto de layout · la sección se renderiza dentro de un fragment
   // que devuelve null y ocupa 0px.
   if (!ready || favs.length === 0 || drops.length === 0) return null;
 

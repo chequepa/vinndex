@@ -12,7 +12,7 @@ type Props = {
 /**
  * Share buttons for a ficha: WhatsApp (huge in AR), X/Twitter, and a
  * copy-link button with a tiny "Copiado" toast. No tracking, no third-
- * party scripts — just href intents + clipboard API.
+ * party scripts · just href intents + clipboard API.
  */
 export function ShareButtons({ url, title, description, className = "" }: Props) {
   const [copied, setCopied] = useState(false);
@@ -22,7 +22,7 @@ export function ShareButtons({ url, title, description, className = "" }: Props)
       ? url
       : `${window.location.origin}${url}`;
 
-  const shareText = description ? `${title} — ${description}` : title;
+  const shareText = description ? `${title} · ${description}` : title;
 
   const wa = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${fullUrl}`)}`;
   const tw = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
@@ -35,7 +35,7 @@ export function ShareButtons({ url, title, description, className = "" }: Props)
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      // clipboard blocked — fall back: open a prompt? For MVP, silent fail.
+      // clipboard blocked · fall back: open a prompt? For MVP, silent fail.
     }
   }
 

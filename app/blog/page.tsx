@@ -4,11 +4,11 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 
 export const metadata: Metadata = {
-  title: "Blog de vinos argentinos — Vinndex",
+  title: "Blog de vinos argentinos · Vinndex",
   description:
     "Notas sobre vinos argentinos: regiones, varietales, bodegas y cómo comparar precios online de forma honesta.",
   openGraph: {
-    title: "Blog de vinos argentinos — Vinndex",
+    title: "Blog de vinos argentinos · Vinndex",
     description:
       "Notas sobre vinos argentinos: regiones, varietales, bodegas y cómo comparar precios online de forma honesta.",
     type: "website",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog de vinos argentinos — Vinndex",
+    title: "Blog de vinos argentinos · Vinndex",
     description:
       "Notas sobre vinos argentinos: regiones, varietales, bodegas y cómo comparar precios online de forma honesta.",
   },

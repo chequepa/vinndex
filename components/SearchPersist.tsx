@@ -50,7 +50,7 @@ export function SearchPersist({ query }: { query: string }) {
         localStorage.setItem(KEY, query.trim());
         notify();
       } catch {
-        /* storage disabled — whatever */
+        /* storage disabled · whatever */
       }
     }
   }, [query]);
@@ -60,7 +60,7 @@ export function SearchPersist({ query }: { query: string }) {
 /**
  * Shown on /buscar when no query is active and there's a previous
  * search worth surfacing. One click to return to the last search
- * the user ran — without re-typing.
+ * the user ran · without re-typing.
  */
 export function LastSearchChip() {
   const last = useLastSearch();

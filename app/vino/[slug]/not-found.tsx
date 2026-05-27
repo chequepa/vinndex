@@ -78,9 +78,9 @@ export default function NotFound() {
             404 · Este vino no está en el catálogo
           </p>
           <h1 className="display text-4xl md:text-5xl font-semibold text-ink leading-[1.05] mb-5">
-            No lo encontramos —
+            No lo encontramos.
             <br />
-            <span className="italic font-normal">por ahora.</span>
+            <span className="italic font-normal">Por ahora.</span>
           </h1>
           <p className="text-graphite text-lg max-w-xl mx-auto leading-relaxed">
             Tenemos {stats.productCount.toLocaleString("es-AR")} ofertas de{" "}

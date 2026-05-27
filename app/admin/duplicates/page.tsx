@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { readDuplicatesReport } from "@/lib/duplicatesReport";
 
 export const metadata: Metadata = {
-  title: "Duplicados sospechosos — Admin · Vinndex",
+  title: "Duplicados sospechosos · Admin · Vinndex",
   description:
     "Auditoría de grupos sospechosos de ser duplicados según las heurísticas del matcher.",
   robots: { index: false, follow: false },
@@ -52,7 +52,7 @@ export default async function DuplicatesPage() {
             </code>{" "}
             corrido en el último daily-scrape. Cada cluster representa un set
             de grupos que <em>probablemente</em> son el mismo vino mal
-            atribuido — no se mergean automáticamente porque hay riesgo de
+            atribuido · no se mergean automáticamente porque hay riesgo de
             falso positivo. Sirve para iterar sobre{" "}
             <code className="text-xs bg-white px-1.5 py-0.5 rounded">
               NAME_PREFIX_TO_BRAND

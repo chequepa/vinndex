@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Favorites — client-only feature, list of wine slugs persisted in
+ * Favorites · client-only feature, list of wine slugs persisted in
  * localStorage under "vx:favorites". The favoritos/ page reads this list
  * and fetches the group data via /api/groups/batch.
  *

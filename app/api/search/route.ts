@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Autocomplete search endpoint. Returns top matches for a query,
- * minimal shape — just enough to render the dropdown in SearchInput
+ * minimal shape · just enough to render the dropdown in SearchInput
  * without blowing up the JSON payload.
  *
  * Kept short (limit 8) since the dropdown is a preview, not the full

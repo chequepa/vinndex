@@ -9,7 +9,7 @@ import { formatArs, displayBrand, storeName } from "@/lib/snapshot";
 import { readPriceDrops } from "@/lib/priceDrops";
 
 export const metadata: Metadata = {
-  title: "Price drops — Admin · Vinndex",
+  title: "Price drops · Admin · Vinndex",
   description:
     "Detector de bajas de precio significativas vs mediana de los últimos 7 días.",
   robots: { index: false, follow: false },

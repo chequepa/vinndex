@@ -6,7 +6,7 @@ import { getMarketStats } from "@/lib/marketStats";
 import { formatArs } from "@/lib/snapshot";
 
 export const metadata: Metadata = {
-  title: "Estado del mercado · datos del vino argentino — Vinndex",
+  title: "Estado del mercado · datos del vino argentino · Vinndex",
   description:
     "Datos agregados del mercado de vinos online en Argentina: distribución por varietal, región y precio. Precio mediana por varietal. Top bodegas por cobertura. Actualizado todos los días.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://vinndex.com.ar/data" },
   openGraph: {
-    title: "Estado del mercado · datos del vino argentino — Vinndex",
+    title: "Estado del mercado · datos del vino argentino · Vinndex",
     description:
       "Distribución por varietal, región, precio. Precio mediana por varietal. Top bodegas. Actualizado a diario.",
     url: "https://vinndex.com.ar/data",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Estado del mercado · datos del vino argentino — Vinndex",
+    title: "Estado del mercado · datos del vino argentino · Vinndex",
     description:
       "Distribución por varietal, región y precio. Precio mediana por varietal. Top bodegas. Actualizado a diario.",
   },
@@ -57,7 +57,7 @@ export default function DataPage() {
     1,
   );
 
-  // Dataset schema — habilita aparición en Google Dataset Search.
+  // Dataset schema · habilita aparición en Google Dataset Search.
   // Audiencia natural: data journalists, analistas de e-commerce AR,
   // estudiantes de marketing. Vector posible de backlinks editoriales.
   const datasetJsonLd = {
@@ -129,7 +129,7 @@ export default function DataPage() {
             Estado del mercado
           </h1>
           <p className="text-graphite text-base md:text-lg leading-relaxed max-w-3xl">
-            Datos agregados del vino argentino online — distribución por
+            Datos agregados del vino argentino online · distribución por
             varietal, región, precio. Actualizado a diario con el snapshot de
             las {stats.totals.storeCount} vinotecas relevadas.
           </p>
@@ -231,7 +231,7 @@ export default function DataPage() {
             La concentración de Mendoza (Valle de Uco + Luján de Cuyo) es
             evidente. Salta y Patagonia con presencia secundaria. Considerá
             que sólo contamos vinos con región identificada en el nombre o la
-            etiqueta — el resto cuenta como &ldquo;sin región&rdquo;.
+            etiqueta · el resto cuenta como &ldquo;sin región&rdquo;.
           </p>
           <ul className="space-y-2 -mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
             {stats.regions.map((r) => {
@@ -314,7 +314,7 @@ export default function DataPage() {
           </h2>
           <p className="text-sm text-graphite mb-6 max-w-3xl">
             Bodegas con mayor presencia en vinotecas online. Cobertura se
-            mide en vinotecas distintas que las stockean —{" "}
+            mide en vinotecas distintas que las stockean.{" "}
             <Link href="/bodegas" className="text-cobalt underline">
               ver todas las {stats.totals.brandCount.toLocaleString("es-AR")}{" "}
               bodegas
@@ -366,7 +366,7 @@ export default function DataPage() {
             &ldquo;Comparables&rdquo; = vinos presentes en al menos 2
             vinotecas con precio relevado. El precio mediana es la mediana
             del precio mínimo (mejor oferta) de cada vino en su grupo. Sin
-            ponderación por volumen — cada vino cuenta una vez. Detalle
+            ponderación por volumen · cada vino cuenta una vez. Detalle
             técnico del matching:{" "}
             <Link href="/como-funciona" className="text-cobalt underline">
               cómo funciona Vinndex

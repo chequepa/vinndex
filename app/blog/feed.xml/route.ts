@@ -6,7 +6,7 @@ const SITE = "https://vinndex.com.ar";
  * Atom 1.0 feed for the blog. Atom beats RSS 2.0 for correctness
  * (id required, dates mandatory, content-type in updated).
  *
- * Re-generated on each request for simplicity — blog posts are static
+ * Re-generated on each request for simplicity · blog posts are static
  * so next time we need to scale, add `export const revalidate = 3600`.
  */
 

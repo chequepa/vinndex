@@ -2,7 +2,7 @@ import { snapshot } from "@/lib/snapshot";
 import { listBuckets, renderIndex } from "@/lib/sitemap-buckets";
 
 /**
- * Sitemap index — entry point que robots.txt declara y Google consume
+ * Sitemap index · entry point que robots.txt declara y Google consume
  * primero. Lista los sub-sitemaps por tipo en `/sitemap/[id].xml`.
  *
  * El bucketing y la generación viven en `lib/sitemap-buckets.ts` y se

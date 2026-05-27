@@ -11,7 +11,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function GET(req: Request, { params }: Params) {
   const { slug } = await params;
 
-  // Auth primero — incluso `_list` (ver nota en el route de tiendanube:
+  // Auth primero · incluso `_list` (ver nota en el route de tiendanube:
   // exponer metadata de tiendas sin auth es recon gratis).
   const authFail = requireScrapeAuth(req);
   if (authFail) return authFail;

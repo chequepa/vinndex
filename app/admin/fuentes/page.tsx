@@ -7,7 +7,7 @@ import type { StorePlatform } from "@/lib/adapters/types";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Auditoría de fuentes — Vinndex",
+  title: "Auditoría de fuentes · Vinndex",
 };
 
 /** Static metadata per platform (label, color, difficulty tier). */

@@ -18,7 +18,7 @@ async function publicOrigin(req: Request): Promise<string> {
  * Mercado Libre OAuth callback.
  *
  * Flow:
- *   1. Juan visits /api/auth/mercadolibre/login — redirects to ML auth page
+ *   1. Juan visits /api/auth/mercadolibre/login · redirects to ML auth page
  *   2. Juan approves
  *   3. ML redirects here with ?code=XXX
  *   4. This exchanges the code for access_token + refresh_token
@@ -114,7 +114,7 @@ export async function GET(req: Request) {
     <pre style="word-break:break-all;white-space:pre-wrap;background:#f3f3f3;padding:14px;border-radius:8px;font-family:monospace">${escapeHtml(refresh_token)}</pre>
     <details style="margin-top:20px"><summary>Otros datos (no guardes)</summary>
     <pre>user_id: ${user_id}
-access_token (expira en ${expires_in}s, no lo uses directamente — el scraper lo regenera): ${escapeHtml(access_token)}</pre>
+access_token (expira en ${expires_in}s, no lo uses directamente · el scraper lo regenera): ${escapeHtml(access_token)}</pre>
     </details>
     <p style="margin-top:30px;color:#666;font-size:14px">El refresh_token dura 6 meses. Cuando expire el daily scrape va a empezar a fallar y vamos a tener que re-autorizar.</p>
   `);

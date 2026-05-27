@@ -14,15 +14,15 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const p = findFacetPage("varietal", slug);
-  if (!p) return { title: "Varietal no encontrado — Vinndex" };
+  if (!p) return { title: "Varietal no encontrado · Vinndex" };
   return {
-    title: `${p.name} — ${p.groupCount} etiquetas comparadas | Vinndex`,
+    title: `${p.name} · ${p.groupCount} etiquetas comparadas | Vinndex`,
     description: `Precios de ${p.name} en ${p.storeCount} vinotecas online de Argentina. ${p.groupCount} etiquetas relevadas.`,
     alternates: {
       canonical: `https://vinndex.com.ar/varietal/${slug}`,
     },
     openGraph: {
-      title: `${p.name} — Vinndex`,
+      title: `${p.name} · Vinndex`,
       description: `${p.groupCount} etiquetas de ${p.name} en ${p.storeCount} vinotecas`,
       type: "website",
       locale: "es_AR",
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${p.name} — Vinndex`,
+      title: `${p.name} · Vinndex`,
       description: `${p.groupCount} etiquetas de ${p.name} en ${p.storeCount} vinotecas online de Argentina.`,
       images: p.topGroups[0]?.imageUrl ? [p.topGroups[0].imageUrl] : undefined,
     },
@@ -66,7 +66,7 @@ function FacetLayout({
     ],
   };
 
-  // CollectionPage + ItemList — la página representa una colección de
+  // CollectionPage + ItemList · la página representa una colección de
   // vinos del varietal/región. Rich snippets de ItemList con posición
   // y links para queries como "vinos malbec" o "vinos de mendoza".
   // Top 30 para no sobrecargar el JSON-LD. Audit 22/05.

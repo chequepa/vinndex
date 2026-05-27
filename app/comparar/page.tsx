@@ -16,7 +16,7 @@ import type { ProductGroup } from "@/lib/matching";
 import { readVsPairs } from "@/lib/vsPairs";
 
 export const metadata: Metadata = {
-  title: "Comparar vinos — Vinndex",
+  title: "Comparar vinos · Vinndex",
   description:
     "Hasta 4 vinos lado a lado: precio mínimo, cantidad de vinotecas, varietales, región.",
   robots: { index: false, follow: true },

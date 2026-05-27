@@ -9,7 +9,7 @@ type Props = {
 
 /**
  * Sparkline SVG for price over time. Renders nothing if we don't have
- * at least 2 data points — the feature lights up gradually as the
+ * at least 2 data points · the feature lights up gradually as the
  * daily CI backfills history.
  *
  * Pure SVG, no chart library. Width is fluid via viewBox.

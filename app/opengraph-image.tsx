@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { snapshotStats } from "@/lib/snapshot";
 
 export const runtime = "nodejs";
-export const alt = "Vinndex — Comparador de precios de vinos en Argentina";
+export const alt = "Vinndex · Comparador de precios de vinos en Argentina";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

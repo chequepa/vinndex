@@ -21,11 +21,11 @@ export async function generateMetadata({
   params,
 }: Params): Promise<Metadata> {
   const { slug } = await params;
-  if (!isValidSlug(slug)) return { title: "Post no encontrado — Vinndex" };
+  if (!isValidSlug(slug)) return { title: "Post no encontrado · Vinndex" };
   const mod = await import(`@/content/blog/${slug}.mdx`);
   const meta = mod.metadata as PostMeta;
   return {
-    title: `${meta.title} — Vinndex`,
+    title: `${meta.title} · Vinndex`,
     description: meta.description,
     openGraph: {
       title: meta.title,

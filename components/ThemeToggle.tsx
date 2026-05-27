@@ -11,7 +11,7 @@ type Theme = "light" | "dark" | "system";
  * flash of light theme before React hydrates.
  *
  * useSyncExternalStore is the React-blessed way to subscribe to external
- * state (localStorage here) — avoids the "setState in useEffect" lint
+ * state (localStorage here) · avoids the "setState in useEffect" lint
  * warning and handles SSR/hydration correctly via getServerSnapshot.
  */
 

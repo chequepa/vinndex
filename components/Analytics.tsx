@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from "next/navigation";
  * cambia la ruta. Reemplaza al beacon de Cloudflare que cargaba un
  * script de terceros con cookies.
  *
- * Sin librerías, sin cookies, sin sesiones — solo el path + referrer
+ * Sin librerías, sin cookies, sin sesiones · solo el path + referrer
  * + timestamp por pageview. La data va a stdout del server vía
  * console.log y queda en logs de Railway.
  *
@@ -22,8 +22,8 @@ export function Analytics() {
 
   useEffect(() => {
     // Key estable de la "ruta efectiva": path + (algunos) searchParams.
-    // Limitamos a un set chico — `q`, `varietal`, `region`, `tipo`,
-    // `sort` — para no inflar el log con queries únicas de paginación
+    // Limitamos a un set chico · `q`, `varietal`, `region`, `tipo`,
+    // `sort` · para no inflar el log con queries únicas de paginación
     // y similares.
     const sp = new URLSearchParams();
     for (const k of ["q", "varietal", "region", "tipo", "sort", "multi"]) {
@@ -48,7 +48,7 @@ export function Analytics() {
         return;
       }
     } catch {
-      /* localStorage bloqueado — seguimos */
+      /* localStorage bloqueado · seguimos */
     }
 
     const ref = typeof document !== "undefined" ? document.referrer : "";
@@ -58,7 +58,7 @@ export function Analytics() {
       ts: Date.now(),
     });
 
-    // sendBeacon es ideal para esto — no bloquea navegación, garantiza
+    // sendBeacon es ideal para esto · no bloquea navegación, garantiza
     // delivery aún si el usuario salta de página inmediatamente. Fallback
     // a fetch keepalive en navegadores viejos / cuando sendBeacon falla.
     let sent = false;
@@ -79,7 +79,7 @@ export function Analytics() {
         body,
         keepalive: true,
       }).catch(() => {
-        /* silent — analytics nunca rompe UX */
+        /* silent · analytics nunca rompe UX */
       });
     }
   }, [pathname, searchParams]);
