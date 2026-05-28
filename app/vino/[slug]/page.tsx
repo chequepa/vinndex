@@ -10,6 +10,7 @@ import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
 import { StickyCTA } from "@/components/StickyCTA";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
+import { PriceLadder } from "@/components/PriceLadder";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
@@ -227,6 +228,32 @@ export default async function Vino({ params }: Params) {
   const inStockOffers = offers.filter((o) => o.inStock);
   const allOutOfStock = inStockOffers.length === 0;
   const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
+
+  // Ladder dataset: solo botellas con stock real y precio válido. Las
+  // cosechas de colección quedan fuera del ladder (distorsionan la escala)
+  // pero siguen apareciendo en la tabla detallada de abajo.
+  const ladderOffers = inStockOffers
+    .filter((o) => !o.isCollector && o.priceArs != null && o.priceArs > 0)
+    .sort((a, b) => (a.priceArs ?? 0) - (b.priceArs ?? 0))
+    .map((o) => {
+      const sname = storeName(o.storeSlug);
+      const priceArs = o.priceArs!;
+      const bestPrice = bestOffer.priceArs ?? priceArs;
+      const diffPct =
+        bestPrice > 0 && priceArs > bestPrice
+          ? Math.round(((priceArs - bestPrice) / bestPrice) * 100)
+          : null;
+      return {
+        externalUrl: o.externalUrl,
+        storeSlug: o.storeSlug,
+        storeName: sname,
+        storeInitials: storeInitials(sname),
+        storeColor: colorForStore(o.storeSlug),
+        priceArs,
+        isBest: o === bestOffer,
+        diffPct,
+      };
+    });
 
   // Bottle-only stats: el snapshot tiene minPrice/maxPrice contando cases
   // también. Acá los recomputamos para el hero y la metadata.
@@ -889,6 +916,20 @@ export default async function Vino({ params }: Params) {
 
       {/* TABLA DE PRECIOS */}
       <main id="contenido" className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
+        {/* Price Ladder — visualización editorial del rango de precios.
+            Solo aparece cuando hay 2+ vinotecas con stock (sino no hay
+            "dispersión" que contar). La tabla detallada de abajo sigue
+            siendo la fuente de verdad para revisar SKU + visitar. */}
+        {ladderOffers.length >= 2 && (
+          <section id="ladder" className="mb-12 scroll-mt-8">
+            <PriceLadder
+              offers={ladderOffers}
+              formatArs={formatArs}
+              wineName={group.canonicalName}
+            />
+          </section>
+        )}
+
         <section id="precios" className="scroll-mt-8">
           <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
             <div>
