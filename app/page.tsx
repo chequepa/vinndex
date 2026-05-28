@@ -376,14 +376,17 @@ export default async function Home() {
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-2">
-            <a href="#como-funciona" className="chip">
-              Cómo funciona
-            </a>
+            <Link href="/explorar" className="chip">
+              Explorar
+            </Link>
             <a href="#regiones" className="chip">
               Regiones
             </a>
             <a href="#bodegas" className="chip">
               Bodegas
+            </a>
+            <a href="#como-funciona" className="chip">
+              Cómo funciona
             </a>
           </div>
           <a
