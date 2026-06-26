@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SearchInput } from "@/components/SearchInput";
 import Image from "next/image";
 import { BottleFallback } from "@/components/BottleFallback";
@@ -18,6 +19,15 @@ import {
   regionPages,
 } from "@/lib/snapshot";
 import { readPriceDrops } from "@/lib/priceDrops";
+import { RANKINGS } from "@/lib/rankings";
+
+// La home heredaba metadata del layout sin canonical propio → quedaba
+// expuesta a duplicación por params de tracking (?utm=, ?fbclid=). Solo
+// fijamos el canonical; el title/description siguen viniendo del default
+// del layout (no rompe el template `%s` de las demás páginas).
+export const metadata: Metadata = {
+  alternates: { canonical: "https://vinndex.com.ar" },
+};
 
 function formatCount(n: number): string {
   if (n >= 1000) {
@@ -288,6 +298,19 @@ export default async function Home() {
   const varietals = varietalPages().slice(0, 8);
   const allRegions = regionPages();
   const regions = allRegions.slice(0, 6);
+  // Rankings destacados en home: las /ranking/* son las páginas tipo
+  // listicle con mejor chance de rankear en frío (non-branded) y antes la
+  // home no las linkeaba (solo al índice /ranking). Curados de amplio apelo.
+  const featuredRankings = [
+    "top-malbecs-baratos",
+    "vinos-bajo-5000",
+    "top-espumantes",
+    "vinos-para-asado",
+    "vinos-para-regalar",
+    "top-blends",
+  ]
+    .map((slug) => RANKINGS.find((r) => r.slug === slug))
+    .filter((r): r is (typeof RANKINGS)[number] => r !== undefined);
   const findRegion = (name: string) =>
     allRegions.find(
       (r) => r.name.toLowerCase() === name.toLowerCase(),
@@ -1320,6 +1343,25 @@ export default async function Home() {
               </div>
             )}
           </div>
+
+          {featuredRankings.length > 0 && (
+            <div className="mt-12 pt-10 border-t border-ink/10">
+              <h3 className="display text-xl font-semibold text-ink mb-5">
+                Por ranking
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {featuredRankings.map((r) => (
+                  <a
+                    key={r.slug}
+                    href={`/ranking/${r.slug}`}
+                    className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-cobalt rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
+                  >
+                    {r.title}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

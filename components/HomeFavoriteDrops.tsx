@@ -41,7 +41,9 @@ export function HomeFavoriteDrops() {
   // Cargar drops (filtra a los que estén en favoritos)
   useEffect(() => {
     if (favs.length === 0) {
-      setReady(true);
+      // Sin favoritos el render ya devuelve null (guard `favs.length === 0`),
+      // así que no hace falta setState acá — evita el cascading render
+      // sincrónico en mount que marcaba react-hooks/set-state-in-effect.
       return;
     }
     let cancelled = false;

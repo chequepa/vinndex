@@ -12,6 +12,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
+import { isJunkSlug } from "@/lib/junkSlugs";
 import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -25,7 +26,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // linkeables internamente pero noindex para no diluir crawl budget en
   // 147 páginas marginales (mejor concentrar señal en las ~1.039 con ≥2
   // tiendas). Sigue follow para que Google las descubra como links.
-  const isThin = b.storeCount < 2;
+  // isJunkSlug = misparse de marca (numéricos "1615", facetas "coleccion-privada"):
+  // título sin sentido, noindex como las thin. Espejo de /vino/[slug].
+  const isThin = b.storeCount < 2 || isJunkSlug(b.slug);
   return {
     title: `${b.name} · ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
     description: `Compará precios de ${b.name}. ${b.groupCount} etiquetas relevadas en ${b.storeCount} vinotecas online de Argentina.`,

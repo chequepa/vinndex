@@ -128,6 +128,7 @@ export async function entriesForBucket(
         { url: `${SITE}/blog`, lastModified: generatedAt, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE}/ranking`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.8 },
         { url: `${SITE}/bodegas`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
+        { url: `${SITE}/explorar`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/data`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/developers`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
       ];
@@ -160,8 +161,10 @@ export async function entriesForBucket(
       // storeCount<2 = bodega con catálogo en 1 sola tienda → la página
       // marca `noindex` en su generateMetadata. No la mandamos al sitemap
       // para no dar señales contradictorias a Google.
+      // isJunkSlug = misparse de marca (numéricos tipo "1615", facetas tipo
+      // "coleccion-privada"); títulos sin sentido, no deben indexar.
       return brandPages()
-        .filter((b) => b.storeCount >= 2)
+        .filter((b) => b.storeCount >= 2 && !isJunkSlug(b.slug))
         .map((b) => ({
           url: `${SITE}/bodega/${b.slug}`,
           lastModified: generatedAt,
