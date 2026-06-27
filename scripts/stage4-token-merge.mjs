@@ -111,12 +111,28 @@ const COLOR_RE = {
   naranjo: /\b(naranjo|naranja|orange\s*wine)\b/,
   dulce: /\b(dulce|tardia|tardio|late\s*harvest|cosecha\s*tardia)\b/,
   blanco: /\b(blanco|white|blanc)\b/,
-  espumante: /\b(espumante|extra\s*brut|brut|nature|champagne|champ|cava|prosecco|frizz)\b/,
+  // "e/b" / "e.b" = extra brut abreviado (caso real Chandon E/B). Sin esto el
+  // color quedaba null y un E/B blanco mergeaba con un Rosé.
+  espumante: /\b(espumante|extra\s*brut|brut|nature|demi[\s-]*sec|demisec|champagne|champ|cava|prosecco|frizz)\b|\be[\/.]b\b/,
   tinto: /\b(tinto|red|malbec|cabernet|bonarda|syrah|shiraz|merlot|tempranillo|pinot\s*noir|tannat|petit\s*verdot)\b/,
 };
 function colorOf(name) {
   const s = stripAccents(name).toLowerCase();
   for (const [k, re] of Object.entries(COLOR_RE)) if (re.test(s)) return k;
+  return null;
+}
+
+// Nivel de dulzor para espumantes — Extra Brut ≠ Brut ≠ Nature ≠ Demi Sec ≠
+// Dulce son SKUs distintos de la misma bodega. Sólo discrimina cuando AMBOS
+// nombres son espumantes con dulzor explícito distinto.
+function sweetnessOf(name) {
+  const s = stripAccents(name).toLowerCase();
+  if (/\b(demi[\s-]*sec|demisec)\b/.test(s)) return "demisec";
+  if (/\b(brut\s*nature|nature)\b/.test(s)) return "nature";
+  if (/\b(extra\s*brut)\b|\be[\/.]b\b/.test(s)) return "extrabrut";
+  if (/\bdulce\b/.test(s)) return "dulce";
+  if (/\bbrut\b/.test(s)) return "brut";
+  if (/\bseco\b/.test(s)) return "seco";
   return null;
 }
 
@@ -175,6 +191,10 @@ const VARIETAL_RE = [
   ["barbera", /\bbarbera\b/], ["garnacha", /\b(garnacha|grenache)\b/], ["chenin", /\bchenin\b/],
   ["gewurztraminer", /\bgew[uü]?rztraminer\b/], ["marselan", /\bmarselan\b/],
   ["ancellotta", /\bancellotta\b/], ["fiano", /\bfiano\b/], ["pedro gimenez", /\bpedro\s+gim[eé]nez\b/],
+  ["cereza", /\bcereza\b/], ["carmenere", /\bcarmen[eè]re\b/], ["gamay", /\bgamay\b/],
+  ["mourvedre", /\b(mourv[eè]dre|monastrell)\b/], ["aglianico", /\baglianico\b/],
+  ["montepulciano", /\bmontepulciano\b/], ["marsanne", /\bmarsanne\b/], ["roussanne", /\broussanne\b/],
+  ["gruner", /\bgr[uü]ner\b/], ["malvasia", /\bmalvas[ií]a\b/], ["cinsault", /\bcinsault\b/],
   ["blend", /\b(blend|corte|assemblage|ensamble|tinto\s+de\s+mesa)\b/],
 ];
 function styleSet(g) {
@@ -195,6 +215,15 @@ function styleSet(g) {
     }
   }
   return out;
+}
+
+// Tokens que SÍ son identidad legítima de vino (varietal o paraje/tier) y
+// por lo tanto NO cuentan como "token de línea distintivo" para el gate de
+// divergencia de línea de Stage 6.5. EXPORT para stage6-llm-adjudicate.mjs.
+const VARIETAL_TOKENS = new Set(VARIETAL_RE.flatMap(([k]) => k.split(" ")));
+const DISC_TOKENS = new Set(DISCRIMINATORS.flatMap((d) => d.split(" ")));
+export function isIdentityToken(t) {
+  return VARIETAL_TOKENS.has(t) || DISC_TOKENS.has(t);
 }
 
 // Pack/caja vs botella. Caja, estuche, pack, combo, kit, "con copa", "x6",
@@ -243,7 +272,7 @@ const BAD_BRAND = new Set([
   "", "null", "vino", "varios", "otros", "sin marca", "sin identificar",
   "sin definir", "no definido", "s/d", "s/m", "select", "cosecha", "varietal",
 ]);
-function resolveBrand(g) {
+export function resolveBrand(g) {
   let lower = stripAccents(g.canonicalName ?? "").toLowerCase().replace(/[^a-z0-9\s.]/g, " ").replace(/\s+/g, " ").trim();
   for (let i = 0; i < 2; i++) { const n = lower.replace(LEADING_NOISE_RE, ""); if (n === lower) break; lower = n; }
   for (const prefix of Object.keys(NAME_PREFIX_TO_BRAND)) {
@@ -287,20 +316,40 @@ function brandsCompatible(a, b) {
  * se usa abajo sólo para anotar/priorizar la cola gris.
  * EXPORT para el harness dorado (scripts/test-matching.mjs). */
 export function hardConflict(a, b) {
+  const id = identityConflict(a, b);
+  if (id) return id;
+  // Gates de PACKAGING (formato): separan SKUs de empaque distinto. Se
+  // chequean en el par directo, pero NO en la validación transitiva de
+  // ofertas (un grupo ya puede mezclar botella+caja del pipeline original).
+  const an = a.canonicalName, bn = b.canonicalName;
+  if (packSig(an) !== packSig(bn)) return "pack";
+  if (volMl(an) !== volMl(bn)) return "volumen";
+  if (!setsEqual(editionNums(an), editionNums(bn))) return "edicion";
+  return null;
+}
+
+/** Gates de IDENTIDAD del vino (color/dulzor/varietal/tier/parcela) — las
+ * señales de "es OTRO vino". Sin packaging (pack/volumen/edición). Lo usa
+ * la validación transitiva por nombre-de-oferta de Stage 6.5: ahí el
+ * packaging mezclado dentro de un grupo es pre-existente y no debe bloquear,
+ * pero un color/varietal/parcela distinto SÍ (caso ROSÉ oculto vs BLANCO).
+ * EXPORT para stage6-llm-adjudicate.mjs. */
+export function identityConflict(a, b) {
   const an = a.canonicalName, bn = b.canonicalName;
   if (a.type && b.type && a.type !== b.type) return "type";
   const ca = colorOf(an), cb = colorOf(bn);
   if (ca && cb && ca !== cb) return "color";
+  if (ca === "espumante" && cb === "espumante") {
+    const sa = sweetnessOf(an), sb = sweetnessOf(bn);
+    if (sa && sb && sa !== sb) return "dulzor";
+  }
   const sa = styleSet(a), sb = styleSet(b);
   if (sa.size && sb.size) {
     let hit = false;
     for (const v of sa) if (sb.has(v)) hit = true;
     if (!hit) return "varietal";
   }
-  if (packSig(an) !== packSig(bn)) return "pack";
-  if (volMl(an) !== volMl(bn)) return "volumen";
   if (!setsEqual(discriminatorSet(an), discriminatorSet(bn))) return "tier/parcela";
-  if (!setsEqual(editionNums(an), editionNums(bn))) return "edicion";
   return null;
 }
 
@@ -466,13 +515,33 @@ function main() {
   console.log(`  candidatos: ${candidates} · vetados por gate: ${gated} ${JSON.stringify(gateCounts)}`);
   console.log(`  edges de merge: ${edges.length} · gray-zone: ${gray.length}`);
 
+  // ── Overrides manuales (data/known-merges.json) ──
+  // Aserciones humanas: forzar la unión de slugs aunque los gates las veten
+  // (el long-tail que ni el texto ni el LLM cierran). via="forced" salta el
+  // chequeo de conflicto en la aglomeración. Responsabilidad del humano.
+  const slugToIdx = new Map();
+  for (let i = 0; i < N; i++) slugToIdx.set(groups[i].groupSlug, i);
+  let forcedEdges = 0, forcedMissing = 0;
+  try {
+    const known = JSON.parse(readFileSync(resolve(ROOT, "data/known-merges.json"), "utf8"));
+    for (const cluster of known.merges ?? []) {
+      const idxs = cluster.map((s) => slugToIdx.get(s)).filter((x) => x !== undefined);
+      forcedMissing += cluster.length - idxs.length;
+      for (let m = 1; m < idxs.length; m++) {
+        edges.unshift({ i: idxs[0], j: idxs[m], via: "forced", score: 1 });
+        forcedEdges++;
+      }
+    }
+  } catch { /* sin known-merges, seguimos */ }
+  if (forcedEdges > 0) console.log(`  overrides manuales: ${forcedEdges} edges forzados (${forcedMissing} slugs no encontrados)`);
+
   // ── Aglomeración con RESTRICCIÓN ──
   // En vez de union-find ciego + rechazo del cluster entero (que perdía
   // merges buenos cuando un solo grupo incompatible contaminaba el cluster),
   // procesamos los edges por confianza (ean > +tokens raros > +score) y
   // sólo unimos dos clusters si NINGÚN par cruzado viola un gate. Así el
   // cluster nunca contiene una quimera y no perdemos los merges legítimos.
-  const confRank = { ean: 3, equal: 2, anchor: 1 };
+  const confRank = { forced: 4, ean: 3, equal: 2, anchor: 1 };
   edges.sort((a, b) => {
     if (confRank[b.via] !== confRank[a.via]) return confRank[b.via] - confRank[a.via];
     return (b.score ?? 0) - (a.score ?? 0);
@@ -484,13 +553,17 @@ function main() {
   for (const e of edges) {
     const ri = find(e.i), rj = find(e.j);
     if (ri === rj) continue;
-    // chequear conflicto entre todos los miembros de ambos clusters
+    // chequear conflicto entre todos los miembros de ambos clusters. Los
+    // edges "forced" (override manual) saltan el chequeo: el humano asume
+    // la responsabilidad de que sean el mismo vino.
     let conflict = false;
-    for (const m of members[ri]) {
-      for (const n of members[rj]) {
-        if (hardConflict(groups[m], groups[n])) { conflict = true; break; }
+    if (e.via !== "forced") {
+      for (const m of members[ri]) {
+        for (const n of members[rj]) {
+          if (hardConflict(groups[m], groups[n])) { conflict = true; break; }
+        }
+        if (conflict) break;
       }
-      if (conflict) break;
     }
     if (conflict) { blockedEdges++; continue; }
     // unir rj en ri
@@ -597,7 +670,11 @@ function main() {
 
   writeFileSync(SNAPSHOT, JSON.stringify(snap));
   writeFileSync(MERGES_OUT, JSON.stringify(resolved, null, 2));
-  writeFileSync(GRAY_OUT, JSON.stringify({ generatedAt: new Date().toISOString(), count: gray.length, items: gray.slice(0, 500) }, null, 2));
+  // Escribimos TODA la cola gris (no capada) — es el input de la Fase 2
+  // (stage6-llm-adjudicate.mjs). Ordenada por score desc para que el LLM
+  // procese primero los más prometedores.
+  gray.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  writeFileSync(GRAY_OUT, JSON.stringify({ generatedAt: new Date().toISOString(), count: gray.length, items: gray }, null, 2));
 
   console.log(`\n=== Stage 4.5 report ===`);
   console.log(`Clusters mergeados: ${mergedClusters} · rechazados por conflicto interno: ${rejectedClusters}`);

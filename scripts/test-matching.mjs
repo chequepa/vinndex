@@ -32,6 +32,9 @@ const MUST_CONFLICT = [
   ["edicion: Antología 57 vs 60", g("Rutini Antología 57"), g("Rutini Antología 60")],
   ["edad: Montchenot 10 vs 5 años", g("Montchenot Tinto 10 años"), g("Montchenot Tinto 5 años")],
   ["tier: base vs reserva", g("Alma Mora Malbec"), g("Alma Mora Reserva Malbec")],
+  ["color: espumante E/B vs rosé", g("Chandon E/B x 750ml"), g("Chandon Rosé")],
+  ["dulzor: extra brut vs demi sec", g("Chandon Extra Brut"), g("Chandon Demi Sec")],
+  ["dulzor: extra brut vs brut nature", g("Baron B Extra Brut"), g("Baron B Brut Nature")],
 ];
 
 // POSITIVOS: hardConflict DEBE devolver null (compatibles). Mismo vino con
@@ -41,6 +44,7 @@ const MUST_PASS = [
   ["bodega vs línea (El Bayeh Tilcara)", g("El Bayeh Tinto de Tilcara", { type: "Tinto" }), g("Parceleros Criolla Tilcara", { varietals: ["Criolla"] })],
   ["ruido vs limpio", g("Vino Luigi Bosca Malbec D.O.C", { varietals: ["Malbec"] }), g("Luigi Bosca Malbec", { varietals: ["Malbec"] })],
   ["acentos/caps", g("ANGELICA ZAPATA CABERNET S.", { varietals: ["Cabernet Sauvignon"] }), g("Angélica Zapata Cabernet Sauvignon", { varietals: ["Cabernet Sauvignon"] })],
+  ["espumante: E/B vs Extra Brut (mismo dulzor)", g("Chandon E/B x 750ml"), g("Chandon Extra Brut")],
 ];
 
 let failed = 0;

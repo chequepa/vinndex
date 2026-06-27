@@ -135,6 +135,30 @@ jobs:
         run: node scripts/test-matching.mjs && node scripts/stage4-token-merge.mjs
         continue-on-error: true
 
+      - name: Restore Stage 6.5 LLM cache
+        uses: actions/cache@v4
+        with:
+          path: data/stage6-llm-cache.json
+          key: stage6-llm-cache-v1-${{ github.run_id }}
+          restore-keys: |
+            stage6-llm-cache-v1-
+
+      # Stage 6.5 — adjudicador LLM sobre la cola gris de Stage 6. Cierra el
+      # long-tail que el determinístico no puede (nombres divergentes, marca
+      # mal atribuida) con gpt-4o-mini. Los "yes" se aplican con la MISMA
+      # validación de gates que Stage 6 (cero quimeras por gate, aunque el LLM
+      # se equivoque). Skip si no hay OPENAI_API_KEY.
+      - name: Stage 6.5 — LLM adjudicator (if OPENAI_API_KEY set)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            node scripts/stage6-llm-adjudicate.mjs
+          else
+            echo "Skipping Stage 6.5 — OPENAI_API_KEY not set"
+          fi
+        continue-on-error: true
+
       - name: Find duplicates report (alimenta /admin/duplicates)
         run: node scripts/find-duplicates.mjs --out=data/duplicates-report.json
         continue-on-error: true
@@ -212,7 +236,7 @@ jobs:
       - name: Check for changes
         id: diff
         run: |
-          git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json data/stage4-graymerge-candidates.json
+          git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
           if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
