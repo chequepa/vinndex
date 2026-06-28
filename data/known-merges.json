@@ -1,5 +1,12 @@
 {
   "_doc": "Overrides manuales de merge — para el long-tail que ni el texto ni el LLM cierran (nombres demasiado pobres, marca mal atribuida sin paraje raro). Cada entrada de 'merges' es un array de groupSlugs que se fuerzan a UN solo grupo. BYPASEA los gates (es una aserción humana: vos sabés que son el mismo vino). El slug con más storeCount queda como superviviente; el resto redirige 308. Usar con cuidado: un error acá SÍ crea una quimera. Para encontrar candidatos, mirá data/stage4-graymerge-candidates.json o /admin/duplicates.",
   "_ejemplo": [["slug-bodega-malbec", "slug-otra-forma-del-mismo-malbec"]],
-  "merges": []
+  "merges": [
+    [
+      "bayeh-parceleros-pequenos-purmamarca",
+      "bayeh-parceleros-pequenos-purmamarca-quebrada",
+      "criolla-parceleros-purmamarca",
+      "andillian-purmamarca"
+    ]
+  ]
 }
