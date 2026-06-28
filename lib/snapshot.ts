@@ -1,5 +1,6 @@
 import snapshotJson from "@/data/snapshot.json";
 import storesConfig from "@/data/stores.json";
+import groupMergesJson from "@/data/group-merges.json";
 import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup } from "./matching";
 import { bestScoreFor } from "./scores";
@@ -132,6 +133,28 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
 
 export function findGroup(slug: string): ProductGroup | undefined {
   return groups.find((g) => g.groupSlug === slug);
+}
+
+// Mapa slug-absorbido → slug-superviviente, escrito por
+// scripts/stage4-token-merge.mjs cuando una capa de matching une dos
+// grupos. Preserva el SEO: las URLs viejas /vino/<absorbido> redirigen
+// 308 al grupo que las absorbió en vez de tirar 404. Ver
+// app/vino/[slug]/page.tsx.
+const GROUP_MERGES = groupMergesJson as Record<string, string>;
+
+/**
+ * Si `slug` fue absorbido por otro grupo, devuelve el slug superviviente
+ * (verificado que existe como grupo vivo). Sino, null. Resuelve cadenas
+ * de a un salto — el stage escribe destinos finales, pero igual seguimos
+ * hasta 5 saltos por las dudas para no quedar en un redirect colgado.
+ */
+export function resolveMergedSlug(slug: string): string | null {
+  let dest = GROUP_MERGES[slug];
+  for (let i = 0; dest && i < 5; i++) {
+    if (findGroup(dest)) return dest;
+    dest = GROUP_MERGES[dest];
+  }
+  return null;
 }
 
 function groupPriceKey(g: ProductGroup): number {

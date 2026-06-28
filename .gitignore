@@ -47,6 +47,12 @@ next-env.d.ts
 # Stage 3 gray-zone candidates (emitted by Stage 2, consumed by Stage 3)
 /data/stage3-candidates.json
 
+# Stage 6 gray-zone candidates (emitted by Stage 6, consumed by Stage 6.5)
+/data/stage4-graymerge-candidates.json
+
+# Stage 6.5 LLM adjudicator cache (restored via actions/cache in CI)
+/data/stage6-llm-cache.json
+
 # Server-side pageview store (regenerated at runtime, persists during
 # container life only).
 /data/pageviews.ndjson

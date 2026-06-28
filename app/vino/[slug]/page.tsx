@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
@@ -18,6 +18,7 @@ import { extractVintage } from "@/lib/matching";
 import Link from "next/link";
 import {
   findGroup,
+  resolveMergedSlug,
   formatArs,
   storeName,
   groups as allGroups,
@@ -209,7 +210,13 @@ function prettyOfferName(name: string, brand: string | null): string {
 export default async function Vino({ params }: Params) {
   const { slug } = await params;
   const group = findGroup(slug);
-  if (!group) notFound();
+  if (!group) {
+    // Slug absorbido por un merge posterior → redirigí 308 al grupo
+    // superviviente para no perder el ranking SEO de la URL vieja.
+    const dest = resolveMergedSlug(slug);
+    if (dest) permanentRedirect(`/vino/${dest}`);
+    notFound();
+  }
 
   // Cases (estuche, caja, pack x6) y botellas viven en el mismo group
   // por la pipeline de matching pero no son el mismo SKU · comparar precio

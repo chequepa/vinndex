@@ -1,0 +1,18 @@
+{
+  "_doc": "Léxico de discriminadores de SKU para los gates de stage4-token-merge.mjs. 'parcels' = parajes/viñedos que distinguen vinos de un mismo productor (Tilcara ≠ Purmamarca). 'tiers' = palabras de gama (Gran Enemigo ≠ El Enemigo). Si dos grupos difieren en el set {parcels ∪ tiers} presente en el nombre, NUNCA se mergean. Crecer con cuidado: solo agregar tokens que SIEMPRE discriminan SKU, nunca palabras genéricas. Aplicado con word-boundary sobre nombre sin acentos en minúsculas. Multi-palabra (ej 'vista flores') se chequea como frase.",
+  "parcels": [
+    "tilcara", "purmamarca", "maimara", "humahuaca", "uquia", "huacalera", "tumbaya", "volcan",
+    "gualtallary", "altamira", "paraje altamira", "vista flores", "chacayes", "los chacayes",
+    "la consulta", "san pablo", "el cepillo", "el peral", "los arboles", "villa seca",
+    "agrelo", "vistalba", "perdriel", "las compuertas", "chacras de coria", "mayor drummond", "ugarteche",
+    "barrancas", "lunlunta", "russell", "cruz de piedra", "el mirador",
+    "cafayate", "molinos", "valles calchaquies", "payogasta", "tacuil", "yacochuya", "animana", "angastaco", "colome",
+    "alto valle", "mainque", "general roca", "chimpay",
+    "pedernal", "zonda", "tulum", "calingasta"
+  ],
+  "tiers": [
+    "gran", "reserva", "gran reserva", "single", "vineyard", "single vineyard",
+    "parcela", "parcel", "icono", "coleccion", "alta gama", "primera zona",
+    "edicion limitada", "limited edition"
+  ]
+}
