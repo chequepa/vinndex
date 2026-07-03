@@ -84,6 +84,29 @@ function main() {
   console.log(
     `\nWrote ${outPath} — ${snapshot.storeCount} stores, ${snapshot.productCount} products`,
   );
+
+  // Export slim para el pipeline de identidad v2 (build-wine-catalog.mjs +
+  // build-groups-v2.mjs). Las ofertas crudas CON brand se pierden después
+  // (build-groups.mjs dropea products[] del snapshot publicado) — este
+  // archivo las preserva para el shadow run. Gitignored (pesa ~15MB).
+  const offersOut = resolve(REPO_ROOT, "data/offers.json");
+  writeFileSync(
+    offersOut,
+    JSON.stringify({
+      generatedAt: snapshot.generatedAt,
+      offers: merged.map((p) => ({
+        name: p.name,
+        brand: p.brand ?? null,
+        storeSlug: p.storeSlug,
+        externalUrl: p.externalUrl,
+        externalSku: p.externalSku ?? null,
+        priceArs: typeof p.priceArs === "string" ? Number(p.priceArs) || null : p.priceArs ?? null,
+        inStock: p.inStock === true || p.inStock === "True" || p.inStock === "true",
+        imageUrl: p.imageUrl ?? null,
+      })),
+    }),
+  );
+  console.log(`Wrote ${offersOut} — ${merged.length} offers (identidad v2)`);
 }
 
 main();

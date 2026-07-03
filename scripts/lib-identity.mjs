@@ -236,6 +236,9 @@ export const CONTENT_STOPWORDS = new Set([
   "l", "750", "1500", "375", "187", "botella", "bot", "caja", "box", "pack",
   "estuche", "magnum", "media", "half", "bodega", "bodegas", "familia",
   "premium", "cosecha", "wine", "wines", "winery",
+  // Abreviaturas de bodega/familia que nunca son identidad ("FLIA.
+  // ZUCCARDI SERIE A" partía el grupo de Serie A).
+  "flia", "fla", "bod", "fca",
 ]);
 
 /**
@@ -246,6 +249,9 @@ export const CONTENT_STOPWORDS = new Set([
 export function contentTokens(name) {
   return stripAccents(name)
     .toLowerCase()
+    // "año 2023" / "añada 2019" / "cosecha 2020": la palabra pegada al
+    // vintage se va CON el vintage (sola no — "Año Cero" es una etiqueta).
+    .replace(/\b(ano|anada|cosecha)\s+(?=(19\d{2}|20[0-2]\d)\b)/g, " ")
     .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
     .replace(/\b\d+\s*(ml|cc|cm3|cm³|l)\b/g, " ")
     .replace(/\bx\s*\d+\b/g, " ")

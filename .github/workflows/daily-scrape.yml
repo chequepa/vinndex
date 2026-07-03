@@ -159,6 +159,28 @@ jobs:
           fi
         continue-on-error: true
 
+      # ── Identidad v2 (SHADOW) ──────────────────────────────────────────
+      # El sistema nuevo de agrupación: catálogo de vinos (bodega/línea/
+      # varietal + qué parajes-tiers distinguen) + parser estructurado por
+      # oferta. NO toca lo publicado: escribe data/wine-catalog.json y
+      # data/catalog-llm-cache.json (committed, crecen incremental) +
+      # data/snapshot-v2.json y data/identity-v2-report.json (gitignored /
+      # report committed) para comparar contra v1 antes del cutover.
+      - name: Identidad v2 (shadow) — catálogo incremental
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            node scripts/build-wine-catalog.mjs
+          else
+            echo "Skipping catálogo v2 — OPENAI_API_KEY not set"
+          fi
+        continue-on-error: true
+
+      - name: Identidad v2 (shadow) — agrupación + report
+        run: node scripts/build-groups-v2.mjs
+        continue-on-error: true
+
       - name: Find duplicates report (alimenta /admin/duplicates)
         run: node scripts/find-duplicates.mjs --out=data/duplicates-report.json
         continue-on-error: true
@@ -237,6 +259,11 @@ jobs:
         id: diff
         run: |
           git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
+          # Artefactos de identidad v2 (shadow) — pueden no existir si el
+          # step falló (continue-on-error), agregamos sólo los presentes.
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json; do
+            [ -f "$f" ] && git add "$f" || true
+          done
           if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else

@@ -116,6 +116,30 @@ for (const [desc, name, expected] of SECONDARY_CASES) {
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  "${got}"${ok ? "" : ` (esperaba "${expected}")`}`);
 }
 
+// ── parseOffer (identidad v2): clave de vino + comparabilidad ──
+import { parseOffer, fallbackWineKey, isComparable } from "./lib-offer-identity.mjs";
+const PARSE_CASES = [
+  // [descripción, nombreA, brandA, nombreB, brandB, mismaClave?, comparableA?]
+  ["mismo vino con/sin bodega y ruido", "Concreto Malbec", null, "Vino Zuccardi Concreto Malbec 750cc", "Zuccardi", true, true],
+  ["Serie A ≠ Concreto (claves distintas)", "Zuccardi Serie A Malbec", null, "Zuccardi Concreto Malbec", null, false, true],
+  ["375cc NO comparable", "Zuccardi Serie A Malbec 375cc", null, "Zuccardi Serie A Malbec", null, true, false],
+  ["magnum NO comparable", "Zuccardi Concreto Malbec 2016 Magnum 1.5L", null, "Zuccardi Concreto Malbec", null, true, false],
+  ["caja x6 NO comparable", "ZUCCARDI SERIE A MALBEC CAJA X 6 UN", null, "Zuccardi Serie A Malbec", null, true, false],
+  ["estuche NO comparable", "Estuche Zuccardi Serie A Malbec 750cc", null, "Zuccardi Serie A Malbec", null, true, false],
+  ["Medalla ≠ Alaris", "Medalla Malbec", "Trapiche", "Alaris Malbec", "Trapiche", false, true],
+];
+
+console.log("\n=== PARSER v2 (identidad estructurada por oferta) ===");
+for (const [desc, na, ba, nb, bb, sameKey, cmpA] of PARSE_CASES) {
+  const pa = parseOffer(na, ba);
+  const pb = parseOffer(nb, bb);
+  const gotSame = fallbackWineKey(pa) === fallbackWineKey(pb);
+  const gotCmp = isComparable(pa);
+  const ok = gotSame === sameKey && gotCmp === cmpA;
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  clave ${gotSame ? "igual" : "distinta"}, ${gotCmp ? "comparable" : "no-comparable"}`);
+}
+
 console.log("\n=== DATOS (atribuciones de bodega) ===");
 {
   const ok = NAME_PREFIX_TO_BRAND["don david"] === "El Esteco";
@@ -128,4 +152,4 @@ if (failed > 0) {
   console.error(`❌ ${failed} caso(s) fallaron. NO publicar — revisar gates en stage4-token-merge.mjs / remerge-groups.mjs.`);
   process.exit(1);
 }
-console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary).`);
+console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary + ${PARSE_CASES.length} parser v2).`);
