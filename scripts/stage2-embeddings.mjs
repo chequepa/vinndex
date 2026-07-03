@@ -25,6 +25,7 @@ import { readFileSync, writeFileSync, existsSync, createReadStream, createWriteS
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -118,71 +119,77 @@ function hasWord(haystack, word) {
   return new RegExp(`\\b${word.replace(/[-\s]/g, "[-\\s]?")}\\b`, "i").test(haystack);
 }
 
+/**
+ * Firma precomputada por grupo para el chequeo de compatibilidad. El loop
+ * de candidatos es O(n²) sobre ~38k grupos (~700M pares): construir Sets y
+ * RegExps por par (como hacía la versión vieja de compatibleToMerge) era
+ * el 90% de las 2 horas del step. Computamos todo UNA vez por grupo y el
+ * chequeo por par queda en comparaciones de campos.
+ */
+function buildSig(g) {
+  const name = g.canonicalName.toLowerCase();
+  const isVolFormat = (f) => /^\d+(?:ml|l)$/.test(f ?? "");
+  const aNum = name.match(NUMBERED_EDITION);
+  return {
+    varietals: (g.varietals ?? []).map((v) => v.toLowerCase()),
+    type: g.type ?? null,
+    format: g.format ?? null,
+    isVol: isVolFormat(g.format),
+    colorHas: COLOR_KEYWORDS.map((c) => hasWord(name, c)),
+    colorAny: COLOR_KEYWORDS.some((c) => hasWord(name, c)),
+    sweetHas: SWEETNESS_KEYWORDS.map((s) => hasWord(name, s)),
+    sweetAny: SWEETNESS_KEYWORDS.some((s) => hasWord(name, s)),
+    editionNum: aNum ? aNum[1] : null,
+  };
+}
+
 /** Compatible merge: require matching varietal + type + color + sweetness
  * when signals are present. Varietal agreement alone isn't enough because
  * supermarkets often share naming conventions (e.g. "Pico de Oro Tinto" vs
- * "Pico de Oro Rosado" differ only in color word). */
-function compatibleToMerge(a, b) {
-  const av = new Set((a.varietals ?? []).map((v) => v.toLowerCase()));
-  const bv = new Set((b.varietals ?? []).map((v) => v.toLowerCase()));
-  if (av.size > 0 && bv.size > 0) {
+ * "Pico de Oro Rosado" differ only in color word). Misma semántica que la
+ * versión histórica, sobre firmas precomputadas. */
+function compatibleToMergeSig(sa, sb) {
+  if (sa.varietals.length > 0 && sb.varietals.length > 0) {
     let hit = false;
-    for (const v of av) if (bv.has(v)) hit = true;
+    for (const v of sa.varietals) if (sb.varietals.includes(v)) hit = true;
     if (!hit) return false;
   }
 
   // Type mismatch (Tinto vs Blanco vs Espumante vs Rosado vs Dulce) — block
-  if (a.type && b.type && a.type !== b.type) return false;
+  if (sa.type && sb.type && sa.type !== sb.type) return false;
 
-  // Format mismatch (caja vs bottle vs magnum) — block. Antes sólo
-  // bloqueábamos si ambos lados tenían format explícito, pero eso
-  // dejaba pasar el caso "format=null" (= 750ml default) vs
-  // "format=1500ml": Stage 2 los fusionaba porque los embeddings de
-  // "Saint Felicien Malbec" y "Saint Felicien Malbec 1500" son muy
-  // cercanos. Ahora si UNO tiene un format de volumen explícito
-  // (Xml o Xl) y el otro no, asumimos que son volúmenes distintos
-  // y bloqueamos.
-  const isVolFormat = (f) => /^\d+(?:ml|l)$/.test(f ?? "");
-  const aVol = isVolFormat(a.format);
-  const bVol = isVolFormat(b.format);
-  if (a.format && b.format && a.format !== b.format) return false;
-  if (aVol !== bVol && (aVol || bVol)) return false;
+  // Format mismatch (caja vs bottle vs magnum) — block. Si UNO tiene
+  // format de volumen explícito (Xml o Xl) y el otro no (= 750 default),
+  // asumimos volúmenes distintos y bloqueamos.
+  if (sa.format && sb.format && sa.format !== sb.format) return false;
+  if (sa.isVol !== sb.isVol && (sa.isVol || sb.isVol)) return false;
 
-  // Explicit color / sweetness disagreement even when type is missing
-  const aname = a.canonicalName.toLowerCase();
-  const bname = b.canonicalName.toLowerCase();
-
-  for (const color of COLOR_KEYWORDS) {
-    const aHas = hasWord(aname, color);
-    const bHas = hasWord(bname, color);
+  // Explicit color / sweetness disagreement even when type is missing:
+  // uno tiene el keyword i, el otro no PERO tiene algún otro keyword.
+  for (let i = 0; i < sa.colorHas.length; i++) {
+    const aHas = sa.colorHas[i];
+    const bHas = sb.colorHas[i];
     if (aHas !== bHas) {
-      // Check if either explicitly has a DIFFERENT color keyword
-      const otherColors = COLOR_KEYWORDS.filter((c) => c !== color);
-      const aOther = otherColors.some((c) => hasWord(aname, c));
-      const bOther = otherColors.some((c) => hasWord(bname, c));
+      const aOther = sa.colorAny && !aHas;
+      const bOther = sb.colorAny && !bHas;
       if ((aHas && bOther) || (bHas && aOther)) return false;
     }
   }
-
-  for (const sw of SWEETNESS_KEYWORDS) {
-    const aHas = hasWord(aname, sw);
-    const bHas = hasWord(bname, sw);
+  for (let i = 0; i < sa.sweetHas.length; i++) {
+    const aHas = sa.sweetHas[i];
+    const bHas = sb.sweetHas[i];
     if (aHas !== bHas) {
-      // If one has explicit sweetness and the other has a DIFFERENT sweetness, block
-      const others = SWEETNESS_KEYWORDS.filter((s) => s !== sw);
-      const aOther = others.some((s) => hasWord(aname, s));
-      const bOther = others.some((s) => hasWord(bname, s));
+      const aOther = sa.sweetAny && !aHas;
+      const bOther = sb.sweetAny && !bHas;
       if ((aHas && bOther) || (bHas && aOther)) return false;
     }
   }
 
   // Numbered editions: "Expo 13" vs "Expo 24" should not merge
-  const aNum = aname.match(NUMBERED_EDITION);
-  const bNum = bname.match(NUMBERED_EDITION);
-  if (aNum && bNum && aNum[1] !== bNum[1]) {
+  if (sa.editionNum && sb.editionNum && sa.editionNum !== sb.editionNum) {
     // Ignore if the number is a common year or 750
     const skipNums = new Set(["750", "375", "187", "1500"]);
-    if (!skipNums.has(aNum[1]) && !skipNums.has(bNum[1])) return false;
+    if (!skipNums.has(sa.editionNum) && !skipNums.has(sb.editionNum)) return false;
   }
 
   return true;
@@ -320,22 +327,43 @@ async function main() {
   // re-scan (which was timing out the runner at 30+ min on 25k groups).
   console.log("Finding candidate merge pairs + gray-zone for Stage 3...");
   const t1 = Date.now();
+  const sigs = groups.map(buildSig);
   const pairs = [];
   const grayZone = [];
+  let demotedHighConf = 0;
   for (let i = 0; i < groups.length; i++) {
     const gi = groups[i];
     const ei = embeddings[i];
     const topK = [];
     const topGray = [];
     for (let j = i + 1; j < groups.length; j++) {
+      if (!compatibleToMergeSig(sigs[i], sigs[j])) continue;
       const gj = groups[j];
-      if (!compatibleToMerge(gi, gj)) continue;
       const sim = cosine(ei, embeddings[j]);
       if (sim >= SIM_THRESHOLD) {
-        topK.push({ j, sim });
-        if (topK.length > MAX_MERGE_PAIRS_PER_GROUP) {
-          topK.sort((a, b) => b.sim - a.sim);
-          topK.length = MAX_MERGE_PAIRS_PER_GROUP;
+        // Gate de línea (anti-quimera): similitud de embedding ≥ 0.93 NO
+        // alcanza para auto-merge — "Zuccardi Serie A Malbec" y "Zuccardi
+        // Concreto Malbec" dan cosine altísimo (misma bodega, mismo
+        // varietal, misma estructura) y son vinos distintos. El auto-merge
+        // exige line-tokens IGUALES (sólo orden/ruido difiere) + cero
+        // conflicto duro (volumen/pack/edición/parcela). Todo lo demás se
+        // degrada a la cola gris para que el LLM de Stage 3 lo juzgue.
+        if (
+          lineRelation(gi.canonicalName, gj.canonicalName) === "equal" &&
+          !hardConflict(gi, gj)
+        ) {
+          topK.push({ j, sim });
+          if (topK.length > MAX_MERGE_PAIRS_PER_GROUP) {
+            topK.sort((a, b) => b.sim - a.sim);
+            topK.length = MAX_MERGE_PAIRS_PER_GROUP;
+          }
+        } else {
+          demotedHighConf++;
+          topGray.push({ j, sim });
+          if (topGray.length > MAX_GRAY_ZONE_PER_GROUP) {
+            topGray.sort((a, b) => b.sim - a.sim);
+            topGray.length = MAX_GRAY_ZONE_PER_GROUP;
+          }
         }
       } else if (sim >= GRAY_ZONE_MIN) {
         topGray.push({ j, sim });
@@ -350,6 +378,9 @@ async function main() {
   }
   console.log(
     `  ${pairs.length} high-conf pairs + ${grayZone.length} gray-zone pairs in ${Math.round((Date.now() - t1) / 1000)}s`,
+  );
+  console.log(
+    `  ${demotedHighConf} pares high-conf degradados a gray por gate de línea/conflicto duro`,
   );
 
   // Dump gray-zone pairs with canonical context so Stage 3 can run
