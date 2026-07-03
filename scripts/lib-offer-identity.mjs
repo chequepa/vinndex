@@ -128,7 +128,7 @@ export function parseOffer(rawName, rawBrand) {
   // de la bodega resuelta (para que "Zuccardi Concreto" y "Concreto"
   // tengan la misma línea).
   const bodegaTokens = new Set(
-    bodega ? normalizeLoose(bodega).split(" ").filter((t) => t.length > 1) : [],
+    bodega ? normalizeBodegaKey(bodega).split(" ").filter((t) => t.length > 1) : [],
   );
   const line = [...lineTokens(name)].filter((t) => !bodegaTokens.has(t)).sort();
 
@@ -152,6 +152,24 @@ export function parseOffer(rawName, rawBrand) {
 }
 
 /**
+ * Bodega normalizada para CLAVES de agrupación: "Bodega Norton",
+ * "Bodegas NORTON" y "Norton" tienen que dar la misma clave o el mismo
+ * vino se parte por cómo cada tienda escribe la bodega. Colapsa
+ * prefijos corporativos, "familia", puntuación y espacios.
+ */
+const BODEGA_NOISE_RE = /^(?:bodegas?|familia|flia\.?|fca\.?|finca|vinos?|winery|wines?)\s+/;
+export function normalizeBodegaKey(bodega) {
+  if (!bodega) return "";
+  let s = normalizeLoose(bodega).replace(/\./g, " ").replace(/\s+/g, " ").trim();
+  for (let i = 0; i < 2; i++) {
+    const n = s.replace(BODEGA_NOISE_RE, "");
+    if (n === s) break;
+    s = n;
+  }
+  return s;
+}
+
+/**
  * Clave de VINO (= página) desde una identidad parseada + catálogo.
  *
  * Con entrada de catálogo: la identidad es el id del catálogo (que ya
@@ -162,7 +180,7 @@ export function parseOffer(rawName, rawBrand) {
  */
 export function fallbackWineKey(p) {
   const parts = [
-    p.bodega ? normalizeLoose(p.bodega) : "",
+    normalizeBodegaKey(p.bodega),
     p.lineTokens.join(" "),
     p.varietal ?? "",
     p.color ?? "",

@@ -35,7 +35,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
-import { parseOffer, stripAccents } from "./lib-offer-identity.mjs";
+import { parseOffer, stripAccents, normalizeBodegaKey } from "./lib-offer-identity.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -92,7 +92,7 @@ function aggregate(offers) {
     if (p.excluded) { excluded++; continue; }
     if (!p.bodega) { sinBodega++; continue; }
     const key = [
-      norm(p.bodega),
+      normalizeBodegaKey(p.bodega),
       p.lineTokens.join(" "),
       p.varietal ?? "",
       p.color ?? "",
@@ -215,7 +215,7 @@ async function main() {
     // top bodegas por candidatos
     const byBodega = new Map();
     for (const c of eligible) {
-      const k = norm(c.bodega);
+      const k = normalizeBodegaKey(c.bodega);
       byBodega.set(k, (byBodega.get(k) ?? 0) + 1);
     }
     const top = [...byBodega.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
@@ -231,7 +231,7 @@ async function main() {
   // Batches por bodega
   const byBodega = new Map();
   for (const c of need.slice(0, MAX_LLM)) {
-    const k = norm(c.bodega);
+    const k = normalizeBodegaKey(c.bodega);
     if (!byBodega.has(k)) byBodega.set(k, []);
     byBodega.get(k).push(c);
   }

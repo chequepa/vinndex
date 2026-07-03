@@ -35,6 +35,7 @@ import {
   fallbackWineKey,
   isComparable,
   stripAccents,
+  normalizeBodegaKey,
 } from "./lib-offer-identity.mjs";
 import { colorOf, hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 
@@ -135,7 +136,7 @@ function buildCatalogIndex(catalog) {
   const exact = new Map();   // bodega|linea-alias|varietal|color|dulzor → wine
   const byLine = new Map();  // bodega|linea-alias → [wines]
   for (const w of catalog.wines ?? []) {
-    const b = norm(w.bodega);
+    const b = normalizeBodegaKey(w.bodega);
     for (const alias of w.lineAliases?.length ? w.lineAliases : [""]) {
       const lineKey = alias.split(" ").filter(Boolean).sort().join(" ");
       exact.set(`${b}|${lineKey}|${w.varietal ?? ""}|${w.color ?? ""}|${w.dulzor ?? ""}`, w);
@@ -150,7 +151,7 @@ function buildCatalogIndex(catalog) {
 /** Asigna una oferta parseada a un vino del catálogo, o null. */
 function assign(p, idx) {
   if (!p.bodega) return null;
-  const b = norm(p.bodega);
+  const b = normalizeBodegaKey(p.bodega);
   const lineKey = p.lineTokens.join(" "); // ya vienen sorted
   const w = idx.exact.get(`${b}|${lineKey}|${p.varietal ?? ""}|${p.color ?? ""}|${p.dulzor ?? ""}`);
   if (w) return w;
@@ -205,6 +206,83 @@ function main() {
     : { wines: [] };
   const idx = buildCatalogIndex(catalog);
   console.log(`v2 grouping — ${offers.length} ofertas · catálogo ${catalog.wines?.length ?? 0} vinos`);
+
+  // ── Inferencia de marca por corpus (port del Stage 1 de v1) ──
+  // Muchas tiendas no mandan brand. Sin esto el mismo vino se parte en
+  // clave-con-bodega vs clave-sin-bodega según qué tienda lo liste
+  // (multi-tienda cayó ~20% en el primer run fresco del cutover). Dos
+  // pasadas, ambas conservadoras:
+  //   1. nombre-contiene-marca: si el nombre menciona una marca conocida
+  //      del corpus con word-boundary, la oferta la hereda.
+  //   2. token-de-línea → marca: un token que aparece en ≥3 ofertas de
+  //      EXACTAMENTE una marca es distintivo de esa marca ("concreto" →
+  //      Zuccardi); las ofertas sin marca que lo tienen la heredan.
+  {
+    const GENERIC_BRAND = new Set([
+      "vino", "vinos", "wine", "wines", "bodega", "bodegas", "familia",
+      "reserva", "estate", "cellars", "finca", "winery",
+    ]);
+    const brandCanonical = new Map(); // lower → casing original
+    for (const o of offers) {
+      const b = (o.brand ?? "").trim();
+      if (b.length < 3) continue;
+      const lower = stripAccents(b).toLowerCase();
+      if (!brandCanonical.has(lower)) brandCanonical.set(lower, b);
+    }
+    const entries = [...brandCanonical.entries()]
+      .filter(([lower]) => {
+        const words = lower.split(/\s+/).filter(Boolean);
+        return !(words.length === 1 && GENERIC_BRAND.has(words[0]));
+      })
+      .sort((a, b) => b[0].length - a[0].length)
+      .map(([lower, original]) => ({
+        original,
+        re: new RegExp(
+          `\\b${lower.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}\\b`,
+          "i",
+        ),
+      }));
+    let inferred1 = 0;
+    for (const o of offers) {
+      if (o.brand) continue;
+      const name = stripAccents(o.name ?? "").toLowerCase();
+      if (!name) continue;
+      for (const e of entries) {
+        if (e.re.test(name)) { o.brand = e.original; inferred1++; break; }
+      }
+    }
+    // Pasada 2: tokens de línea distintivos de una sola marca.
+    const tokenBrand = new Map(); // token → Map(brandLower → count)
+    for (const o of offers) {
+      if (!o.brand) continue;
+      const bl = stripAccents(o.brand).toLowerCase().trim();
+      if (bl.length < 3) continue;
+      const brandToks = new Set(bl.split(/\s+/).filter((t) => t.length >= 3));
+      const p = parseOffer(o.name, null);
+      for (const t of p.lineTokens) {
+        if (t.length < 4 || brandToks.has(t)) continue;
+        if (!tokenBrand.has(t)) tokenBrand.set(t, new Map());
+        const m = tokenBrand.get(t);
+        m.set(bl, (m.get(bl) ?? 0) + 1);
+      }
+    }
+    const distinctive = new Map();
+    for (const [t, m] of tokenBrand) {
+      if (m.size !== 1) continue;
+      const [[bl, n]] = m;
+      if (n >= 3) distinctive.set(t, brandCanonical.get(bl) ?? bl);
+    }
+    let inferred2 = 0;
+    for (const o of offers) {
+      if (o.brand) continue;
+      const p = parseOffer(o.name, null);
+      for (const t of p.lineTokens) {
+        const b = distinctive.get(t);
+        if (b) { o.brand = b; inferred2++; break; }
+      }
+    }
+    console.log(`  inferencia de marca: +${inferred1} por nombre, +${inferred2} por línea distintiva (${distinctive.size} tokens)`);
+  }
 
   // Snapshot vigente: fuente de (a) el mapping URL→slug v1 para preservar
   // slugs indexados, y (b) la metadata de stores/counts que el publish
