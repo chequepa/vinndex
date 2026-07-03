@@ -165,12 +165,16 @@ function isExcluded(name) {
 // "5". Si dos nombres tienen sets de edición distintos → SKU distinto.
 const VOL_WHITELIST = new Set(["187", "250", "375", "500", "750", "1000", "1500", "3000", "5000"]);
 function editionNums(name) {
-  // Volúmenes decimales ("1.5L", "1,5 l") fuera ANTES del scan: sin esto
-  // el "1" de "1.5L" quedaba como edición fantasma y "Magnum 1.5L" vs
-  // "Magnum" daba conflicto de edición falso.
+  // Fuera ANTES del scan (números que NO son edición):
+  //   · volúmenes decimales ("1.5L") — el "1" quedaba como edición
+  //     fantasma y "Magnum 1.5L" vs "Magnum" conflictuaba falso.
+  //   · packs ("x6", "caja x 6 un", "6 botellas") — son firma de pack
+  //     (packSig), no edición; contaminaban la clave de vino v2.
   const s = stripAccents(name)
     .toLowerCase()
-    .replace(/\b\d+[.,]\d+\s*(l|lt|lts|litros?)\b/g, " ");
+    .replace(/\b\d+[.,]\d+\s*(l|lt|lts|litros?)\b/g, " ")
+    .replace(/\bx\s*\d{1,2}\b/g, " ")
+    .replace(/\b\d{1,2}\s*(?:un|u|unid|unidades|bot|botellas)\b/g, " ");
   const out = new Set();
   const re = /(\d{1,4})\s*(ml|cc|cm3|cm|l|lt|lts|litros?|cl)?\b/g;
   let m;
