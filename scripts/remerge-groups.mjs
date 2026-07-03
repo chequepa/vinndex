@@ -22,8 +22,9 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
+import { hardConflict } from "./stage4-token-merge.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -157,12 +158,30 @@ const SECONDARY_NOISE_TOKENS = new Set([
 // well-known parent bodegas.
 const KNOWN_PRODUCERS = new Set(
   [
-    // Both KEYS (e.g., "adrianna") and VALUES (e.g., "Catena Zapata")
-    // of the prefix map count as strippable producer prefixes — adrianna
-    // is a Catena line so when it appears mid-name like "DV Catena
-    // Adrianna" the iterative strip should peel both "dv catena" and
-    // "adrianna".
-    ...Object.keys(NAME_PREFIX_TO_BRAND),
+    // SÓLO las keys cuyo VALUE es el propio label ("a lisa" → "A Lisa"):
+    // ahí la identidad queda preservada en el brand del strict key y
+    // strippear el nombre es seguro.
+    //
+    // Las keys que resuelven a una bodega-MADRE distinta ("medalla" →
+    // "Trapiche", "adrianna" → "Catena Zapata", "concreto" → "Zuccardi")
+    // NO se strippean: son la LÍNEA comercial. La versión anterior
+    // strippeaba TODAS las keys, con lo cual "Medalla Malbec", "Alaris
+    // Malbec", "Don David Malbec" y "Trapiche Malbec" quedaban con
+    // secondary="" y colapsaban en un único bucket brand=Trapiche →
+    // quimera real en prod: la ficha "Medalla Malbec" ($20k) mostraba el
+    // Alaris de $3k como mejor precio. Ídem "DV Catena Malbec" ⊕
+    // "Adrianna" y "Rutini Chardonnay" ⊕ "Gran Apartado".
+    // (nv.startsWith(k) cubre abreviaciones del brand: "pascual" →
+    // "Pascual Toso". La dirección inversa k.startsWith(nv) NO es segura:
+    // en "dv catena adrianna" → "DV Catena" el excedente ES la línea.)
+    ...Object.entries(NAME_PREFIX_TO_BRAND)
+      .filter(([k, v]) => {
+        const nv = stripAccents(v).toLowerCase();
+        return nv === k || nv.startsWith(k + " ");
+      })
+      .map(([k]) => k),
+    // Los VALUES (bodegas canónicas) sí son productores strippables al
+    // frente del nombre ("Trapiche Medalla Malbec" → "medalla ...").
     ...Object.values(NAME_PREFIX_TO_BRAND).map((v) =>
       stripAccents(v).toLowerCase(),
     ),
@@ -287,7 +306,7 @@ const REGION_NOISE = new Set([
  * "Catena Estate Malbec" → strip "Catena" → "Estate Malbec" → strip "Malbec" → "estate"
  * "Catena Adrianna Malbec" → strip "Catena" → "Adrianna Malbec" → "adrianna"
  */
-function secondaryKey(canonicalName) {
+export function secondaryKey(canonicalName) {
   let s = normalizeName(canonicalName).replace(/[^a-z0-9\s.]/g, " ");
   s = s.replace(/\s+/g, " ").trim();
   // Peel up to 3 leading noise words ("Vino Espumante X" etc.)
@@ -642,6 +661,35 @@ function main() {
       continue;
     }
 
+    // Veto de conflicto duro par-a-par (anti-quimera): aunque el bucket
+    // comparta brand+varietal+format+type+secondary, señales del NOMBRE
+    // (volumen 375 vs 750, pack x6, "+copa", parcela, edición, color
+    // implícito) pueden decir "otro SKU". Un solo par en conflicto
+    // rechaza el bucket entero — mejor no mergear que publicar quimera.
+    let bucketConflict = null;
+    outer: for (let x = 0; x < bucket.length; x++) {
+      for (let y = x + 1; y < bucket.length; y++) {
+        const c = hardConflict(bucket[x], bucket[y]);
+        if (c) {
+          bucketConflict = { gate: c, a: bucket[x], b: bucket[y] };
+          break outer;
+        }
+      }
+    }
+    if (bucketConflict) {
+      rejectedBuckets++;
+      if (examples.length < 50) {
+        examples.push({
+          reason: `hard-conflict:${bucketConflict.gate}`,
+          names: [
+            bucketConflict.a.canonicalName,
+            bucketConflict.b.canonicalName,
+          ],
+        });
+      }
+      continue;
+    }
+
     const { primary, droppedSlugs } = mergeBucket(bucket);
     // The merged primary should keep the most informative vintage —
     // if any group in the bucket had a specific vintage, that wins.
@@ -728,9 +776,15 @@ function main() {
     const resolved = resolveBrandFromName(g.canonicalName, g.brand);
     if (!resolved) continue;
     if (!NAME_PREFIX_TO_BRAND_VALUES.has(resolved)) continue;
-    if (secondaryKey(g.canonicalName) !== "") continue;
     const label = detectLabel(g.canonicalName);
     if (!label) continue; // sin label detectable, no podemos garantizar match
+    // Antes exigíamos secondaryKey === "" (todo el nombre era producer +
+    // ruido). Con el fix de KNOWN_PRODUCERS los labels de bodega-madre
+    // ("fosil" → Zuccardi) ya NO se strippean, así que su secondary es
+    // exactamente el label — también califica. Cualquier otro residuo
+    // (parcela, edición, otra línea) sigue excluyendo al grupo.
+    const sec = secondaryKey(g.canonicalName);
+    if (sec !== "" && sec !== label) continue;
     const bk = stripAccents(resolved).toLowerCase();
     const fmt = g.format ?? "";
     const key = `${bk}|${fmt}|${label}`;
@@ -934,4 +988,9 @@ function main() {
   }
 }
 
-main();
+// Sólo corre main() cuando se invoca directamente (node remerge-groups.mjs),
+// no cuando el harness lo importa para testear secondaryKey.
+const invokedDirectly =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedDirectly) main();

@@ -112,7 +112,7 @@ export const NAME_PREFIX_TO_BRAND = {
   chacabuco: "Chacabuco",
   cruzat: "Cruzat",
   pascual: "Pascual Toso",
-  "don david": "Trapiche",
+  "don david": "El Esteco",
   colome: "Colome",
   "colomé": "Colome",
   garzon: "Garzon",

@@ -27,6 +27,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -239,14 +240,41 @@ async function main() {
     return;
   }
 
-  // Apply Union-Find merges using slugs as identity
+  // Apply Union-Find merges using slugs as identity.
+  //
+  // VETO anti-quimera (hotfix): los "yes" del LLM —frescos O CACHEADOS de
+  // corridas viejas— se validan antes de aplicarse:
+  //   · hardConflict: volumen/pack/edición/color/dulzor/varietal/parcela
+  //     distintos → el yes es un error del modelo (o quedó stale), no se
+  //     aplica.
+  //   · lineRelation crossing/disjoint: cada lado tiene tokens de línea
+  //     exclusivos ("Serie A" vs "Concreto") → líneas comerciales
+  //     distintas de la misma bodega; el LLM sólo puede cerrar subsets
+  //     ("Concreto Malbec" ⊂ "Zuccardi Concreto Malbec"). Los cruces son
+  //     terreno del ancla de paraje (Stage 6) o known-merges.json.
+  // Sin este veto, un único yes alucinado/stale en el cache (44k entradas)
+  // fusiona dos líneas para siempre — así nació la quimera Serie A ⊕
+  // Concreto que mostraba $6.180 como "mejor precio" de un vino de $44.500.
   const uf = makeUF(groups.length);
   let unresolvable = 0;
+  let vetoed = 0;
+  const vetoExamples = [];
   for (const pair of mergedPairs) {
     const i = slugIndex.get(pair.a.groupSlug);
     const j = slugIndex.get(pair.b.groupSlug);
     if (i === undefined || j === undefined) {
       unresolvable++;
+      continue;
+    }
+    const conflict = hardConflict(groups[i], groups[j]);
+    const rel = lineRelation(groups[i].canonicalName, groups[j].canonicalName);
+    if (conflict || rel === "crossing" || rel === "disjoint") {
+      vetoed++;
+      if (vetoExamples.length < 12) {
+        vetoExamples.push(
+          `[${conflict ?? `línea:${rel}`}] "${groups[i].canonicalName}" ⊗ "${groups[j].canonicalName}"`,
+        );
+      }
       continue;
     }
     uf.union(i, j);
@@ -255,6 +283,10 @@ async function main() {
     console.log(
       `  ${unresolvable} merge pairs skipped (group slug missing, probably already merged in Stage 2)`,
     );
+  }
+  if (vetoed > 0) {
+    console.log(`  ${vetoed} yes del LLM vetados por gates (quimeras evitadas):`);
+    for (const ex of vetoExamples) console.log(`    ${ex}`);
   }
 
   const clusters = new Map();

@@ -106,6 +106,9 @@ function setsEqual(a, b) {
 // blanco) y un "Espumante Dulce" es dulce. "rosa" cuenta como rosado
 // (caso real: "Finca El Portillo ROSA. Malbec" es un rosado, no el tinto;
 // "Baron B Brut Rosé" ≠ "Baron B Extra Brut").
+// EXPORT (v2): primitivas de parseo reutilizadas por lib-offer-identity.mjs.
+export { colorOf, sweetnessOf, styleSet, packSig, volMl, editionNums, discriminatorSet, isExcluded };
+
 const COLOR_RE = {
   rosado: /\b(rosado|rosados|rose|rosa|blush)\b/,
   naranjo: /\b(naranjo|naranja|orange\s*wine)\b/,
@@ -162,7 +165,12 @@ function isExcluded(name) {
 // "5". Si dos nombres tienen sets de edición distintos → SKU distinto.
 const VOL_WHITELIST = new Set(["187", "250", "375", "500", "750", "1000", "1500", "3000", "5000"]);
 function editionNums(name) {
-  const s = stripAccents(name).toLowerCase();
+  // Volúmenes decimales ("1.5L", "1,5 l") fuera ANTES del scan: sin esto
+  // el "1" de "1.5L" quedaba como edición fantasma y "Magnum 1.5L" vs
+  // "Magnum" daba conflicto de edición falso.
+  const s = stripAccents(name)
+    .toLowerCase()
+    .replace(/\b\d+[.,]\d+\s*(l|lt|lts|litros?)\b/g, " ");
   const out = new Set();
   const re = /(\d{1,4})\s*(ml|cc|cm3|cm|l|lt|lts|litros?|cl)?\b/g;
   let m;
@@ -224,6 +232,58 @@ const VARIETAL_TOKENS = new Set(VARIETAL_RE.flatMap(([k]) => k.split(" ")));
 const DISC_TOKENS = new Set(DISCRIMINATORS.flatMap((d) => d.split(" ")));
 export function isIdentityToken(t) {
   return VARIETAL_TOKENS.has(t) || DISC_TOKENS.has(t);
+}
+
+/**
+ * Tokens de LÍNEA de un nombre: contenido sin varietales ni parajes/tiers.
+ * Lo que queda es la etiqueta comercial + bodega ("serie", "concreto",
+ * "medalla", "alaris", "zuccardi"). Es la señal que distingue "Zuccardi
+ * Serie A Malbec" de "Zuccardi Concreto Malbec" — dos vinos que pasan
+ * todos los gates duros (mismo varietal/color/volumen) pero son líneas
+ * distintas de la misma bodega.
+ */
+const KEEP_SINGLE_LETTER = new Set(["q", "b", "k", "v", "z", "j", "w"]);
+export function lineTokens(name) {
+  const base = contentTokens(name).filter((t) => !isIdentityToken(t));
+  // contentTokens tira tokens de 1 letra (casi siempre ruido: "x", "a" de
+  // "Serie A"). Pero algunas consonantes sueltas SÍ son la línea entera
+  // ("Zuccardi Q", "Baron B") — sin ellas "Zuccardi Q Malbec" quedaría
+  // idéntico a "Zuccardi Malbec". Las recuperamos acá.
+  const singles = stripAccents(String(name ?? ""))
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((t) => t.length === 1 && KEEP_SINGLE_LETTER.has(t));
+  return new Set([...base, ...singles]);
+}
+
+/**
+ * Relación entre los line-token-sets de dos nombres:
+ *   "equal"    — mismos tokens (sólo difiere orden/ruido) → mismo vino
+ *   "subset"   — uno ⊂ otro ("Concreto Malbec" vs "Zuccardi Concreto
+ *                Malbec Paraje Altamira") → puede ser el mismo, que
+ *                decida el LLM
+ *   "crossing" — cada lado tiene tokens exclusivos ("serie" vs
+ *                "concreto") → casi siempre OTRO vino
+ *   "disjoint" — sin tokens en común → otro vino u otra bodega
+ *
+ * Política del pipeline (doctrina cero-quimeras):
+ *   auto-merge determinístico → sólo "equal"
+ *   merge por LLM (Stage 3 / 6.5) → hasta "subset"
+ *   "crossing"/"disjoint" → sólo ancla de paraje raro o known-merges.json
+ */
+export function lineRelation(aName, bName) {
+  const a = lineTokens(aName);
+  const b = lineTokens(bName);
+  // Sin tokens de línea en ambos lados = cero evidencia de identidad
+  // ("Vino Tinto Malbec" vs "Malbec tinto"): no habilita auto-merge.
+  if (a.size === 0 && b.size === 0) return "disjoint";
+  let inter = 0;
+  for (const t of a) if (b.has(t)) inter++;
+  if (inter === a.size && inter === b.size) return "equal";
+  if (inter === a.size || inter === b.size) return "subset";
+  if (inter > 0) return "crossing";
+  return "disjoint";
 }
 
 // Pack/caja vs botella. Caja, estuche, pack, combo, kit, "con copa", "x6",
