@@ -25,6 +25,8 @@ import {
   displayBrand,
   relatedGroups,
   isCaseOffer,
+  isNonComparableOffer,
+  offerVariantLabel,
   bottleStats,
   bodegaUrl,
   varietalUrl,
@@ -92,7 +94,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     } online de Argentina.`;
     if (bs.minPrice != null) {
       const bestStore = g.offers?.find(
-        (o) => o.inStock && !isCaseOffer(o.name),
+        (o) => o.inStock && !isNonComparableOffer(o),
       );
       description += ` Desde ${fmt.format(bs.minPrice)}`;
       if (bestStore) {
@@ -218,14 +220,16 @@ export default async function Vino({ params }: Params) {
     notFound();
   }
 
-  // Cases (estuche, caja, pack x6) y botellas viven en el mismo group
-  // por la pipeline de matching pero no son el mismo SKU · comparar precio
-  // botella vs caja x6 infla el "ahorro" hasta 95%. Acá los separamos:
-  // la tabla y el hero solo usan botellas; las cajas se muestran después
-  // en una sección aparte (si las hay).
+  // Variantes (375ml, magnum, caja x6, estuche, copa) y botellas de 750
+  // viven en el mismo group — son el mismo VINO pero no el mismo SKU:
+  // comparar botella vs caja x6 infla el "ahorro" hasta 95% y una 375
+  // parece "más barata" que todas. La tabla y el hero solo usan botellas
+  // comparables; las variantes van en su propia sección abajo. Con el
+  // snapshot v2 la decisión viene estructurada (offer.comparable); para
+  // snapshots viejos cae a la heurística por nombre.
   const allOffers = group.offers;
-  const bottleOffersAll = allOffers.filter((o) => !isCaseOffer(o.name));
-  const caseOffersAll = allOffers.filter((o) => isCaseOffer(o.name));
+  const bottleOffersAll = allOffers.filter((o) => !isNonComparableOffer(o));
+  const caseOffersAll = allOffers.filter((o) => isNonComparableOffer(o));
   // Si por alguna razón TODAS son cases, caemos para atrás a la lista
   // completa para no romper la ficha.
   const offers = bottleOffersAll.length > 0 ? bottleOffersAll : allOffers;
@@ -1070,18 +1074,89 @@ export default async function Vino({ params }: Params) {
             })}
           </div>
 
+          {caseOffersAll.length > 0 && (
+            <div className="mt-8">
+              <h3 className="display text-xl font-semibold text-ink mb-1">
+                Otros formatos
+              </h3>
+              <p className="text-graphite text-sm mb-4">
+                Mismo vino, otro envase — no compiten con el precio por
+                botella de arriba.
+              </p>
+              <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
+                {caseOffersAll
+                  .slice()
+                  .sort((a, b) => {
+                    if (!!a.inStock !== !!b.inStock) return a.inStock ? -1 : 1;
+                    return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
+                  })
+                  .map((offer) => {
+                    const sname = storeName(offer.storeSlug);
+                    const label = offerVariantLabel(offer);
+                    return (
+                      <div
+                        key={offer.externalUrl}
+                        className={`grid md:grid-cols-[2.2fr_1fr_150px] gap-4 items-center px-5 py-3.5 border-b border-ink/5 ${
+                          offer.inStock ? "" : "opacity-50 grayscale"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="store-logo"
+                            style={{ background: colorForStore(offer.storeSlug) }}
+                          >
+                            {storeInitials(sname)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
+                              <span className="truncate">{sname}</span>
+                              {label && (
+                                <span className="text-[10px] bg-cobalt/10 text-cobalt px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                                  {label}
+                                </span>
+                              )}
+                              {!offer.inStock && (
+                                <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
+                                  Sin stock
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className="text-xs text-graphite truncate"
+                              title={offer.name}
+                            >
+                              {prettyOfferName(offer.name, group.brand)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="md:text-center">
+                          <span className="md:hidden text-xs text-graphite">
+                            Precio:{" "}
+                          </span>
+                          <span className="display text-xl font-semibold text-ink">
+                            {formatArs(offer.priceArs)}
+                          </span>
+                        </div>
+                        <a
+                          href={offer.externalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-medium px-5 py-2 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
+                        >
+                          Visitar <ExternalIcon />
+                        </a>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-graphite mt-4">
             Matching determinístico por nombre + añada + formato. No vendemos
             vino. Al tocar &ldquo;visitar&rdquo; vas directo al sitio de la
-            vinoteca.
-            {caseOffersAll.length > 0 && (
-              <>
-                {" "}
-                Comparamos solo botellas individuales. Los estuches y cajas
-                ({caseOffersAll.length}) los podés encontrar en la tienda
-                directamente.
-              </>
-            )}
+            vinoteca. La comparación de arriba usa solo botellas individuales
+            de 750&nbsp;ml.
           </p>
 
           {offers.some((o) => o.isCollector) && (

@@ -167,6 +167,22 @@ export type ProductGroup = {
   region?: string | null;
   type?: string | null;
   offers: ProductOffer[];
+  // ── Identidad v2 (build-groups-v2.mjs) ──
+  /** Clave estable del vino (id de catálogo o clave estructurada). */
+  wineKey?: string;
+  /** Id en data/wine-catalog.json cuando el vino está catalogado. */
+  catalogId?: string | null;
+  /** Nº de ofertas comparables (base del min/max). */
+  comparableBasis?: number;
+  /** Resumen por formato (750/375/magnum/caja/estuche) para la ficha. */
+  variants?: {
+    volumeMl: number;
+    pack: number;
+    estuche: boolean;
+    copa: boolean;
+    offerCount: number;
+    minPrice: number | null;
+  }[];
 };
 
 export type ProductOffer = {
@@ -186,6 +202,19 @@ export type ProductOffer = {
    * Set por build-groups.mjs en base a COLLECTOR_CUTOFF_YEAR.
    */
   isCollector?: boolean;
+  // ── Identidad v2: la VARIANTE de la oferta (set por build-groups-v2) ──
+  /** Volumen inferido del nombre; 750 = default. */
+  volumeMl?: number;
+  /** 0 = botella suelta · N = caja/pack de N · -1 = pack sin nº claro. */
+  pack?: number;
+  /** Estuche / gift box / "+copa". */
+  estuche?: boolean;
+  /** Venta por copa. */
+  copa?: boolean;
+  /** Botella suelta 750ml sin estuche/copa — entra al min/max de la ficha. */
+  comparable?: boolean;
+  /** Cosecha explícita en el nombre de la oferta. */
+  vintage?: number;
 };
 
 /** Turn a list of scraped products into deduped groups. */

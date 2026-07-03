@@ -72,114 +72,35 @@ jobs:
       - name: Merge snapshots
         run: node scripts/merge-snapshots.mjs
 
-      - name: Build groups (Stage 1 matching)
-        run: node scripts/build-groups.mjs
+      # ── IDENTIDAD V2 (cutover 2026-07-03) ──────────────────────────────
+      # Reemplaza a build-groups + Stages 1.5/2/3/4/5/6/6.5. Diseño en
+      # docs/identity-v2.md. El harness dorado corre PRIMERO y es
+      # bloqueante: si un caso conocido falla, el job muere acá y NO se
+      # commitea nada (el sitio queda con el snapshot de ayer — mejor
+      # datos viejos que quimeras nuevas).
+      - name: Harness dorado (bloqueante)
+        run: node scripts/test-matching.mjs
 
-      - name: Stage 1.5 — merge por imagen (URL-match + brand/varietal gate)
-        run: node scripts/stage1b-image-merge.mjs
-
-      - name: Restore embeddings cache
-        id: embeddings-cache
-        uses: actions/cache@v4
-        with:
-          path: data/embeddings-cache.json
-          key: embeddings-cache-v1-${{ github.run_id }}
-          restore-keys: |
-            embeddings-cache-v1-
-
-      - name: Stage 2 embeddings (if OPENAI_API_KEY set)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [ -n "$OPENAI_API_KEY" ]; then
-            node scripts/stage2-embeddings.mjs
-          else
-            echo "Skipping Stage 2 — OPENAI_API_KEY not set in repo secrets"
-          fi
-        continue-on-error: true
-
-      - name: Restore Stage 3 LLM cache
-        uses: actions/cache@v4
-        with:
-          path: data/stage3-cache.json
-          key: stage3-cache-v1-${{ github.run_id }}
-          restore-keys: |
-            stage3-cache-v1-
-
-      - name: Stage 3 LLM adjudicator (if OPENAI_API_KEY set)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [ -n "$OPENAI_API_KEY" ]; then
-            node scripts/stage3-llm-adjudicator.mjs
-          else
-            echo "Skipping Stage 3 — OPENAI_API_KEY not set"
-          fi
-        continue-on-error: true
-
-      - name: Re-merge near-duplicate groups (Stage 4)
-        run: node scripts/remerge-groups.mjs
-        continue-on-error: true
-
-      - name: Split chimera groups (Stage 5)
-        run: node scripts/split-chimeras.mjs
-        continue-on-error: true
-
-      # Stage 6 — capa de merge por token-set igual + ancla de paraje, con
-      # gates duros (varietal/color/parcela/tier/volumen/pack/edición). El
-      # harness dorado corre PRIMERO: si una regresión en los gates rompe un
-      # caso conocido, el `&&` corta y NO se aplica el merge (mejor no mergear
-      # que publicar una quimera). Escribe data/group-merges.json (redirects
-      # 308 de slugs absorbidos) y data/stage4-graymerge-candidates.json.
-      - name: Stage 6 — merge por token/paraje (gateado por harness dorado)
-        run: node scripts/test-matching.mjs && node scripts/stage4-token-merge.mjs
-        continue-on-error: true
-
-      - name: Restore Stage 6.5 LLM cache
-        uses: actions/cache@v4
-        with:
-          path: data/stage6-llm-cache.json
-          key: stage6-llm-cache-v1-${{ github.run_id }}
-          restore-keys: |
-            stage6-llm-cache-v1-
-
-      # Stage 6.5 — adjudicador LLM sobre la cola gris de Stage 6. Cierra el
-      # long-tail que el determinístico no puede (nombres divergentes, marca
-      # mal atribuida) con gpt-4o-mini. Los "yes" se aplican con la MISMA
-      # validación de gates que Stage 6 (cero quimeras por gate, aunque el LLM
-      # se equivoque). Skip si no hay OPENAI_API_KEY.
-      - name: Stage 6.5 — LLM adjudicator (if OPENAI_API_KEY set)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [ -n "$OPENAI_API_KEY" ]; then
-            node scripts/stage6-llm-adjudicate.mjs
-          else
-            echo "Skipping Stage 6.5 — OPENAI_API_KEY not set"
-          fi
-        continue-on-error: true
-
-      # ── Identidad v2 (SHADOW) ──────────────────────────────────────────
-      # El sistema nuevo de agrupación: catálogo de vinos (bodega/línea/
-      # varietal + qué parajes-tiers distinguen) + parser estructurado por
-      # oferta. NO toca lo publicado: escribe data/wine-catalog.json y
-      # data/catalog-llm-cache.json (committed, crecen incremental) +
-      # data/snapshot-v2.json y data/identity-v2-report.json (gitignored /
-      # report committed) para comparar contra v1 antes del cutover.
-      - name: Identidad v2 (shadow) — catálogo incremental
+      # Catálogo incremental: sólo los candidatos NUEVOS van al LLM
+      # (cache committeado en data/catalog-llm-cache.json). Si falla o no
+      # hay key, se agrupa con el catálogo committeado del último run.
+      - name: Identidad v2 — catálogo incremental
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           if [ -n "$OPENAI_API_KEY" ]; then
             node scripts/build-wine-catalog.mjs
           else
-            echo "Skipping catálogo v2 — OPENAI_API_KEY not set"
+            echo "Skipping catálogo — OPENAI_API_KEY not set (se usa el committeado)"
           fi
         continue-on-error: true
 
-      - name: Identidad v2 (shadow) — agrupación + report
-        run: node scripts/build-groups-v2.mjs
-        continue-on-error: true
+      # Publica: data/snapshot.json (con metadata de stores preservada) +
+      # data/wine-slugs.json (URLs estables) + data/group-merges.json
+      # (redirects 308). BLOQUEANTE: si falla, el job muere antes del
+      # commit y el sitio conserva el snapshot anterior.
+      - name: Identidad v2 — agrupación + publish
+        run: node scripts/build-groups-v2.mjs --publish
 
       - name: Find duplicates report (alimenta /admin/duplicates)
         run: node scripts/find-duplicates.mjs --out=data/duplicates-report.json
@@ -259,9 +180,9 @@ jobs:
         id: diff
         run: |
           git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
-          # Artefactos de identidad v2 (shadow) — pueden no existir si el
-          # step falló (continue-on-error), agregamos sólo los presentes.
-          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json; do
+          # Artefactos de identidad v2 — el registro de slugs y el catálogo
+          # son estado persistente del sistema; agregamos sólo los presentes.
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json; do
             [ -f "$f" ] && git add "$f" || true
           done
           if git diff --staged --quiet; then

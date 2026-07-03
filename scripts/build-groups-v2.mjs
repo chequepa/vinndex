@@ -36,7 +36,70 @@ import {
   isComparable,
   stripAccents,
 } from "./lib-offer-identity.mjs";
-import { styleSet, colorOf } from "./stage4-token-merge.mjs";
+import { colorOf, hardConflict, lineRelation } from "./stage4-token-merge.mjs";
+
+// ── Compat v1: facets de región y varietal con los MISMOS nombres display
+// que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
+// strings exactos. (Listas copiadas de build-groups.mjs, que se retira.)
+const V1_VARIETALS = [
+  { name: "Malbec", re: /\bmalbec\b/i },
+  { name: "Cabernet Sauvignon", re: /\bcabernet\s+sauvignon\b/i },
+  { name: "Cabernet Franc", re: /\bcabernet\s+franc\b/i },
+  { name: "Cabernet", re: /\bcabernet\b/i },
+  { name: "Chardonnay", re: /\bchardonnay\b/i },
+  { name: "Sauvignon Blanc", re: /\bsauvignon\s+blanc\b/i },
+  { name: "Merlot", re: /\bmerlot\b/i },
+  { name: "Bonarda", re: /\bbonarda\b/i },
+  { name: "Pinot Noir", re: /\bpinot\s+noir\b/i },
+  { name: "Pinot Grigio", re: /\bpinot\s+grigio\b/i },
+  { name: "Torrontés", re: /\btorront[eé]s\b/i },
+  { name: "Syrah", re: /\b(syrah|shiraz)\b/i },
+  { name: "Tempranillo", re: /\btempranillo\b/i },
+  { name: "Petit Verdot", re: /\bpetit\s+verdot\b/i },
+  { name: "Riesling", re: /\briesling\b/i },
+  { name: "Viognier", re: /\bviognier\b/i },
+  { name: "Semillón", re: /\bsemill[oó]n\b/i },
+  { name: "Tannat", re: /\btannat\b/i },
+  { name: "Barbera", re: /\bbarbera\b/i },
+  { name: "Sangiovese", re: /\bsangiovese\b/i },
+  { name: "Nebbiolo", re: /\bnebbiolo\b/i },
+  { name: "Criolla", re: /\bcriolla\b/i },
+  { name: "Moscatel", re: /\bmoscatel\b/i },
+  { name: "Gewürztraminer", re: /\bgew[uü]rztraminer\b/i },
+];
+const V1_REGIONS = [
+  { name: "Mendoza", re: /\bmendoza\b/i },
+  { name: "Valle de Uco", re: /\b(valle\s+de\s+uco|uco\s+valley|tupungato|vista\s+flores|gualtallary|tunuyan|altamira)\b/i },
+  { name: "Luján de Cuyo", re: /\b(luj[aá]n\s+de\s+cuyo|agrelo|vistalba|perdriel)\b/i },
+  { name: "Maipú", re: /\bmaip[uú]\b/i },
+  { name: "San Juan", re: /\bsan\s+juan\b/i },
+  { name: "Salta", re: /\b(salta|cafayate|valles\s+calchaqu|molinos|colom[eé])\b/i },
+  { name: "Patagonia", re: /\b(patagonia|r[ií]o\s+negro|neuqu[eé]n|chubut)\b/i },
+  { name: "La Rioja", re: /\bla\s+rioja\b/i },
+  { name: "Catamarca", re: /\bcatamarca\b/i },
+];
+// Aliases de marca (mismo dict que build-groups) para lookupear
+// data/bodega-regions.json, cuyas keys vienen de normalizeBrandAlias.
+const V1_BRAND_ALIASES = [
+  ["zucardi", "zuccardi"], ["familia zuccardi", "zuccardi"], ["familia zucardi", "zuccardi"],
+  ["cheval des andes", "cheval"], ["bodega catena zapata", "catena"], ["catena zapata", "catena"],
+  ["bodega norton", "norton"], ["bodegas norton", "norton"], ["bodega trapiche", "trapiche"],
+  ["bodega salentein", "salentein"], ["bodegas salentein", "salentein"], ["luigi bosca", "luigibosca"],
+  ["el esteco", "elesteco"], ["finca las moras", "lasmoras"], ["las moras", "lasmoras"],
+  ["don david", "dondavid"], ["baron b", "baronb"],
+];
+function brandRegionKey(bodega) {
+  if (!bodega) return null;
+  let s = stripAccents(String(bodega)).toLowerCase()
+    .replace(/^bodega(s)?\s+/, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const [from, to] of V1_BRAND_ALIASES) {
+    if (s === from) { s = to; break; }
+  }
+  return s;
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -46,10 +109,19 @@ function argVal(flag, def) {
   const i = args.indexOf(flag);
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 }
+// --publish = CUTOVER: escribe data/snapshot.json (preservando la
+// metadata de stores del snapshot vigente), aplica los redirects a
+// data/group-merges.json y persiste el registro de slugs. Sin el flag
+// corre en shadow (snapshot-v2.json, no toca lo publicado).
+const PUBLISH = args.includes("--publish");
 const OFFERS_PATH = argVal("--offers", resolve(ROOT, "data/offers.json"));
-const OUT_PATH = argVal("--out", resolve(ROOT, "data/snapshot-v2.json"));
+const OUT_PATH = PUBLISH
+  ? resolve(ROOT, "data/snapshot.json")
+  : argVal("--out", resolve(ROOT, "data/snapshot-v2.json"));
 const REPORT_PATH = argVal("--report", resolve(ROOT, "data/identity-v2-report.json"));
 const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
+const SLUG_REGISTRY_PATH = resolve(ROOT, "data/wine-slugs.json");
+const MERGES_PATH = resolve(ROOT, "data/group-merges.json");
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -134,29 +206,48 @@ function main() {
   const idx = buildCatalogIndex(catalog);
   console.log(`v2 grouping — ${offers.length} ofertas · catálogo ${catalog.wines?.length ?? 0} vinos`);
 
-  // v1Slug por oferta: si el offers.json no lo trae (CI), lo mapeamos por
-  // externalUrl desde el snapshot v1 publicado — necesario para preservar
-  // slugs indexados y emitir redirects.
-  if (!offers.some((o) => o.v1Slug)) {
+  // Snapshot vigente: fuente de (a) el mapping URL→slug v1 para preservar
+  // slugs indexados, y (b) la metadata de stores/counts que el publish
+  // debe conservar (el frontend tipa Snapshot con storeCount/stores/etc).
+  // Se lee ANTES de escribir porque en modo publish lo pisamos.
+  let prevSnapshotMeta = null;
+  {
     const snapPath = resolve(ROOT, "data/snapshot.json");
     if (existsSync(snapPath)) {
       try {
         const snap = JSON.parse(readFileSync(snapPath, "utf8"));
-        const byUrl = new Map();
-        for (const g of snap.productGroups ?? []) {
-          for (const o of g.offers ?? []) {
-            if (o.externalUrl) byUrl.set(o.externalUrl, g.groupSlug);
+        const { productGroups: _g, products: _p, ...meta } = snap;
+        // Campos fósiles del pipeline v1 (stage2Pairs, stage4Merges...)
+        // no viajan al snapshot v2.
+        for (const k of Object.keys(meta)) {
+          if (/^stage\d/.test(k)) delete meta[k];
+        }
+        if (meta.stores || meta.storeCount) prevSnapshotMeta = meta;
+        if (!offers.some((o) => o.v1Slug)) {
+          const byUrl = new Map();
+          for (const g of snap.productGroups ?? []) {
+            for (const o of g.offers ?? []) {
+              if (o.externalUrl) byUrl.set(o.externalUrl, g.groupSlug);
+            }
           }
+          let mapped = 0;
+          for (const o of offers) {
+            const s = byUrl.get(o.externalUrl);
+            if (s) { o.v1Slug = s; mapped++; }
+          }
+          console.log(`  v1Slug mapeado por URL para ${mapped} ofertas`);
         }
-        let mapped = 0;
-        for (const o of offers) {
-          const s = byUrl.get(o.externalUrl);
-          if (s) { o.v1Slug = s; mapped++; }
-        }
-        console.log(`  v1Slug mapeado por URL para ${mapped} ofertas`);
       } catch { /* sin snapshot v1 → todos los slugs se acuñan nuevos */ }
     }
   }
+
+  // Regiones por bodega (compat v1 — /region/* filtra por este facet).
+  let BODEGA_REGIONS = {};
+  try {
+    BODEGA_REGIONS = JSON.parse(
+      readFileSync(resolve(ROOT, "data/bodega-regions.json"), "utf8"),
+    ).regions ?? {};
+  } catch { /* sin dict seguimos — región queda por regex de nombre */ }
 
   const COLLECTOR_CUTOFF = new Date().getFullYear() - 5;
 
@@ -195,6 +286,57 @@ function main() {
   }
   console.log(`  asignadas a catálogo: ${assigned} (${((100 * assigned) / offers.length).toFixed(1)}%) · grupos: ${groups.size}`);
 
+  // ── Evidencia EAN (gateada) ──
+  // Un barcode compartido entre tiendas es evidencia fuerte de mismo
+  // vino — cierra splits de nombre divergente que el catálogo aún no
+  // cubre. Pero NO es autoridad absoluta (las tiendas cargan mal EANs):
+  //   · nunca fusiona dos vinos DISTINTOS del catálogo (el conocimiento
+  //     del catálogo gana sobre el barcode),
+  //   · exige cero hardConflict (volumen/pack/color/edición/parcela) y
+  //     lineRelation equal/subset entre los nombres representativos.
+  {
+    const eanToKeys = new Map();
+    for (const [key, g] of groups) {
+      for (const o of g.offers) {
+        const m = String(o.externalSku ?? "").trim().match(/^(\d{12,14})$/);
+        if (!m) continue;
+        if (!eanToKeys.has(m[1])) eanToKeys.set(m[1], new Set());
+        eanToKeys.get(m[1]).add(key);
+      }
+    }
+    const repName = (g) =>
+      g.offers.slice().sort((a, b) => a.name.length - b.name.length)[0].name;
+    let eanMerges = 0, eanBlocked = 0;
+    for (const [, keys] of eanToKeys) {
+      if (keys.size < 2) continue;
+      const live = [...keys].filter((k) => groups.has(k));
+      if (live.length < 2) continue;
+      // El grupo con vino de catálogo absorbe al fallback (nunca al
+      // revés); entre pares del mismo tipo gana el más grande.
+      live.sort((a, b) => {
+        const ga = groups.get(a), gb = groups.get(b);
+        if (!!gb.wine !== !!ga.wine) return gb.wine ? 1 : -1;
+        return gb.offers.length - ga.offers.length;
+      });
+      const target = groups.get(live[0]);
+      for (const k of live.slice(1)) {
+        const src = groups.get(k);
+        if (!src) continue;
+        // catálogo vs catálogo distinto → jamás (Serie A ≠ Concreto aunque
+        // una tienda repita el barcode por error de carga)
+        if (target.wine && src.wine && target.wine.id !== src.wine.id) { eanBlocked++; continue; }
+        const a = { canonicalName: repName(target) };
+        const b = { canonicalName: repName(src) };
+        const rel = lineRelation(a.canonicalName, b.canonicalName);
+        if (hardConflict(a, b) || (rel !== "equal" && rel !== "subset")) { eanBlocked++; continue; }
+        target.offers.push(...src.offers);
+        groups.delete(k);
+        eanMerges++;
+      }
+    }
+    console.log(`  evidencia EAN: ${eanMerges} merges · ${eanBlocked} bloqueados por gates/catálogo`);
+  }
+
   // ── Slugs: preservar el slug v1 dominante ──
   // dominante(v1Slug) = wineKey con más ofertas de ese v1Slug
   const v1Count = new Map(); // v1Slug → Map(wineKey → n)
@@ -211,10 +353,30 @@ function main() {
     const best = [...m.entries()].sort((a, b) => b[1] - a[1])[0];
     dominantOf.set(s, best[0]);
   }
-  // cada wineKey elige el v1Slug que domina con más ofertas propias
+  // ── Registro persistente de slugs (data/wine-slugs.json) ──
+  // wineKey → slug, committeado por el cron. Garantiza que el slug de un
+  // vino NUNCA cambia entre corridas (en v1 la quimera fue
+  // malbec-serie-zuccardi el 28/6 y concreto-malbec-zuccardi el 2/7 —
+  // URLs flapeando = veneno SEO). Prioridad: registro > slug v1 dominante
+  // (primera corrida / vinos nuevos) > mint.
+  let slugRegistry = {};
+  if (existsSync(SLUG_REGISTRY_PATH)) {
+    try { slugRegistry = JSON.parse(readFileSync(SLUG_REGISTRY_PATH, "utf8")).slugs ?? {}; } catch { /* fresco */ }
+  }
   const slugOf = new Map(); // wineKey → slug
   const claimed = new Set();
+  let fromRegistry = 0;
+  for (const [key] of groups) {
+    const reg = slugRegistry[key];
+    if (reg && !claimed.has(reg)) {
+      slugOf.set(key, reg);
+      claimed.add(reg);
+      fromRegistry++;
+    }
+  }
+  // cada wineKey (sin slug registrado) elige el v1Slug que domina
   for (const [key, g] of groups) {
+    if (slugOf.has(key)) continue;
     const cands = new Map(); // v1Slug → count en este grupo
     for (const o of g.offers) {
       if (o._v1Slug && dominantOf.get(o._v1Slug) === key) {
@@ -302,22 +464,43 @@ function main() {
       ? [w.linea, w.varietal ? w.varietal.split("+").map((v) => v[0].toUpperCase() + v.slice(1)).join(" ") : ""].filter(Boolean).join(" ")
       : offersOut.slice().sort((a, b) => a.name.length - b.name.length)[0].name;
 
-    // Facets del contrato v1 (lib/matching.ts ProductGroup): varietals
-    // display + type. vintage/format son null por diseño (pooled /
-    // movidos a variants). region queda para el cutover (bodega-regions).
+    // Facets del contrato v1 (lib/matching.ts ProductGroup): varietals y
+    // región con los MISMOS nombres display que v1 — /varietal/* y
+    // /region/* filtran por string exacto. vintage/format son null por
+    // diseño (pooled / movidos a variants).
     const varietalCounts = new Map();
     for (const o of offersOut) {
-      for (const v of styleSet(o.name)) {
-        varietalCounts.set(v, (varietalCounts.get(v) ?? 0) + 1);
+      const seen = new Set();
+      for (const v of V1_VARIETALS) {
+        if (v.re.test(o.name) && !seen.has(v.name)) {
+          if (v.name === "Cabernet" && (seen.has("Cabernet Sauvignon") || seen.has("Cabernet Franc"))) continue;
+          seen.add(v.name);
+        }
       }
+      for (const v of seen) varietalCounts.set(v, (varietalCounts.get(v) ?? 0) + 1);
     }
     const varietals = [...varietalCounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
-      .map(([v]) => v.split(" ").map((t) => t[0].toUpperCase() + t.slice(1)).join(" "));
+      .map(([v]) => v);
     const TYPE_BY_COLOR = { tinto: "Tinto", blanco: "Blanco", rosado: "Rosado", espumante: "Espumante", dulce: "Dulce" };
     const wineColor = w?.color ?? colorOf(canonicalName);
     const type = wineColor ? TYPE_BY_COLOR[wineColor] ?? null : null;
+
+    // Región: regex sobre nombres de ofertas, fallback por bodega.
+    let region = null;
+    for (const o of offersOut) {
+      for (const r of V1_REGIONS) {
+        if (r.re.test(o.name)) { region = r.name; break; }
+      }
+      if (region) break;
+    }
+    if (!region) {
+      const bodega = w?.bodega ?? null;
+      const rk = brandRegionKey(bodega);
+      if (rk && BODEGA_REGIONS[rk]) region = BODEGA_REGIONS[rk];
+      else if (rk && BODEGA_REGIONS[rk.replace(/\s+/g, "")]) region = BODEGA_REGIONS[rk.replace(/\s+/g, "")];
+    }
 
     outGroups.push({
       groupSlug: slugOf.get(key),
@@ -329,7 +512,7 @@ function main() {
       format: null,
       varietals,
       type,
-      region: null,
+      region,
       imageUrl: offersOut.find((o) => o.imageUrl)?.imageUrl ?? null,
       storeCount: new Set(basis.map((o) => o.storeSlug)).size,
       offerCount: basis.length,
@@ -350,15 +533,59 @@ function main() {
   });
 
   const multi = outGroups.filter((g) => g.storeCount >= 2).length;
+  // En publish conservamos la metadata del snapshot vigente (stores,
+  // storeCount, productCount, sources) — el frontend la tipa y /admin la
+  // muestra. Los products[] no se re-incluyen (redundantes con offers).
   const out = {
-    generatedAt: new Date().toISOString(),
-    generator: "build-groups-v2.mjs",
+    ...(prevSnapshotMeta ?? {}),
+    generatedAt: prevSnapshotMeta?.generatedAt ?? new Date().toISOString(),
+    generator: prevSnapshotMeta?.generator ?? "build-groups-v2.mjs",
+    identityV2: true,
     groupCount: outGroups.length,
     multiStoreGroupCount: multi,
+    groupsGeneratedAt: new Date().toISOString(),
     catalogWines: catalog.wines?.length ?? 0,
     productGroups: outGroups,
   };
   writeFileSync(OUT_PATH, JSON.stringify(out));
+
+  if (PUBLISH) {
+    // Registro de slugs: lo ya registrado + lo asignado en esta corrida.
+    // Nunca se borra una entrada — un vino sin stock hoy puede volver
+    // mañana y su URL tiene que ser la misma.
+    const mergedRegistry = { ...slugRegistry };
+    for (const [key, slug] of slugOf) mergedRegistry[key] = slug;
+    writeFileSync(
+      SLUG_REGISTRY_PATH,
+      JSON.stringify({
+        _doc: "wineKey → slug. Persistente entre corridas para que las URLs jamás cambien. Lo escribe build-groups-v2.mjs --publish; lo committea el daily-scrape.",
+        slugs: mergedRegistry,
+      }),
+    );
+
+    // Redirects 308: mapa acumulado + los nuevos de esta corrida. Un slug
+    // que hoy es página viva no puede ser redirect (la página gana — el
+    // [slug] resuelve grupo ANTES de mirar merges, pero limpiamos igual).
+    let prevMerges = {};
+    if (existsSync(MERGES_PATH)) {
+      try { prevMerges = JSON.parse(readFileSync(MERGES_PATH, "utf8")); } catch { /* fresco */ }
+    }
+    const liveSlugs = new Set(outGroups.map((g) => g.groupSlug));
+    const allMerges = { ...prevMerges, ...redirects };
+    const finalDest = (slug, depth = 0) => {
+      if (depth > 10) return slug;
+      const d = allMerges[slug];
+      return d ? finalDest(d, depth + 1) : slug;
+    };
+    const resolved = {};
+    for (const from of Object.keys(allMerges)) {
+      if (liveSlugs.has(from)) continue;
+      const to = finalDest(from);
+      if (to !== from && liveSlugs.has(to)) resolved[from] = to;
+    }
+    writeFileSync(MERGES_PATH, JSON.stringify(resolved, null, 2));
+    console.log(`  PUBLISH: snapshot.json + wine-slugs.json (${Object.keys(mergedRegistry).length}) + group-merges.json (${Object.keys(resolved).length} redirects)`);
+  }
 
   // ── Casos dorados de negocio (auto-evaluación diaria del shadow) ──
   function groupOfName(frag, store) {

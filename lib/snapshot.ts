@@ -676,6 +676,55 @@ export function isCaseOffer(offerName: string | null | undefined): boolean {
 }
 
 /**
+ * Identidad v2: una oferta NO comparable no compite en el precio de la
+ * ficha — es otro SKU del mismo vino (375ml, magnum, caja x6, estuche,
+ * venta por copa). Con los campos estructurados de build-groups-v2 la
+ * decisión es exacta; para snapshots sin esos campos caemos a la
+ * heurística por nombre (isCaseOffer), que solo detecta cajas/estuches.
+ */
+export function isNonComparableOffer(o: {
+  name: string | null | undefined;
+  comparable?: boolean;
+  volumeMl?: number;
+  pack?: number;
+  estuche?: boolean;
+  copa?: boolean;
+}): boolean {
+  if (typeof o.comparable === "boolean") return !o.comparable;
+  if (typeof o.volumeMl === "number") {
+    return (
+      o.volumeMl !== 750 ||
+      (o.pack ?? 0) !== 0 ||
+      o.estuche === true ||
+      o.copa === true
+    );
+  }
+  return isCaseOffer(o.name);
+}
+
+/** Etiqueta corta de la variante para badges de UI ("375 ml", "Magnum",
+ * "Caja x6", "Estuche", "Copa"). null = botella comparable, sin badge. */
+export function offerVariantLabel(o: {
+  name: string | null | undefined;
+  volumeMl?: number;
+  pack?: number;
+  estuche?: boolean;
+  copa?: boolean;
+  comparable?: boolean;
+}): string | null {
+  if (o.copa) return "Copa";
+  if (o.estuche) return "Estuche";
+  if ((o.pack ?? 0) > 0) return `Caja x${o.pack}`;
+  if ((o.pack ?? 0) === -1) return "Pack";
+  if (typeof o.volumeMl === "number" && o.volumeMl !== 750) {
+    if (o.volumeMl === 1500) return "Magnum";
+    return o.volumeMl > 1500 ? `${o.volumeMl / 1000} L` : `${o.volumeMl} ml`;
+  }
+  if (typeof o.volumeMl !== "number" && isCaseOffer(o.name)) return "Caja/Pack";
+  return null;
+}
+
+/**
  * Bottle-only price + store stats for a group. Excludes:
  *   - case/estuche/pack offers (no inflar "ahorro máximo" 1 vs 6)
  *   - collector offers (vintages >5 años atrás — un Rutini 1996 a
@@ -687,9 +736,18 @@ export function isCaseOffer(offerName: string | null | undefined): boolean {
  */
 const MIN_BOTTLE_PRICE_ARS = 1000;
 function isCommercialBottle(
-  o: { name: string | null | undefined; isCollector?: boolean; priceArs: number | null },
+  o: {
+    name: string | null | undefined;
+    isCollector?: boolean;
+    priceArs: number | null;
+    comparable?: boolean;
+    volumeMl?: number;
+    pack?: number;
+    estuche?: boolean;
+    copa?: boolean;
+  },
 ): boolean {
-  if (isCaseOffer(o.name)) return false;
+  if (isNonComparableOffer(o)) return false;
   if (o.isCollector) return false;
   if (o.priceArs != null && o.priceArs > 0 && o.priceArs < MIN_BOTTLE_PRICE_ARS) return false;
   return true;
@@ -703,7 +761,7 @@ export function bottleStats(g: ProductGroup): {
 } {
   const offers = g.offers ?? [];
   const bottles = offers.filter(isCommercialBottle);
-  const hasCases = offers.some((o) => isCaseOffer(o.name));
+  const hasCases = offers.some((o) => isNonComparableOffer(o));
   if (bottles.length === 0) {
     return {
       minPrice: g.minPrice,
