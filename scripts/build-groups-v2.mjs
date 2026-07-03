@@ -33,10 +33,10 @@ import { dirname, resolve } from "node:path";
 import {
   parseOffer,
   fallbackWineKey,
-  variantKey,
   isComparable,
   stripAccents,
 } from "./lib-offer-identity.mjs";
+import { styleSet, colorOf } from "./stage4-token-merge.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -302,12 +302,34 @@ function main() {
       ? [w.linea, w.varietal ? w.varietal.split("+").map((v) => v[0].toUpperCase() + v.slice(1)).join(" ") : ""].filter(Boolean).join(" ")
       : offersOut.slice().sort((a, b) => a.name.length - b.name.length)[0].name;
 
+    // Facets del contrato v1 (lib/matching.ts ProductGroup): varietals
+    // display + type. vintage/format son null por diseño (pooled /
+    // movidos a variants). region queda para el cutover (bodega-regions).
+    const varietalCounts = new Map();
+    for (const o of offersOut) {
+      for (const v of styleSet(o.name)) {
+        varietalCounts.set(v, (varietalCounts.get(v) ?? 0) + 1);
+      }
+    }
+    const varietals = [...varietalCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([v]) => v.split(" ").map((t) => t[0].toUpperCase() + t.slice(1)).join(" "));
+    const TYPE_BY_COLOR = { tinto: "Tinto", blanco: "Blanco", rosado: "Rosado", espumante: "Espumante", dulce: "Dulce" };
+    const wineColor = w?.color ?? colorOf(canonicalName);
+    const type = wineColor ? TYPE_BY_COLOR[wineColor] ?? null : null;
+
     outGroups.push({
       groupSlug: slugOf.get(key),
       wineKey: key,
       catalogId: w?.id ?? null,
       canonicalName,
       brand: w?.bodega ?? null,
+      vintage: null,
+      format: null,
+      varietals,
+      type,
+      region: null,
       imageUrl: offersOut.find((o) => o.imageUrl)?.imageUrl ?? null,
       storeCount: new Set(basis.map((o) => o.storeSlug)).size,
       offerCount: basis.length,
@@ -338,6 +360,39 @@ function main() {
   };
   writeFileSync(OUT_PATH, JSON.stringify(out));
 
+  // ── Casos dorados de negocio (auto-evaluación diaria del shadow) ──
+  function groupOfName(frag, store) {
+    const f = norm(frag);
+    for (const g of outGroups) {
+      for (const o of g.offers) {
+        if (norm(o.name).includes(f) && (!store || o.storeSlug === store)) return g;
+      }
+    }
+    return null;
+  }
+  const gSerie = groupOfName("zuccardi serie a malbec");
+  const gConcreto = groupOfName("zuccardi concreto malbec 750", "el-lagar") ?? groupOfName("zuccardi concreto malbec");
+  const gAltamira = groupOfName("concreto malbec paraje altamira");
+  const goldenCases = {
+    serieConcretoSeparados:
+      !!gSerie && !!gConcreto && gSerie.groupSlug !== gConcreto.groupSlug,
+    altamiraUnificadoConConcreto:
+      !!gAltamira && !!gConcreto && gAltamira.groupSlug === gConcreto.groupSlug,
+    concreto: gConcreto && {
+      slug: gConcreto.groupSlug,
+      offers: gConcreto.totalOfferCount,
+      comparables: gConcreto.comparableBasis,
+      minPrice: gConcreto.minPrice,
+      maxPrice: gConcreto.maxPrice,
+    },
+    serieA: gSerie && {
+      slug: gSerie.groupSlug,
+      offers: gSerie.totalOfferCount,
+      minPrice: gSerie.minPrice,
+      maxPrice: gSerie.maxPrice,
+    },
+  };
+
   // ── Report ──
   const report = {
     generatedAt: out.generatedAt,
@@ -347,9 +402,11 @@ function main() {
     multiStore: multi,
     slugsPreserved: claimed.size,
     redirects: Object.keys(redirects).length,
+    goldenCases,
     redirectMap: redirects,
   };
   writeFileSync(REPORT_PATH, JSON.stringify(report, null, 1));
+  console.log(`  golden: Serie≠Concreto=${goldenCases.serieConcretoSeparados ? "✅" : "❌"} · Altamira∈Concreto=${goldenCases.altamiraUnificadoConConcreto ? "✅" : "❌"} · Concreto min=$${goldenCases.concreto?.minPrice ?? "?"}`);
 
   console.log(`  grupos v2: ${outGroups.length} · multi-tienda: ${multi}`);
   console.log(`  slugs v1 preservados: ${claimed.size} · redirects nuevos: ${Object.keys(redirects).length}`);

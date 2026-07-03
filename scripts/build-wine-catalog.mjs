@@ -136,7 +136,7 @@ const SYSTEM_PROMPT = `Sos un experto en el mercado de vinos argentinos (bodegas
  "tiersNoDistinguen": ["<tier>"]       // ídem para "reserva"/"gran": si TODA la línea lleva ese tier en el nombre (Don David Reserva) no distingue; si la línea tiene versión base Y reserva, SÍ distingue
 }
 
-Sé conservador: si no conocés la línea con certeza, legit=true pero no inventes correcciones de bodega ni marques parajes/tiers como no-distinguen (dejá los arrays vacíos). Respondé EXCLUSIVAMENTE JSON: {"candidatos":[...]}.`;
+Sé conservador: si no conocés la línea con certeza, legit=true pero no inventes correcciones de bodega ni marques parajes/tiers como no-distinguen (dejá los arrays vacíos). Respondé EXCLUSIVAMENTE JSON compacto: {"candidatos":[...]} — sin explicaciones, sin campos extra, strings cortos.`;
 
 function candidatePrompt(bodega, items) {
   const lines = items.map((c, idx) => {
@@ -161,6 +161,10 @@ async function askBatch(bodega, items) {
     body: JSON.stringify({
       model: MODEL,
       temperature: 0,
+      // Sin cap el modelo divagaba hasta el límite (~16k tokens ≈ 49k
+      // chars) → JSON truncado → retry infinito + TPM quemado. 3.500
+      // alcanza de sobra para 12 candidatos compactos.
+      max_tokens: 3500,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
@@ -280,9 +284,28 @@ async function main() {
         }
       } catch (err) {
         errors++;
-        console.error(`\n  batch error: ${err.message}`);
-        batches.push(batch); // reintento simple al final
-        if (errors > 40) {
+        console.error(`\n  batch error (${batch.length} cands): ${err.message.slice(0, 120)}`);
+        // Bisect: un batch envenenado (respuesta truncada/inválida) se
+        // parte en mitades — el candidato problemático termina solo y
+        // su respuesta individual entra en el cap. Un candidato solo que
+        // sigue fallando recibe default conservador y NO se reintenta
+        // (antes el reintento del batch entero ciclaba para siempre).
+        if (batch.length > 1) {
+          const mid = Math.ceil(batch.length / 2);
+          batches.push(batch.slice(0, mid), batch.slice(mid));
+        } else {
+          const c = batch[0];
+          cache[c.cacheKey] = {
+            legit: true,
+            linea: c.lineTokens.join(" "),
+            bodega: c.bodega,
+            aliasDeKey: null,
+            parajesNoDistinguen: [],
+            tiersNoDistinguen: [],
+          };
+          done++;
+        }
+        if (errors > 120) {
           console.error("  demasiados errores — corto y guardo lo que hay");
           break;
         }
@@ -306,12 +329,75 @@ async function main() {
     return canonicalKeyOf(parent, depth + 1);
   }
 
+  // ── Guardas determinísticas sobre el conocimiento del LLM ──
+  // El LLM se equivoca en preguntas de conocimiento fino (dijo que en
+  // Rutini Single Vineyard "gualtallary" y "altamira" no distinguen —
+  // sí distinguen: son embotellados distintos). Reglas duras:
+  //   1. Sólo se puede dropear un paraje/tier VISTO en las ofertas del
+  //      candidato (lo demás es ruido del modelo).
+  //   2. Si el candidato muestra ≥2 parajes distintos entre sus ofertas,
+  //      la línea es multi-paraje ⇒ los parajes SÍ distinguen; el LLM
+  //      queda vetado (parajesNoDistinguen = []).
+  //   3. Un tier sólo se dropea si aparece en ≥70% de las ofertas del
+  //      candidato (= es parte del nombre completo, no una versión).
+  const TIER_SET = new Set(["gran", "reserva", "gran reserva", "single", "vineyard", "single vineyard", "parcela", "parcel", "icono", "coleccion", "alta gama", "primera zona", "edicion limitada", "limited edition"]);
+
+  // Parajes distintos vistos POR LÍNEA (bodega+lineTokens), agregando
+  // TODOS los candidatos de la línea (todos los varietales). La guarda
+  // multi-paraje tiene que operar a nivel línea: el candidato
+  // "Aluvional (sin varietal)" sólo vio "altamira" en sus ofertas, pero
+  // la línea Aluvional embotella Gualtallary/La Consulta/El Peral — si
+  // CUALQUIER candidato de la línea ve otro paraje, nadie dropea.
+  function distinctParajes(phrases) {
+    const distinct = [];
+    for (const p of [...phrases].sort((a, b) => b.length - a.length)) {
+      if (!distinct.some((q) => q.includes(p) || p.includes(q) ||
+        p.split(" ").every((t) => q.split(" ").includes(t)))) distinct.push(p);
+    }
+    return distinct;
+  }
+  // Clave por línea CANÓNICA (la que decidió el LLM) para que los alias
+  // ("aluvional", "aluvional pje") compartan la misma guarda.
+  function lineKeyOf(c) {
+    const d = decisionOf(c);
+    const bodega = norm(d?.bodega || c.bodega);
+    const linea = d?.linea ? norm(d.linea) : c.lineTokens.join(" ");
+    return `${bodega}|${linea}`;
+  }
+  const lineParajes = new Map(); // bodega|línea → Set(parajes vistos)
+  for (const c of eligible) {
+    const lk = lineKeyOf(c);
+    if (!lineParajes.has(lk)) lineParajes.set(lk, new Set());
+    for (const k of c.discs.keys()) {
+      const n = norm(k);
+      if (!TIER_SET.has(n)) lineParajes.get(lk).add(n);
+    }
+  }
+
+  function guardedDecision(c, d) {
+    const seen = new Map([...c.discs.entries()].map(([k, n]) => [norm(k), n]));
+    const seenParajes = [...seen.keys()].filter((k) => !TIER_SET.has(k));
+    const lineSeen = lineParajes.get(lineKeyOf(c)) ?? new Set();
+    let parajes = (d.parajesNoDistinguen ?? []).map(norm).filter((p) => seen.has(p) || seenParajes.some((s) => s.includes(p) || p.includes(s)));
+    // multi-paraje A NIVEL LÍNEA: veto al LLM
+    if (distinctParajes(lineSeen).length >= 2) parajes = [];
+    const tiers = (d.tiersNoDistinguen ?? []).map(norm).filter((t) => {
+      const n = seen.get(t) ?? 0;
+      return TIER_SET.has(t) && n >= Math.ceil(c.offerCount * 0.7);
+    });
+    return { ...d, parajesNoDistinguen: parajes, tiersNoDistinguen: tiers };
+  }
+
   const wines = new Map(); // wineId → entry
   let junk = 0;
+  let vetoedMultiParaje = 0;
   for (const c of eligible) {
-    const d = decisionOf(c);
+    let d = decisionOf(c);
     if (!d) continue;
     if (!d.legit) { junk++; continue; }
+    const before = (d.parajesNoDistinguen ?? []).length;
+    d = guardedDecision(c, d);
+    if (before > 0 && d.parajesNoDistinguen.length === 0) vetoedMultiParaje++;
     const canonKey = canonicalKeyOf(c);
     const canonC = byCacheKey.get(canonKey) ?? c;
     const canonD = decisionOf(canonC) ?? d;
@@ -344,6 +430,41 @@ async function main() {
     w.storeCount = Math.max(w.storeCount, c.stores.size);
   }
 
+  // ── Fold: vino varietal-null → hermano único con varietal ──
+  // "Zuccardi Concreto" (sin varietal en el nombre) y "Zuccardi Concreto
+  // Malbec" son EL MISMO vino cuando la línea tiene un solo varietal.
+  // Fusionamos la entrada null en el hermano — así el asignador (que
+  // matchea exacto primero) manda esas ofertas al vino con varietal vía
+  // la herencia de línea. Si la línea tiene 2+ varietales (Serie A),
+  // la entrada null queda como página ambigua propia (conservador).
+  {
+    const byLine = new Map();
+    for (const w of wines.values()) {
+      const lk = `${norm(w.bodega)}|${norm(w.linea)}`;
+      if (!byLine.has(lk)) byLine.set(lk, []);
+      byLine.get(lk).push(w);
+    }
+    let folded = 0;
+    for (const [, ws] of byLine) {
+      const nulls = ws.filter((w) => !w.varietal);
+      const withVar = ws.filter((w) => w.varietal);
+      if (nulls.length > 0 && withVar.length === 1) {
+        const target = withVar[0];
+        for (const nu of nulls) {
+          for (const a of nu.lineAliases) {
+            if (!target.lineAliases.includes(a)) target.lineAliases.push(a);
+          }
+          for (const p of nu.parajesNoDistinguen) target.parajesNoDistinguen.add(p);
+          target.offerCount += nu.offerCount;
+          target.storeCount = Math.max(target.storeCount, nu.storeCount);
+          wines.delete(nu.id);
+          folded++;
+        }
+      }
+    }
+    if (folded > 0) console.log(`  fold varietal-null → hermano único: ${folded}`);
+  }
+
   const out = {
     _doc: "Catálogo de vinos v2 — (bodega, línea, varietal) con conocimiento por línea: aliases y qué parajes/tiers NO distinguen. Generado por build-wine-catalog.mjs (minado + validación gpt-4o-mini, cache en catalog-llm-cache.json). CURABLE A MANO: las correcciones humanas sobreviven — el builder sólo agrega entradas nuevas, no pisa existentes.",
     generatedAt: new Date().toISOString(),
@@ -369,7 +490,7 @@ async function main() {
   }
 
   writeFileSync(CATALOG_PATH, JSON.stringify(out, null, 1));
-  console.log(`  catálogo: ${out.wines.length} vinos (${junk} candidatos junk descartados)`);
+  console.log(`  catálogo: ${out.wines.length} vinos (${junk} candidatos junk descartados, ${vetoedMultiParaje} drops de paraje vetados por multi-paraje)`);
   console.log(`  → ${CATALOG_PATH}`);
 }
 
