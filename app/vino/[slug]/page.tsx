@@ -33,7 +33,7 @@ import {
   regionUrl,
   snapshotStats,
 } from "@/lib/snapshot";
-import { isJunkSlug } from "@/lib/junkSlugs";
+import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -137,11 +137,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     alternates: {
       canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
     },
+    // noindex: slugs basura de facetas Y fichas no-vino (espirituosas,
+    // bundles, venta por copa) — consistente con su exclusión del sitemap
+    // (aviso GSC 2026-07-03). follow: true en no-vino para no cortar el
+    // flujo de links internos hacia fichas legítimas.
     robots: isJunkSlug(g.groupSlug)
       ? { index: false, follow: false }
-      : allOutOfStock
-        ? { index: true, follow: true, nocache: true }
-        : { index: true, follow: true },
+      : isJunkWineGroup(g)
+        ? { index: false, follow: true }
+        : allOutOfStock
+          ? { index: true, follow: true, nocache: true }
+          : { index: true, follow: true },
   };
 }
 

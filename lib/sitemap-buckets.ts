@@ -23,7 +23,7 @@ import {
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 import { RANKINGS } from "@/lib/rankings";
 import { readVsPairs } from "@/lib/vsPairs";
-import { isJunkSlug } from "@/lib/junkSlugs";
+import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
 
 export const SITE = "https://vinndex.com.ar";
 
@@ -49,7 +49,10 @@ function eligibleWineGroups() {
   // daily-scrape, lo que rompería el chunking si no ordenáramos).
   return groups
     .filter((g) => g.imageUrl !== null)
-    .filter((g) => !isJunkSlug(g.groupSlug))
+    // No-vino (espirituosas/cerveza), bundles/gift y venta por copa
+    // llevan noindex en la ficha → tampoco van al sitemap (señal
+    // consistente para Google; aviso GSC 2026-07-03).
+    .filter((g) => !isJunkWineGroup(g))
     .slice()
     .sort((a, b) => a.groupSlug.localeCompare(b.groupSlug));
 }
@@ -117,7 +120,9 @@ export async function entriesForBucket(
       return [
         { url: `${SITE}/`, lastModified: generatedAt, changeFrequency: "daily", priority: 1.0 },
         { url: `${SITE}/buscar`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.9 },
-        { url: `${SITE}/buscar?multi=1`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.9 },
+        // `/buscar?multi=1` removido (aviso GSC 2026-07-03): su canonical
+        // apunta a /buscar, así que ponerla en el sitemap generaba
+        // "Alternate page with proper canonical tag" — señal contradictoria.
         { url: `${SITE}/sobre`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
         { url: `${SITE}/como-funciona`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
         { url: `${SITE}/preguntas`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.6 },

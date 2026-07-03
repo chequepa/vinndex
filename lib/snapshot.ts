@@ -4,6 +4,7 @@ import groupMergesJson from "@/data/group-merges.json";
 import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup } from "./matching";
 import { bestScoreFor } from "./scores";
+import { isJunkWineGroup } from "./junkSlugs";
 
 // Stores actualmente VIGENTES según `data/stores.json` — fuente de verdad.
 // Sirve para filtrar offers fantasma: cuando sacamos una tienda del config
@@ -876,6 +877,10 @@ export function brandPages(): BrandPage[] {
   for (const g of groups) {
     if (!g.brand) continue;
     if (SPIRITS.test(g.brand)) continue;
+    // Fichas no-vino/bundle/copa no alimentan páginas de bodega — sin
+    // esto, marcas de espirituosas con 2+ tiendas ganaban /bodega/*
+    // indexable (aviso GSC 2026-07-03).
+    if (isJunkWineGroup(g)) continue;
     const normalized = g.brand
       .toLowerCase()
       .normalize("NFD")
