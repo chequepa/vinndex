@@ -42,10 +42,16 @@ const HISTORY = path.join(ROOT, "data/price-history.json");
 const OUT = path.join(ROOT, "data/price-drops.json");
 
 const DROP_THRESHOLD = 0.15; // 15% mínimo para considerarlo drop
-const MAX_DROP = 0.7; // 70% es ridículo — probable typo del scraper o data sucia
+const MAX_DROP = 0.6; // >60% de baja real casi no existe — típico typo/data sucia
 const MIN_HISTORY_DAYS = 7; // necesitamos ≥7 días para mediana confiable
 const MIN_CURRENT_PRICE = 1500; // ningún vino real argentino bajo ese piso hoy
 const MAX_DROPS = 50;
+// Frontera de identidad v2 (cutover 2026-07-03): los puntos históricos
+// anteriores pertenecen a los GRUPOS VIEJOS bajo el mismo slug (quimeras
+// y formatos mezclados en el min) — compararlos contra el precio v2
+// fabricaba rebajas falsas ("Polígonos bajó de $107.700 a $36.000").
+// Ningún punto anterior al epoch entra a la comparación.
+const IDENTITY_EPOCH = "2026-07-03";
 
 // Mismo filtro que looksLikeWineGroup en lib/snapshot.ts — descartamos
 // destilados/aperitivos/licores que entran al snapshot por scrapers
@@ -95,8 +101,12 @@ function main() {
   const drops = [];
   const histMap = history.history ?? {};
 
-  for (const [slug, entries] of Object.entries(histMap)) {
-    if (!Array.isArray(entries) || entries.length < MIN_HISTORY_DAYS) {
+  for (const [slug, rawEntries] of Object.entries(histMap)) {
+    // Sólo la era v2 — ver IDENTITY_EPOCH arriba.
+    const entries = (Array.isArray(rawEntries) ? rawEntries : []).filter(
+      (e) => e && typeof e.date === "string" && e.date >= IDENTITY_EPOCH,
+    );
+    if (entries.length < MIN_HISTORY_DAYS) {
       continue;
     }
     // Last entry = price actual. Previous N-1 = baseline.

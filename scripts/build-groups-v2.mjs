@@ -67,6 +67,8 @@ const V1_VARIETALS = [
   { name: "Criolla", re: /\bcriolla\b/i },
   { name: "Moscatel", re: /\bmoscatel\b/i },
   { name: "Gewürztraminer", re: /\bgew[uü]rztraminer\b/i },
+  { name: "Verdejo", re: /\bverdejo\b/i },
+  { name: "Albariño", re: /\balbari[nñ]o\b/i },
 ];
 const V1_REGIONS = [
   { name: "Mendoza", re: /\bmendoza\b/i },
@@ -169,8 +171,27 @@ function assign(p, idx) {
 }
 
 /** Clave de grupo final (vino + expresión residual). */
+/**
+ * Colapsa discriminadores contenidos: "altamira" ⊂ "paraje altamira" son
+ * EL MISMO paraje escrito distinto por tiendas distintas — sin esto,
+ * Polígonos Paraje Altamira (19 tiendas) y Polígonos Altamira (5) eran
+ * dos páginas. Se queda la frase más larga.
+ */
+function collapseContainedPhrases(phrases) {
+  const kept = [];
+  for (const ph of [...phrases].sort((a, b) => b.length - a.length)) {
+    const toks = new Set(ph.split(" "));
+    const contained = kept.some((k) => {
+      const kt = new Set(k.split(" "));
+      return [...toks].every((t) => kt.has(t));
+    });
+    if (!contained) kept.push(ph);
+  }
+  return kept.sort();
+}
+
 function wineKeyOf(p, w) {
-  if (!w) return `fb|${fallbackWineKey(p)}`;
+  if (!w) return { key: `fb|${fallbackWineKey(p)}`, expr: null };
   const dropP = new Set((w.parajesNoDistinguen ?? []).map(norm));
   const dropT = new Set((w.tiersNoDistinguen ?? []).map(norm));
   const residual = p.discriminadores.filter((d) => !dropP.has(norm(d)) && !dropT.has(norm(d)));
@@ -178,8 +199,10 @@ function wineKeyOf(p, w) {
   // catálogo dropea la frase, dropea también sus tokens sueltos.
   const dropTokens = new Set([...dropP].flatMap((d) => d.split(" ")));
   const residual2 = residual.filter((d) => !d.split(" ").every((t) => dropTokens.has(t)));
-  const expr = [...residual2, ...p.ediciones].sort().join(" ");
-  return expr ? `${w.id}::${slugify(expr)}` : w.id;
+  const exprPhrases = collapseContainedPhrases(residual2.map(norm));
+  const expr = [...exprPhrases, ...p.ediciones].sort().join(" ");
+  if (!expr) return { key: w.id, expr: null };
+  return { key: `${w.id}::${slugify(expr)}`, expr };
 }
 
 function main() {
@@ -337,10 +360,10 @@ function main() {
     const p = parseOffer(o.name, o.brand);
     const w = assign(p, idx);
     if (w) assigned++;
-    const key = wineKeyOf(p, w);
+    const { key, expr } = wineKeyOf(p, w);
     let g = groups.get(key);
     if (!g) {
-      g = { wine: w ?? null, offers: [] };
+      g = { wine: w ?? null, expr: expr ?? null, offers: [] };
       groups.set(key, g);
     }
     g.offers.push({
@@ -495,22 +518,56 @@ function main() {
   // ── Materializar grupos ──
   const outGroups = [];
   for (const [key, g] of groups) {
-    const offersOut = g.offers
-      .map(({ _v1Slug, ...rest }) => rest)
-      .sort((a, b) => {
-        if (!!a.inStock !== !!b.inStock) return a.inStock ? -1 : 1;
-        const ac = a.comparable ? 0 : 1;
-        const bc = b.comparable ? 0 : 1;
-        if (ac !== bc) return ac - bc;
-        const acol = a.isCollector ? 1 : 0;
-        const bcol = b.isCollector ? 1 : 0;
-        if (acol !== bcol) return acol - bcol;
-        return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
-      });
+    const offersOut = g.offers.map(({ _v1Slug, ...rest }) => rest);
 
     const inStock = offersOut.filter((o) => o.inStock);
+
+    // ── Sanidad de precios ──
+    // Precios basura del scraper ($20 un Escorihuela, $510.000 una
+    // Corona) contaminan min/max, el hero ("ahorrá 99%") y el histórico
+    // que alimenta price-drops. Con ≥4 comparables con stock, un precio
+    // a <25% o >4× de la MEDIANA del grupo es casi seguro un error de
+    // parseo/carga: se marca priceSuspect y sale de las estadísticas y
+    // de la tabla comparativa (la UI lo muestra aparte). Piso absoluto
+    // $1.500: ningún vino real argentino baja de eso hoy.
+    {
+      const cmpPrices = inStock
+        .filter((o) => o.comparable && !o.isCollector)
+        .map((o) => o.priceArs)
+        .filter((p) => typeof p === "number" && p > 0)
+        .sort((a, b) => a - b);
+      const med =
+        cmpPrices.length >= 4
+          ? cmpPrices.length % 2
+            ? cmpPrices[(cmpPrices.length - 1) / 2]
+            : (cmpPrices[cmpPrices.length / 2 - 1] + cmpPrices[cmpPrices.length / 2]) / 2
+          : null;
+      for (const o of offersOut) {
+        if (typeof o.priceArs !== "number" || o.priceArs <= 0) continue;
+        const floor = o.priceArs < 1500;
+        const outlier = med !== null && (o.priceArs < med * 0.25 || o.priceArs > med * 4);
+        if (floor || outlier) {
+          o.priceSuspect = true;
+          if (o.comparable) o.comparable = undefined;
+        }
+      }
+    }
+
+    // Sort DESPUÉS de la sanidad: los sospechosos pierden `comparable` y
+    // se van al fondo con el resto de no-comparables.
+    offersOut.sort((a, b) => {
+      if (!!a.inStock !== !!b.inStock) return a.inStock ? -1 : 1;
+      const ac = a.comparable ? 0 : 1;
+      const bc = b.comparable ? 0 : 1;
+      if (ac !== bc) return ac - bc;
+      const acol = a.isCollector ? 1 : 0;
+      const bcol = b.isCollector ? 1 : 0;
+      if (acol !== bcol) return acol - bcol;
+      return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
+    });
+
     let basis = inStock.filter((o) => o.comparable && !o.isCollector);
-    if (basis.length === 0) basis = inStock.filter((o) => !o.isCollector);
+    if (basis.length === 0) basis = inStock.filter((o) => !o.isCollector && !o.priceSuspect);
     if (basis.length === 0) basis = inStock;
     const prices = basis
       .map((o) => o.priceArs)
@@ -532,15 +589,47 @@ function main() {
       }
       const v = variants.get(vk);
       v.offerCount++;
-      if (o.inStock && typeof o.priceArs === "number" && o.priceArs > 0) {
+      if (o.inStock && !o.priceSuspect && typeof o.priceArs === "number" && o.priceArs > 0) {
         v.minPrice = v.minPrice === null ? o.priceArs : Math.min(v.minPrice, o.priceArs);
       }
     }
 
     const w = g.wine;
-    const canonicalName = w
-      ? [w.linea, w.varietal ? w.varietal.split("+").map((v) => v[0].toUpperCase() + v.slice(1)).join(" ") : ""].filter(Boolean).join(" ")
-      : offersOut.slice().sort((a, b) => a.name.length - b.name.length)[0].name;
+    // Nombre: línea + EXPRESIÓN + varietal display.
+    //  - La expresión (paraje/edición) VA en el nombre: "Aluvional
+    //    Gualtallary Malbec" ≠ "Aluvional Altamira Malbec" — sin esto,
+    //    todas las expresiones de una línea multi-paraje compartían
+    //    título ("Aluvional Malbec" × 4 páginas = títulos duplicados
+    //    para Google y fichas indistinguibles para el usuario).
+    //  - Sin duplicar varietal cuando la línea ya lo contiene ("Pinot
+    //    Noir" + varietal pinot noir daba "Pinot Noir Pinot noir").
+    let canonicalName;
+    if (w) {
+      const varietalDisplay = w.varietal
+        ? w.varietal.split("+").map((v) => v[0].toUpperCase() + v.slice(1)).join(" ")
+        : "";
+      const lineaNorm = norm(w.linea);
+      const needsVarietal =
+        varietalDisplay &&
+        !w.varietal.split("+").every((v) => lineaNorm.includes(norm(v)));
+      const exprDisplay = g.expr
+        ? g.expr
+            .split(" ")
+            .map((t) => (t.length > 2 ? t[0].toUpperCase() + t.slice(1) : t))
+            .join(" ")
+        : "";
+      canonicalName = [
+        w.linea,
+        exprDisplay && !lineaNorm.includes(norm(exprDisplay)) ? exprDisplay : "",
+        needsVarietal ? varietalDisplay : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+    } else {
+      canonicalName = offersOut
+        .slice()
+        .sort((a, b) => a.name.length - b.name.length)[0].name;
+    }
 
     // Facets del contrato v1 (lib/matching.ts ProductGroup): varietals y
     // región con los MISMOS nombres display que v1 — /varietal/* y

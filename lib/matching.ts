@@ -215,6 +215,9 @@ export type ProductOffer = {
   comparable?: boolean;
   /** Cosecha explícita en el nombre de la oferta. */
   vintage?: number;
+  /** Precio incoherente con la mediana del grupo (<25% o >4×) o bajo el
+   * piso absoluto — probable error del scraper. Fuera de stats y tabla. */
+  priceSuspect?: boolean;
 };
 
 /** Turn a list of scraped products into deduped groups. */

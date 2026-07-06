@@ -40,7 +40,7 @@ export function isJunkSlug(slug: string): boolean {
 const NON_WINE_RE =
   /\b(whisky|whiskey|whisk|vodka|gin|ginebra|ron|rhum|tequila|mezcal|cognac|brandy|fernet|vermouth|vermut|aperitivo|aperol|campari|licor|grappa|pisco|absenta|cerveza|gancia|aperitif|johnnie|walker|chivas|jack\s*daniels?|ballantines?|wild\s*turkey|jameson|dewars?|grants?|bourbon|escoces|famous\s*grouse|old\s*smuggler|criadores|100\s*pipers|speed|energizante|gaseosa|agua\s+(mineral|saborizada|tonica)|coca\s*cola|sprite|paso\s*de\s*los\s*toros)\b/i;
 const BUNDLE_NAME_RE =
-  /\b(mix|promo|promocion|regalo|degustaci\w*|vertical|combo|surtido|kit|bag\s*in\s*box|gift\s*card|wine\s*card|voucher|tarjeta\s+(de\s+)?regalo)\b/i;
+  /\b(mix|promo|promocion|regalo|degustaci\w*|vertical|combo|surtido|kit|estuche|cofre|bag\s*in\s*box|gift\s*card|wine\s*card|voucher|tarjeta\s+(de\s+)?regalo)\b/i;
 const COPA_NAME_RE = /\bcopa\b/i;
 
 function stripAccentsLower(s: string): string {

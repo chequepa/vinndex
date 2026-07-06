@@ -207,6 +207,7 @@ const VARIETAL_RE = [
   ["mourvedre", /\b(mourv[eè]dre|monastrell)\b/], ["aglianico", /\baglianico\b/],
   ["montepulciano", /\bmontepulciano\b/], ["marsanne", /\bmarsanne\b/], ["roussanne", /\broussanne\b/],
   ["gruner", /\bgr[uü]ner\b/], ["malvasia", /\bmalvas[ií]a\b/], ["cinsault", /\bcinsault\b/],
+  ["verdejo", /\bverdejo\b/], ["albarino", /\balbari[nñ]o\b/],
   ["blend", /\b(blend|corte|assemblage|ensamble|tinto\s+de\s+mesa)\b/],
 ];
 function styleSet(g) {
