@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-08T09:30:07.488Z",
-  "snapshotGeneratedAt": "2026-07-08T09:29:34.515Z",
-  "groupCount": 40733,
-  "groupsWithDistinctiveTokens": 35000,
+  "generatedAt": "2026-07-10T10:40:34.690Z",
+  "snapshotGeneratedAt": "2026-07-10T10:39:12.768Z",
+  "groupCount": 40281,
+  "groupsWithDistinctiveTokens": 34624,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
     "total": 17,
     "items": [
       {
         "key": "coleccion|gualtallary",
-        "totalStoresIfMerged": 16,
+        "totalStoresIfMerged": 13,
         "members": [
           {
             "slug": "coleccion-cabernet-franc-rutini-2",
             "brand": "Rutini",
             "canonicalName": "Colección Gualtallary Single Vineyard Cabernet franc",
-            "storeCount": 9
+            "storeCount": 8
           },
           {
             "slug": "coleccion-cabernet-rutini-2",
             "brand": "Rutini",
             "canonicalName": "Colección Gualtallary Single Vineyard Cabernet",
-            "storeCount": 5
+            "storeCount": 3
           },
           {
             "slug": "coleccion-cabernet-franc-rutini-3",
@@ -551,11 +551,11 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 14256,
+    "total": 13930,
     "items": [
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 61,
+        "totalStoresIfMerged": 60,
         "a": {
           "slug": "angelica-catena-malbec-zapata",
           "brand": "Catena Zapata",
@@ -566,7 +566,7 @@
           "slug": "angelica-blanco-chardonnay-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
+          "storeCount": 29
         }
       },
       {
@@ -587,12 +587,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 58,
+        "totalStoresIfMerged": 57,
         "a": {
           "slug": "angelica-blanco-chardonnay-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
+          "storeCount": 29
         },
         "b": {
           "slug": "angelica-cabernet-catena-franc-zapata",
@@ -635,12 +635,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 54,
+        "totalStoresIfMerged": 53,
         "a": {
           "slug": "angelica-blanco-chardonnay-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
+          "storeCount": 29
         },
         "b": {
           "slug": "angelica-cabernet-catena-sauvignon-zapata",
@@ -651,12 +651,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 53,
+        "totalStoresIfMerged": 52,
         "a": {
           "slug": "angelica-blanco-chardonnay-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
+          "storeCount": 29
         },
         "b": {
           "slug": "angelica-catena-merlot-zapata",
@@ -779,6 +779,22 @@
       },
       {
         "jaccard": 1,
+        "totalStoresIfMerged": 34,
+        "a": {
+          "slug": "brut-espumante-nature-salentein",
+          "brand": "Salentein",
+          "canonicalName": "Brut Nature",
+          "storeCount": 18
+        },
+        "b": {
+          "slug": "brut-espumante-luigibosca-luigibosca-nature",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Brut Nature",
+          "storeCount": 16
+        }
+      },
+      {
+        "jaccard": 1,
         "totalStoresIfMerged": 33,
         "a": {
           "slug": "boher-bot-brut-casa-champana-extra",
@@ -800,29 +816,13 @@
           "slug": "blend-catena-malbec-nicasia",
           "brand": "Catena Zapata",
           "canonicalName": "Nicasia Blend Malbec",
-          "storeCount": 19
+          "storeCount": 18
         },
         "b": {
           "slug": "blend-cabernet-catena-franc-nicasia",
           "brand": "Catena Zapata",
           "canonicalName": "Nicasia Blend Cabernet franc",
-          "storeCount": 14
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 33,
-        "a": {
-          "slug": "brut-espumante-nature-salentein",
-          "brand": "Salentein",
-          "canonicalName": "Brut Nature",
-          "storeCount": 17
-        },
-        "b": {
-          "slug": "brut-espumante-luigibosca-luigibosca-nature",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Brut Nature",
-          "storeCount": 16
+          "storeCount": 15
         }
       },
       {
@@ -957,118 +957,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 31,
         "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "angelica-zapata-cb-franc",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CB FRANC",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "angelica-zapata-cabernet-catena-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata 17 Cabernet",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "4u-angelica-cabernet-catena-franc-zapata",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CABERNET FRANC CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "angelica-zapata-cabernet-sauvignon-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CABERNET SAUVIGNON CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "angelica-zapata-merlot-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA MERLOT CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "4u-angelica-catena-chardonnay-zapata",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CHARDONNAY CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "angelica-blanco-chardonnay-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Chardonnay",
-          "storeCount": 30
-        },
-        "b": {
-          "slug": "angelica-zapata-malbec-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA MALBEC CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
@@ -1099,6 +987,118 @@
       },
       {
         "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "angelica-zapata-cb-franc",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CB FRANC",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "angelica-zapata-cabernet-catena-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata 17 Cabernet",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "4u-angelica-cabernet-catena-franc-zapata",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CABERNET FRANC CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "angelica-zapata-cabernet-sauvignon-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CABERNET SAUVIGNON CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "angelica-zapata-merlot-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA MERLOT CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "4u-angelica-catena-chardonnay-zapata",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CHARDONNAY CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
+          "slug": "angelica-blanco-chardonnay-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Chardonnay",
+          "storeCount": 29
+        },
+        "b": {
+          "slug": "angelica-zapata-malbec-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA MALBEC CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
         "totalStoresIfMerged": 29,
         "a": {
           "slug": "angelica-cabernet-catena-franc-zapata",
@@ -1207,6 +1207,22 @@
           "brand": null,
           "canonicalName": "ANGELICA ZAPATA MALBEC CAJA x 4u",
           "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 29,
+        "a": {
+          "slug": "araucana-malbec",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos Malbec",
+          "storeCount": 22
+        },
+        "b": {
+          "slug": "araucana-ciervos-malbec-rio-rose",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos Malbec",
+          "storeCount": 7
         }
       },
       {
@@ -1341,16 +1357,16 @@
         "jaccard": 1,
         "totalStoresIfMerged": 27,
         "a": {
-          "slug": "fleur-malbec-monteviejo-petite",
-          "brand": "Monteviejo",
-          "canonicalName": "Petite Fleur Malbec",
-          "storeCount": 16
+          "slug": "brut-espumante-nature-salentein",
+          "brand": "Salentein",
+          "canonicalName": "Brut Nature",
+          "storeCount": 18
         },
         "b": {
-          "slug": "chardonnay-fleur-monteviejo-petite",
-          "brand": "Monteviejo",
-          "canonicalName": "Petite Fleur Chardonnay",
-          "storeCount": 11
+          "slug": "brut-champana-nature-rutini",
+          "brand": "Rutini",
+          "canonicalName": "Brut Nature",
+          "storeCount": 9
         }
       },
       {
@@ -1549,32 +1565,16 @@
         "jaccard": 1,
         "totalStoresIfMerged": 26,
         "a": {
-          "slug": "brut-espumante-nature-salentein",
-          "brand": "Salentein",
-          "canonicalName": "Brut Nature",
-          "storeCount": 17
-        },
-        "b": {
-          "slug": "brut-champana-nature-rutini",
-          "brand": "Rutini",
-          "canonicalName": "Brut Nature",
-          "storeCount": 9
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 26,
-        "a": {
           "slug": "fleur-malbec-monteviejo-petite",
           "brand": "Monteviejo",
           "canonicalName": "Petite Fleur Malbec",
-          "storeCount": 16
+          "storeCount": 15
         },
         "b": {
-          "slug": "cabernet-fleur-franc-monteviejo-petite",
+          "slug": "chardonnay-fleur-monteviejo-petite",
           "brand": "Monteviejo",
-          "canonicalName": "Petite Fleur Cabernet franc",
-          "storeCount": 10
+          "canonicalName": "Petite Fleur Chardonnay",
+          "storeCount": 11
         }
       },
       {
@@ -1741,6 +1741,38 @@
         "jaccard": 1,
         "totalStoresIfMerged": 25,
         "a": {
+          "slug": "araucana-malbec",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos Malbec",
+          "storeCount": 22
+        },
+        "b": {
+          "slug": "araucana-ciervos-noir-pinot-rio",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos Pinot noir",
+          "storeCount": 3
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 25,
+        "a": {
+          "slug": "araucana-malbec",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos Malbec",
+          "storeCount": 22
+        },
+        "b": {
+          "slug": "araucana-ciervos-rio",
+          "brand": "Araucana",
+          "canonicalName": "Río de los Ciervos",
+          "storeCount": 3
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 25,
+        "a": {
           "slug": "boher-bot-brut-casa-champana-extra",
           "brand": "Casa Boher",
           "canonicalName": "Extra Brut",
@@ -1792,44 +1824,12 @@
           "slug": "fleur-malbec-monteviejo-petite",
           "brand": "Monteviejo",
           "canonicalName": "Petite Fleur Malbec",
-          "storeCount": 16
+          "storeCount": 15
         },
         "b": {
-          "slug": "fleur-monteviejo-petite-torrontes",
+          "slug": "cabernet-fleur-franc-monteviejo-petite",
           "brand": "Monteviejo",
-          "canonicalName": "Petite Fleur Torrontes",
-          "storeCount": 9
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 25,
-        "a": {
-          "slug": "cabernet-escorihuela-gascon-pequenas-producciones-sauvignon",
-          "brand": "Escorihuela",
-          "canonicalName": "Pequeñas Producciones Cabernet",
-          "storeCount": 15
-        },
-        "b": {
-          "slug": "bodega-con-escorihuela-malbec-pequenas-producciones",
-          "brand": null,
-          "canonicalName": "Pequeñas Producciones Malbec",
-          "storeCount": 10
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 25,
-        "a": {
-          "slug": "cabernet-escorihuela-gascon-pequenas-producciones-sauvignon",
-          "brand": "Escorihuela",
-          "canonicalName": "Pequeñas Producciones Cabernet",
-          "storeCount": 15
-        },
-        "b": {
-          "slug": "chardonnay-escorihuela-pequenas-producciones",
-          "brand": "Escorihuela",
-          "canonicalName": "Pequeñas Producciones Chardonnay",
+          "canonicalName": "Petite Fleur Cabernet franc",
           "storeCount": 10
         }
       }
