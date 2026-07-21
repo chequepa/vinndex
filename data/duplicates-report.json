@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T10:17:53.388Z",
-  "snapshotGeneratedAt": "2026-07-20T10:17:17.048Z",
-  "groupCount": 38993,
-  "groupsWithDistinctiveTokens": 33271,
+  "generatedAt": "2026-07-21T09:32:13.055Z",
+  "snapshotGeneratedAt": "2026-07-21T09:31:35.511Z",
+  "groupCount": 39071,
+  "groupsWithDistinctiveTokens": 33336,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
     "total": 17,
@@ -105,48 +105,6 @@
             "slug": "extra-brut-edicion-especial-chandon",
             "brand": "Chandon",
             "canonicalName": "Extra Brut Edición Especial",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "chenin|semillon",
-        "totalStoresIfMerged": 7,
-        "members": [
-          {
-            "slug": "vino-blanco-clasico-san-felipe-750-ml",
-            "brand": null,
-            "canonicalName": "Vino Blanco Chardonnay, Chenin y Semillón 750 Cc San Felipe",
-            "storeCount": 2
-          },
-          {
-            "slug": "blanco-catena-chenin-dv-historico-semillon",
-            "brand": "DV Catena",
-            "canonicalName": "Blanco Histórico Chenin Semillon",
-            "storeCount": 2
-          },
-          {
-            "slug": "el-regreso-semillon-chenin-750-cc",
-            "brand": null,
-            "canonicalName": "El Regreso Semillon Chenin 750 Cc",
-            "storeCount": 1
-          },
-          {
-            "slug": "dv-catena-semillon-chenin",
-            "brand": null,
-            "canonicalName": "DV Catena Semillon - Chenin",
-            "storeCount": 1
-          },
-          {
-            "slug": "banco-chenin-historico-semillon",
-            "brand": null,
-            "canonicalName": "D.V. Banco Histórico Semillon-Chenin x 750ml.",
-            "storeCount": 1
-          },
-          {
-            "slug": "don-rui-cheninsemillon-martins",
-            "brand": "Martin's",
-            "canonicalName": "Don Rui Chenin Semillon",
             "storeCount": 0
           }
         ]
@@ -315,6 +273,42 @@
             "slug": "zorzal-terroir-unico-blend",
             "brand": null,
             "canonicalName": "Zorzal Terroir Único Blend",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
+        "key": "chenin|semillon",
+        "totalStoresIfMerged": 5,
+        "members": [
+          {
+            "slug": "blanco-catena-chenin-dv-historico-semillon",
+            "brand": "DV Catena",
+            "canonicalName": "Blanco Histórico Chenin Semillon",
+            "storeCount": 2
+          },
+          {
+            "slug": "el-regreso-semillon-chenin-750-cc",
+            "brand": null,
+            "canonicalName": "El Regreso Semillon Chenin 750 Cc",
+            "storeCount": 1
+          },
+          {
+            "slug": "dv-catena-semillon-chenin",
+            "brand": null,
+            "canonicalName": "DV Catena Semillon - Chenin",
+            "storeCount": 1
+          },
+          {
+            "slug": "banco-chenin-historico-semillon",
+            "brand": null,
+            "canonicalName": "D.V. Banco Histórico Semillon-Chenin x 750ml.",
+            "storeCount": 1
+          },
+          {
+            "slug": "don-rui-cheninsemillon-martins",
+            "brand": "Martin's",
+            "canonicalName": "Don Rui Chenin Semillon",
             "storeCount": 0
           }
         ]
@@ -563,7 +557,7 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 13689,
+    "total": 13765,
     "items": [
       {
         "jaccard": 1,
@@ -951,22 +945,6 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 33,
-        "a": {
-          "slug": "blend-catena-malbec-nicasia",
-          "brand": "Catena Zapata",
-          "canonicalName": "Nicasia Blend Malbec",
-          "storeCount": 18
-        },
-        "b": {
-          "slug": "blend-cabernet-catena-franc-nicasia",
-          "brand": "Catena Zapata",
-          "canonicalName": "Nicasia Blend Cabernet franc",
-          "storeCount": 15
-        }
-      },
-      {
-        "jaccard": 1,
         "totalStoresIfMerged": 32,
         "a": {
           "slug": "boher-bot-brut-casa-champana-extra",
@@ -979,6 +957,22 @@
           "brand": "Luigi Bosca",
           "canonicalName": "Extra Brut",
           "storeCount": 14
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 32,
+        "a": {
+          "slug": "blend-catena-malbec-nicasia",
+          "brand": "Catena Zapata",
+          "canonicalName": "Nicasia Blend Malbec",
+          "storeCount": 17
+        },
+        "b": {
+          "slug": "blend-cabernet-catena-franc-nicasia",
+          "brand": "Catena Zapata",
+          "canonicalName": "Nicasia Blend Cabernet franc",
+          "storeCount": 15
         }
       },
       {
