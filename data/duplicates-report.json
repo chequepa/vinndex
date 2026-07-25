@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-24T07:53:13.470Z",
-  "snapshotGeneratedAt": "2026-07-24T07:52:41.054Z",
-  "groupCount": 38978,
-  "groupsWithDistinctiveTokens": 33259,
+  "generatedAt": "2026-07-25T07:49:42.684Z",
+  "snapshotGeneratedAt": "2026-07-25T07:49:08.483Z",
+  "groupCount": 39131,
+  "groupsWithDistinctiveTokens": 33407,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
     "total": 17,
@@ -248,6 +248,36 @@
         ]
       },
       {
+        "key": "blend|unico",
+        "totalStoresIfMerged": 5,
+        "members": [
+          {
+            "slug": "amalaya-corte-unico",
+            "brand": "Amalaya",
+            "canonicalName": "Corte Único Blend",
+            "storeCount": 3
+          },
+          {
+            "slug": "amalaya-corte-unico-blend-colome",
+            "brand": "Colomé",
+            "canonicalName": "Amalaya Corte Único Blend",
+            "storeCount": 2
+          },
+          {
+            "slug": "zorzal-terroir-unico-blend",
+            "brand": null,
+            "canonicalName": "Zorzal Terroir Único Blend",
+            "storeCount": 0
+          },
+          {
+            "slug": "blend-corte-durigutti-unico",
+            "brand": "Durigutti",
+            "canonicalName": "Corte Único Blend",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
         "key": "chenin|semillon",
         "totalStoresIfMerged": 5,
         "members": [
@@ -279,30 +309,6 @@
             "slug": "don-rui-cheninsemillon-martins",
             "brand": "Martin's",
             "canonicalName": "Don Rui Chenin Semillon",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "blend|unico",
-        "totalStoresIfMerged": 4,
-        "members": [
-          {
-            "slug": "amalaya-corte-unico",
-            "brand": "Amalaya",
-            "canonicalName": "Corte Único Blend",
-            "storeCount": 3
-          },
-          {
-            "slug": "blend-corte-durigutti-unico",
-            "brand": "Durigutti",
-            "canonicalName": "Corte Único Blend",
-            "storeCount": 1
-          },
-          {
-            "slug": "zorzal-terroir-unico-blend",
-            "brand": null,
-            "canonicalName": "Zorzal Terroir Único Blend",
             "storeCount": 0
           }
         ]
@@ -545,16 +551,16 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 13705,
+    "total": 13572,
     "items": [
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 60,
+        "totalStoresIfMerged": 61,
         "a": {
           "slug": "angelica-catena-malbec-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
+          "storeCount": 32
         },
         "b": {
           "slug": "angelica-cabernet-catena-franc-zapata",
@@ -565,12 +571,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 60,
+        "totalStoresIfMerged": 61,
         "a": {
           "slug": "angelica-catena-malbec-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
+          "storeCount": 32
         },
         "b": {
           "slug": "angelica-blanco-chardonnay-zapata",
@@ -597,12 +603,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 55,
+        "totalStoresIfMerged": 56,
         "a": {
           "slug": "angelica-catena-malbec-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
+          "storeCount": 32
         },
         "b": {
           "slug": "angelica-catena-merlot-zapata",
@@ -613,12 +619,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 55,
+        "totalStoresIfMerged": 56,
         "a": {
           "slug": "angelica-catena-malbec-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
+          "storeCount": 32
         },
         "b": {
           "slug": "angelica-cabernet-catena-sauvignon-zapata",
@@ -807,6 +813,118 @@
         "jaccard": 1,
         "totalStoresIfMerged": 33,
         "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "angelica-zapata-cb-franc",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CB FRANC",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "angelica-zapata-cabernet-catena-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata 17 Cabernet",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "4u-angelica-cabernet-catena-franc-zapata",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CABERNET FRANC CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "angelica-zapata-cabernet-sauvignon-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CABERNET SAUVIGNON CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "angelica-zapata-merlot-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA MERLOT CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "4u-angelica-catena-chardonnay-zapata",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA CHARDONNAY CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
+          "slug": "angelica-catena-malbec-zapata",
+          "brand": "Catena Zapata",
+          "canonicalName": "Angélica Zapata Malbec",
+          "storeCount": 32
+        },
+        "b": {
+          "slug": "angelica-zapata-malbec-caja-x-4u",
+          "brand": null,
+          "canonicalName": "ANGELICA ZAPATA MALBEC CAJA x 4u",
+          "storeCount": 1
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 33,
+        "a": {
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
@@ -833,118 +951,6 @@
           "brand": "Salentein",
           "canonicalName": "Extra Brut",
           "storeCount": 15
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "angelica-zapata-cb-franc",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CB FRANC",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "angelica-zapata-cabernet-catena-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata 17 Cabernet",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "4u-angelica-cabernet-catena-franc-zapata",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CABERNET FRANC CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "angelica-zapata-cabernet-sauvignon-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CABERNET SAUVIGNON CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "angelica-zapata-merlot-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA MERLOT CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "4u-angelica-catena-chardonnay-zapata",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA CHARDONNAY CAJA x 4u",
-          "storeCount": 1
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 32,
-        "a": {
-          "slug": "angelica-catena-malbec-zapata",
-          "brand": "Catena Zapata",
-          "canonicalName": "Angélica Zapata Malbec",
-          "storeCount": 31
-        },
-        "b": {
-          "slug": "angelica-zapata-malbec-caja-x-4u",
-          "brand": null,
-          "canonicalName": "ANGELICA ZAPATA MALBEC CAJA x 4u",
-          "storeCount": 1
         }
       },
       {
@@ -1636,6 +1642,22 @@
         }
       },
       {
+        "jaccard": 0.75,
+        "totalStoresIfMerged": 26,
+        "a": {
+          "slug": "malbec-pablo-poligonos-san-zuccardi",
+          "brand": "Zuccardi",
+          "canonicalName": "Polígonos San Pablo Malbec",
+          "storeCount": 15
+        },
+        "b": {
+          "slug": "poligonos-verdejo-zuccardi-2",
+          "brand": "Zuccardi",
+          "canonicalName": "Polígonos San Pablo Verdejo",
+          "storeCount": 11
+        }
+      },
+      {
         "jaccard": 1,
         "totalStoresIfMerged": 26,
         "a": {
@@ -1668,34 +1690,18 @@
         }
       },
       {
-        "jaccard": 0.75,
-        "totalStoresIfMerged": 26,
-        "a": {
-          "slug": "malbec-pablo-poligonos-san-zuccardi",
-          "brand": "Zuccardi",
-          "canonicalName": "Polígonos San Pablo Malbec",
-          "storeCount": 15
-        },
-        "b": {
-          "slug": "poligonos-verdejo-zuccardi-2",
-          "brand": "Zuccardi",
-          "canonicalName": "Polígonos San Pablo Verdejo",
-          "storeCount": 11
-        }
-      },
-      {
         "jaccard": 1,
         "totalStoresIfMerged": 26,
         "a": {
-          "slug": "manos-negras-malbec-3",
+          "slug": "cordero-con-piel-de-lobo-malbec",
           "brand": null,
-          "canonicalName": "MANOS NEGRAS MALBEC",
+          "canonicalName": "Cordero con Piel de Lobo Malbec",
           "storeCount": 14
         },
         "b": {
-          "slug": "manos-negras-pinot-noir-2",
-          "brand": null,
-          "canonicalName": "Manos negras pinot noir",
+          "slug": "cordero-con-piel-de-lobo-cabernet-sauvignon-cabernet-cordero-con-piel-de-lobo",
+          "brand": "Cordero con Piel de Lobo",
+          "canonicalName": "Cordero con Piel de Lobo Cabernet Sauvignon",
           "storeCount": 12
         }
       },
