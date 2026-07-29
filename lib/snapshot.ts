@@ -317,6 +317,46 @@ function groupComparator(
   }
 }
 
+/**
+ * EAN/GTIN — código de barras de la botella. Es un identificador global
+ * único: si dos tiendas publican el mismo EAN es el mismo producto (por
+ * eso el pipeline lo usa como gate de merge sin falsos positivos).
+ *
+ * Los scrapers lo dejan en `externalSku` cuando la tienda lo publica:
+ * 19.648 ofertas lo tienen hoy, alcanzando 8.342 fichas.
+ *
+ * Buscarlo importa porque la gente REALMENTE busca así. En Search
+ * Console hay clics entrando por `7798353195803` y `7790168904663` —
+ * códigos que resuelven a Gran Cordero con Piel de Lobo Malbec y al
+ * Colón Selecto. Hasta ahora `/buscar` les contestaba "No encontramos".
+ */
+const EAN_RE = /^[0-9]{12,14}$/;
+
+/** Query → EAN normalizado, o null si no parece un código de barras. */
+function asEanQuery(raw: string): string | null {
+  const digits = raw.replace(/[\s-]/g, "");
+  return EAN_RE.test(digits) ? digits : null;
+}
+
+let eanIndex: Map<string, Set<string>> | null = null;
+
+/** EAN → slugs de las fichas que tienen una oferta con ese código. */
+function getEanIndex(): Map<string, Set<string>> {
+  if (eanIndex) return eanIndex;
+  const idx = new Map<string, Set<string>>();
+  for (const g of groups) {
+    for (const o of g.offers ?? []) {
+      const sku = o.externalSku?.trim();
+      if (!sku || !EAN_RE.test(sku)) continue;
+      let set = idx.get(sku);
+      if (!set) idx.set(sku, (set = new Set()));
+      set.add(g.groupSlug);
+    }
+  }
+  eanIndex = idx;
+  return idx;
+}
+
 export function searchGroups(
   query: string,
   limit = 48,
@@ -324,6 +364,7 @@ export function searchGroups(
 ): ProductGroup[] {
   const q = stripAccents(query.trim().toLowerCase());
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+  const ean = asEanQuery(query.trim());
   // Non-wines (beer, spirits, food items) are excluded from /buscar even
   // when they're in the snapshot — Vinndex is a wine comparator, surfacing
   // "Leffe cerveza" or "Grana Padano queso" as top results destroys trust.
@@ -370,14 +411,21 @@ export function searchGroups(
     );
   }
 
-  const filtered = q
-    ? source.filter((g) => {
-        const haystack = stripAccents(
-          `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase(),
-        );
-        return tokens.every((t) => haystack.includes(t));
-      })
-    : source;
+  // Un EAN es identidad exacta, no texto: se resuelve por índice y no
+  // pasa por el matcheo de tokens (el número no aparece en el nombre).
+  const filtered = ean
+    ? (() => {
+        const slugs = getEanIndex().get(ean);
+        return slugs ? source.filter((g) => slugs.has(g.groupSlug)) : [];
+      })()
+    : q
+      ? source.filter((g) => {
+          const haystack = stripAccents(
+            `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase(),
+          );
+          return tokens.every((t) => haystack.includes(t));
+        })
+      : source;
 
   // When the user has a query and hasn't picked a sort, default to
   // relevance — a cheap Monnalisa should not outrank an exact-match A
