@@ -566,9 +566,18 @@ function main() {
       return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
     });
 
+    // El último recurso NUNCA re-admite sospechosos: si lo hace, el precio
+    // basura que la sanidad de arriba acaba de marcar vuelve a ser el
+    // minPrice publicado. Y bottleStats() (lib/snapshot.ts) cae a
+    // g.minPrice cuando no le queda ninguna botella limpia, así que ese
+    // precio termina en el hero, el <title>, la meta description y el
+    // JSON-LD de la ficha: "Estéreo Cabernet franc · ahorrá hasta 99%",
+    // "Desde $ 1.000", con la tienda española espacioanelis.com cotizando
+    // en euros. Sin ninguna oferta limpia preferimos NO publicar precio
+    // (minPrice = null): la ficha ya sabe renderizar ese caso.
     let basis = inStock.filter((o) => o.comparable && !o.isCollector);
     if (basis.length === 0) basis = inStock.filter((o) => !o.isCollector && !o.priceSuspect);
-    if (basis.length === 0) basis = inStock;
+    if (basis.length === 0) basis = inStock.filter((o) => !o.priceSuspect);
     const prices = basis
       .map((o) => o.priceArs)
       .filter((p) => typeof p === "number" && p > 0);
