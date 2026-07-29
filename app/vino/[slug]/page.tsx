@@ -71,13 +71,29 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     : prettyName;
   const titleVintage = g.vintage ? ` ${g.vintage}` : "";
 
+  // El PRECIO va en el <title>, no sólo en la description.
+  //
+  // Vinndex es un comparador de precios y sus títulos no mostraban
+  // ninguno: "El Enemigo Malbec · compará 41 vinotecas · ahorrá hasta
+  // 54%". Search Console dice que la consulta más frecuente después de
+  // los nombres de vino es literalmente `precio` (219 impresiones), y
+  // varias son de la forma "<vino> precio". Con CTR 1,2% sobre 107K
+  // impresiones en posición media 10,3, el número en el SERP es la
+  // palanca más barata que tenemos.
+  //
+  // El "ahorrá hasta X%" sale del título porque compite por los ~60
+  // caracteres que Google muestra y es la afirmación más frágil de las
+  // dos (depende del máximo, que se infla con formatos raros). Sigue en
+  // la description, donde hay lugar.
   let titleTail: string;
   if (allOutOfStock) {
     titleTail = `sin stock en ${totalStores} vinoteca${totalStores === 1 ? "" : "s"}`;
+  } else if (bs.minPrice != null && g.storeCount >= 2) {
+    titleTail = `desde ${fmt.format(bs.minPrice)} en ${g.storeCount} vinotecas`;
+  } else if (bs.minPrice != null) {
+    titleTail = `desde ${fmt.format(bs.minPrice)}`;
   } else if (g.storeCount >= 2) {
-    titleTail = savingsPct
-      ? `compará ${g.storeCount} vinotecas · ahorrá hasta ${savingsPct}%`
-      : `compará en ${g.storeCount} vinotecas`;
+    titleTail = `compará en ${g.storeCount} vinotecas`;
   } else {
     titleTail = "precio al día";
   }
@@ -103,7 +119,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       if (savingsPct) {
         description += ` · ahorrá hasta ${savingsPct}%`;
       }
-      description += ".";
+      // La frescura es el otro gancho de una búsqueda de precio: el
+      // scrape corre todas las mañanas, así que la afirmación es real.
+      description += ". Precios actualizados a diario.";
     }
   }
 
