@@ -34,6 +34,7 @@ import {
   snapshotStats,
 } from "@/lib/snapshot";
 import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
+import { ReportIssue } from "@/components/ReportIssue";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -1182,6 +1183,8 @@ export default async function Vino({ params }: Params) {
             vinoteca. La comparación de arriba usa solo botellas individuales
             de 750&nbsp;ml.
           </p>
+
+          <ReportIssue slug={group.groupSlug} wineName={wineLabel} />
 
           {offers.some((o) => o.isCollector) && (
             <p className="text-xs text-graphite mt-3 max-w-2xl">
