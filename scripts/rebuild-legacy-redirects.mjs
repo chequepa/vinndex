@@ -17,6 +17,9 @@
  *   1. Dominancia ≥85% de las ofertas sobrevivientes en un solo destino.
  *      Un rename limpio manda ~100%; una quimera vieja que el sistema
  *      nuevo partió bien se reparte y queda en 404 a propósito.
+ *      RESCATE: si el nombre del destino es idéntico al del origen, no hay
+ *      ambigüedad que proteger y alcanza con ser el más votado — es el
+ *      mismo vino separado porque UNA tienda lo nombra distinto.
  *   2. El nombre destino comparte ≥40% de vocabulario con el origen.
  *   3. El color no se contradice (un tinto no redirige a un blanco),
  *      salvo nombre idéntico — ahí el que estaba mal era el dato viejo.
@@ -84,7 +87,7 @@ const out = {};
 const stats = {
   total: 0, sigueViva: 0, yaMapeada: 0, sinOfertas: 0,
   sinUrlSobreviviente: 0, ambigua: 0, rechazadaPorNombre: 0,
-  rechazadaPorColor: 0, mapeada: 0,
+  rechazadaPorColor: 0, rescatadaPorNombre: 0, mapeada: 0,
 };
 
 for (const g of oldSnap.productGroups ?? []) {
@@ -109,8 +112,6 @@ for (const g of oldSnap.productGroups ?? []) {
   const [bestSlug, bestVotes] = ranked[0];
   const totalVotes = [...votes.values()].reduce((a, b) => a + b, 0);
 
-  // Gate 1 — dominancia.
-  if (bestVotes / totalVotes < DOMINANCE) { stats.ambigua++; continue; }
   if (!liveSlugs.has(bestSlug)) { stats.sinUrlSobreviviente++; continue; }
 
   const dest = bySlug.get(bestSlug);
@@ -127,6 +128,26 @@ for (const g of oldSnap.productGroups ?? []) {
       continue;
     }
   }
+
+  // Gate 1 — dominancia, con RESCATE por nombre idéntico.
+  //
+  // La dominancia sola castiga un caso que no es quimera: el mismo vino
+  // que el sistema nuevo separó porque UNA tienda lo nombra distinto. Es
+  // lo que le pasó a la página #1 de tráfico del sitio (39 clics/780
+  // impresiones en 90 días): de sus 4 ofertas, 3 (Jumbo/Disco/Vea)
+  // fueron a un grupo y 1 (Carrefour, que lo llama "Vino Rosado Dulce
+  // Colón Select…") a otro → 75%, rechazada, 404.
+  //
+  // Si el nombre del destino es IDÉNTICO al del origen, no hay ambigüedad
+  // que proteger: alcanza con que sea el destino más votado. Una quimera
+  // real no comparte nombre exacto con la parte que la absorbe
+  // (`alamos-malbec-reserva` = "Alamos Malbec" vs "Alamos Selección"),
+  // así que la protección contra falsos redirects queda intacta.
+  if (bestVotes / totalVotes < DOMINANCE && !sameName) {
+    stats.ambigua++;
+    continue;
+  }
+  if (bestVotes / totalVotes < DOMINANCE) stats.rescatadaPorNombre++;
 
   // Gate 3 — el color no se contradice.
   if (!sameName && g.type && dest?.type && g.type !== dest.type) {
