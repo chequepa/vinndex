@@ -1184,7 +1184,12 @@ export default async function Vino({ params }: Params) {
             de 750&nbsp;ml.
           </p>
 
-          <ReportIssue slug={group.groupSlug} wineName={wineLabel} />
+          {/* Sin GITHUB_TOKEN el endpoint devuelve 503 y no hay dónde
+              guardar el reporte. Se decide ACÁ, en el server, para no
+              pintar chips que al tocarlos desaparecen sin decir nada. */}
+          {Boolean(process.env.GITHUB_TOKEN) && (
+            <ReportIssue slug={group.groupSlug} wineName={wineLabel} />
+          )}
 
           {offers.some((o) => o.isCollector) && (
             <p className="text-xs text-graphite mt-3 max-w-2xl">
