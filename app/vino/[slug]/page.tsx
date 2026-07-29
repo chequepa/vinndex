@@ -35,6 +35,8 @@ import {
 } from "@/lib/snapshot";
 import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
 import { ReportIssue } from "@/components/ReportIssue";
+import { MatchQuestion } from "@/components/MatchQuestion";
+import { questionForSlug } from "@/lib/matchQuestions";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -437,6 +439,8 @@ export default async function Vino({ params }: Params) {
   // riesgo de "spammy structured data" flag. Skip de Q&As cuyo dato
   // falte.
   const wineLabel = displayWineName(group.canonicalName);
+  // Par candidato a "¿es el mismo vino?" para esta ficha, si lo hay.
+  const matchQuestion = questionForSlug(group.groupSlug);
   const faqEntities: Array<{
     "@type": "Question";
     name: string;
@@ -1184,11 +1188,20 @@ export default async function Vino({ params }: Params) {
             de 750&nbsp;ml.
           </p>
 
-          {/* Sin GITHUB_TOKEN el endpoint devuelve 503 y no hay dónde
-              guardar el reporte. Se decide ACÁ, en el server, para no
-              pintar chips que al tocarlos desaparecen sin decir nada. */}
+          {/* Sin GITHUB_TOKEN los endpoints devuelven 503 y no hay dónde
+              guardar. Se decide ACÁ, en el server, para no pintar
+              controles que al tocarlos desaparecen sin decir nada. */}
           {Boolean(process.env.GITHUB_TOKEN) && (
-            <ReportIssue slug={group.groupSlug} wineName={wineLabel} />
+            <>
+              <ReportIssue slug={group.groupSlug} wineName={wineLabel} />
+              {matchQuestion && (
+                <MatchQuestion
+                  pairId={matchQuestion.id}
+                  a={matchQuestion.a}
+                  b={matchQuestion.b}
+                />
+              )}
+            </>
           )}
 
           {offers.some((o) => o.isCollector) && (
