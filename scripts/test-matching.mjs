@@ -13,6 +13,7 @@
 import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 import { secondaryKey } from "./remerge-groups.mjs";
 import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
+import { isValidEan } from "./lib-ean.mjs";
 
 const g = (canonicalName, extra = {}) => ({ canonicalName, type: null, varietals: [], brand: null, ...extra });
 
@@ -84,6 +85,20 @@ const SECONDARY_CASES = [
   ["Trapiche pelado queda vacío (identidad = brand+varietal)", "Trapiche Malbec", ""],
 ];
 
+// EAN: [desc, valor crudo, ¿sirve como evidencia de identidad?]
+const EAN_CASES = [
+  ["EAN-13 real (El Enemigo Malbec)", "7794450000972", true],
+  ["EAN-13 real (Colón Selecto)", "7790168904663", true],
+  ["dígito verificador que no cierra", "7794450000973", false],
+  ["ceros de relleno (molinillo El Castillo)", "7795260000000", false],
+  ["ID interno de la tienda", "GRANDCRU", false],
+  ["número de fila de la tienda", "234", false],
+  ["notación científica de Excel", "7,80E+12", false],
+  ["vacío", "", false],
+  ["null", null, false],
+  ["con espacios alrededor", "  7794450000972  ", true],
+];
+
 let failed = 0;
 console.log("=== NEGATIVOS (deben tener conflicto) ===");
 for (const [name, a, b] of MUST_CONFLICT) {
@@ -147,9 +162,17 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  Don David es de El Esteco (no Trapiche)  →  ${NAME_PREFIX_TO_BRAND["don david"]}`);
 }
 
+console.log("\n=== EAN (evidencia de identidad) ===");
+for (const [desc, raw, expected] of EAN_CASES) {
+  const got = isValidEan(raw);
+  const ok = got === expected;
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  ${got ? "válido" : "rechazado"}`);
+}
+
 console.log("");
 if (failed > 0) {
   console.error(`❌ ${failed} caso(s) fallaron. NO publicar — revisar gates en stage4-token-merge.mjs / remerge-groups.mjs.`);
   process.exit(1);
 }
-console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary + ${PARSE_CASES.length} parser v2).`);
+console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary + ${PARSE_CASES.length} parser v2 + ${EAN_CASES.length} EAN).`);
