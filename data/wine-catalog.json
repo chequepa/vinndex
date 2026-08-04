@@ -1,6 +1,6 @@
 {
  "_doc": "Catálogo de vinos v2 — (bodega, línea, varietal) con conocimiento por línea: aliases y qué parajes/tiers NO distinguen. Generado por build-wine-catalog.mjs (minado + validación gpt-4o-mini, cache en catalog-llm-cache.json). CURABLE A MANO: las correcciones humanas sobreviven — el builder sólo agrega entradas nuevas, no pisa existentes.",
- "generatedAt": "2026-08-03T08:11:48.307Z",
+ "generatedAt": "2026-08-04T07:53:38.050Z",
  "wines": [
   {
    "id": "catena-zapata-malbec-argentino-malbec-tinto",
@@ -78,19 +78,6 @@
    "storeCount": 45
   },
   {
-   "id": "saint-felicien-malbec-malbec-tinto",
-   "bodega": "Saint Felicien",
-   "linea": "Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 66,
-   "storeCount": 40
-  },
-  {
    "id": "el-enemigo-cabernet-franc-cabernet-franc-tinto",
    "bodega": "El Enemigo",
    "linea": "Cabernet Franc",
@@ -101,6 +88,19 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 42,
+   "storeCount": 40
+  },
+  {
+   "id": "saint-felicien-malbec-malbec-tinto",
+   "bodega": "Saint Felicien",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 66,
    "storeCount": 40
   },
   {
@@ -206,22 +206,6 @@
    "storeCount": 33
   },
   {
-   "id": "zuccardi-q-malbec-tinto",
-   "bodega": "Zuccardi",
-   "linea": "Q",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "q",
-    "q unidades"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 140,
-   "storeCount": 29
-  },
-  {
    "id": "chandon-extra-brut-espumante-extrabrut",
    "bodega": "Chandon",
    "linea": "Extra Brut",
@@ -267,6 +251,22 @@
    "tiersNoDistinguen": [],
    "offerCount": 43,
    "storeCount": 32
+  },
+  {
+   "id": "zuccardi-q-malbec-tinto",
+   "bodega": "Zuccardi",
+   "linea": "Q",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "q",
+    "q unidades"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 140,
+   "storeCount": 29
   },
   {
    "id": "gran-enemigo-gran-enemigo-cabernet-franc-cabernet-franc-tinto",
@@ -362,17 +362,19 @@
    "storeCount": 28
   },
   {
-   "id": "alamos-malbec-malbec-tinto",
-   "bodega": "Alamos",
-   "linea": "Malbec",
+   "id": "trapiche-gran-medalla-malbec-tinto",
+   "bodega": "Trapiche",
+   "linea": "Gran Medalla",
    "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "medalla"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 43,
-   "storeCount": 25
+   "offerCount": 44,
+   "storeCount": 28
   },
   {
    "id": "pulenta-estate-gran-malbec-malbec-tinto",
@@ -416,49 +418,6 @@
    "storeCount": 28
   },
   {
-   "id": "luca-luca-pinot-noir-tinto",
-   "bodega": "Luca",
-   "linea": "Luca",
-   "varietal": "pinot noir",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 30,
-   "storeCount": 29
-  },
-  {
-   "id": "salentein-numina-malbec-tinto",
-   "bodega": "Salentein",
-   "linea": "Numina",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "numina"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 44,
-   "storeCount": 23
-  },
-  {
-   "id": "trapiche-gran-medalla-malbec-tinto",
-   "bodega": "Trapiche",
-   "linea": "Gran Medalla",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "medalla"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 44,
-   "storeCount": 28
-  },
-  {
    "id": "baron-b-baron-b-brut-rose-rosado",
    "bodega": "Baron B",
    "linea": "Baron B Brut Rosé",
@@ -472,6 +431,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 34,
    "storeCount": 26
+  },
+  {
+   "id": "luca-luca-pinot-noir-tinto",
+   "bodega": "Luca",
+   "linea": "Luca",
+   "varietal": "pinot noir",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 30,
+   "storeCount": 29
   },
   {
    "id": "gran-enemigo-gran-enemigo",
@@ -504,17 +476,32 @@
    "storeCount": 23
   },
   {
-   "id": "chandon-rose-rosado",
-   "bodega": "Chandon",
-   "linea": "Rosé",
-   "varietal": null,
-   "color": "rosado",
+   "id": "salentein-numina-malbec-tinto",
+   "bodega": "Salentein",
+   "linea": "Numina",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "numina"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 44,
+   "storeCount": 23
+  },
+  {
+   "id": "alamos-malbec-malbec-tinto",
+   "bodega": "Alamos",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 60,
-   "storeCount": 23
+   "offerCount": 43,
+   "storeCount": 25
   },
   {
    "id": "zuccardi-serie-a-malbec-tinto",
@@ -545,6 +532,19 @@
    "storeCount": 23
   },
   {
+   "id": "chandon-rose-rosado",
+   "bodega": "Chandon",
+   "linea": "Rosé",
+   "varietal": null,
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 60,
+   "storeCount": 23
+  },
+  {
    "id": "salentein-brut-nature-espumante-nature",
    "bodega": "Salentein",
    "linea": "Brut Nature",
@@ -571,19 +571,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 39,
-   "storeCount": 23
-  },
-  {
-   "id": "salentein-reserva-malbec-tinto",
-   "bodega": "Salentein",
-   "linea": "Reserva",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 34,
    "storeCount": 23
   },
   {
@@ -639,6 +626,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 27,
    "storeCount": 24
+  },
+  {
+   "id": "salentein-reserva-malbec-tinto",
+   "bodega": "Salentein",
+   "linea": "Reserva",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 34,
+   "storeCount": 23
   },
   {
    "id": "monteviejo-petite-fleur-malbec-tinto",
@@ -701,21 +701,6 @@
    "storeCount": 22
   },
   {
-   "id": "rutini-encuentro-malbec-tinto",
-   "bodega": "Rutini",
-   "linea": "Encuentro",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "encuentro"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 27,
-   "storeCount": 24
-  },
-  {
    "id": "zuccardi-aluvional-malbec-tinto",
    "bodega": "Zuccardi",
    "linea": "Aluvional",
@@ -758,6 +743,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 22,
    "storeCount": 20
+  },
+  {
+   "id": "rutini-encuentro-malbec-tinto",
+   "bodega": "Rutini",
+   "linea": "Encuentro",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "encuentro"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 27,
+   "storeCount": 24
   },
   {
    "id": "san-pedro-de-yacochuya-torrontes-torrontes",
@@ -964,6 +964,19 @@
    "storeCount": 19
   },
   {
+   "id": "bodega-bianchi-particular-malbec-malbec-tinto",
+   "bodega": "Bodega Bianchi",
+   "linea": "Particular Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 24,
+   "storeCount": 18
+  },
+  {
    "id": "amalaya-malbec-malbec-tinto",
    "bodega": "Amalaya",
    "linea": "Malbec",
@@ -1016,19 +1029,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 19,
    "storeCount": 19
-  },
-  {
-   "id": "bodega-bianchi-particular-malbec-malbec-tinto",
-   "bodega": "Bodega Bianchi",
-   "linea": "Particular Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 24,
-   "storeCount": 18
   },
   {
    "id": "vina-cobos-felino-cabernet-tinto",
@@ -1179,24 +1179,6 @@
    "storeCount": 17
   },
   {
-   "id": "vina-cobos-bramare-malbec-tinto",
-   "bodega": "Viña Cobos",
-   "linea": "Bramare",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "bramare cuyo lujan",
-    "bramare uco",
-    "bramare",
-    "bramare marchiori"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 46,
-   "storeCount": 17
-  },
-  {
    "id": "salentein-portillo-malbec-tinto",
    "bodega": "Salentein",
    "linea": "Portillo",
@@ -1289,6 +1271,19 @@
    "storeCount": 16
   },
   {
+   "id": "alma-negra-alma-negra-tinto-tinto",
+   "bodega": "Alma Negra",
+   "linea": "Alma Negra Tinto",
+   "varietal": null,
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 21,
+   "storeCount": 16
+  },
+  {
    "id": "dv-catena-chardonnay-chardonnay",
    "bodega": "DV Catena",
    "linea": "Chardonnay",
@@ -1328,17 +1323,22 @@
    "storeCount": 16
   },
   {
-   "id": "alma-negra-alma-negra-tinto-tinto",
-   "bodega": "Alma Negra",
-   "linea": "Alma Negra Tinto",
-   "varietal": null,
+   "id": "vina-cobos-bramare-malbec-tinto",
+   "bodega": "Viña Cobos",
+   "linea": "Bramare",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "bramare cuyo lujan",
+    "bramare uco",
+    "bramare",
+    "bramare marchiori"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 21,
-   "storeCount": 16
+   "offerCount": 46,
+   "storeCount": 17
   },
   {
    "id": "catena-zapata-nicasia-blendcabernet-franc-tinto",
@@ -1369,6 +1369,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 16,
    "storeCount": 15
+  },
+  {
+   "id": "araucana-rio-de-los-ciervos-malbec-tinto",
+   "bodega": "Araucana",
+   "linea": "Río de los Ciervos",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "ciervos rio"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 18,
+   "storeCount": 17
   },
   {
    "id": "atamisque-serbal-malbec-tinto",
@@ -1461,6 +1476,19 @@
    "storeCount": 16
   },
   {
+   "id": "salentein-reserva-pinot-noir-tinto",
+   "bodega": "Salentein",
+   "linea": "Reserva",
+   "varietal": "pinot noir",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 19,
+   "storeCount": 17
+  },
+  {
    "id": "rutini-brut-nature-espumante-nature",
    "bodega": "Rutini",
    "linea": "Brut Nature",
@@ -1509,19 +1537,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 22,
    "storeCount": 19
-  },
-  {
-   "id": "alamos-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Alamos",
-   "linea": "Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 18,
-   "storeCount": 14
   },
   {
    "id": "trumpeter-chardonnay-chardonnay",
@@ -1681,21 +1696,6 @@
    "storeCount": 17
   },
   {
-   "id": "araucana-rio-de-los-ciervos-malbec-tinto",
-   "bodega": "Araucana",
-   "linea": "Río de los Ciervos",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "ciervos rio"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 18,
-   "storeCount": 17
-  },
-  {
    "id": "casa-boher-cabernet-franc-cabernet-franc-tinto",
    "bodega": "Casa Boher",
    "linea": "Cabernet Franc",
@@ -1720,19 +1720,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 25,
    "storeCount": 14
-  },
-  {
-   "id": "salentein-reserva-pinot-noir-tinto",
-   "bodega": "Salentein",
-   "linea": "Reserva",
-   "varietal": "pinot noir",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 19,
-   "storeCount": 17
   },
   {
    "id": "san-pedro-de-yacochuya-tinto-tinto",
@@ -1791,6 +1778,19 @@
    "storeCount": 16
   },
   {
+   "id": "alamos-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Alamos",
+   "linea": "Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 18,
+   "storeCount": 14
+  },
+  {
    "id": "trumpeter-reserve-malbec-malbec-tinto",
    "bodega": "Trumpeter",
    "linea": "Reserve Malbec",
@@ -1821,6 +1821,19 @@
    "storeCount": 15
   },
   {
+   "id": "zaha-zaha-malbec-malbec-tinto",
+   "bodega": "Zaha",
+   "linea": "Zaha Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 16,
+   "storeCount": 15
+  },
+  {
    "id": "saint-felicien-pinot-noir-pinot-noir-tinto",
    "bodega": "Saint Felicien",
    "linea": "Pinot Noir",
@@ -1832,6 +1845,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 16,
    "storeCount": 15
+  },
+  {
+   "id": "luca-syrah-double-select-syrah-tinto",
+   "bodega": "Luca",
+   "linea": "Syrah Double Select",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "double select"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 15,
+   "storeCount": 14
   },
   {
    "id": "bodega-yacochuya-coquena-cabernet-sauvignon-cabernet-tinto",
@@ -1849,18 +1877,18 @@
    "storeCount": 14
   },
   {
-   "id": "humberto-canale-estate-malbec-tinto",
-   "bodega": "Humberto Canale",
-   "linea": "Estate",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
+   "id": "cruzat-cuvee-nature-espumante-nature",
+   "bodega": "Cruzat",
+   "linea": "Cuvée Nature",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": "nature",
    "lineAliases": [
-    "estate"
+    "cuvee nature"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 14,
+   "offerCount": 15,
    "storeCount": 13
   },
   {
@@ -1952,6 +1980,21 @@
    "storeCount": 14
   },
   {
+   "id": "cruzat-premier-rose-extra-brut-rosado",
+   "bodega": "Cruzat",
+   "linea": "Premier Rosé Extra Brut",
+   "varietal": null,
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [
+    "extra premier"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
+   "storeCount": 13
+  },
+  {
    "id": "casa-de-herrero-casa-de-herrero-malbec-malbec-tinto",
    "bodega": "Casa de Herrero",
    "linea": "Casa de Herrero Malbec",
@@ -2036,6 +2079,21 @@
    "storeCount": 13
   },
   {
+   "id": "salentein-reserva-cabernet-franc-tinto",
+   "bodega": "Salentein",
+   "linea": "Reserva",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 46,
+   "storeCount": 14
+  },
+  {
    "id": "humberto-canale-gran-reserva-cabernet-franc-tinto",
    "bodega": "Humberto Canale",
    "linea": "Gran Reserva",
@@ -2053,21 +2111,6 @@
    "storeCount": 14
   },
   {
-   "id": "salentein-reserva-cabernet-franc-tinto",
-   "bodega": "Salentein",
-   "linea": "Reserva",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 46,
-   "storeCount": 14
-  },
-  {
    "id": "luca-nico-by-luca",
    "bodega": "Luca",
    "linea": "Nico by Luca",
@@ -2081,6 +2124,23 @@
    "tiersNoDistinguen": [],
    "offerCount": 33,
    "storeCount": 16
+  },
+  {
+   "id": "terrazas-de-los-andes-reserva-malbec-tinto",
+   "bodega": "Terrazas de los Andes",
+   "linea": "Reserva",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "andes"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 14,
+   "storeCount": 10
   },
   {
    "id": "pulenta-estate-gran-cabernet-sauvignon-cabernet-tinto",
@@ -2180,19 +2240,6 @@
    "storeCount": 11
   },
   {
-   "id": "zaha-zaha-malbec-malbec-tinto",
-   "bodega": "Zaha",
-   "linea": "Zaha Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 16,
-   "storeCount": 15
-  },
-  {
    "id": "otronia-otronia-pinot-noir-pinot-noir-tinto",
    "bodega": "Otronia",
    "linea": "Otronia Pinot Noir",
@@ -2204,6 +2251,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 16,
    "storeCount": 15
+  },
+  {
+   "id": "finca-las-moras-gran-syrah-syrah-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Gran Syrah",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 16,
+   "storeCount": 14
   },
   {
    "id": "nieto-senetiner-emilia-malbec-tinto",
@@ -2236,21 +2298,6 @@
    "storeCount": 13
   },
   {
-   "id": "luca-syrah-double-select-syrah-tinto",
-   "bodega": "Luca",
-   "linea": "Syrah Double Select",
-   "varietal": "syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "double select"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 15,
-   "storeCount": 14
-  },
-  {
    "id": "zuccardi-serie-a-torrontes",
    "bodega": "Zuccardi",
    "linea": "Serie A",
@@ -2266,18 +2313,33 @@
    "storeCount": 11
   },
   {
-   "id": "cruzat-cuvee-nature-espumante-nature",
-   "bodega": "Cruzat",
-   "linea": "Cuvée Nature",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": "nature",
+   "id": "la-posta-armando-bonarda-tinto",
+   "bodega": "La Posta",
+   "linea": "Armando",
+   "varietal": "bonarda",
+   "color": "tinto",
+   "dulzor": null,
    "lineAliases": [
-    "cuvee nature"
+    "armando"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 15,
+   "offerCount": 13,
+   "storeCount": 12
+  },
+  {
+   "id": "humberto-canale-estate-malbec-tinto",
+   "bodega": "Humberto Canale",
+   "linea": "Estate",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "estate"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 14,
    "storeCount": 13
   },
   {
@@ -2294,19 +2356,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 14,
    "storeCount": 13
-  },
-  {
-   "id": "trumpeter-merlot-merlot-tinto",
-   "bodega": "Trumpeter",
-   "linea": "Merlot",
-   "varietal": "merlot",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 16,
-   "storeCount": 14
   },
   {
    "id": "trumpeter-syrah-syrah-tinto",
@@ -2350,6 +2399,19 @@
    "storeCount": 12
   },
   {
+   "id": "luigi-bosca-sauvignon-blanc-sauvignon-blanc-blanco",
+   "bodega": "Luigi Bosca",
+   "linea": "Sauvignon Blanc",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
+   "storeCount": 6
+  },
+  {
    "id": "cruzat-cuvee-extra-brut-espumante-extrabrut",
    "bodega": "Cruzat",
    "linea": "Cuvée Extra Brut",
@@ -2377,6 +2439,19 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 14,
+   "storeCount": 13
+  },
+  {
+   "id": "cuchillo-de-palo-cuchillo-de-palo-malbec-malbec-tinto",
+   "bodega": "Cuchillo de Palo",
+   "linea": "Cuchillo de Palo Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
    "storeCount": 13
   },
   {
@@ -2410,32 +2485,17 @@
    "storeCount": 13
   },
   {
-   "id": "cruzat-premier-rose-extra-brut-rosado",
-   "bodega": "Cruzat",
-   "linea": "Premier Rosé Extra Brut",
-   "varietal": null,
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "extra premier"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 13
-  },
-  {
-   "id": "luigi-bosca-sauvignon-blanc-sauvignon-blanc-blanco",
-   "bodega": "Luigi Bosca",
-   "linea": "Sauvignon Blanc",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
+   "id": "cuchillo-de-palo-cuchillo-de-palo-cabernet-franc-cabernet-franc-tinto",
+   "bodega": "Cuchillo de Palo",
+   "linea": "Cuchillo de Palo Cabernet Franc",
+   "varietal": "cabernet franc",
+   "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 7,
-   "storeCount": 6
+   "offerCount": 14,
+   "storeCount": 14
   },
   {
    "id": "catalpa-catalpa-cabernet-franc-tinto",
@@ -2526,6 +2586,19 @@
    "storeCount": 15
   },
   {
+   "id": "santa-julia-reserva-cabernet-tinto",
+   "bodega": "Santa Julia",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 20,
+   "storeCount": 12
+  },
+  {
    "id": "mosquita-muerta-sapo-de-otro-pozo-blend",
    "bodega": "Mosquita Muerta",
    "linea": "Sapo de Otro Pozo",
@@ -2542,19 +2615,18 @@
    "storeCount": 14
   },
   {
-   "id": "terrazas-de-los-andes-reserva-malbec-tinto",
-   "bodega": "Terrazas de los Andes",
-   "linea": "Reserva",
-   "varietal": "malbec",
-   "color": "tinto",
+   "id": "las-perdices-exploracion-riesling",
+   "bodega": "Las Perdices",
+   "linea": "Exploración",
+   "varietal": "riesling",
+   "color": null,
    "dulzor": null,
    "lineAliases": [
-    "andes"
+    "exploracion",
+    "exploracion vina"
    ],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
+   "tiersNoDistinguen": [],
    "offerCount": 14,
    "storeCount": 10
   },
@@ -2585,21 +2657,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 17,
    "storeCount": 12
-  },
-  {
-   "id": "rutini-dominio-malbec-tinto",
-   "bodega": "Rutini",
-   "linea": "Dominio",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "dominio"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 8
   },
   {
    "id": "zuccardi-poligonos-sauvignon-blanc-blanco",
@@ -2644,19 +2701,17 @@
    "storeCount": 19
   },
   {
-   "id": "finca-las-moras-gran-syrah-syrah-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Gran Syrah",
-   "varietal": "syrah",
+   "id": "bodega-bianchi-particular-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Bodega Bianchi",
+   "linea": "Particular Cabernet Sauvignon",
+   "varietal": "cabernet",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 16,
-   "storeCount": 14
+   "tiersNoDistinguen": [],
+   "offerCount": 15,
+   "storeCount": 13
   },
   {
    "id": "otronia-45-rugientes-pinot-noir-pinot-noir-tinto",
@@ -2730,19 +2785,17 @@
    "storeCount": 13
   },
   {
-   "id": "la-posta-armando-bonarda-tinto",
-   "bodega": "La Posta",
-   "linea": "Armando",
-   "varietal": "bonarda",
+   "id": "trumpeter-merlot-merlot-tinto",
+   "bodega": "Trumpeter",
+   "linea": "Merlot",
+   "varietal": "merlot",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [
-    "armando"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 12
+   "offerCount": 16,
+   "storeCount": 14
   },
   {
    "id": "salentein-numina-chardonnay",
@@ -2805,19 +2858,6 @@
    "storeCount": 13
   },
   {
-   "id": "bodega-bianchi-particular-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Bodega Bianchi",
-   "linea": "Particular Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 15,
-   "storeCount": 13
-  },
-  {
    "id": "pulenta-estate-pinot-gris",
    "bodega": "Pulenta Estate",
    "linea": "Pinot Gris",
@@ -2827,19 +2867,6 @@
    "lineAliases": [
     "gris"
    ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 13
-  },
-  {
-   "id": "cuchillo-de-palo-cuchillo-de-palo-malbec-malbec-tinto",
-   "bodega": "Cuchillo de Palo",
-   "linea": "Cuchillo de Palo Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 13,
@@ -2875,19 +2902,6 @@
    ],
    "offerCount": 12,
    "storeCount": 12
-  },
-  {
-   "id": "cuchillo-de-palo-cuchillo-de-palo-cabernet-franc-cabernet-franc-tinto",
-   "bodega": "Cuchillo de Palo",
-   "linea": "Cuchillo de Palo Cabernet Franc",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 14,
-   "storeCount": 14
   },
   {
    "id": "septima-obra-malbec-tinto",
@@ -2933,21 +2947,6 @@
    "storeCount": 12
   },
   {
-   "id": "las-perdices-ala-colorada-cabernet-franc-tinto",
-   "bodega": "Las Perdices",
-   "linea": "Ala Colorada",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "ala colorada"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
    "id": "ver-sacrum-la-cayetana-syrah-tinto",
    "bodega": "Ver Sacrum",
    "linea": "La Cayetana",
@@ -2979,21 +2978,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 40,
    "storeCount": 13
-  },
-  {
-   "id": "las-perdices-malbec-malbec-tinto",
-   "bodega": "Las Perdices",
-   "linea": "Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [
-    "gualtallary"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 2
   },
   {
    "id": "domaine-nico-grand-mere-pinot-noir-tinto",
@@ -3028,35 +3012,6 @@
    "storeCount": 11
   },
   {
-   "id": "santa-julia-reserva-cabernet-tinto",
-   "bodega": "Santa Julia",
-   "linea": "Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 20,
-   "storeCount": 12
-  },
-  {
-   "id": "las-perdices-exploracion-riesling",
-   "bodega": "Las Perdices",
-   "linea": "Exploración",
-   "varietal": "riesling",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "exploracion",
-    "exploracion vina"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 14,
-   "storeCount": 10
-  },
-  {
    "id": "bressia-conjuro-blend",
    "bodega": "Bressia",
    "linea": "Conjuro",
@@ -3072,6 +3027,21 @@
    "storeCount": 10
   },
   {
+   "id": "tikal-amorio-malbec-tinto",
+   "bodega": "Tikal",
+   "linea": "Amorío",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "amorio"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 14,
+   "storeCount": 11
+  },
+  {
    "id": "norton-cosecha-especial-extra-brut-espumante-extrabrut",
    "bodega": "Norton",
    "linea": "Cosecha Especial Extra Brut",
@@ -3085,6 +3055,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 12,
    "storeCount": 11
+  },
+  {
+   "id": "rutini-dominio-malbec-tinto",
+   "bodega": "Rutini",
+   "linea": "Dominio",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "dominio"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 11,
+   "storeCount": 8
   },
   {
    "id": "la-posta-pizzella-malbec-tinto",
@@ -3284,21 +3269,6 @@
    "storeCount": 11
   },
   {
-   "id": "septima-emblema-malbec-tinto",
-   "bodega": "Séptima",
-   "linea": "Emblema",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "emblema"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 11
-  },
-  {
    "id": "bodega-bianchi-particular-merlot-merlot-tinto",
    "bodega": "Bodega Bianchi",
    "linea": "Particular Merlot",
@@ -3426,6 +3396,21 @@
    "storeCount": 11
   },
   {
+   "id": "trumpeter-reserve-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Trumpeter",
+   "linea": "Reserve Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "reserve"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
+   "storeCount": 12
+  },
+  {
    "id": "animal-chardonnay-chardonnay",
    "bodega": "Animal",
    "linea": "Chardonnay",
@@ -3495,6 +3480,34 @@
    "storeCount": 11
   },
   {
+   "id": "las-perdices-ala-colorada-cabernet-franc-tinto",
+   "bodega": "Las Perdices",
+   "linea": "Ala Colorada",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "ala colorada"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
+  },
+  {
+   "id": "la-poderosa-la-poderosa-pinot-noir-pinot-noir-tinto",
+   "bodega": "La Poderosa",
+   "linea": "La Poderosa Pinot Noir",
+   "varietal": "pinot noir",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 11,
+   "storeCount": 11
+  },
+  {
    "id": "alma-negra-alma-negra-brut-nature-rose-rosado",
    "bodega": "Alma Negra",
    "linea": "Alma Negra Brut Nature Rosé",
@@ -3508,6 +3521,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 10,
    "storeCount": 10
+  },
+  {
+   "id": "las-perdices-malbec-malbec-tinto",
+   "bodega": "Las Perdices",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [
+    "gualtallary"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 2
   },
   {
    "id": "catena-zapata-adrianna-vineyard-mundus-bacillus-terrae-malbec-tinto",
@@ -3604,6 +3632,23 @@
    "storeCount": 13
   },
   {
+   "id": "terrazas-de-los-andes-reserva-cabernet-tinto",
+   "bodega": "Terrazas de los Andes",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "andes"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 13,
+   "storeCount": 9
+  },
+  {
    "id": "vina-cobos-cocodrilo-blend",
    "bodega": "Viña Cobos",
    "linea": "Cocodrilo",
@@ -3653,21 +3698,6 @@
    "storeCount": 11
   },
   {
-   "id": "tikal-amorio-malbec-tinto",
-   "bodega": "Tikal",
-   "linea": "Amorío",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "amorio"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 14,
-   "storeCount": 11
-  },
-  {
    "id": "riglos-gran-malbec-malbec-tinto",
    "bodega": "Riglos",
    "linea": "Gran Malbec",
@@ -3693,36 +3723,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 11,
-   "storeCount": 10
-  },
-  {
-   "id": "santa-julia-dulce-natural-dulce",
-   "bodega": "Santa Julia",
-   "linea": "Dulce Natural",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "natural"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 9
-  },
-  {
-   "id": "salentein-portillo-sauvignon-blanc-blanco",
-   "bodega": "Salentein",
-   "linea": "Portillo",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "portillo"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 14,
    "storeCount": 10
   },
   {
@@ -3752,6 +3752,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 11,
    "storeCount": 8
+  },
+  {
+   "id": "salentein-portillo-sauvignon-blanc-blanco",
+   "bodega": "Salentein",
+   "linea": "Portillo",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "portillo"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 14,
+   "storeCount": 10
   },
   {
    "id": "escorihuela-gascon-gran-reserva-chardonnay",
@@ -3808,21 +3823,6 @@
    "storeCount": 10
   },
   {
-   "id": "la-linda-finca-la-linda-malbec-tinto",
-   "bodega": "La Linda",
-   "linea": "Finca La Linda",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 11
-  },
-  {
    "id": "alamos-chardonnay-chardonnay",
    "bodega": "Alamos",
    "linea": "Chardonnay",
@@ -3849,36 +3849,19 @@
    "storeCount": 12
   },
   {
-   "id": "catena-zapata-nicasia-cabernet-franc-tinto",
-   "bodega": "Catena Zapata",
-   "linea": "Nicasia",
-   "varietal": "cabernet franc",
+   "id": "septima-emblema-malbec-tinto",
+   "bodega": "Séptima",
+   "linea": "Emblema",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "nicasia"
-   ],
-   "parajesNoDistinguen": [
-    "vineyard"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 10
-  },
-  {
-   "id": "nieto-senetiner-emilia-cabernet-tinto",
-   "bodega": "Nieto Senetiner",
-   "linea": "Emilia",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "emilia"
+    "emblema"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 10
+   "offerCount": 12,
+   "storeCount": 11
   },
   {
    "id": "mosquita-muerta-blend-de-blancas-blend",
@@ -3967,19 +3950,17 @@
    "storeCount": 11
   },
   {
-   "id": "trumpeter-reserve-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Trumpeter",
-   "linea": "Reserve Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
+   "id": "familia-gascon-rose-rosado",
+   "bodega": "Familia Gascón",
+   "linea": "Rosé",
+   "varietal": null,
+   "color": "rosado",
    "dulzor": null,
-   "lineAliases": [
-    "reserve"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 12
+   "offerCount": 8,
+   "storeCount": 8
   },
   {
    "id": "trumpeter-malbec-syrah-malbecsyrah-tinto",
@@ -4109,21 +4090,6 @@
    "storeCount": 10
   },
   {
-   "id": "septima-obra-cabernet-franc-tinto",
-   "bodega": "Séptima",
-   "linea": "Obra",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "obra"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 10
-  },
-  {
    "id": "norton-altura-malbec-tinto",
    "bodega": "Norton",
    "linea": "Altura",
@@ -4155,33 +4121,33 @@
    "storeCount": 7
   },
   {
-   "id": "salentein-portillo-cabernet-tinto",
-   "bodega": "Salentein",
-   "linea": "Portillo",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
+   "id": "norton-cosecha-especial-brut-nature-espumante-nature",
+   "bodega": "Norton",
+   "linea": "Cosecha Especial Brut Nature",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": "nature",
    "lineAliases": [
-    "portillo"
+    "especial nature"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 8
+   "offerCount": 9,
+   "storeCount": 9
   },
   {
-   "id": "salentein-killka-cabernet-tinto",
-   "bodega": "Salentein",
-   "linea": "Killka",
+   "id": "nieto-senetiner-emilia-cabernet-tinto",
+   "bodega": "Nieto Senetiner",
+   "linea": "Emilia",
    "varietal": "cabernet",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "killka"
+    "emilia"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 10,
+   "offerCount": 11,
    "storeCount": 10
   },
   {
@@ -4209,32 +4175,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 10,
    "storeCount": 10
-  },
-  {
-   "id": "la-poderosa-la-poderosa-pinot-noir-pinot-noir-tinto",
-   "bodega": "La Poderosa",
-   "linea": "La Poderosa Pinot Noir",
-   "varietal": "pinot noir",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 11
-  },
-  {
-   "id": "norton-reserva-malbec-tinto",
-   "bodega": "Norton",
-   "linea": "Reserva",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 5
   },
   {
    "id": "sottano-familia-malbec-tinto",
@@ -4315,23 +4255,6 @@
    "storeCount": 8
   },
   {
-   "id": "terrazas-de-los-andes-reserva-cabernet-tinto",
-   "bodega": "Terrazas de los Andes",
-   "linea": "Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "andes"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 13,
-   "storeCount": 9
-  },
-  {
    "id": "pascual-toso-alta-syrah-tinto",
    "bodega": "Pascual Toso",
    "linea": "Alta",
@@ -4358,6 +4281,34 @@
    "tiersNoDistinguen": [],
    "offerCount": 13,
    "storeCount": 9
+  },
+  {
+   "id": "santa-julia-dulce-natural-dulce",
+   "bodega": "Santa Julia",
+   "linea": "Dulce Natural",
+   "varietal": null,
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "natural"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
+   "storeCount": 9
+  },
+  {
+   "id": "escorihuela-gascon-gran-reserva-cabernet-tinto",
+   "bodega": "Escorihuela Gascón",
+   "linea": "Gran Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "araucana-azul",
@@ -4448,19 +4399,6 @@
    "storeCount": 2
   },
   {
-   "id": "escorihuela-gascon-gran-reserva-cabernet-tinto",
-   "bodega": "Escorihuela Gascón",
-   "linea": "Gran Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "achaval-ferrer-malbec-malbec-tinto",
    "bodega": "Achaval Ferrer",
    "linea": "Malbec",
@@ -4489,6 +4427,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 12,
    "storeCount": 10
+  },
+  {
+   "id": "la-linda-finca-la-linda-malbec-tinto",
+   "bodega": "La Linda",
+   "linea": "Finca La Linda",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
+   "storeCount": 11
   },
   {
    "id": "gran-enemigo-gran-enemigo-blend-blend",
@@ -4596,6 +4549,23 @@
    "storeCount": 8
   },
   {
+   "id": "catena-zapata-nicasia-cabernet-franc-tinto",
+   "bodega": "Catena Zapata",
+   "linea": "Nicasia",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "nicasia"
+   ],
+   "parajesNoDistinguen": [
+    "vineyard"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 11,
+   "storeCount": 10
+  },
+  {
    "id": "mendel-cabernet-franc-cabernet-franc-tinto",
    "bodega": "Mendel",
    "linea": "Cabernet Franc",
@@ -4682,6 +4652,21 @@
    "storeCount": 9
   },
   {
+   "id": "salentein-numina-syrah-tinto",
+   "bodega": "Salentein",
+   "linea": "Numina",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "numina"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 9
+  },
+  {
    "id": "trapiche-gran-medalla-cabernet-franc-tinto",
    "bodega": "Trapiche",
    "linea": "Gran Medalla",
@@ -4740,6 +4725,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 10,
    "storeCount": 10
+  },
+  {
+   "id": "humberto-canale-estate-merlot-tinto",
+   "bodega": "Humberto Canale",
+   "linea": "Estate",
+   "varietal": "merlot",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "estate"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 11,
+   "storeCount": 11
   },
   {
    "id": "la-linda-la-linda-chardonnay-chardonnay",
@@ -4839,6 +4839,21 @@
    "storeCount": 9
   },
   {
+   "id": "septima-obra-cabernet-franc-tinto",
+   "bodega": "Séptima",
+   "linea": "Obra",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "obra"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 10
+  },
+  {
    "id": "alta-vista-atemporal-blend",
    "bodega": "Alta Vista",
    "linea": "Atemporal",
@@ -4869,21 +4884,6 @@
    "storeCount": 9
   },
   {
-   "id": "norton-cosecha-especial-brut-nature-espumante-nature",
-   "bodega": "Norton",
-   "linea": "Cosecha Especial Brut Nature",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": "nature",
-   "lineAliases": [
-    "especial nature"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 9
-  },
-  {
    "id": "el-esteco-cabernet-sauvignon-cabernet-tinto",
    "bodega": "El Esteco",
    "linea": "Cabernet Sauvignon",
@@ -4895,6 +4895,36 @@
    "tiersNoDistinguen": [],
    "offerCount": 8,
    "storeCount": 8
+  },
+  {
+   "id": "salentein-portillo-cabernet-tinto",
+   "bodega": "Salentein",
+   "linea": "Portillo",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "portillo"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 8
+  },
+  {
+   "id": "salentein-killka-cabernet-tinto",
+   "bodega": "Salentein",
+   "linea": "Killka",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "killka"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 10
   },
   {
    "id": "trapiche-alaris-malbec-tinto",
@@ -4910,19 +4940,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 10,
    "storeCount": 10
-  },
-  {
-   "id": "finca-las-moras-malbec-malbec-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 9
   },
   {
    "id": "catena-zapata-nicasia-vineyards-blendmalbec-tinto",
@@ -5060,6 +5077,34 @@
    "storeCount": 4
   },
   {
+   "id": "chandon-brut-nature-espumante-nature",
+   "bodega": "Chandon",
+   "linea": "Brut Nature",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": "nature",
+   "lineAliases": [
+    "nature"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 18,
+   "storeCount": 7
+  },
+  {
+   "id": "norton-reserva-malbec-tinto",
+   "bodega": "Norton",
+   "linea": "Reserva",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 12,
+   "storeCount": 5
+  },
+  {
    "id": "catena-zapata-nicasia-malbec-tinto",
    "bodega": "Catena Zapata",
    "linea": "Nicasia",
@@ -5152,23 +5197,6 @@
    "storeCount": 8
   },
   {
-   "id": "etchart-terroir-de-altura-malbec-tinto",
-   "bodega": "Etchart",
-   "linea": "Terroir de Altura",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "altura terroir"
-   ],
-   "parajesNoDistinguen": [
-    "cafayate"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 8
-  },
-  {
    "id": "salentein-alyda-nature-espumante-nature",
    "bodega": "Salentein",
    "linea": "Alyda Nature",
@@ -5255,19 +5283,17 @@
    "storeCount": 2
   },
   {
-   "id": "salentein-killka-sauvignon-blanc-blanco",
-   "bodega": "Salentein",
-   "linea": "Killka",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
+   "id": "sexy-fish-malbec-malbec-tinto",
+   "bodega": "Sexy Fish",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
    "dulzor": null,
-   "lineAliases": [
-    "killka"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 8
+   "offerCount": 11,
+   "storeCount": 7
   },
   {
    "id": "trapiche-medalla-cabernet-tinto",
@@ -5309,6 +5335,19 @@
    "lineAliases": [
     "cobos vina"
    ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 11,
+   "storeCount": 8
+  },
+  {
+   "id": "santa-julia-reserva-tempranillo-tinto",
+   "bodega": "Santa Julia",
+   "linea": "Reserva",
+   "varietal": "tempranillo",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 11,
@@ -5375,6 +5414,21 @@
    "storeCount": 4
   },
   {
+   "id": "salentein-killka-sauvignon-blanc-blanco",
+   "bodega": "Salentein",
+   "linea": "Killka",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "killka"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 12,
+   "storeCount": 8
+  },
+  {
    "id": "susana-balbo-crios-blend-tinto",
    "bodega": "Susana Balbo",
    "linea": "Crios",
@@ -5387,19 +5441,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 10,
-   "storeCount": 8
-  },
-  {
-   "id": "santa-julia-reserva-tempranillo-tinto",
-   "bodega": "Santa Julia",
-   "linea": "Reserva",
-   "varietal": "tempranillo",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
    "storeCount": 8
   },
   {
@@ -5510,21 +5551,6 @@
    "storeCount": 9
   },
   {
-   "id": "salentein-numina-syrah-tinto",
-   "bodega": "Salentein",
-   "linea": "Numina",
-   "varietal": "syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "numina"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 9
-  },
-  {
    "id": "las-perdices-reserva-pinot-noir-pinot-noir-tinto",
    "bodega": "Las Perdices",
    "linea": "Reserva Pinot Noir",
@@ -5624,34 +5650,6 @@
    "storeCount": 8
   },
   {
-   "id": "familia-gascon-rose-rosado",
-   "bodega": "Familia Gascón",
-   "linea": "Rosé",
-   "varietal": null,
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 8
-  },
-  {
-   "id": "humberto-canale-estate-merlot-tinto",
-   "bodega": "Humberto Canale",
-   "linea": "Estate",
-   "varietal": "merlot",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "estate"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 11
-  },
-  {
    "id": "araucana-rio-de-los-ciervos-malbec-rosado",
    "bodega": "Araucana",
    "linea": "Río de los Ciervos",
@@ -5680,6 +5678,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 9,
    "storeCount": 9
+  },
+  {
+   "id": "casillero-del-diablo-casillero-del-diablo-malbec-malbec-tinto",
+   "bodega": "Casillero del Diablo",
+   "linea": "Casillero del Diablo Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 10
   },
   {
    "id": "riglos-gran-cabernet-franc-cabernet-franc-tinto",
@@ -5742,21 +5753,6 @@
    "storeCount": 8
   },
   {
-   "id": "trapiche-alaris-cabernet-tinto",
-   "bodega": "Trapiche",
-   "linea": "Alaris",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "alaris"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 8
-  },
-  {
    "id": "un-mundo-chiquito-malbec-malbec-tinto",
    "bodega": "Un Mundo Chiquito",
    "linea": "Malbec",
@@ -5783,6 +5779,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 10,
    "storeCount": 10
+  },
+  {
+   "id": "perro-callejero-perro-callejero-sauvignon-blanc-sauvignon-blanc-blanco",
+   "bodega": "Perro Callejero",
+   "linea": "Perro Callejero Sauvignon Blanc",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 8
   },
   {
    "id": "saint-felicien-chardonnay-roble-chardonnay",
@@ -5931,21 +5940,6 @@
    "storeCount": 9
   },
   {
-   "id": "norton-cosecha-tardia-dulce",
-   "bodega": "Norton",
-   "linea": "Cosecha Tardía",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "tardia"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 25,
-   "storeCount": 5
-  },
-  {
    "id": "hermandad-winemaker-series-pinot-noir-tinto",
    "bodega": "Hermandad",
    "linea": "Winemaker Series",
@@ -5974,21 +5968,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 18,
    "storeCount": 6
-  },
-  {
-   "id": "chandon-brut-nature-espumante-nature",
-   "bodega": "Chandon",
-   "linea": "Brut Nature",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": "nature",
-   "lineAliases": [
-    "nature"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 18,
-   "storeCount": 7
   },
   {
    "id": "pascual-toso-alta-chardonnay",
@@ -6082,21 +6061,6 @@
    "storeCount": 4
   },
   {
-   "id": "vallisto-extremo-criolla",
-   "bodega": "Vallisto",
-   "linea": "Extremo",
-   "varietal": "criolla",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "extremo"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 13,
-   "storeCount": 7
-  },
-  {
    "id": "pommery-brut-royal-espumante-brut",
    "bodega": "Pommery",
    "linea": "Brut Royal",
@@ -6113,6 +6077,23 @@
    "storeCount": 3
   },
   {
+   "id": "etchart-terroir-de-altura-malbec-tinto",
+   "bodega": "Etchart",
+   "linea": "Terroir de Altura",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "altura terroir"
+   ],
+   "parajesNoDistinguen": [
+    "cafayate"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 13,
+   "storeCount": 8
+  },
+  {
    "id": "chandon-cuvee-brut-nature-espumante-nature",
    "bodega": "Chandon",
    "linea": "Cuvée Brut Nature",
@@ -6125,38 +6106,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 12,
-   "storeCount": 7
-  },
-  {
-   "id": "salentein-pyros-malbec-tinto",
-   "bodega": "Salentein",
-   "linea": "Pyros",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "pyros"
-   ],
-   "parajesNoDistinguen": [
-    "single vineyard"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 8
-  },
-  {
-   "id": "nieto-senetiner-emilia-natural-moscatel-dulce",
-   "bodega": "Nieto Senetiner",
-   "linea": "Emilia Natural",
-   "varietal": "moscatel",
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "emilia natural"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 14,
    "storeCount": 7
   },
   {
@@ -6310,6 +6259,34 @@
    "tiersNoDistinguen": [],
    "offerCount": 11,
    "storeCount": 9
+  },
+  {
+   "id": "las-perdices-reserva-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Las Perdices",
+   "linea": "Reserva Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 7
+  },
+  {
+   "id": "finca-la-anita-finca-malbec-tinto",
+   "bodega": "Finca La Anita",
+   "linea": "Finca",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 7
   },
   {
    "id": "alamos-maceracion-atenuada-malbec-tinto",
@@ -6535,19 +6512,6 @@
    "storeCount": 6
   },
   {
-   "id": "santa-julia-dulce-dulce",
-   "bodega": "Santa Julia",
-   "linea": "Dulce",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 7
-  },
-  {
    "id": "domaine-nico-brut-rose-rosado",
    "bodega": "Domaine Nico",
    "linea": "Brut Rosé",
@@ -6608,19 +6572,6 @@
    "storeCount": 7
   },
   {
-   "id": "las-perdices-reserva-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Las Perdices",
-   "linea": "Reserva Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 7
-  },
-  {
    "id": "amalaya-blanco-de-corte-blend-blanco",
    "bodega": "Amalaya",
    "linea": "Blanco de Corte",
@@ -6634,21 +6585,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 12,
    "storeCount": 11
-  },
-  {
-   "id": "finca-la-anita-finca-malbec-tinto",
-   "bodega": "Finca La Anita",
-   "linea": "Finca",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 7
   },
   {
    "id": "ribera-del-cuarzo-clasico-merlot-tinto",
@@ -6924,19 +6860,6 @@
    "storeCount": 7
   },
   {
-   "id": "casillero-del-diablo-casillero-del-diablo-malbec-malbec-tinto",
-   "bodega": "Casillero del Diablo",
-   "linea": "Casillero del Diablo Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 10
-  },
-  {
    "id": "norton-altura-cabernet-franc-tinto",
    "bodega": "Norton",
    "linea": "Altura",
@@ -7014,21 +6937,6 @@
    "storeCount": 9
   },
   {
-   "id": "salentein-puramun-cabernet-tinto",
-   "bodega": "Salentein",
-   "linea": "Puramun",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "puramun"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 7,
-   "storeCount": 7
-  },
-  {
    "id": "colome-1831-cabernet-tinto",
    "bodega": "Colomé",
    "linea": "1831",
@@ -7042,6 +6950,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 8,
    "storeCount": 8
+  },
+  {
+   "id": "salentein-dulce-natural-portillo-dulce",
+   "bodega": "Salentein",
+   "linea": "Dulce Natural Portillo",
+   "varietal": null,
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "natural portillo"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 6
   },
   {
    "id": "alamos-red-blend-blend-tinto",
@@ -7162,6 +7085,36 @@
    "storeCount": 7
   },
   {
+   "id": "trapiche-alaris-cabernet-tinto",
+   "bodega": "Trapiche",
+   "linea": "Alaris",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "alaris"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 8
+  },
+  {
+   "id": "terrazas-de-los-andes-reserva-chardonnay",
+   "bodega": "Terrazas de los Andes",
+   "linea": "Reserva",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 6,
+   "storeCount": 6
+  },
+  {
    "id": "chandon-latitud-33-rosado",
    "bodega": "Chandon",
    "linea": "Latitud 33",
@@ -7177,19 +7130,6 @@
    "storeCount": 7
   },
   {
-   "id": "perro-callejero-perro-callejero-sauvignon-blanc-sauvignon-blanc-blanco",
-   "bodega": "Perro Callejero",
-   "linea": "Perro Callejero Sauvignon Blanc",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 8
-  },
-  {
    "id": "santa-julia-organica-malbec-tinto",
    "bodega": "Santa Julia",
    "linea": "Orgánica",
@@ -7203,6 +7143,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 8,
    "storeCount": 8
+  },
+  {
+   "id": "finca-las-moras-malbec-malbec-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 9
   },
   {
    "id": "dona-paula-los-cardos-blend-tinto",
@@ -7267,6 +7220,21 @@
    "storeCount": 7
   },
   {
+   "id": "santa-julia-chenin-dulce-natural-chenin-dulce",
+   "bodega": "Santa Julia",
+   "linea": "Chenin Dulce Natural",
+   "varietal": "chenin",
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "natural"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 7
+  },
+  {
    "id": "zaha-zaha-el-corte-blend",
    "bodega": "Zaha",
    "linea": "Zaha El Corte",
@@ -7325,19 +7293,6 @@
    "storeCount": 6
   },
   {
-   "id": "estancia-mendoza-malbec-malbec-tinto",
-   "bodega": "Estancia Mendoza",
-   "linea": "Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 7
-  },
-  {
    "id": "luigi-bosca-de-sangre-cabernet-tinto",
    "bodega": "LUIGI BOSCA",
    "linea": "De Sangre",
@@ -7356,17 +7311,19 @@
    "storeCount": 5
   },
   {
-   "id": "norton-reserva-cabernet-tinto",
+   "id": "norton-cosecha-tardia-dulce",
    "bodega": "Norton",
-   "linea": "Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
+   "linea": "Cosecha Tardía",
+   "varietal": null,
+   "color": "dulce",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "tardia"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 18,
-   "storeCount": 4
+   "offerCount": 25,
+   "storeCount": 5
   },
   {
    "id": "zuccardi-finca-piedra-infinita",
@@ -7434,18 +7391,18 @@
    "storeCount": 5
   },
   {
-   "id": "callia-esperado-malbec-tinto",
-   "bodega": "Callia",
-   "linea": "Esperado",
-   "varietal": "malbec",
-   "color": "tinto",
+   "id": "chacabuco-chenin-dulce-natural-chenin-dulce",
+   "bodega": "Chacabuco",
+   "linea": "Chenin Dulce Natural",
+   "varietal": "chenin",
+   "color": "dulce",
    "dulzor": null,
    "lineAliases": [
-    "esperado"
+    "natural"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 15,
+   "offerCount": 12,
    "storeCount": 6
   },
   {
@@ -7477,34 +7434,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 13,
    "storeCount": 4
-  },
-  {
-   "id": "domaine-bousquet-reserva-cabernet-tinto",
-   "bodega": "Domaine Bousquet",
-   "linea": "Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 5
-  },
-  {
-   "id": "chacabuco-chenin-dulce-natural-chenin-dulce",
-   "bodega": "Chacabuco",
-   "linea": "Chenin Dulce Natural",
-   "varietal": "chenin",
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "natural"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 12,
-   "storeCount": 6
   },
   {
    "id": "alta-vista-single-vineyard-alizarine-malbec-tinto",
@@ -7554,6 +7483,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 12,
    "storeCount": 7
+  },
+  {
+   "id": "domaine-bousquet-reserva-cabernet-tinto",
+   "bodega": "Domaine Bousquet",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 12,
+   "storeCount": 5
   },
   {
    "id": "zuccardi-serie-a-chardonnayviognier",
@@ -7618,6 +7560,19 @@
    "storeCount": 6
   },
   {
+   "id": "estancia-mendoza-reserva-cabernet-tinto",
+   "bodega": "Estancia Mendoza",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 6
+  },
+  {
    "id": "salentein-reserve-cabernet-tinto",
    "bodega": "Salentein",
    "linea": "Reserve",
@@ -7633,34 +7588,19 @@
    "storeCount": 5
   },
   {
-   "id": "las-perdices-tinamu-blend-tinto",
-   "bodega": "Las Perdices",
-   "linea": "Tinamu",
-   "varietal": "blend",
-   "color": "tinto",
+   "id": "vallisto-extremo-criolla",
+   "bodega": "Vallisto",
+   "linea": "Extremo",
+   "varietal": "criolla",
+   "color": null,
    "dulzor": null,
    "lineAliases": [
-    "tinamu"
+    "extremo"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 4
-  },
-  {
-   "id": "finca-la-anita-finca-malbec-rosado",
-   "bodega": "Finca La Anita",
-   "linea": "Finca",
-   "varietal": "malbec",
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 11,
-   "storeCount": 6
+   "offerCount": 13,
+   "storeCount": 7
   },
   {
    "id": "cadus-appellation-chardonnay-chardonnay",
@@ -7681,19 +7621,21 @@
    "storeCount": 6
   },
   {
-   "id": "chandon-latitud-33-malbec-rosado",
-   "bodega": "Chandon",
-   "linea": "Latitud 33",
+   "id": "salentein-pyros-malbec-tinto",
+   "bodega": "Salentein",
+   "linea": "Pyros",
    "varietal": "malbec",
-   "color": "rosado",
+   "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "latitud"
+    "pyros"
    ],
-   "parajesNoDistinguen": [],
+   "parajesNoDistinguen": [
+    "single vineyard"
+   ],
    "tiersNoDistinguen": [],
    "offerCount": 10,
-   "storeCount": 6
+   "storeCount": 8
   },
   {
    "id": "gran-enemigo-gran-enemigo-cabernet-franc---malbec-cabernet-francmalbec-tinto",
@@ -7724,6 +7666,21 @@
    "storeCount": 7
   },
   {
+   "id": "las-perdices-tinamu-blend-tinto",
+   "bodega": "Las Perdices",
+   "linea": "Tinamu",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "tinamu"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 4
+  },
+  {
    "id": "falasco-wines-chateau-subsonico-malbec-tinto",
    "bodega": "Falasco Wines",
    "linea": "Chateau Subsónico",
@@ -7741,17 +7698,19 @@
    "storeCount": 5
   },
   {
-   "id": "sexy-fish-malbec-malbec-tinto",
-   "bodega": "Sexy Fish",
-   "linea": "Malbec",
+   "id": "finca-la-anita-finca-malbec-rosado",
+   "bodega": "Finca La Anita",
+   "linea": "Finca",
    "varietal": "malbec",
-   "color": "tinto",
+   "color": "rosado",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "finca"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 11,
-   "storeCount": 7
+   "storeCount": 6
   },
   {
    "id": "diamandes-perlita-malbecsyrah-tinto",
@@ -7767,6 +7726,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 3
+  },
+  {
+   "id": "sexy-fish-cabernet-franc-cabernet-franc-tinto",
+   "bodega": "Sexy Fish",
+   "linea": "Cabernet Franc",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 5
   },
   {
    "id": "callejon-del-crimen-cabernet-sauvignon-cabernet-tinto",
@@ -7809,38 +7781,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 3
-  },
-  {
-   "id": "cordero-con-piel-de-lobo-gran-cordero-con-piel-de-lobo-malbec-malbec-tinto",
-   "bodega": "Cordero con Piel de Lobo",
-   "linea": "Gran Cordero con Piel de Lobo Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "750c"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 13,
-   "storeCount": 6
-  },
-  {
-   "id": "veuve-clicquot-rich-espumante",
-   "bodega": "Veuve Clicquot",
-   "linea": "Rich",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": null,
-   "lineAliases": [
-    "rich"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 6
   },
   {
    "id": "santa-julia-alambrado-malbec-tinto",
@@ -7903,6 +7843,21 @@
    "storeCount": 5
   },
   {
+   "id": "nieto-senetiner-emilia-natural-moscatel-dulce",
+   "bodega": "Nieto Senetiner",
+   "linea": "Emilia Natural",
+   "varietal": "moscatel",
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "emilia natural"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 14,
+   "storeCount": 7
+  },
+  {
    "id": "trapiche-fond-de-cave-cabernet-tinto",
    "bodega": "Trapiche",
    "linea": "Fond de Cave",
@@ -7943,19 +7898,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 3,
    "storeCount": 3
-  },
-  {
-   "id": "alma-mora-alma-mora-malbec-malbec-tinto",
-   "bodega": "Alma Mora",
-   "linea": "Alma Mora Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 4
   },
   {
    "id": "zaha-zaha-cabernet-sauvignon-cabernet-tinto",
@@ -8058,6 +8000,19 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 9,
+   "storeCount": 7
+  },
+  {
+   "id": "los-intocables-los-intocables-red-blend-blend-tinto",
+   "bodega": "Los Intocables",
+   "linea": "Los Intocables Red Blend",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
    "storeCount": 7
   },
   {
@@ -8640,19 +8595,6 @@
    "storeCount": 6
   },
   {
-   "id": "casillero-del-diablo-casillero-del-diablo-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Casillero del Diablo",
-   "linea": "Casillero del Diablo Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 8
-  },
-  {
    "id": "nina-gran-malbec-malbec-tinto",
    "bodega": "Nina",
    "linea": "Gran Malbec",
@@ -8698,6 +8640,21 @@
    "storeCount": 6
   },
   {
+   "id": "salentein-puramun-cabernet-tinto",
+   "bodega": "Salentein",
+   "linea": "Puramun",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "puramun"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
+   "storeCount": 7
+  },
+  {
    "id": "etchart-dulce-tardio-torrontes-dulce",
    "bodega": "Etchart",
    "linea": "Dulce Tardío",
@@ -8726,21 +8683,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 7,
    "storeCount": 7
-  },
-  {
-   "id": "salentein-dulce-natural-portillo-dulce",
-   "bodega": "Salentein",
-   "linea": "Dulce Natural Portillo",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "natural portillo"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 6
   },
   {
    "id": "rutini-dominio-cabernet-francmalbec-tinto",
@@ -8799,6 +8741,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 6
+  },
+  {
+   "id": "perro-callejero-perro-callejero-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Perro Callejero",
+   "linea": "Perro Callejero Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
   },
   {
    "id": "santa-julia-pinot-noir-pinot-noir-tinto",
@@ -8874,17 +8829,17 @@
    "storeCount": 7
   },
   {
-   "id": "terrazas-de-los-andes-reserva-chardonnay",
-   "bodega": "Terrazas de los Andes",
-   "linea": "Reserva",
-   "varietal": "chardonnay",
+   "id": "amalaya-corte-unico-blend",
+   "bodega": "Amalaya",
+   "linea": "Corte Único",
+   "varietal": "blend",
    "color": null,
    "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
+   "lineAliases": [
+    "corte unico"
    ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 6
   },
@@ -8936,19 +8891,21 @@
    "storeCount": 7
   },
   {
-   "id": "santa-julia-chenin-dulce-natural-chenin-dulce",
-   "bodega": "Santa Julia",
-   "linea": "Chenin Dulce Natural",
-   "varietal": "chenin",
-   "color": "dulce",
+   "id": "etchart-roble-malbec-tinto",
+   "bodega": "Etchart",
+   "linea": "Roble",
+   "varietal": "malbec",
+   "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "natural"
+    "roble"
    ],
-   "parajesNoDistinguen": [],
+   "parajesNoDistinguen": [
+    "cafayate"
+   ],
    "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 7
+   "offerCount": 5,
+   "storeCount": 5
   },
   {
    "id": "chacra-roka-malbec-tinto",
@@ -9035,6 +8992,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 4,
    "storeCount": 4
+  },
+  {
+   "id": "lagarde-malbec-organico-malbec-tinto",
+   "bodega": "Lagarde",
+   "linea": "Malbec Orgánico",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "organico"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "las-perdices-ala-colorada-ancellotta",
@@ -9129,25 +9101,23 @@
    "storeCount": 7
   },
   {
+   "id": "estancia-mendoza-malbec-malbec-tinto",
+   "bodega": "Estancia Mendoza",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 12,
+   "storeCount": 7
+  },
+  {
    "id": "finca-la-anita-finca-magna-malbec-tinto",
    "bodega": "Finca La Anita",
    "linea": "Finca Magna",
    "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca magna"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 6
-  },
-  {
-   "id": "finca-la-anita-finca-magna-cabernet-tinto",
-   "bodega": "Finca La Anita",
-   "linea": "Finca Magna",
-   "varietal": "cabernet",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
@@ -9170,6 +9140,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 6
+  },
+  {
+   "id": "norton-reserva-cabernet-tinto",
+   "bodega": "Norton",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 18,
+   "storeCount": 4
   },
   {
    "id": "nieto-senetiner-brut-nature-espumante-nature",
@@ -9218,21 +9201,6 @@
    "storeCount": 3
   },
   {
-   "id": "trapiche-alaris-sauvignon-blanc-blanco",
-   "bodega": "Trapiche",
-   "linea": "Alaris",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "alaris"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 15,
-   "storeCount": 3
-  },
-  {
    "id": "achaval-ferrer-finca-malbec-tinto",
    "bodega": "Achaval Ferrer",
    "linea": "Finca",
@@ -9248,6 +9216,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 24,
    "storeCount": 7
+  },
+  {
+   "id": "trapiche-alaris-sauvignon-blanc-blanco",
+   "bodega": "Trapiche",
+   "linea": "Alaris",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "alaris"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 15,
+   "storeCount": 3
   },
   {
    "id": "zuccardi-finca-piedra-infinita-gravascal-malbec-tinto",
@@ -9310,6 +9293,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 9,
    "storeCount": 4
+  },
+  {
+   "id": "callia-esperado-malbec-tinto",
+   "bodega": "Callia",
+   "linea": "Esperado",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "esperado"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 15,
+   "storeCount": 6
   },
   {
    "id": "catena-zapata-adrianna-vineyard-white-bones-chardonnay-blanco",
@@ -9536,6 +9534,19 @@
    "storeCount": 5
   },
   {
+   "id": "santa-julia-merlot-merlot-tinto",
+   "bodega": "Santa Julia",
+   "linea": "Merlot",
+   "varietal": "merlot",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 5
+  },
+  {
    "id": "la-puerta-malbec-reserva-malbec-tinto",
    "bodega": "La Puerta",
    "linea": "Malbec Reserva",
@@ -9549,21 +9560,34 @@
    "storeCount": 3
   },
   {
-   "id": "finca-la-anita-gran-corte-blend",
-   "bodega": "Finca La Anita",
-   "linea": "Gran Corte",
-   "varietal": "blend",
-   "color": null,
+   "id": "nina-gold-malbec-tinto",
+   "bodega": "Nina",
+   "linea": "Gold",
+   "varietal": "malbec",
+   "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "corte finca"
+    "gold"
    ],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 4
+  },
+  {
+   "id": "veuve-clicquot-rich-espumante",
+   "bodega": "Veuve Clicquot",
+   "linea": "Rich",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": null,
+   "lineAliases": [
+    "rich"
    ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
    "offerCount": 10,
-   "storeCount": 5
+   "storeCount": 6
   },
   {
    "id": "catena-zapata-nicolas-catena-zapata-blend-blend",
@@ -9625,19 +9649,6 @@
    "storeCount": 6
   },
   {
-   "id": "santa-julia-merlot-merlot-tinto",
-   "bodega": "Santa Julia",
-   "linea": "Merlot",
-   "varietal": "merlot",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 5
-  },
-  {
    "id": "san-felipe-roble-malbec-tinto",
    "bodega": "San Felipe",
    "linea": "Roble",
@@ -9669,19 +9680,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 9,
    "storeCount": 6
-  },
-  {
-   "id": "sexy-fish-cabernet-franc-cabernet-franc-tinto",
-   "bodega": "Sexy Fish",
-   "linea": "Cabernet Franc",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 5
   },
   {
    "id": "alta-vista-single-vineyard-serenade-malbec-tinto",
@@ -9718,16 +9716,20 @@
    "storeCount": 5
   },
   {
-   "id": "estancia-mendoza-reserva-cabernet-tinto",
-   "bodega": "Estancia Mendoza",
-   "linea": "Reserva",
-   "varietal": "cabernet",
+   "id": "cordero-con-piel-de-lobo-gran-cordero-con-piel-de-lobo-malbec-malbec-tinto",
+   "bodega": "Cordero con Piel de Lobo",
+   "linea": "Gran Cordero con Piel de Lobo Malbec",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "750c"
+   ],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 13,
    "storeCount": 6
   },
   {
@@ -9744,6 +9746,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 8,
    "storeCount": 5
+  },
+  {
+   "id": "chandon-latitud-33-malbec-rosado",
+   "bodega": "Chandon",
+   "linea": "Latitud 33",
+   "varietal": "malbec",
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [
+    "latitud"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 6
   },
   {
    "id": "santa-julia-torrontes-torrontes",
@@ -9821,93 +9838,36 @@
    "storeCount": 6
   },
   {
-   "id": "humberto-canale-estate-cabernet-tinto",
-   "bodega": "Humberto Canale",
-   "linea": "Estate",
-   "varietal": "cabernet",
-   "color": "tinto",
+   "id": "finca-la-anita-gran-corte-blend",
+   "bodega": "Finca La Anita",
+   "linea": "Gran Corte",
+   "varietal": "blend",
+   "color": null,
    "dulzor": null,
    "lineAliases": [
-    "estate",
-    "estate x750cc"
+    "corte finca"
    ],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 10,
    "storeCount": 5
   },
   {
-   "id": "nina-gold-malbec-tinto",
-   "bodega": "Nina",
-   "linea": "Gold",
-   "varietal": "malbec",
+   "id": "magnolia-finca-magnolia-cabernet-tinto",
+   "bodega": "Magnolia",
+   "linea": "Finca Magnolia",
+   "varietal": "cabernet",
    "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "gold"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 4
-  },
-  {
-   "id": "finca-la-anita-finca-chardonnay",
-   "bodega": "Finca La Anita",
-   "linea": "Finca",
-   "varietal": "chardonnay",
-   "color": null,
    "dulzor": null,
    "lineAliases": [
     "finca"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 5
-  },
-  {
-   "id": "trapiche-alaris-dulce",
-   "bodega": "Trapiche",
-   "linea": "Alaris",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "alaris"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 5
-  },
-  {
-   "id": "nina-gran-cabernet-franc-cabernet-franc-tinto",
-   "bodega": "Nina",
-   "linea": "Gran Cabernet Franc",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 8,
-   "storeCount": 5
-  },
-  {
-   "id": "famiglia-bianchi-gran-famiglia-bianchi-malbec-malbec-tinto",
-   "bodega": "Famiglia Bianchi",
-   "linea": "Gran Famiglia Bianchi Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 7,
-   "storeCount": 5
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "dv-catena-lesploratore-malbec-tinto",
@@ -10022,6 +9982,36 @@
    "storeCount": 6
   },
   {
+   "id": "susana-balbo-signature-malbec-tinto",
+   "bodega": "Susana Balbo",
+   "linea": "Signature",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "signature"
+   ],
+   "parajesNoDistinguen": [
+    "paraje altamira"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
+   "storeCount": 5
+  },
+  {
+   "id": "alma-mora-alma-mora-malbec-malbec-tinto",
+   "bodega": "Alma Mora",
+   "linea": "Alma Mora Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 4
+  },
+  {
    "id": "estancia-mendoza-cabernet-malbec-cabernetmalbec-tinto",
    "bodega": "Estancia Mendoza",
    "linea": "Cabernet Malbec",
@@ -10035,15 +10025,13 @@
    "storeCount": 5
   },
   {
-   "id": "finca-la-anita-finca-cabernet-tinto",
-   "bodega": "Finca La Anita",
-   "linea": "Finca",
-   "varietal": "cabernet",
+   "id": "famiglia-bianchi-gran-famiglia-bianchi-malbec-malbec-tinto",
+   "bodega": "Famiglia Bianchi",
+   "linea": "Gran Famiglia Bianchi Malbec",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 7,
@@ -10170,6 +10158,19 @@
    "storeCount": 5
   },
   {
+   "id": "los-haroldos-reserva-de-familia-malbec-tinto",
+   "bodega": "Los Haroldos",
+   "linea": "Reserva de Familia",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
+  },
+  {
    "id": "perro-callejero-perro-callejero-chardonnay-chardonnay",
    "bodega": "Perro Callejero",
    "linea": "Perro Callejero Chardonnay",
@@ -10181,6 +10182,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 5
+  },
+  {
+   "id": "santa-julia-dulce-dulce",
+   "bodega": "Santa Julia",
+   "linea": "Dulce",
+   "varietal": null,
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 7
   },
   {
    "id": "alandes-uco-valley-malbec-tinto",
@@ -10210,23 +10224,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 6,
-   "storeCount": 5
-  },
-  {
-   "id": "susana-balbo-signature-malbec-tinto",
-   "bodega": "Susana Balbo",
-   "linea": "Signature",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "signature"
-   ],
-   "parajesNoDistinguen": [
-    "paraje altamira"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 7,
    "storeCount": 5
   },
   {
@@ -10266,19 +10263,6 @@
    "storeCount": 5
   },
   {
-   "id": "los-intocables-los-intocables-red-blend-blend-tinto",
-   "bodega": "Los Intocables",
-   "linea": "Los Intocables Red Blend",
-   "varietal": "blend",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 7
-  },
-  {
    "id": "la-celia-reserva-malbec-tinto",
    "bodega": "La Celia",
    "linea": "Reserva",
@@ -10291,6 +10275,21 @@
     "reserva"
    ],
    "offerCount": 5,
+   "storeCount": 5
+  },
+  {
+   "id": "finca-la-anita-finca-cabernet-tinto",
+   "bodega": "Finca La Anita",
+   "linea": "Finca",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
    "storeCount": 5
   },
   {
@@ -10712,6 +10711,19 @@
    "storeCount": 5
   },
   {
+   "id": "casillero-del-diablo-casillero-del-diablo-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Casillero del Diablo",
+   "linea": "Casillero del Diablo Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 8
+  },
+  {
    "id": "trivento-private-reserve-malbec-tinto",
    "bodega": "Trivento",
    "linea": "Private Reserve",
@@ -10740,21 +10752,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 5,
    "storeCount": 5
-  },
-  {
-   "id": "nina-gold-petit-verdot-tinto",
-   "bodega": "Nina",
-   "linea": "Gold",
-   "varietal": "petit verdot",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "gold"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
   },
   {
    "id": "septima-obra-cabernet-tinto",
@@ -10875,6 +10872,23 @@
    "storeCount": 5
   },
   {
+   "id": "etchart-terroir-de-altura-cabernet-tinto",
+   "bodega": "Etchart",
+   "linea": "Terroir de Altura",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "altura terroir"
+   ],
+   "parajesNoDistinguen": [
+    "cafayate"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
+  },
+  {
    "id": "otronia-otronia-lagunar-naranjo-naranjo",
    "bodega": "Otronia",
    "linea": "Otronia Lagunar Naranjo",
@@ -10924,19 +10938,6 @@
    "storeCount": 5
   },
   {
-   "id": "finca-las-moras-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 4
-  },
-  {
    "id": "mumm-leger-spritz-espumante",
    "bodega": "Mumm",
    "linea": "Léger Spritz",
@@ -10982,13 +10983,15 @@
    "storeCount": 5
   },
   {
-   "id": "perro-callejero-perro-callejero-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Perro Callejero",
-   "linea": "Perro Callejero Cabernet Sauvignon",
+   "id": "santa-julia-magna-cabernet-tinto",
+   "bodega": "Santa Julia",
+   "linea": "Magna",
    "varietal": "cabernet",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [],
+   "lineAliases": [
+    "magna"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 5,
@@ -11025,21 +11028,6 @@
    "storeCount": 5
   },
   {
-   "id": "amalaya-corte-unico-blend",
-   "bodega": "Amalaya",
-   "linea": "Corte Único",
-   "varietal": "blend",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "corte unico"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 6
-  },
-  {
    "id": "lagarde-guarda-cabernet-franc-cabernet-franc-tinto",
    "bodega": "Lagarde",
    "linea": "Guarda Cabernet Franc",
@@ -11070,6 +11058,19 @@
    "storeCount": 4
   },
   {
+   "id": "familia-gascon-blanco-dulce-dulce",
+   "bodega": "Familia Gascón",
+   "linea": "Blanco Dulce",
+   "varietal": null,
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "lagarde-guarda-malbec-doc-malbec-tinto",
    "bodega": "Lagarde",
    "linea": "Guarda Malbec DOC",
@@ -11083,38 +11084,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 4,
    "storeCount": 4
-  },
-  {
-   "id": "trapiche-origen-malbec-tinto",
-   "bodega": "Trapiche",
-   "linea": "Origen",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "origen"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 7,
-   "storeCount": 4
-  },
-  {
-   "id": "etchart-roble-malbec-tinto",
-   "bodega": "Etchart",
-   "linea": "Roble",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "roble"
-   ],
-   "parajesNoDistinguen": [
-    "cafayate"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
   },
   {
    "id": "trapiche-tesoro-malbec-tinto",
@@ -11152,19 +11121,6 @@
    "linea": "Chardonnay Chenin",
    "varietal": "chardonnay+chenin",
    "color": null,
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
-   "id": "perro-callejero-perro-callejero-blend-de-malbec-blendmalbec-tinto",
-   "bodega": "Perro Callejero",
-   "linea": "Perro Callejero Blend de Malbec",
-   "varietal": "blend+malbec",
-   "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
@@ -11454,6 +11410,21 @@
    "storeCount": 3
   },
   {
+   "id": "trivento-golden-reserve-malbec-tinto",
+   "bodega": "Trivento",
+   "linea": "Golden Reserve",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "golden reserve"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
    "id": "bianchi-enzo-gran-corte-blend",
    "bodega": "Bianchi",
    "linea": "Enzo Gran Corte",
@@ -11563,6 +11534,19 @@
    "storeCount": 5
   },
   {
+   "id": "lagarde-chardonnay-chardonnay",
+   "bodega": "Lagarde",
+   "linea": "Chardonnay",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "salentein-puramun-chardonnay",
    "bodega": "Salentein",
    "linea": "Puramun",
@@ -11623,21 +11607,6 @@
    "storeCount": 4
   },
   {
-   "id": "finca-la-anita-finca-varua-blend-tinto",
-   "bodega": "Finca La Anita",
-   "linea": "Finca Varua",
-   "varietal": "blend",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca varua"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
    "id": "finca-la-anita-finca-la-anita-petit-verdot-tinto",
    "bodega": "Finca La Anita",
    "linea": "Finca La Anita",
@@ -11651,6 +11620,36 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
+  },
+  {
+   "id": "finca-la-anita-finca-magna-cabernet-tinto",
+   "bodega": "Finca La Anita",
+   "linea": "Finca Magna",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca magna"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 6
+  },
+  {
+   "id": "finca-la-anita-finca-chardonnay",
+   "bodega": "Finca La Anita",
+   "linea": "Finca",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 5
   },
   {
    "id": "finca-las-moras-sauvignon-blanc-sauvignon-blanc-blanco",
@@ -11681,34 +11680,30 @@
    "storeCount": 4
   },
   {
-   "id": "los-arboles-malbec-malbec-tinto",
-   "bodega": "Los Árboles",
-   "linea": "Malbec",
-   "varietal": "malbec",
+   "id": "finca-las-moras-red-blend-blend-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Red Blend",
+   "varietal": "blend",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
-   "parajesNoDistinguen": [
-    "los arboles"
-   ],
+   "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 5,
    "storeCount": 5
   },
   {
-   "id": "la-celia-reserva-cabernet-francmalbec-tinto",
-   "bodega": "La Celia",
-   "linea": "Reserva",
-   "varietal": "cabernet franc+malbec",
+   "id": "la-linda-la-linda-red-blend-blend-tinto",
+   "bodega": "La Linda",
+   "linea": "La Linda Red Blend",
+   "varietal": "blend",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 4,
-   "storeCount": 4
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
   },
   {
    "id": "los-intocables-los-intocables-double-oak-malbec-malbec-tinto",
@@ -11726,19 +11721,19 @@
    "storeCount": 2
   },
   {
-   "id": "magnolia-finca-magnolia-malbec-tinto",
-   "bodega": "Magnolia",
-   "linea": "Finca Magnolia",
-   "varietal": "malbec",
-   "color": "tinto",
+   "id": "finca-natalina-autentico-finca-rosado",
+   "bodega": "Finca Natalina",
+   "linea": "Auténtico Finca",
+   "varietal": null,
+   "color": "rosado",
    "dulzor": null,
    "lineAliases": [
-    "finca"
+    "autentico finca"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
+   "offerCount": 4,
+   "storeCount": 4
   },
   {
    "id": "zuccardi-finca-canal-uco-malbec-tinto",
@@ -11754,6 +11749,22 @@
    "tiersNoDistinguen": [],
    "offerCount": 5,
    "storeCount": 2
+  },
+  {
+   "id": "nieto-senetiner-patrimonial-malbec-tinto",
+   "bodega": "Nieto Senetiner",
+   "linea": "Patrimonial",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "doc patrimonial",
+    "patrimonial"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 3
   },
   {
    "id": "finca-natalina-finca-torrontes",
@@ -11802,22 +11813,6 @@
    "storeCount": 4
   },
   {
-   "id": "nieto-senetiner-patrimonial-malbec-tinto",
-   "bodega": "Nieto Senetiner",
-   "linea": "Patrimonial",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "doc patrimonial",
-    "patrimonial"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 3
-  },
-  {
    "id": "bodega-monteviejo-festivo-malbec-tinto",
    "bodega": "Bodega Monteviejo",
    "linea": "Festivo",
@@ -11830,6 +11825,19 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 12,
+   "storeCount": 4
+  },
+  {
+   "id": "santa-julia-chardonnay-reserva-chardonnay-blanco",
+   "bodega": "Santa Julia",
+   "linea": "Chardonnay Reserva",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
    "storeCount": 4
   },
   {
@@ -11895,36 +11903,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 12,
    "storeCount": 6
-  },
-  {
-   "id": "navarro-correas-cabernet-sauvignon-reserva-cabernet-tinto",
-   "bodega": "Navarro Correas",
-   "linea": "Cabernet Sauvignon Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [
-    "los arboles"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 10,
-   "storeCount": 4
-  },
-  {
-   "id": "navarro-correas-malbec-malbec-tinto",
-   "bodega": "Navarro Correas",
-   "linea": "Malbec",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [
-    "los arboles"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 3
   },
   {
    "id": "santa-julia-el-burro-malbec-tinto",
@@ -12155,6 +12133,22 @@
    "storeCount": 3
   },
   {
+   "id": "luigi-bosca-los-apuntes-malbec-tinto",
+   "bodega": "LUIGI BOSCA",
+   "linea": "Los Apuntes",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "apuntes organico",
+    "apuntes grenache"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 3
+  },
+  {
    "id": "pascual-toso-finca-pedregal-cabernetmalbec-tinto",
    "bodega": "Pascual Toso",
    "linea": "Finca Pedregal",
@@ -12291,6 +12285,22 @@
    "storeCount": 3
   },
   {
+   "id": "humberto-canale-estate-cabernet-tinto",
+   "bodega": "Humberto Canale",
+   "linea": "Estate",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "estate",
+    "estate x750cc"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 5
+  },
+  {
    "id": "andeluna-raices-chardonnay",
    "bodega": "Andeluna",
    "linea": "Raíces",
@@ -12334,6 +12344,21 @@
    "storeCount": 6
   },
   {
+   "id": "trapiche-alaris-dulce",
+   "bodega": "Trapiche",
+   "linea": "Alaris",
+   "varietal": null,
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "alaris"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 5
+  },
+  {
    "id": "salentein-killka-chardonnay-blanco",
    "bodega": "Salentein",
    "linea": "Killka",
@@ -12343,6 +12368,19 @@
    "lineAliases": [
     "killka"
    ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 3
+  },
+  {
+   "id": "santa-julia-sauvignon-blanco-blanco",
+   "bodega": "Santa Julia",
+   "linea": "Sauvignon Blanco",
+   "varietal": null,
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 6,
@@ -12377,19 +12415,19 @@
    "storeCount": 4
   },
   {
-   "id": "magnolia-finca-magnolia-cabernet-tinto",
-   "bodega": "Magnolia",
-   "linea": "Finca Magnolia",
-   "varietal": "cabernet",
+   "id": "nina-gran-cabernet-franc-cabernet-franc-tinto",
+   "bodega": "Nina",
+   "linea": "Gran Cabernet Franc",
+   "varietal": "cabernet franc",
    "color": "tinto",
    "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 8,
+   "storeCount": 5
   },
   {
    "id": "famiglia-bianchi-famiglia-bianchi-cabernet-franc-cabernet-franc-tinto",
@@ -12611,21 +12649,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 3,
    "storeCount": 2
-  },
-  {
-   "id": "finca-natalina-autentico-finca-malbec-tinto",
-   "bodega": "Finca Natalina",
-   "linea": "Auténtico Finca",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "autentico finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 9,
-   "storeCount": 5
   },
   {
    "id": "mosquita-muerta-pispi-blend",
@@ -12898,6 +12921,34 @@
    "storeCount": 5
   },
   {
+   "id": "finca-las-moras-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 4
+  },
+  {
+   "id": "mumm-domaine-brut-nature-espumante-nature",
+   "bodega": "Mumm",
+   "linea": "Domaine Brut Nature",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": "nature",
+   "lineAliases": [
+    "domaine nature"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 3
+  },
+  {
    "id": "navarro-correas-coleccion-privada-cabernet-tinto",
    "bodega": "Navarro Correas",
    "linea": "Colección Privada",
@@ -12973,19 +13024,6 @@
    "storeCount": 4
   },
   {
-   "id": "los-haroldos-reserva-de-familia-malbec-tinto",
-   "bodega": "Los Haroldos",
-   "linea": "Reserva de Familia",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
    "id": "la-coste-de-los-andes-malbec-malbec-tinto",
    "bodega": "La Coste de los Andes",
    "linea": "Malbec",
@@ -13009,6 +13047,21 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 4,
+   "storeCount": 3
+  },
+  {
+   "id": "achaval-ferrer-singular-merlot-tinto",
+   "bodega": "Achaval Ferrer",
+   "linea": "Singular",
+   "varietal": "merlot",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "singular"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
    "storeCount": 3
   },
   {
@@ -13154,19 +13207,6 @@
    "storeCount": 3
   },
   {
-   "id": "alma-mora-alma-mora-chardonnay-chardonnay-blanco",
-   "bodega": "Alma Mora",
-   "linea": "Alma Mora Chardonnay",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 4
-  },
-  {
    "id": "estancia-mendoza-chardonnay-chenin-chardonnaychenin-blanco",
    "bodega": "Estancia Mendoza",
    "linea": "Chardonnay Chenin",
@@ -13178,21 +13218,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 4,
    "storeCount": 4
-  },
-  {
-   "id": "navarro-correas-coleccion-privada-malbec-tinto",
-   "bodega": "Navarro Correas",
-   "linea": "Colección Privada",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "correas navarro"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 3
   },
   {
    "id": "finca-la-anita-finca-cabernet-franc-tinto",
@@ -13232,21 +13257,6 @@
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
-   "id": "nina-gold-cabernet-franc-tinto",
-   "bodega": "Nina",
-   "linea": "Gold",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "gold"
-   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 4,
@@ -13705,6 +13715,21 @@
    "storeCount": 7
   },
   {
+   "id": "nina-gold-petit-verdot-tinto",
+   "bodega": "Nina",
+   "linea": "Gold",
+   "varietal": "petit verdot",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "gold"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "nina-natural-rosado",
    "bodega": "Nina",
    "linea": "Natural",
@@ -13838,23 +13863,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 4,
    "storeCount": 4
-  },
-  {
-   "id": "etchart-terroir-de-altura-cabernet-tinto",
-   "bodega": "Etchart",
-   "linea": "Terroir de Altura",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "altura terroir"
-   ],
-   "parajesNoDistinguen": [
-    "cafayate"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
   },
   {
    "id": "catena-zapata-zapata-cabernetmalbec-tinto",
@@ -13996,21 +14004,6 @@
    "storeCount": 3
   },
   {
-   "id": "santa-julia-magna-cabernet-tinto",
-   "bodega": "Santa Julia",
-   "linea": "Magna",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "magna"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
    "id": "salentein-pyros-vineyard-limestone-hill",
    "bodega": "Salentein",
    "linea": "Pyros Vineyard Limestone Hill",
@@ -14073,21 +14066,6 @@
    "storeCount": 4
   },
   {
-   "id": "lagarde-guarda-blend-tinto",
-   "bodega": "Lagarde",
-   "linea": "Guarda",
-   "varietal": "blend",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "guarda"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "trapiche-varietal-merlot-tinto",
    "bodega": "Trapiche",
    "linea": "Varietal",
@@ -14114,19 +14092,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
-  },
-  {
-   "id": "familia-gascon-blanco-dulce-dulce",
-   "bodega": "Familia Gascón",
-   "linea": "Blanco Dulce",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
   },
   {
    "id": "navarro-correas-coleccion-privada-chardonnay",
@@ -14174,6 +14139,21 @@
    "storeCount": 4
   },
   {
+   "id": "trapiche-origen-malbec-tinto",
+   "bodega": "Trapiche",
+   "linea": "Origen",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "origen"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 7,
+   "storeCount": 4
+  },
+  {
    "id": "el-esteco-elementos-malbec-tinto",
    "bodega": "El Esteco",
    "linea": "Elementos",
@@ -14204,19 +14184,6 @@
    "storeCount": 4
   },
   {
-   "id": "los-intocables-los-intocables-chardonnay-chardonnay",
-   "bodega": "Los Intocables",
-   "linea": "Los Intocables Chardonnay",
-   "varietal": "chardonnay",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "los-haroldos-gran-corte-blend",
    "bodega": "Los Haroldos",
    "linea": "Gran Corte",
@@ -14232,6 +14199,19 @@
    ],
    "offerCount": 3,
    "storeCount": 3
+  },
+  {
+   "id": "perro-callejero-perro-callejero-blend-de-malbec-blendmalbec-tinto",
+   "bodega": "Perro Callejero",
+   "linea": "Perro Callejero Blend de Malbec",
+   "varietal": "blend+malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
   },
   {
    "id": "catena-zapata-gran-lurton-corte-argentino-blend",
@@ -14628,21 +14608,6 @@
    "storeCount": 4
   },
   {
-   "id": "trivento-golden-reserve-malbec-tinto",
-   "bodega": "Trivento",
-   "linea": "Golden Reserve",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "golden reserve"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "salentein-portillo-pinot-noir-tinto",
    "bodega": "Salentein",
    "linea": "Portillo",
@@ -14924,6 +14889,21 @@
    "storeCount": 4
   },
   {
+   "id": "el-esteco-don-david-reserva-malbectannat-tinto",
+   "bodega": "El Esteco",
+   "linea": "Don David Reserva",
+   "varietal": "malbec+tannat",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "david don"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "santa-julia-santa-julia-viognier",
    "bodega": "Santa Julia",
    "linea": "Santa Julia",
@@ -15040,6 +15020,45 @@
    "storeCount": 4
   },
   {
+   "id": "alma-mora-alma-mora-chardonnay-chardonnay-blanco",
+   "bodega": "Alma Mora",
+   "linea": "Alma Mora Chardonnay",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 4
+  },
+  {
+   "id": "navarro-correas-chardonnay-chardonnay-blanco",
+   "bodega": "Navarro Correas",
+   "linea": "Chardonnay",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
+   "id": "los-intocables-los-intocables-chardonnay-chardonnay-blanco",
+   "bodega": "Los Intocables",
+   "linea": "Los Intocables Chardonnay",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
    "id": "trapiche-medalla-chardonnay-blanco",
    "bodega": "Trapiche",
    "linea": "Medalla",
@@ -15113,32 +15132,19 @@
    "storeCount": 4
   },
   {
-   "id": "finca-la-anita-finca-sauvignon-blanc-blanco",
-   "bodega": "Finca La Anita",
-   "linea": "Finca",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
+   "id": "nina-giallo-moscato-tardio-dulce",
+   "bodega": "Nina",
+   "linea": "Giallo Moscato Tardio",
+   "varietal": null,
+   "color": "dulce",
    "dulzor": null,
    "lineAliases": [
-    "finca"
+    "giallo moscato tardio"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
-   "id": "bianchi-bianchi-chardonnay-blanco",
-   "bodega": "Bianchi",
-   "linea": "Bianchi",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "salentein-portillo-chardonnay-blanco",
@@ -15169,30 +15175,34 @@
    "storeCount": 4
   },
   {
-   "id": "finca-las-moras-red-blend-blend-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Red Blend",
-   "varietal": "blend",
+   "id": "los-arboles-malbec-malbec-tinto",
+   "bodega": "Los Árboles",
+   "linea": "Malbec",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
-   "parajesNoDistinguen": [],
+   "parajesNoDistinguen": [
+    "los arboles"
+   ],
    "tiersNoDistinguen": [],
    "offerCount": 5,
    "storeCount": 5
   },
   {
-   "id": "la-linda-la-linda-red-blend-blend-tinto",
-   "bodega": "La Linda",
-   "linea": "La Linda Red Blend",
-   "varietal": "blend",
+   "id": "la-celia-reserva-cabernet-francmalbec-tinto",
+   "bodega": "La Celia",
+   "linea": "Reserva",
+   "varietal": "cabernet franc+malbec",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 4,
+   "storeCount": 4
   },
   {
    "id": "amalaya-gran-corte-malbec-blendmalbec-tinto",
@@ -15238,6 +15248,21 @@
    "storeCount": 4
   },
   {
+   "id": "zuccardi-serie-a-torrontes-blanco",
+   "bodega": "Zuccardi",
+   "linea": "Serie A",
+   "varietal": "torrontes",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "serie"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
+  },
+  {
    "id": "pascual-toso-signature-malbec-tinto",
    "bodega": "Pascual Toso",
    "linea": "Signature",
@@ -15275,21 +15300,6 @@
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
-   "id": "finca-las-moras-fair-for-life-cabernet-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Fair For Life",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "fair for life"
-   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 4,
@@ -15373,6 +15383,21 @@
    "storeCount": 4
   },
   {
+   "id": "finca-natalina-finca-cabernet-tinto",
+   "bodega": "Finca Natalina",
+   "linea": "Finca",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "luca-beso-de-dante-cabernetmalbec-tinto",
    "bodega": "Luca",
    "linea": "Beso de Dante",
@@ -15388,21 +15413,6 @@
    "storeCount": 4
   },
   {
-   "id": "bodega-finca-los-primos-finca-los-primos-cabernet-sauvignon-cabernet-tinto",
-   "bodega": "Bodega Finca Los Primos",
-   "linea": "Finca Los Primos Cabernet Sauvignon",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "misterio-authentic-malbec-tinto",
    "bodega": "Misterio",
    "linea": "Authentic",
@@ -15411,6 +15421,21 @@
    "dulzor": null,
    "lineAliases": [
     "authentic"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
+   "id": "magnolia-finca-magnolia-malbec-tinto",
+   "bodega": "Magnolia",
+   "linea": "Finca Magnolia",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -15459,6 +15484,21 @@
    "storeCount": 4
   },
   {
+   "id": "finca-magnolia-finca-bonarda-rosado",
+   "bodega": "Finca Magnolia",
+   "linea": "Finca",
+   "varietal": "bonarda",
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "callia-amable-rosado",
    "bodega": "Callia",
    "linea": "Amable",
@@ -15486,6 +15526,23 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 5,
+   "storeCount": 4
+  },
+  {
+   "id": "salentein-pyros-chardonnay-blanco",
+   "bodega": "Salentein",
+   "linea": "Pyros",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "pyros"
+   ],
+   "parajesNoDistinguen": [
+    "pedernal"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
    "storeCount": 4
   },
   {
@@ -15752,19 +15809,6 @@
    "storeCount": 3
   },
   {
-   "id": "santa-julia-chardonnay-reserva-chardonnay-blanco",
-   "bodega": "Santa Julia",
-   "linea": "Chardonnay Reserva",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 7,
-   "storeCount": 4
-  },
-  {
    "id": "estancia-mendoza-blend-de-enologos-blend-blanco",
    "bodega": "Estancia Mendoza",
    "linea": "Blend De Enologos",
@@ -15961,6 +16005,21 @@
    "storeCount": 3
   },
   {
+   "id": "trivento-tribu-malbec-tinto",
+   "bodega": "Trivento",
+   "linea": "Tribu",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "tribu"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 2
+  },
+  {
    "id": "ernesto-catena-tatu-cabernet-tinto",
    "bodega": "Ernesto Catena",
    "linea": "Tatu",
@@ -15974,6 +16033,36 @@
    "tiersNoDistinguen": [],
    "offerCount": 6,
    "storeCount": 2
+  },
+  {
+   "id": "navarro-correas-cabernet-sauvignon-reserva-cabernet-tinto",
+   "bodega": "Navarro Correas",
+   "linea": "Cabernet Sauvignon Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [
+    "los arboles"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 10,
+   "storeCount": 4
+  },
+  {
+   "id": "navarro-correas-malbec-malbec-tinto",
+   "bodega": "Navarro Correas",
+   "linea": "Malbec",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [
+    "los arboles"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
+   "storeCount": 3
   },
   {
    "id": "mumm-domaine-espumante",
@@ -16287,19 +16376,19 @@
    "storeCount": 3
   },
   {
-   "id": "luigi-bosca-los-apuntes-malbec-tinto",
-   "bodega": "LUIGI BOSCA",
-   "linea": "Los Apuntes",
-   "varietal": "malbec",
-   "color": "tinto",
+   "id": "concha-y-toro-reservado-chardonnay",
+   "bodega": "Concha y Toro",
+   "linea": "Reservado",
+   "varietal": "chardonnay",
+   "color": null,
    "dulzor": null,
    "lineAliases": [
-    "apuntes organico",
-    "apuntes grenache"
+    "reservado",
+    "nacional reservado"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 6,
+   "offerCount": 5,
    "storeCount": 3
   },
   {
@@ -16417,19 +16506,6 @@
    "lineAliases": [
     "varietal"
    ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 3
-  },
-  {
-   "id": "santa-julia-sauvignon-blanco-blanco",
-   "bodega": "Santa Julia",
-   "linea": "Sauvignon Blanco",
-   "varietal": null,
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 6,
@@ -17203,22 +17279,6 @@
    "storeCount": 3
   },
   {
-   "id": "concha-y-toro-reservado-chardonnay",
-   "bodega": "Concha y Toro",
-   "linea": "Reservado",
-   "varietal": "chardonnay",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "reservado",
-    "nacional reservado"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 3
-  },
-  {
    "id": "caelum-gran-reserva-malbec-tinto",
    "bodega": "Caelum",
    "linea": "Gran Reserva",
@@ -17807,6 +17867,21 @@
    "storeCount": 4
   },
   {
+   "id": "sophenia-finca-malbec-tinto",
+   "bodega": "Sophenia",
+   "linea": "Finca",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "penedo-borges-prisma-blend",
    "bodega": "Penedo Borges",
    "linea": "Prisma",
@@ -17916,21 +17991,6 @@
    "storeCount": 3
   },
   {
-   "id": "mumm-domaine-brut-nature-espumante-nature",
-   "bodega": "Mumm",
-   "linea": "Domaine Brut Nature",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": "nature",
-   "lineAliases": [
-    "domaine nature"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 3
-  },
-  {
    "id": "bira-brunetto",
    "bodega": "Bira",
    "linea": "Brunetto",
@@ -18004,21 +18064,6 @@
    ],
    "offerCount": 3,
    "storeCount": 2
-  },
-  {
-   "id": "achaval-ferrer-singular-merlot-tinto",
-   "bodega": "Achaval Ferrer",
-   "linea": "Singular",
-   "varietal": "merlot",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "singular"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
   },
   {
    "id": "cuvelier-los-andes-coleccion-blend-blend",
@@ -18206,6 +18251,21 @@
    "tiersNoDistinguen": [
     "reserva"
    ],
+   "offerCount": 4,
+   "storeCount": 3
+  },
+  {
+   "id": "navarro-correas-coleccion-privada-malbec-tinto",
+   "bodega": "Navarro Correas",
+   "linea": "Colección Privada",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "correas navarro"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
    "offerCount": 4,
    "storeCount": 3
   },
@@ -18810,21 +18870,6 @@
    "storeCount": 3
   },
   {
-   "id": "sophenia-finca-malbec-tinto",
-   "bodega": "Sophenia",
-   "linea": "Finca",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "alma-negra-alma-negra-rose-rosado",
    "bodega": "Alma Negra",
    "linea": "Alma Negra Rosé",
@@ -19414,6 +19459,36 @@
    "storeCount": 2
   },
   {
+   "id": "terrazas-de-los-andes-reserva-syrah-tinto",
+   "bodega": "Terrazas de los Andes",
+   "linea": "Reserva",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "la-linda-finca-la-linda-rose-rosado",
+   "bodega": "La Linda",
+   "linea": "Finca La Linda Rosé",
+   "varietal": null,
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 6,
+   "storeCount": 6
+  },
+  {
    "id": "santa-julia-classic-cuvee-espumante",
    "bodega": "Santa Julia",
    "linea": "Classic Cuvee",
@@ -19470,6 +19545,19 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
+  },
+  {
+   "id": "los-intocables-los-intocables-chardonnay-chardonnay",
+   "bodega": "Los Intocables",
+   "linea": "Los Intocables Chardonnay",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
   },
   {
    "id": "norton-altura-pinot-noir-tinto",
@@ -20014,6 +20102,21 @@
    "storeCount": 2
   },
   {
+   "id": "las-perdices-exploracion-sauvignon-blanc-blanco",
+   "bodega": "Las Perdices",
+   "linea": "Exploración",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "casablanca exploracion"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "dv-catena-blanco-historico-cheninsemillon-blanco",
    "bodega": "DV Catena",
    "linea": "Blanco Histórico",
@@ -20389,6 +20492,23 @@
    "storeCount": 3
   },
   {
+   "id": "dv-catena-domingo-cabernet-tinto",
+   "bodega": "DV Catena",
+   "linea": "Domingo",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "domingo"
+   ],
+   "parajesNoDistinguen": [
+    "vineyard"
+   ],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "araucana-rio-de-los-ciervos",
    "bodega": "Araucana",
    "linea": "Río de los Ciervos",
@@ -20479,19 +20599,6 @@
    "storeCount": 3
   },
   {
-   "id": "las-perdices-pinot-grigio-pinot-grigio",
-   "bodega": "Las Perdices",
-   "linea": "Pinot Grigio",
-   "varietal": "pinot grigio",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "lagarde-gran-guarda-blend",
    "bodega": "Lagarde",
    "linea": "Gran Guarda",
@@ -20507,21 +20614,6 @@
    ],
    "offerCount": 4,
    "storeCount": 4
-  },
-  {
-   "id": "lagarde-malbec-organico-malbec-tinto",
-   "bodega": "Lagarde",
-   "linea": "Malbec Orgánico",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "organico"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
   },
   {
    "id": "el-porvenir-laborum-otono-torrontes",
@@ -20828,25 +20920,6 @@
    "storeCount": 3
   },
   {
-   "id": "bodega-etchart-gran-linaje-cabernet-tinto",
-   "bodega": "Bodega Etchart",
-   "linea": "Gran Linaje",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "linaje"
-   ],
-   "parajesNoDistinguen": [
-    "cafayate"
-   ],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "rutini-antologia-xlix",
    "bodega": "Rutini",
    "linea": "Antología XLIX",
@@ -20982,6 +21055,21 @@
    "storeCount": 3
   },
   {
+   "id": "gh-mumm-domaine-extra-espumante-extrabrut",
+   "bodega": "G.H. Mumm",
+   "linea": "Domaine Extra",
+   "varietal": null,
+   "color": "espumante",
+   "dulzor": "extrabrut",
+   "lineAliases": [
+    "domaine extra"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "la-poderosa-la-poderosa-blend-blend-tinto",
    "bodega": "La Poderosa",
    "linea": "La Poderosa Blend",
@@ -21104,36 +21192,19 @@
    "storeCount": 3
   },
   {
-   "id": "el-esteco-don-david-reserva-sauvignon-blanc-blanco",
-   "bodega": "El Esteco",
-   "linea": "Don David Reserva",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "david don"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
-   "id": "el-esteco-don-david-reserva-malbectannat-tinto",
-   "bodega": "El Esteco",
-   "linea": "Don David Reserva",
-   "varietal": "malbec+tannat",
+   "id": "estancia-mendoza-roble-malbec-tinto",
+   "bodega": "Estancia Mendoza",
+   "linea": "Roble",
+   "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "david don"
+    "roble"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "colome-reserva",
@@ -21188,32 +21259,6 @@
    "lineAliases": [
     "natural portillo"
    ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
-   "id": "navarro-correas-chardonnay-chardonnay-blanco",
-   "bodega": "Navarro Correas",
-   "linea": "Chardonnay",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
-   "id": "los-intocables-los-intocables-chardonnay-chardonnay-blanco",
-   "bodega": "Los Intocables",
-   "linea": "Los Intocables Chardonnay",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 3,
@@ -21348,21 +21393,6 @@
    "dulzor": null,
    "lineAliases": [
     "bianchi"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
-   "id": "nina-giallo-moscato-tardio-dulce",
-   "bodega": "Nina",
-   "linea": "Giallo Moscato Tardio",
-   "varietal": null,
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "giallo moscato tardio"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -21748,6 +21778,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 3,
    "storeCount": 3
+  },
+  {
+   "id": "finca-la-anita-finca-sauvignon-blanc-blanco",
+   "bodega": "Finca La Anita",
+   "linea": "Finca",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
   },
   {
    "id": "sottano-clasico-chardonnay",
@@ -22352,6 +22397,19 @@
    "storeCount": 3
   },
   {
+   "id": "bianchi-bianchi-chardonnay-blanco",
+   "bodega": "Bianchi",
+   "linea": "Bianchi",
+   "varietal": "chardonnay",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "callia-amable-natural-tardio-dulce",
    "bodega": "Callia",
    "linea": "Amable Natural Tardío",
@@ -22948,21 +23006,6 @@
    "storeCount": 3
   },
   {
-   "id": "zuccardi-serie-a-torrontes-blanco",
-   "bodega": "Zuccardi",
-   "linea": "Serie A",
-   "varietal": "torrontes",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "serie"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 5,
-   "storeCount": 5
-  },
-  {
    "id": "catena-zapata-organico-criolla-tinto",
    "bodega": "Catena Zapata",
    "linea": "Orgánico",
@@ -23047,6 +23090,21 @@
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
+   "id": "lagarde-teia-cabernet-tinto",
+   "bodega": "Lagarde",
+   "linea": "Teia",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "teia"
+   ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 3,
@@ -23220,6 +23278,21 @@
    "storeCount": 3
   },
   {
+   "id": "finca-las-moras-fair-for-life-cabernet-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Fair For Life",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "fair for life"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "crux-alfa-malbec-tinto",
    "bodega": "CRUX",
    "linea": "Alfa",
@@ -23263,6 +23336,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 3,
    "storeCount": 3
+  },
+  {
+   "id": "san-felipe-roble-cabernet-tinto",
+   "bodega": "San Felipe",
+   "linea": "Roble",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "roble"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
   },
   {
    "id": "catena-zapata-caja-madre-malbec-tinto",
@@ -23660,6 +23748,21 @@
    "storeCount": 3
   },
   {
+   "id": "nieto-senetiner-finca-malbec-tinto",
+   "bodega": "Nieto Senetiner",
+   "linea": "Finca",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
    "id": "la-celia-elite-pinot-noir-tinto",
    "bodega": "La Celia",
    "linea": "Elite",
@@ -23868,6 +23971,21 @@
    "storeCount": 3
   },
   {
+   "id": "nina-gold-cabernet-franc-tinto",
+   "bodega": "Nina",
+   "linea": "Gold",
+   "varietal": "cabernet franc",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "gold"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
    "id": "lorca-cabo-de-hornos-merlot-tinto",
    "bodega": "Lorca",
    "linea": "Cabo De Hornos",
@@ -24007,21 +24125,6 @@
    "storeCount": 3
   },
   {
-   "id": "finca-natalina-finca-cabernet-tinto",
-   "bodega": "Finca Natalina",
-   "linea": "Finca",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "san-huberto-merlot-reserva-merlot-tinto",
    "bodega": "San Huberto",
    "linea": "Merlot Reserva",
@@ -24121,6 +24224,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 3,
    "storeCount": 3
+  },
+  {
+   "id": "bodega-finca-los-primos-finca-los-primos-cabernet-sauvignon-cabernet-tinto",
+   "bodega": "Bodega Finca Los Primos",
+   "linea": "Finca Los Primos Cabernet Sauvignon",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
   },
   {
    "id": "pascual-toso-estate-bottled-blend-tinto",
@@ -25152,6 +25270,21 @@
    "storeCount": 3
   },
   {
+   "id": "valderrobles-euro-bonardasyrah-tinto",
+   "bodega": "Valderrobles",
+   "linea": "Euro",
+   "varietal": "bonarda+syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "euro"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
    "id": "luigi-bosca-icono-blend",
    "bodega": "Luigi Bosca",
    "linea": "Icono",
@@ -26158,21 +26291,6 @@
    "storeCount": 3
   },
   {
-   "id": "finca-magnolia-finca-bonarda-rosado",
-   "bodega": "Finca Magnolia",
-   "linea": "Finca",
-   "varietal": "bonarda",
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "zuccardi-brazos-rosado",
    "bodega": "Zuccardi",
    "linea": "Brazos",
@@ -26364,23 +26482,6 @@
    "storeCount": 3
   },
   {
-   "id": "salentein-pyros-chardonnay-blanco",
-   "bodega": "Salentein",
-   "linea": "Pyros",
-   "varietal": "chardonnay",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "pyros"
-   ],
-   "parajesNoDistinguen": [
-    "pedernal"
-   ],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "finca-natalina-finca-chardonnay",
    "bodega": "Finca Natalina",
    "linea": "Finca",
@@ -26417,6 +26518,21 @@
    "dulzor": null,
    "lineAliases": [
     "prosecco"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
+   "id": "trapiche-finca-chardonnay",
+   "bodega": "Trapiche",
+   "linea": "Finca",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [
+    "finca"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -28484,21 +28600,6 @@
    "storeCount": 2
   },
   {
-   "id": "jorge-rubio-privado-chardonnay",
-   "bodega": "Jorge Rubio",
-   "linea": "Privado",
-   "varietal": "chardonnay",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "privado"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 8,
-   "storeCount": 2
-  },
-  {
    "id": "susana-balbo-nosotros-malbec-tinto",
    "bodega": "Susana Balbo",
    "linea": "Nosotros",
@@ -28527,6 +28628,21 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 9,
+   "storeCount": 2
+  },
+  {
+   "id": "jorge-rubio-privado-chardonnay",
+   "bodega": "Jorge Rubio",
+   "linea": "Privado",
+   "varietal": "chardonnay",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [
+    "privado"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 8,
    "storeCount": 2
   },
   {
@@ -28585,21 +28701,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 8,
-   "storeCount": 2
-  },
-  {
-   "id": "trivento-tribu-malbec-tinto",
-   "bodega": "Trivento",
-   "linea": "Tribu",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "tribu"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
    "storeCount": 2
   },
   {
@@ -28812,6 +28913,19 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 5,
+   "storeCount": 2
+  },
+  {
+   "id": "santa-julia-pinot-grigio-pinot-grigio",
+   "bodega": "Santa Julia",
+   "linea": "Pinot Grigio",
+   "varietal": "pinot grigio",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
    "storeCount": 2
   },
   {
@@ -29168,19 +29282,6 @@
    "storeCount": 2
   },
   {
-   "id": "santa-julia-pinot-grigio-pinot-grigio",
-   "bodega": "Santa Julia",
-   "linea": "Pinot Grigio",
-   "varietal": "pinot grigio",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 2
-  },
-  {
    "id": "el-esteco-blend-de-extremos-blend",
    "bodega": "El Esteco",
    "linea": "Blend de Extremos",
@@ -29345,6 +29446,21 @@
    "lineAliases": [
     "blancas viejas",
     "blancas extremo viejas"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 2
+  },
+  {
+   "id": "achaval-ferrer-quimera-memento-blend",
+   "bodega": "Achaval Ferrer",
+   "linea": "Quimera Memento",
+   "varietal": "blend",
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [
+    "memento quimera"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -30135,19 +30251,6 @@
    "storeCount": 2
   },
   {
-   "id": "los-haroldos-reserva-cabernet-tinto",
-   "bodega": "Los Haroldos",
-   "linea": "Reserva",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 2
-  },
-  {
    "id": "renacer-punto-final-cabernet-franc-tinto",
    "bodega": "Renacer",
    "linea": "Punto Final",
@@ -30885,6 +30988,21 @@
    "storeCount": 2
   },
   {
+   "id": "cuesta-del-madero-roble-malbec-tinto",
+   "bodega": "Cuesta del Madero",
+   "linea": "Roble",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "roble"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 2
+  },
+  {
    "id": "zorzal-wines-terroir-unico-cabernet-tinto",
    "bodega": "Zorzal Wines",
    "linea": "Terroir Único",
@@ -31526,21 +31644,6 @@
    "storeCount": 2
   },
   {
-   "id": "achaval-ferrer-quimera-memento",
-   "bodega": "Achaval Ferrer",
-   "linea": "Quimera Memento",
-   "varietal": null,
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "memento quimera"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "humberto-canale-rose-de-pinot-noir-pinot-noir-rosado",
    "bodega": "Humberto Canale",
    "linea": "Rosé de Pinot Noir",
@@ -31935,6 +32038,23 @@
    "storeCount": 2
   },
   {
+   "id": "penedo-borges-prisma-cabernet-tinto",
+   "bodega": "Penedo Borges",
+   "linea": "Prisma",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "prisma"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "sophenia-finca-chardonnay",
    "bodega": "Sophenia",
    "linea": "Finca",
@@ -32008,23 +32128,6 @@
    "storeCount": 2
   },
   {
-   "id": "penedo-borges-prisma-cabernet-tinto",
-   "bodega": "Penedo Borges",
-   "linea": "Prisma",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "prisma"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "rolland-mariflor-camille",
    "bodega": "Rolland",
    "linea": "Mariflor Camille",
@@ -32063,6 +32166,21 @@
    "dulzor": null,
    "lineAliases": [
     "vive"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "trivento-organico-reserve-malbec-tinto",
+   "bodega": "Trivento",
+   "linea": "Orgánico Reserve",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "organico reserve"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -32776,6 +32894,23 @@
    "storeCount": 2
   },
   {
+   "id": "bodega-bianchi-enzo-blend-tinto",
+   "bodega": "Bodega Bianchi",
+   "linea": "Enzo",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "corte enzo"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "gran"
+   ],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "salentein-pyros-blend",
    "bodega": "Salentein",
    "linea": "Pyros",
@@ -32820,21 +32955,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 4,
-   "storeCount": 2
-  },
-  {
-   "id": "finca-las-moras-alma-mora-blend-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Alma Mora",
-   "varietal": "blend",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "alma mora"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
    "storeCount": 2
   },
   {
@@ -32911,36 +33031,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
-  },
-  {
-   "id": "terrazas-de-los-andes-reserva-syrah-tinto",
-   "bodega": "Terrazas de los Andes",
-   "linea": "Reserva",
-   "varietal": "syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "la-linda-finca-la-linda-rose-rosado",
-   "bodega": "La Linda",
-   "linea": "Finca La Linda Rosé",
-   "varietal": null,
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 6,
-   "storeCount": 6
   },
   {
    "id": "trumpeter-reserve-viognier",
@@ -33048,6 +33138,21 @@
    "storeCount": 2
   },
   {
+   "id": "bodega-navarro-correas-dolores-malbec-tinto",
+   "bodega": "Bodega Navarro Correas",
+   "linea": "Dolores",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "dolores"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "laborum-de-parcela-malbec-tinto",
    "bodega": "Laborum",
    "linea": "De Parcela",
@@ -33074,21 +33179,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
-  },
-  {
-   "id": "finca-las-moras-fair-for-life-malbec-tinto",
-   "bodega": "Finca Las Moras",
-   "linea": "Fair For Life",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "fair for life"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
   },
   {
    "id": "nieto-senetiner-benjamin-malbec-tinto",
@@ -33149,6 +33239,34 @@
    "storeCount": 2
   },
   {
+   "id": "los-haroldos-reserva-cabernet-tinto",
+   "bodega": "Los Haroldos",
+   "linea": "Reserva",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 2
+  },
+  {
+   "id": "los-haroldos-estate-cabernet-tinto",
+   "bodega": "Los Haroldos",
+   "linea": "Estate",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "estate"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "jorge-rubio-oasis-privado-sur-malbec-tinto",
    "bodega": "Jorge Rubio",
    "linea": "Oasis Privado Sur",
@@ -33172,21 +33290,6 @@
    "dulzor": null,
    "lineAliases": [
     "doc"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "sottano-sin-reglas-malbec-tinto",
-   "bodega": "Sottano",
-   "linea": "Sin Reglas",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "reglas"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -34918,21 +35021,6 @@
    "storeCount": 2
   },
   {
-   "id": "las-perdices-exploracion-sauvignon-blanc-blanco",
-   "bodega": "Las Perdices",
-   "linea": "Exploración",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [
-    "casablanca exploracion"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
-  },
-  {
    "id": "las-perdices-exploracion-classique-malbec-rosado",
    "bodega": "Las Perdices",
    "linea": "Exploración Classique",
@@ -35052,23 +35140,6 @@
     "series signature"
    ],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "dv-catena-domingo-cabernet-tinto",
-   "bodega": "DV Catena",
-   "linea": "Domingo",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "domingo"
-   ],
-   "parajesNoDistinguen": [
-    "vineyard"
-   ],
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
@@ -35436,19 +35507,17 @@
    "storeCount": 2
   },
   {
-   "id": "los-haroldos-gran-corte-blend-tinto",
-   "bodega": "Los Haroldos",
-   "linea": "Gran Corte",
-   "varietal": "blend",
-   "color": "tinto",
+   "id": "las-perdices-pinot-grigio-pinot-grigio",
+   "bodega": "Las Perdices",
+   "linea": "Pinot Grigio",
+   "varietal": "pinot grigio",
+   "color": null,
    "dulzor": null,
-   "lineAliases": [
-    "corte"
-   ],
+   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "rutini-apartado-nature-espumante-nature",
@@ -35723,6 +35792,21 @@
    "dulzor": null,
    "lineAliases": [
     "brote negro"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "pascual-toso-estate-rosado",
+   "bodega": "Pascual Toso",
+   "linea": "Estate",
+   "varietal": null,
+   "color": "rosado",
+   "dulzor": null,
+   "lineAliases": [
+    "estate"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -36308,19 +36392,6 @@
    "storeCount": 2
   },
   {
-   "id": "lagarde-chardonnay-chardonnay",
-   "bodega": "Lagarde",
-   "linea": "Chardonnay",
-   "varietal": "chardonnay",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "lagarde-goes-pink-rosado",
    "bodega": "Lagarde",
    "linea": "Goes Pink",
@@ -36469,6 +36540,21 @@
    "storeCount": 2
   },
   {
+   "id": "chandon-latitud-syrah-tinto",
+   "bodega": "Chandon",
+   "linea": "Latitud",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "latitud"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "humberto-canale-intimo-malbec-tinto",
    "bodega": "Humberto Canale",
    "linea": "Intimo",
@@ -36480,6 +36566,25 @@
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
+   "id": "bodega-etchart-gran-linaje-cabernet-tinto",
+   "bodega": "Bodega Etchart",
+   "linea": "Gran Linaje",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "linaje"
+   ],
+   "parajesNoDistinguen": [
+    "cafayate"
+   ],
+   "tiersNoDistinguen": [
+    "gran"
+   ],
    "offerCount": 3,
    "storeCount": 3
   },
@@ -36918,21 +37023,6 @@
    "storeCount": 2
   },
   {
-   "id": "las-perdices-late-harvest-viognier-dulce",
-   "bodega": "Las Perdices",
-   "linea": "Late Harvest",
-   "varietal": "viognier",
-   "color": "dulce",
-   "dulzor": null,
-   "lineAliases": [
-    "harvest late"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "lagarde-merlot-merlot-tinto",
    "bodega": "Lagarde",
    "linea": "Merlot",
@@ -36989,6 +37079,21 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
+  },
+  {
+   "id": "finca-la-anita-finca-varua-blend-tinto",
+   "bodega": "Finca La Anita",
+   "linea": "Finca Varua",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "finca varua"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 5,
+   "storeCount": 5
   },
   {
    "id": "falasco-wines-ferus-malbec-tinto",
@@ -37132,21 +37237,6 @@
    "dulzor": null,
    "lineAliases": [
     "nicasia"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "gh-mumm-domaine-extra-espumante-extrabrut",
-   "bodega": "G.H. Mumm",
-   "linea": "Domaine Extra",
-   "varietal": null,
-   "color": "espumante",
-   "dulzor": "extrabrut",
-   "lineAliases": [
-    "domaine extra"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -37677,32 +37767,36 @@
    "storeCount": 2
   },
   {
-   "id": "estancia-mendoza-roble-malbec-tinto",
-   "bodega": "Estancia Mendoza",
-   "linea": "Roble",
-   "varietal": "malbec",
+   "id": "cadus-signature-pinot-noir-tinto",
+   "bodega": "Cadus",
+   "linea": "Signature",
+   "varietal": "pinot noir",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "roble"
+    "signature"
    ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
-   "id": "la-poderosa-la-poderosa-sauvignon-blanc-sauvignon-blanc-blanco",
-   "bodega": "La Poderosa",
-   "linea": "La Poderosa Sauvignon Blanc",
-   "varietal": "sauvignon blanc",
-   "color": "blanco",
-   "dulzor": null,
-   "lineAliases": [],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
+  },
+  {
+   "id": "el-esteco-don-david-reserva-sauvignon-blanc-blanco",
+   "bodega": "El Esteco",
+   "linea": "Don David Reserva",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [
+    "david don"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
+   "offerCount": 3,
+   "storeCount": 3
   },
   {
    "id": "el-esteco-don-david-chardonnay",
@@ -37964,21 +38058,6 @@
    "storeCount": 2
   },
   {
-   "id": "san-felipe-roble-cabernet-tinto",
-   "bodega": "San Felipe",
-   "linea": "Roble",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "roble"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "terrazas-de-los-andes-andes-syrah-tinto",
    "bodega": "Terrazas de los Andes",
    "linea": "Andes",
@@ -38191,6 +38270,21 @@
    "storeCount": 2
   },
   {
+   "id": "escorihuela-gascon-syrah-tinto",
+   "bodega": "Escorihuela",
+   "linea": "Gascon",
+   "varietal": "syrah",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "gascon"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "fin-del-mundo-reserva-merlot-tinto",
    "bodega": "Fin Del Mundo",
    "linea": "Reserva",
@@ -38219,21 +38313,6 @@
    "storeCount": 2
   },
   {
-   "id": "pacheco-pereda-roble-malbec-tinto",
-   "bodega": "Pacheco Pereda",
-   "linea": "Roble",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "roble"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "trapiche-reserva-syrah-tinto",
    "bodega": "Trapiche",
    "linea": "Reserva",
@@ -38247,33 +38326,18 @@
    "storeCount": 2
   },
   {
-   "id": "trapiche-origen-cabernet-tinto",
-   "bodega": "TRAPICHE",
-   "linea": "Origen",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "origen"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "cuesta-del-madero-roble-malbec-tinto",
-   "bodega": "Cuesta del Madero",
-   "linea": "Roble",
+   "id": "novecento-raices-malbec-tinto",
+   "bodega": "Novecento",
+   "linea": "Raíces",
    "varietal": "malbec",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
-    "roble"
+    "raices"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
-   "offerCount": 3,
+   "offerCount": 2,
    "storeCount": 2
   },
   {
@@ -39784,30 +39848,17 @@
    "storeCount": 2
   },
   {
-   "id": "la-celia-elite-malbec-tinto",
-   "bodega": "La Celia",
-   "linea": "Elite",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "elite"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "dada-n1-bonardamalbec-tinto",
-   "bodega": "Dada",
-   "linea": "N°1",
-   "varietal": "bonarda+malbec",
+   "id": "fond-de-cave-reserva-cabernet-franc-tinto",
+   "bodega": "Fond de Cave",
+   "linea": "Reserva",
+   "varietal": "cabernet franc",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [],
    "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
+   "tiersNoDistinguen": [
+    "reserva"
+   ],
    "offerCount": 2,
    "storeCount": 2
   },
@@ -39827,40 +39878,10 @@
    "storeCount": 2
   },
   {
-   "id": "fond-de-cave-reserva-cabernet-franc-tinto",
-   "bodega": "Fond de Cave",
-   "linea": "Reserva",
-   "varietal": "cabernet franc",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "reserva"
-   ],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "tilia-organico-malbec-tinto",
    "bodega": "Tilia",
    "linea": "Orgánico",
    "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "organico"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "tilia-organico-cabernet-tinto",
-   "bodega": "Tilia",
-   "linea": "Orgánico",
-   "varietal": "cabernet",
    "color": "tinto",
    "dulzor": null,
    "lineAliases": [
@@ -39979,6 +40000,212 @@
    "storeCount": 2
   },
   {
+   "id": "finca-natalina-autentico-finca-malbec-tinto",
+   "bodega": "Finca Natalina",
+   "linea": "Auténtico Finca",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "autentico finca"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 9,
+   "storeCount": 5
+  },
+  {
+   "id": "lagarde-guarda-blend-tinto",
+   "bodega": "Lagarde",
+   "linea": "Guarda",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "guarda"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 3,
+   "storeCount": 3
+  },
+  {
+   "id": "achaval-ferrer-quimera-memento",
+   "bodega": "Achaval Ferrer",
+   "linea": "Quimera Memento",
+   "varietal": null,
+   "color": null,
+   "dulzor": null,
+   "lineAliases": [
+    "memento quimera"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "finca-las-moras-alma-mora-blend-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Alma Mora",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "alma mora"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "finca-las-moras-fair-for-life-malbec-tinto",
+   "bodega": "Finca Las Moras",
+   "linea": "Fair For Life",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "fair for life"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 4,
+   "storeCount": 4
+  },
+  {
+   "id": "sottano-sin-reglas-malbec-tinto",
+   "bodega": "Sottano",
+   "linea": "Sin Reglas",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "reglas"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "los-haroldos-gran-corte-blend-tinto",
+   "bodega": "Los Haroldos",
+   "linea": "Gran Corte",
+   "varietal": "blend",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "corte"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "las-perdices-late-harvest-viognier-dulce",
+   "bodega": "Las Perdices",
+   "linea": "Late Harvest",
+   "varietal": "viognier",
+   "color": "dulce",
+   "dulzor": null,
+   "lineAliases": [
+    "harvest late"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "la-poderosa-la-poderosa-sauvignon-blanc-sauvignon-blanc-blanco",
+   "bodega": "La Poderosa",
+   "linea": "La Poderosa Sauvignon Blanc",
+   "varietal": "sauvignon blanc",
+   "color": "blanco",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "pacheco-pereda-roble-malbec-tinto",
+   "bodega": "Pacheco Pereda",
+   "linea": "Roble",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "roble"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "trapiche-origen-cabernet-tinto",
+   "bodega": "TRAPICHE",
+   "linea": "Origen",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "origen"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "la-celia-elite-malbec-tinto",
+   "bodega": "La Celia",
+   "linea": "Elite",
+   "varietal": "malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "elite"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "dada-n1-bonardamalbec-tinto",
+   "bodega": "Dada",
+   "linea": "N°1",
+   "varietal": "bonarda+malbec",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
+   "id": "tilia-organico-cabernet-tinto",
+   "bodega": "Tilia",
+   "linea": "Orgánico",
+   "varietal": "cabernet",
+   "color": "tinto",
+   "dulzor": null,
+   "lineAliases": [
+    "organico"
+   ],
+   "parajesNoDistinguen": [],
+   "tiersNoDistinguen": [],
+   "offerCount": 2,
+   "storeCount": 2
+  },
+  {
    "id": "salentein-barrel-blend",
    "bodega": "Salentein",
    "linea": "Barrel",
@@ -39994,21 +40221,6 @@
    "storeCount": 3
   },
   {
-   "id": "trivento-organico-reserve-malbec-tinto",
-   "bodega": "Trivento",
-   "linea": "Orgánico Reserve",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "organico reserve"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "bodega-norton-barrel-select-malbec-tinto",
    "bodega": "Bodega Norton",
    "linea": "Barrel Select",
@@ -40017,36 +40229,6 @@
    "dulzor": null,
    "lineAliases": [
     "barrel select"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "chandon-latitud-syrah-tinto",
-   "bodega": "Chandon",
-   "linea": "Latitud",
-   "varietal": "syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "latitud"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "novecento-raices-malbec-tinto",
-   "bodega": "Novecento",
-   "linea": "Raíces",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "raices"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -40065,21 +40247,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 2,
    "storeCount": 2
-  },
-  {
-   "id": "finca-natalina-autentico-finca-rosado",
-   "bodega": "Finca Natalina",
-   "linea": "Auténtico Finca",
-   "varietal": null,
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "autentico finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 4
   },
   {
    "id": "catena-zapata-nicasia-vineyards-malbec-tinto",
@@ -40112,21 +40279,6 @@
    "tiersNoDistinguen": [],
    "offerCount": 5,
    "storeCount": 4
-  },
-  {
-   "id": "valderrobles-euro-bonardasyrah-tinto",
-   "bodega": "Valderrobles",
-   "linea": "Euro",
-   "varietal": "bonarda+syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "euro"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
   },
   {
    "id": "huentala-sombrero-cabernet-franc-tinto",
@@ -40281,36 +40433,6 @@
    "storeCount": 2
   },
   {
-   "id": "los-haroldos-estate-cabernet-tinto",
-   "bodega": "Los Haroldos",
-   "linea": "Estate",
-   "varietal": "cabernet",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "estate"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "pascual-toso-estate-rosado",
-   "bodega": "Pascual Toso",
-   "linea": "Estate",
-   "varietal": null,
-   "color": "rosado",
-   "dulzor": null,
-   "lineAliases": [
-    "estate"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
    "id": "bodega-las-perdices-reserva-tardio-viognier-dulce",
    "bodega": "Bodega Las Perdices",
    "linea": "Reserva Tardío",
@@ -40386,21 +40508,6 @@
    "storeCount": 3
   },
   {
-   "id": "achaval-ferrer-quimera-memento-blend",
-   "bodega": "Achaval Ferrer",
-   "linea": "Quimera Memento",
-   "varietal": "blend",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "memento quimera"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 4,
-   "storeCount": 2
-  },
-  {
    "id": "finca-ambrosia-precioso-cabernet-tinto",
    "bodega": "Finca Ambrosía",
    "linea": "Precioso",
@@ -40414,21 +40521,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 8,
-   "storeCount": 2
-  },
-  {
-   "id": "cadus-signature-pinot-noir-tinto",
-   "bodega": "Cadus",
-   "linea": "Signature",
-   "varietal": "pinot noir",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "signature"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
    "storeCount": 2
   },
   {
@@ -41113,38 +41205,6 @@
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
    "offerCount": 3,
-   "storeCount": 2
-  },
-  {
-   "id": "bodega-bianchi-enzo-blend-tinto",
-   "bodega": "Bodega Bianchi",
-   "linea": "Enzo",
-   "varietal": "blend",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "corte enzo"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [
-    "gran"
-   ],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "bodega-navarro-correas-dolores-malbec-tinto",
-   "bodega": "Bodega Navarro Correas",
-   "linea": "Dolores",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "dolores"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
    "storeCount": 2
   },
   {
@@ -41903,21 +41963,6 @@
    "storeCount": 3
   },
   {
-   "id": "nieto-senetiner-finca-malbec-tinto",
-   "bodega": "Nieto Senetiner",
-   "linea": "Finca",
-   "varietal": "malbec",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
    "id": "luigi-bosca-emblema-cabernet-tinto",
    "bodega": "Luigi Bosca",
    "linea": "Emblema",
@@ -41956,21 +42001,6 @@
    "dulzor": null,
    "lineAliases": [
     "piattelli"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 3,
-   "storeCount": 3
-  },
-  {
-   "id": "trapiche-finca-chardonnay",
-   "bodega": "Trapiche",
-   "linea": "Finca",
-   "varietal": "chardonnay",
-   "color": null,
-   "dulzor": null,
-   "lineAliases": [
-    "finca"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
@@ -42775,21 +42805,6 @@
    "dulzor": null,
    "lineAliases": [
     "crianza"
-   ],
-   "parajesNoDistinguen": [],
-   "tiersNoDistinguen": [],
-   "offerCount": 2,
-   "storeCount": 2
-  },
-  {
-   "id": "escorihuela-gascon-syrah-tinto",
-   "bodega": "Escorihuela",
-   "linea": "Gascon",
-   "varietal": "syrah",
-   "color": "tinto",
-   "dulzor": null,
-   "lineAliases": [
-    "gascon"
    ],
    "parajesNoDistinguen": [],
    "tiersNoDistinguen": [],
