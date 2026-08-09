@@ -128,6 +128,15 @@ export const NAME_PREFIX_TO_BRAND = {
   "casa boher": "Casa Boher",
   amalaya: "Amalaya",
   chandon: "Chandon",
+  // Los súper cargan Colón con la bodega en el nombre y el campo `brand`
+  // vacío ("Vino tinto Malbec Bonarda Colón 750 ml"), así que sin esta
+  // entrada la bodega quedaba sin resolver y CADA vino de la línea caía
+  // en una clave `fb|` de fallback — incluido el Frutos Rojos, que es la
+  // página #1 de tráfico del sitio. Medido sobre el snapshot del 09/08:
+  // 159 ofertas traen el token suelto `colon` y las 159 son la bodega
+  // (el match es por límite de palabra, así que "Colonia Las Liebres" no
+  // engancha).
+  colon: "Colón",
   araucana: "Araucana",
   "perro callejero": "Perro Callejero",
   monteagrelo: "Monteagrelo",

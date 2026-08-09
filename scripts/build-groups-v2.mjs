@@ -38,6 +38,7 @@ import {
   normalizeBodegaKey,
 } from "./lib-offer-identity.mjs";
 import { colorOf, hardConflict, lineRelation } from "./stage4-token-merge.mjs";
+import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
 // que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
@@ -200,7 +201,16 @@ function wineKeyOf(p, w) {
   const dropTokens = new Set([...dropP].flatMap((d) => d.split(" ")));
   const residual2 = residual.filter((d) => !d.split(" ").every((t) => dropTokens.has(t)));
   const exprPhrases = collapseContainedPhrases(residual2.map(norm));
-  const expr = [...exprPhrases, ...p.ediciones].sort().join(" ");
+  // Ediciones que el catálogo declara que NO distinguen. Hasta acá las
+  // ediciones se colaban enteras a la clave, sin pasar por las listas de
+  // drop — o sea el catálogo podía decir "este paraje no distingue" pero
+  // no "este número no distingue". Es el caso del Colón Frutos Rojos: el
+  // nombre de producto de Jumbo termina en "7" y eso solo abría una
+  // ficha aparte. Cortar dígitos finales por regla general NO es opción
+  // (rompe Tonel #248 y Alma 4), así que se declara por vino.
+  const dropE = new Set((w.edicionesNoDistinguen ?? []).map(norm));
+  const ediciones = p.ediciones.filter((e) => !dropE.has(norm(e)));
+  const expr = [...exprPhrases, ...ediciones].sort().join(" ");
   if (!expr) return { key: w.id, expr: null };
   return { key: `${w.id}::${slugify(expr)}`, expr };
 }
@@ -227,8 +237,18 @@ function main() {
   const catalog = existsSync(CATALOG_PATH)
     ? JSON.parse(readFileSync(CATALOG_PATH, "utf8"))
     : { wines: [] };
+  // El overlay curado a mano se aplica también acá, no sólo en
+  // build-wine-catalog: ese paso corre con continue-on-error y se saltea
+  // entero si falta OPENAI_API_KEY. Sin esto, un día que el catálogo no
+  // se reconstruya las correcciones humanas no se aplicarían y las
+  // fichas curadas se volverían a partir en silencio. Es idempotente.
+  catalog.wines ??= [];
+  const manual = applyManualOverlay(catalog.wines);
   const idx = buildCatalogIndex(catalog);
-  console.log(`v2 grouping — ${offers.length} ofertas · catálogo ${catalog.wines?.length ?? 0} vinos`);
+  console.log(
+    `v2 grouping — ${offers.length} ofertas · catálogo ${catalog.wines.length} vinos` +
+      (manual.total ? ` (overlay manual: ${manual.added}+ ${manual.patched}~ ${manual.removed}-)` : ""),
+  );
 
   // ── Inferencia de marca por corpus (port del Stage 1 de v1) ──
   // Muchas tiendas no mandan brand. Sin esto el mismo vino se parte en
