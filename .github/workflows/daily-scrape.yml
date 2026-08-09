@@ -102,6 +102,16 @@ jobs:
       - name: Identidad v2 — agrupación + publish
         run: node scripts/build-groups-v2.mjs --publish
 
+      # Las preguntas "¿es el mismo vino?" salen de los pares que
+      # comparten EAN pero los gates separaron, y ESO cambia con cada
+      # snapshot: fichas que se fusionan, se parten o desaparecen. Sin
+      # regenerar, el archivo se congela y termina preguntando por fichas
+      # que ya no existen (10% del archivo en 11 días, medido el 09/08).
+      # Va después del publish porque lee el snapshot recién agrupado.
+      - name: Regenerar preguntas "¿es el mismo vino?"
+        run: node scripts/build-match-questions.mjs --write
+        continue-on-error: true
+
       - name: Find duplicates report (alimenta /admin/duplicates)
         run: node scripts/find-duplicates.mjs --out=data/duplicates-report.json
         continue-on-error: true
@@ -182,7 +192,7 @@ jobs:
           git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
           # Artefactos de identidad v2 — el registro de slugs y el catálogo
           # son estado persistente del sistema; agregamos sólo los presentes.
-          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json; do
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json; do
             [ -f "$f" ] && git add "$f" || true
           done
           if git diff --staged --quiet; then
