@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-14T07:24:09.719Z",
-  "snapshotGeneratedAt": "2026-08-14T07:23:40.931Z",
-  "groupCount": 37054,
-  "groupsWithDistinctiveTokens": 31376,
+  "generatedAt": "2026-08-15T07:01:04.015Z",
+  "snapshotGeneratedAt": "2026-08-15T07:00:38.104Z",
+  "groupCount": 37321,
+  "groupsWithDistinctiveTokens": 31647,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
-    "total": 19,
+    "total": 20,
     "items": [
       {
         "key": "blend|dante",
@@ -404,6 +404,36 @@
         ]
       },
       {
+        "key": "finca|pablo",
+        "totalStoresIfMerged": 3,
+        "members": [
+          {
+            "slug": "riccitelli-vino-de-finca-san-pablo-malbec-2022",
+            "brand": null,
+            "canonicalName": "Riccitelli Vino de Finca San Pablo Malbec 2022",
+            "storeCount": 1
+          },
+          {
+            "slug": "vino-de-finca-malbec-riccitelli-2",
+            "brand": "Riccitelli",
+            "canonicalName": "Vino de Finca San Pablo Malbec",
+            "storeCount": 1
+          },
+          {
+            "slug": "finca-las-cuchillas-zuccardi-2",
+            "brand": "Zuccardi",
+            "canonicalName": "Finca Las Cuchillas San Pablo",
+            "storeCount": 1
+          },
+          {
+            "slug": "salentein-single-vineyard-malbec-finca-san-pablo",
+            "brand": null,
+            "canonicalName": "SALENTEIN SINGLE VINEYARD MALBEC FINCA SAN PABLO",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
         "key": "paraje|single",
         "totalStoresIfMerged": 2,
         "members": [
@@ -438,15 +468,15 @@
         "totalStoresIfMerged": 2,
         "members": [
           {
-            "slug": "malbec-paraje-altamira-edicion-limitada-malbec-susana-balbo-3",
-            "brand": "Susana Balbo",
-            "canonicalName": "Malbec Paraje Altamira Edición Limitada Edicion Limitada Los Chacayes",
-            "storeCount": 1
-          },
-          {
             "slug": "chacayes-superuco-2",
             "brand": "SuperUco",
             "canonicalName": "Chacayes Paraje Altamira",
+            "storeCount": 1
+          },
+          {
+            "slug": "malbec-paraje-altamira-edicion-limitada-malbec-susana-balbo-3",
+            "brand": "Susana Balbo",
+            "canonicalName": "Malbec Paraje Altamira Edición Limitada Edicion Limitada Los Chacayes",
             "storeCount": 1
           }
         ]
@@ -581,7 +611,7 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 13133,
+    "total": 13063,
     "items": [
       {
         "jaccard": 1,
@@ -825,22 +855,6 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 35,
-        "a": {
-          "slug": "brut-espumante-nature-salentein",
-          "brand": "Salentein",
-          "canonicalName": "Brut Nature",
-          "storeCount": 18
-        },
-        "b": {
-          "slug": "brut-espumante-luigibosca-luigibosca-nature",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Brut Nature",
-          "storeCount": 17
-        }
-      },
-      {
-        "jaccard": 1,
         "totalStoresIfMerged": 34,
         "a": {
           "slug": "boher-bot-brut-casa-champana-extra",
@@ -852,6 +866,22 @@
           "slug": "brut-cuvee-espumante-extra-salentein-speciale",
           "brand": "Salentein",
           "canonicalName": "Extra Brut",
+          "storeCount": 16
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 34,
+        "a": {
+          "slug": "brut-espumante-nature-salentein",
+          "brand": "Salentein",
+          "canonicalName": "Brut Nature",
+          "storeCount": 18
+        },
+        "b": {
+          "slug": "brut-espumante-luigibosca-luigibosca-nature",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Brut Nature",
           "storeCount": 16
         }
       },
@@ -1681,22 +1711,6 @@
           "storeCount": 23
         },
         "b": {
-          "slug": "extra-brut-bianchi",
-          "brand": "Bianchi",
-          "canonicalName": "Extra Brut",
-          "storeCount": 3
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 26,
-        "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 23
-        },
-        "b": {
           "slug": "extra-brut-pascual-toso",
           "brand": "Pascual Toso",
           "canonicalName": "Extra Brut",
@@ -1739,22 +1753,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 26,
         "a": {
-          "slug": "brut-espumante-luigibosca-luigibosca-nature",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Brut Nature",
-          "storeCount": 17
-        },
-        "b": {
-          "slug": "brut-champana-nature-rutini",
-          "brand": "Rutini",
-          "canonicalName": "Brut Nature",
-          "storeCount": 9
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 26,
-        "a": {
           "slug": "fleur-malbec-monteviejo-petite",
           "brand": "Monteviejo",
           "canonicalName": "Petite Fleur Malbec",
@@ -1781,6 +1779,22 @@
           "brand": "Cordero con Piel de Lobo",
           "canonicalName": "Cordero con Piel de Lobo Cabernet Sauvignon",
           "storeCount": 12
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 25,
+        "a": {
+          "slug": "brut-chandon-espumante-extra",
+          "brand": "Chandon",
+          "canonicalName": "Extra Brut",
+          "storeCount": 23
+        },
+        "b": {
+          "slug": "extra-brut-bianchi",
+          "brand": "Bianchi",
+          "canonicalName": "Extra Brut",
+          "storeCount": 2
         }
       },
       {
@@ -1844,6 +1858,22 @@
           "slug": "brut-correas-espumante-extra-navarro",
           "brand": "Navarro Correas",
           "canonicalName": "Extra Brut",
+          "storeCount": 9
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 25,
+        "a": {
+          "slug": "brut-espumante-luigibosca-luigibosca-nature",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Brut Nature",
+          "storeCount": 16
+        },
+        "b": {
+          "slug": "brut-champana-nature-rutini",
+          "brand": "Rutini",
+          "canonicalName": "Brut Nature",
           "storeCount": 9
         }
       },
