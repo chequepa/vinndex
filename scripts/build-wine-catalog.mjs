@@ -36,6 +36,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { parseOffer, stripAccents, normalizeBodegaKey } from "./lib-offer-identity.mjs";
+import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -53,7 +54,6 @@ const DRY = args.includes("--dry");
 
 const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
 const CACHE_PATH = resolve(ROOT, "data/catalog-llm-cache.json");
-
 // ── OpenAI ──
 function loadEnv() {
   try {
@@ -489,7 +489,25 @@ async function main() {
     } catch { /* catálogo previo ilegible — escribimos fresco */ }
   }
 
+  // Overlay MANUAL — la última palabra. Se aplica después del merge
+  // incremental para que gane también sobre lo minado y sobre lo que ya
+  // estaba en el catálogo.
+  //
+  // Por qué un archivo aparte y no editar wine-catalog.json a mano: ese
+  // archivo lo reescribe el cron todos los días. La corrección sobrevive
+  // hoy por el merge de arriba, pero es una edición humana viviendo
+  // dentro de un archivo de máquina, sin registro de quién puso qué ni
+  // por qué. Cualquier rebuild desde cero, conflicto de merge o reset la
+  // borra en silencio. catalog-manual.json es de humanos, el builder
+  // nunca lo escribe, y cada entrada lleva su nota.
+  const manualApplied = applyManualOverlay(out.wines);
+
   writeFileSync(CATALOG_PATH, JSON.stringify(out, null, 1));
+  if (manualApplied.total > 0) {
+    console.log(
+      `  overlay manual: ${manualApplied.added} agregados · ${manualApplied.patched} corregidos · ${manualApplied.removed} vetados`,
+    );
+  }
   console.log(`  catálogo: ${out.wines.length} vinos (${junk} candidatos junk descartados, ${vetoedMultiParaje} drops de paraje vetados por multi-paraje)`);
   console.log(`  → ${CATALOG_PATH}`);
 }

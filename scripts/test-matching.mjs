@@ -132,7 +132,8 @@ for (const [desc, name, expected] of SECONDARY_CASES) {
 }
 
 // ── parseOffer (identidad v2): clave de vino + comparabilidad ──
-import { parseOffer, fallbackWineKey, isComparable } from "./lib-offer-identity.mjs";
+import { parseOffer, fallbackWineKey, isComparable, resolveBodega } from "./lib-offer-identity.mjs";
+import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 const PARSE_CASES = [
   // [descripción, nombreA, brandA, nombreB, brandB, mismaClave?, comparableA?]
   ["mismo vino con/sin bodega y ruido", "Concreto Malbec", null, "Vino Zuccardi Concreto Malbec 750cc", "Zuccardi", true, true],
@@ -160,6 +161,58 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
   const ok = NAME_PREFIX_TO_BRAND["don david"] === "El Esteco";
   if (!ok) failed++;
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  Don David es de El Esteco (no Trapiche)  →  ${NAME_PREFIX_TO_BRAND["don david"]}`);
+}
+{
+  // Los súper cargan Colón con la bodega adentro del nombre y `brand`
+  // vacío. Sin esta entrada CADA vino de la línea cae en fallback y la
+  // ficha #1 de tráfico del sitio queda partida en dos.
+  const ok = NAME_PREFIX_TO_BRAND["colon"] === "Colón";
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  Colón resuelve como bodega  →  ${NAME_PREFIX_TO_BRAND["colon"] ?? "SIN RESOLVER"}`);
+  // Y no debe comerse "Colonia Las Liebres" (el match es por límite de
+  // palabra; si alguien lo afloja, esto lo caza).
+  const colonia = resolveBodega("Colonia Las Liebres Bonarda 750ml", null);
+  const ok2 = colonia !== "Colón";
+  if (!ok2) failed++;
+  console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  "Colonia Las Liebres" NO es Colón  →  ${colonia ?? "sin bodega"}`);
+}
+
+console.log("\n=== OVERLAY MANUAL DEL CATÁLOGO ===");
+{
+  // El Colón Frutos Rojos: 4 ofertas, mismo EAN (7790168904663), tres
+  // tiendas lo nombran con el dulzor y una con el color, y el nombre de
+  // producto de Jumbo termina en "7". Tienen que caer todas en la misma
+  // ficha. Es el caso testigo del overlay: si alguien saca la entrada de
+  // data/catalog-manual.json o rompe edicionesNoDistinguen, falla acá.
+  const wines = [];
+  applyManualOverlay(wines);
+  const colon = wines.find((w) => w.id === "colon-select-frutos-rojos-rosado");
+  const ok = Boolean(colon);
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  el overlay agrega el Colón Frutos Rojos  →  ${colon ? colon.linea : "AUSENTE"}`);
+
+  if (colon) {
+    const names = [
+      "Vino Colon Selecto Dulce Fresco Frutos Rojos 7",
+      "Vino rosado dulce Colón Select frutos rojos en botella 750 m",
+    ];
+    const aliases = new Set(
+      (colon.lineAliases ?? []).map((a) => a.split(" ").filter(Boolean).sort().join(" ")),
+    );
+    let allMatch = true;
+    for (const n of names) {
+      const p = parseOffer(n, null);
+      const bodegaOk = p.bodega === "Colón";
+      const aliasOk = aliases.has(p.lineTokens.join(" "));
+      if (!bodegaOk || !aliasOk) allMatch = false;
+    }
+    if (!allMatch) failed++;
+    console.log(`  ${allMatch ? "✅" : "❌ FALLA"}  las 2 formas de nombrarlo caen en la misma línea del catálogo`);
+
+    const dropsSeven = (colon.edicionesNoDistinguen ?? []).includes("7");
+    if (!dropsSeven) failed++;
+    console.log(`  ${dropsSeven ? "✅" : "❌ FALLA"}  el "7" del nombre de Jumbo no abre una ficha aparte`);
+  }
 }
 
 console.log("\n=== EAN (evidencia de identidad) ===");

@@ -1,0 +1,24 @@
+{
+  "_doc": "OVERLAY MANUAL DEL CATÁLOGO — el único archivo de data/ que se edita a mano. build-wine-catalog.mjs lo lee y lo aplica AL FINAL, con máxima autoridad: gana sobre el minado y sobre el LLM. El builder NUNCA lo escribe. Cada entrada lleva `nota` explicando por qué existe (la nota no se publica al catálogo). `wines[]` agrega o corrige por `id` (los campos que no declarás se conservan); `vetos[]` saca del catálogo ids que el LLM inventó. Si el archivo tiene JSON inválido el build FALLA a propósito, para no publicar un catálogo mal.",
+  "wines": [
+    {
+      "id": "colon-select-frutos-rojos-rosado",
+      "nota": "Colón Frutos Rojos (rosado dulce) — la página #1 de tráfico del sitio, partida en dos fichas desde siempre. Las 4 ofertas comparten el EAN 7790168904663, y un usuario votó 'sí, es el mismo vino' en el issue #147. Se partía por tres razones acumuladas: (1) la bodega no resolvía y todo caía en claves fb| de fallback — arreglado en lib-identity.mjs; (2) las tiendas lo nombran 'Selecto' o 'Select' indistintamente, así que hacen falta los dos alias; (3) unas tiendas nombran el color (rosado) y otras el dulzor (dulce), y colorOf() mete 'dulce' en la tabla de COLORES. El punto 3 NO se arregla tocando el gate de color: se midió el 29/07 que de 51 pares que ese gate bloquea, tiene razón casi siempre (Cordero Rosé vs Cordero blanco dulce, Norton Tardía Blanco vs rosado). Acá se resuelve declarando el vino en el catálogo con varietal null: la herencia por línea de assign() lo asigna igual aunque el color no coincida. `edicionesNoDistinguen: 7` mata el sufijo del nombre de producto de Jumbo ('...Frutos Rojos 7'), que abría una tercera ficha.",
+      "bodega": "Colón",
+      "linea": "Select Frutos Rojos",
+      "varietal": null,
+      "color": "rosado",
+      "dulzor": null,
+      "lineAliases": [
+        "fresco frutos rojos selecto",
+        "en frutos rojos select",
+        "frutos rojos select",
+        "frutos rojos selecto"
+      ],
+      "parajesNoDistinguen": [],
+      "tiersNoDistinguen": [],
+      "edicionesNoDistinguen": ["7"]
+    }
+  ],
+  "vetos": []
+}
