@@ -32,6 +32,8 @@ export function isJunkSlug(slug: string): boolean {
  *     venden (~4.100 fichas)
  *   · bundles / promos / gift cards (~600)
  *   · venta por copa (~240)
+ *   · mercadería de almacén (aceite de oliva, aceto, alfajores, jamón) y
+ *     accesorios (sacacorchos, cristalería, decanters) — 851 fichas
  * Las páginas siguen existiendo y navegables — sólo van con noindex y
  * fuera del sitemap. Mismos patrones que usa el pipeline (isExcluded en
  * scripts/stage4-token-merge.mjs), replicados acá porque el frontend no
@@ -42,6 +44,29 @@ const NON_WINE_RE =
 const BUNDLE_NAME_RE =
   /\b(mix|promo|promocion|regalo|degustaci\w*|vertical|combo|surtido|kit|estuche|cofre|bag\s*in\s*box|gift\s*card|wine\s*card|voucher|tarjeta\s+(de\s+)?regalo)\b/i;
 const COPA_NAME_RE = /\bcopa\b/i;
+
+/**
+ * Mercadería de almacén y accesorios. Las vinotecas venden aceite de
+ * oliva, aceto, alfajores, jamón y cristalería, y esas fichas se colaban
+ * enteras: NON_WINE_RE cubre BEBIDAS que no son vino (destilados,
+ * cerveza, gaseosa) pero nada de comida ni de barware. Medido sobre el
+ * snapshot del 09/08: 851 fichas, 15 de ellas multi-tienda (aceite de
+ * oliva Zuccardi en 4 tiendas, aceto Millán en 2, un decanter Riedel).
+ */
+const ALMACEN_RE =
+  /\b(aceite\s+de\s+oliva|aceto|vinagre|aceituna|mermelada|dulce\s+de\s+leche|queso|fiambre|salame|jamon|pate|escabeche|antipasto|peperoncino|arroz|fideos|harina|galletit|bizcoch|alfajor|alfajores|turron|yerba)\b/i;
+const BARWARE_RE =
+  /\b(sacacorchos|descorchador|frapera|hielera|cristaleria|libbey|riedel|molinillo|copon|copones|posavaso|portabotella|termometro)\b/i;
+/**
+ * Palabras ambiguas: sólo cuentan si ENCABEZAN el nombre. Un accesorio se
+ * lista con el objeto adelante ("Decanter Riedel Merlot", "Tapón para
+ * espumante"); un vino las menciona al final, y ahí son parte de la
+ * descripción, no del producto. Sin este ancla se perdían vinos reales:
+ * "Ayni Malbec 2018 - 97 puntos Decanter", "LAS PERDICES NOIR DE MALBEC
+ * (TAPON VIDRIO)", "Las Perdices Ice Exploración Malbec Rosé | Tapón de
+ * Vidrio".
+ */
+const ACCESORIO_HEAD_RE = /^(decanter|decantador|tapon|tapones|aireador|vaso|vasos|tabla)\b/i;
 
 function stripAccentsLower(s: string): string {
   return s
@@ -60,5 +85,8 @@ export function isJunkWineGroup(g: {
   if (NON_WINE_RE.test(n)) return true;
   if (BUNDLE_NAME_RE.test(n)) return true;
   if (COPA_NAME_RE.test(n)) return true;
+  if (ALMACEN_RE.test(n)) return true;
+  if (BARWARE_RE.test(n)) return true;
+  if (ACCESORIO_HEAD_RE.test(n.trim())) return true;
   return false;
 }

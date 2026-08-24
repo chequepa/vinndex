@@ -109,6 +109,26 @@ if (silentZero.length > 0) {
   });
 }
 
+// 1c. Tienda cortada por el tope de páginas: la última página todavía
+//     sumaba productos nuevos, así que quedó catálogo afuera. Es el modo
+//     de falla más silencioso de todos — la tienda "anda bien", devuelve
+//     productos y no tira ningún error; simplemente falta la mitad. Se
+//     arregla subiendo `maxPages` de esa tienda en data/stores.json.
+const truncatedStores = (current.stores ?? []).filter((s) => s.truncated);
+if (truncatedStores.length > 0) {
+  issues.push({
+    severity: "warn",
+    kind: "store_truncated",
+    title: `${truncatedStores.length} tiendas cortadas por el tope de páginas (falta catálogo)`,
+    items: truncatedStores.map((s) => ({
+      slug: s.storeSlug,
+      name: s.storeName,
+      productCount: s.productCount,
+      pagesFetched: s.pagesFetched,
+    })),
+  });
+}
+
 // 2-3. Diff per-store contra el snapshot anterior.
 if (previous) {
   const prevMap = new Map(

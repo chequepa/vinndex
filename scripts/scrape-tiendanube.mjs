@@ -147,13 +147,15 @@ async function scrapeStore(config, maxPages) {
   const errors = [];
   const products = new Map();
 
+  const limit = maxPages;
+
   const base = config.baseUrl.replace(/\/+$/, "");
   const catalog = config.catalogPath.replace(/^\/+|\/+$/g, "");
 
   let pagesFetched = 0;
   let lastAdded = 1;
 
-  for (let page = 1; page <= maxPages && lastAdded > 0; page++) {
+  for (let page = 1; page <= limit && lastAdded > 0; page++) {
     const url = page === 1 ? `${base}/${catalog}/` : `${base}/${catalog}/page/${page}/`;
     pagesFetched++;
     lastAdded = 0;
@@ -184,9 +186,21 @@ async function scrapeStore(config, maxPages) {
       }
     }
 
-    if (page < maxPages && lastAdded > 0) {
+    if (page < limit && lastAdded > 0) {
       await new Promise((r) => setTimeout(r, PAGE_DELAY_MS));
     }
+  }
+
+  // Salió por el tope con la última página todavía sumando productos =
+  // la tienda tiene más catálogo del que nos llevamos. Se registra para
+  // que no vuelva a pasar en silencio: bari perdió la mitad de su
+  // catálogo el 07/08 (la tienda bajó de 24 a 12 productos por página) y
+  // nadie se enteró durante tres días.
+  const truncated = pagesFetched >= limit && lastAdded > 0;
+  if (truncated) {
+    console.warn(
+      `  ⚠️  ${config.slug}: cortado por el tope de ${limit} páginas — hay más catálogo sin traer`,
+    );
   }
 
   return {
@@ -195,6 +209,7 @@ async function scrapeStore(config, maxPages) {
     startedAt,
     durationMs: Date.now() - t0,
     pagesFetched,
+    truncated,
     productCount: products.size,
     products: [...products.values()],
     errors,
@@ -218,7 +233,7 @@ async function main() {
   }
 
   console.log(
-    `Scraping ${targets.length} store(s), maxPages=${maxPages}, delay=${STORE_DELAY_MS}ms between stores\n`,
+    `Scraping ${targets.length} store(s), maxPages=${maxPages} (algunas tienen tope propio en data/stores.json), delay=${STORE_DELAY_MS}ms between stores\n`,
   );
 
   const results = [];
@@ -229,7 +244,12 @@ async function main() {
 
   for (const store of targets) {
     process.stdout.write(`  ${store.slug.padEnd(22)} ... `);
-    const r = await scrapeStore(store, maxPages);
+    // `maxPages` de la tienda sube el tope SÓLO en modo full. En el modo
+    // rápido de desarrollo el tope de 3 páginas manda igual, sino un
+    // `node scripts/scrape-tiendanube.mjs enotek` se comería 250 páginas.
+    const storeMax =
+      full && Number.isInteger(store.maxPages) ? store.maxPages : maxPages;
+    const r = await scrapeStore(store, storeMax);
     results.push(r);
     totalProducts += r.productCount;
     totalPages += r.pagesFetched;

@@ -53,6 +53,17 @@ function eligibleWineGroups() {
     // llevan noindex en la ficha → tampoco van al sitemap (señal
     // consistente para Google; aviso GSC 2026-07-03).
     .filter((g) => !isJunkWineGroup(g))
+    // Fichas sin una sola oferta con stock: no hay precio que mostrar ni
+    // nada que comparar. Hoy son 8.272 (21% de las elegibles) y todas
+    // tienen `minPrice: null` y una sola tienda — la página existe pero
+    // no dice nada. Pedirle a Google que las rastree gasta crawl budget
+    // en URLs que después reporta como "soft 404" o "crawled - currently
+    // not indexed" (13.146 entre las dos en GSC al 29/07).
+    //
+    // NO llevan noindex: si Google ya las tiene o alguien las linkea,
+    // que sigan sirviendo. Lo que dejamos de hacer es *pedirle* que las
+    // visite. Vuelven solas al sitemap en cuanto una tienda repone.
+    .filter((g) => g.offers?.some((o) => o.inStock))
     .slice()
     .sort((a, b) => a.groupSlug.localeCompare(b.groupSlug));
 }
@@ -105,12 +116,13 @@ export async function entriesForBucket(
     const start = n * WINE_CHUNK_SIZE;
     const end = start + WINE_CHUNK_SIZE;
     return all.slice(start, end).map((g) => {
-      const allOut = !g.offers?.some((o) => o.inStock);
+      // Todas las de acá tienen stock (eligibleWineGroups las filtra), así
+      // que el caso "sin stock → priority 0.2" ya no existe.
       return {
         url: `${SITE}/vino/${g.groupSlug}`,
         lastModified: generatedAt,
-        changeFrequency: allOut ? "weekly" : "daily",
-        priority: allOut ? 0.2 : winePriority(g.storeCount),
+        changeFrequency: "daily" as const,
+        priority: winePriority(g.storeCount),
       };
     });
   }
