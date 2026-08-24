@@ -26,6 +26,25 @@ const PAGE_DELAY_MS = 400;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
 
+// Reintentos ante fallas TRANSITORIAS (403 anti-bot, 429, 5xx, timeout,
+// cuerpo no-JSON). Sin esto un solo 403 en la página 1 dejaba la tienda
+// entera en 0 productos por 24 horas: medido entre el 09 y el 16/08/2026,
+// 17 de las 26 tiendas WooCommerce cayeron a 0 al menos un día y volvieron
+// solas al siguiente, con ~7.000 ofertas entrando y saliendo del sitio.
+//
+// La página 1 es la que mata a la tienda, así que se insiste más ahí. Las
+// siguientes ya eran no-fatales (el loop hacía `continue`), alcanza con un
+// reintento corto. Peor caso por tienda muerta: ~23s extra.
+const RETRY_DELAYS_FIRST_PAGE_MS = [2000, 6000, 15000];
+const RETRY_DELAYS_MS = [2000];
+
+// 404 no se reintenta: es el fin del paginado, no una falla.
+function isTransientStatus(status) {
+  return status === 403 || status === 429 || status >= 500;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 const STORES = JSON.parse(
   readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
 ).filter((s) => s.platform === "woocommerce");
@@ -119,38 +138,72 @@ function looksLikeWine(p) {
   return true;
 }
 
+/**
+ * Pide una página reintentando las fallas transitorias.
+ *
+ * Devuelve `{ items }` si salió bien, `{ done: true }` si el paginado
+ * terminó (404), o `{ failure }` con el último error si se agotaron los
+ * intentos. `stats` acumula reintentos para dejarlos en la metadata.
+ */
+async function fetchPageWithRetry(url, page, stats) {
+  const delays = page === 1 ? RETRY_DELAYS_FIRST_PAGE_MS : RETRY_DELAYS_MS;
+  let failure = null;
+
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    if (attempt > 0) {
+      stats.retries++;
+      await sleep(delays[attempt - 1]);
+    }
+
+    let res;
+    try {
+      res = await fetchJson(url);
+    } catch (err) {
+      failure = `fetch failed (${err.message})`;
+      continue;
+    }
+
+    if (!res.ok) {
+      if (res.status === 404) return { done: true };
+      failure = `HTTP ${res.status}`;
+      if (!isTransientStatus(res.status)) break;
+      continue;
+    }
+
+    try {
+      const body = await res.json();
+      if (attempt > 0) stats.recovered = true;
+      return { items: Array.isArray(body) ? body : [] };
+    } catch {
+      failure = "non-JSON";
+    }
+  }
+
+  return { failure };
+}
+
 async function scrapeStore(store, maxPages) {
   const startedAt = new Date().toISOString();
   const t0 = Date.now();
   const errors = [];
   const products = new Map();
   const base = store.baseUrl.replace(/\/+$/, "");
+  const stats = { retries: 0, recovered: false };
   let pagesFetched = 0;
 
   for (let page = 1; page <= maxPages; page++) {
     const url = `${base}/wp-json/wc/store/v1/products?per_page=${PER_PAGE}&page=${page}`;
     pagesFetched++;
-    let res;
-    try {
-      res = await fetchJson(url);
-    } catch (err) {
-      errors.push(`page ${page}: fetch failed (${err.message})`);
-      break;
-    }
-    if (!res.ok) {
-      if (res.status === 404) break;
-      errors.push(`page ${page}: HTTP ${res.status}`);
+
+    const result = await fetchPageWithRetry(url, page, stats);
+    if (result.done) break;
+    if (result.failure) {
+      errors.push(`page ${page}: ${result.failure}`);
       if (page === 1) break;
       continue;
     }
-    let items;
-    try {
-      const body = await res.json();
-      items = Array.isArray(body) ? body : [];
-    } catch {
-      errors.push(`page ${page}: non-JSON`);
-      break;
-    }
+
+    const items = result.items;
     if (items.length === 0) break;
 
     let added = 0;
@@ -177,6 +230,11 @@ async function scrapeStore(store, maxPages) {
     startedAt,
     durationMs: Date.now() - t0,
     pagesFetched,
+    // `retries` y `recoveredAfterRetry` quedan en la metadata para poder
+    // medir la semana que viene si los reintentos rescatan tiendas de
+    // verdad o si el bloqueo por IP de data-center es persistente.
+    retries: stats.retries,
+    recoveredAfterRetry: stats.recovered,
     productCount: products.size,
     products: [...products.values()],
     errors,
@@ -206,7 +264,8 @@ async function main() {
     totalPages += r.pagesFetched;
     totalErrors += r.errors.length;
     console.log(
-      `${String(r.productCount).padStart(4)} products · ${String(r.durationMs).padStart(5)}ms · ${r.errors.length} errors`,
+      `${String(r.productCount).padStart(4)} products · ${String(r.durationMs).padStart(5)}ms · ${r.errors.length} errors` +
+        (r.retries ? ` · ${r.retries} retries${r.recoveredAfterRetry ? " (recuperada)" : ""}` : ""),
     );
     if (r.errors.length) console.log(`    ${r.errors.join("; ")}`);
     await new Promise((resolve) => setTimeout(resolve, STORE_DELAY_MS));
