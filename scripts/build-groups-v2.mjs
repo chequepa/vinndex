@@ -38,6 +38,7 @@ import {
   normalizeBodegaKey,
 } from "./lib-offer-identity.mjs";
 import { colorOf, hardConflict, lineRelation } from "./stage4-token-merge.mjs";
+import { toEan } from "./lib-ean.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
 // que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
@@ -399,10 +400,10 @@ function main() {
     const eanToKeys = new Map();
     for (const [key, g] of groups) {
       for (const o of g.offers) {
-        const m = String(o.externalSku ?? "").trim().match(/^(\d{12,14})$/);
-        if (!m) continue;
-        if (!eanToKeys.has(m[1])) eanToKeys.set(m[1], new Set());
-        eanToKeys.get(m[1]).add(key);
+        const ean = toEan(o.externalSku);
+        if (!ean) continue;
+        if (!eanToKeys.has(ean)) eanToKeys.set(ean, new Set());
+        eanToKeys.get(ean).add(key);
       }
     }
     const repName = (g) =>

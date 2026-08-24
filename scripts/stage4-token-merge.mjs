@@ -57,6 +57,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, resolve } from "node:path";
 import { stripAccents, contentTokens, NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
+import { toEan } from "./lib-ean.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -422,8 +423,8 @@ export function identityConflict(a, b) {
 function eansOf(g) {
   const out = new Set();
   for (const o of g.offers ?? []) {
-    const sku = (o.externalSku ?? "").toString().trim();
-    if (/^\s*\d{12,14}\s*$/.test(sku)) out.add(sku.replace(/\s/g, ""));
+    const ean = toEan(o.externalSku);
+    if (ean) out.add(ean);
   }
   return out;
 }

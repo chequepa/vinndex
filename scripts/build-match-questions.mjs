@@ -33,13 +33,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { hardConflict } from "./stage4-token-merge.mjs";
+import { toEan } from "./lib-ean.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const WRITE = process.argv.includes("--write");
 const OUT = resolve(ROOT, "data/match-questions.json");
 
-const EAN_RE = /^[0-9]{12,14}$/;
 // Gates donde el bloqueo es obviamente correcto → no se pregunta.
 const OBVIOUS_GATES = new Set(["volumen", "pack"]);
 
@@ -76,8 +76,8 @@ function displayName(g) {
 const byEan = new Map();
 for (const g of snap.productGroups) {
   for (const o of g.offers ?? []) {
-    const sku = (o.externalSku ?? "").trim();
-    if (!EAN_RE.test(sku)) continue;
+    const sku = toEan(o.externalSku);
+    if (!sku) continue;
     if (!byEan.has(sku)) byEan.set(sku, new Map());
     byEan.get(sku).set(g.groupSlug, g);
   }
