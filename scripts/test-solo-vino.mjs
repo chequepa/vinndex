@@ -46,6 +46,10 @@ for (const [n, por] of [
   ["Gin Hilbing Malbec 750ml", "gin aunque diga Malbec"],
   ["GRAPPA ANIAPA CABERNET SAUVIGNON", "grappa aunque diga Cabernet"],
   ["Copon Wine Malbec Liso 800cc", "copón encabezando = cristalería"],
+  ["The Lakes Whiskymaker\u2019s Editions Single Malt Resfeber 700ml", "whisky pegado a otra palabra"],
+  ["Glen Moray Our Classic Single Malt 700ml", "single malt sin decir whisky"],
+  ["Single Malt Glen Moray Chardonnay Cask Finish 700 Ml", "single malt manda sobre chardonnay"],
+  ["Cutty Sark Blended Scotch 750 Cc", "blended scotch"],
 ]) check(n, fuera(n) === true, por);
 
 console.log("\n=== SÍ ES VINO (no se puede borrar) ===");

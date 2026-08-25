@@ -161,6 +161,20 @@ const BOURBON_MATURATION_RE = /\bbourbon\s+(barrel|cask)\b/gi;
 const SPIRIT_BRAND_RE =
   /\b(macallan|glenfiddich|glenlivet|singleton|talisker|lagavulin|laphroaig|cardhu|monkey\s*shoulder|knob\s*creek|four\s*roses|woodford|elijah\s*craig|evan\s*williams|buffalo\s*trace|makers?'?\s*mark|benchmark|jim\s*beam|bulleit|grangestone|isle\s+of\s+jura|smirnoff|absolut|belvedere|beefeater|tanqueray|bombay|gordon'?s?|hendrick'?s?|jagermeister|jägermeister|baileys|sambuca|amaretto|cusenier|tres\s*plumas|borghetti|wild\s*africa)\b/i;
 
+/**
+ * Estilos de whisky que no traen la categoría suelta en el nombre.
+ * `NON_WINE_RE` pide `\bwhisky\b` y se le escapaban dos formas reales del
+ * snapshot: "The Lakes **Whiskymaker's** Editions Single Malt" (palabra
+ * pegada, el \b falla) y los que sólo dicen "Single Malt" o "Blended
+ * Scotch". Eran 76 fichas, todas de una sola tienda.
+ *
+ * Ninguna de las tres frases aparece en un vino: un whisky terminado en
+ * barrica de chardonnay se llama "Single Malt ... Chardonnay Cask", y el
+ * "Single Malt" manda.
+ */
+const SPIRIT_STYLE_RE =
+  /\b(single\s*malt|whisk(y|ey)\w+|blended\s+scotch)\b/i;
+
 /** Sidra: fermentado de manzana o pera, no es vino. */
 const SIDRA_RE = /\b(sidra|cider)\b/i;
 
@@ -169,6 +183,7 @@ export function isNonWineGroup(g: { canonicalName: string }): boolean {
   if (GIFTCARD_RE.test(n)) return true;
   if (NON_WINE_RE.test(n.replace(BOURBON_MATURATION_RE, " "))) return true;
   if (SPIRIT_BRAND_RE.test(n)) return true;
+  if (SPIRIT_STYLE_RE.test(n)) return true;
   if (SIDRA_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
   if (BARWARE_RE.test(n)) return true;
