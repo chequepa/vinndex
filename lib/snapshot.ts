@@ -4,7 +4,7 @@ import groupMergesJson from "@/data/group-merges.json";
 import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup } from "./matching";
 import { bestScoreFor } from "./scores";
-import { isJunkWineGroup } from "./junkSlugs";
+import { isJunkWineGroup, isNonWineGroup } from "./junkSlugs";
 
 // Stores actualmente VIGENTES según `data/stores.json` — fuente de verdad.
 // Sirve para filtrar offers fantasma: cuando sacamos una tienda del config
@@ -130,7 +130,23 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
     };
   })
   // Grupo huérfano: ninguna offer activa → no mostrar.
-  .filter((g) => g.offers.length > 0);
+  .filter((g) => g.offers.length > 0)
+  // Vinndex es un comparador de VINO (decisión de producto, 24/08/2026).
+  // Las vinotecas también venden whisky, aperitivos, aceite de oliva,
+  // cristalería y gift cards, y eso venía entrando al sitio: 4.718 fichas,
+  // el 12,6% del catálogo, 442 de ellas multi-tienda renderizando el copy
+  // "compará N vinotecas" sobre un Aperol.
+  //
+  // Se filtra ACÁ y no en cada consumidor porque `groups` es la fuente
+  // única: búsqueda, explorar, rankings, home, /bodega, /vs, los contadores
+  // y `findGroup` salen todos de este array. Filtrando en un solo lugar no
+  // queda ningún camino por el que un no-vino vuelva a entrar.
+  //
+  // Ojo con la diferencia entre este filtro y `isJunkWineGroup`: ver el
+  // comentario largo de `isNonWineGroup` en ./junkSlugs. Resumen: acá sólo
+  // entra lo que NO ES VINO, no lo que está mal parseado o viene en otro
+  // envase.
+  .filter((g) => !isNonWineGroup(g));
 
 export function findGroup(slug: string): ProductGroup | undefined {
   return groups.find((g) => g.groupSlug === slug);

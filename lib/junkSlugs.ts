@@ -56,7 +56,7 @@ const COPA_NAME_RE = /\bcopa\b/i;
 const ALMACEN_RE =
   /\b(aceite\s+de\s+oliva|aceto|vinagre|aceituna|mermelada|dulce\s+de\s+leche|queso|fiambre|salame|jamon|pate|escabeche|antipasto|peperoncino|arroz|fideos|harina|galletit|bizcoch|alfajor|alfajores|turron|yerba)\b/i;
 const BARWARE_RE =
-  /\b(sacacorchos|descorchador|frapera|hielera|cristaleria|libbey|riedel|molinillo|copon|copones|posavaso|portabotella|termometro)\b/i;
+  /\b(sacacorchos|descorchador|frapera|hielera|cristaleria|libbey|riedel|molinillo|posavaso|portabotella|termometro|fernetometro)\b/i;
 /**
  * Palabras ambiguas: sólo cuentan si ENCABEZAN el nombre. Un accesorio se
  * lista con el objeto adelante ("Decanter Riedel Merlot", "Tapón para
@@ -66,7 +66,8 @@ const BARWARE_RE =
  * (TAPON VIDRIO)", "Las Perdices Ice Exploración Malbec Rosé | Tapón de
  * Vidrio".
  */
-const ACCESORIO_HEAD_RE = /^(decanter|decantador|tapon|tapones|aireador|vaso|vasos|tabla)\b/i;
+const ACCESORIO_HEAD_RE =
+  /^(decanter|decantador|tapon|tapones|aireador|vaso|vasos|tabla|copon|copones)\b/i;
 
 function stripAccentsLower(s: string): string {
   return s
@@ -85,6 +86,90 @@ export function isJunkWineGroup(g: {
   if (NON_WINE_RE.test(n)) return true;
   if (BUNDLE_NAME_RE.test(n)) return true;
   if (COPA_NAME_RE.test(n)) return true;
+  if (ALMACEN_RE.test(n)) return true;
+  if (BARWARE_RE.test(n)) return true;
+  if (ACCESORIO_HEAD_RE.test(n.trim())) return true;
+  return false;
+}
+
+/**
+ * Gift cards y vouchers. Se separan de `BUNDLE_NAME_RE` porque son la
+ * única parte de ese grupo que NO es vino: un estuche o un bag-in-box es
+ * vino en otro envase, una gift card es plata.
+ */
+const GIFTCARD_RE =
+  /\b(gift\s*cards?|wine\s*cards?|vouchers?|tarjetas?\s+(de\s+)?regalo)\b/i;
+
+/**
+ * "Bourbon barrel" / "bourbon cask" describen la MADURACIÓN, no el
+ * producto: `LOS INTOCABLES BOURBON BARREL MALBEC` es un malbec criado en
+ * barrica de bourbon, no un whisky. Se saca la frase y se vuelve a testear
+ * lo que queda, así el que además dice "Ron" o "Whisky" sigue cayendo.
+ */
+const BOURBON_MATURATION_RE = /\bbourbon\s+(barrel|cask)\b/gi;
+
+/**
+ * True si el grupo NO ES VINO y por lo tanto no pertenece al comparador.
+ *
+ * Distinto de `isJunkWineGroup`, y la diferencia importa. Aquella responde
+ * "¿esta ficha merece que Google la indexe?" y por eso incluye reglas de
+ * PARSEO (slugs de faceta) y de FORMATO (estuches, bag-in-box, venta por
+ * copa). Un falso positivo ahí cuesta una página sin indexar: barato.
+ *
+ * Ésta responde "¿esto es vino?" y su respuesta saca el grupo del sitio
+ * entero. Un falso positivo acá borra una ficha de comparación real, así
+ * que sólo entran las categorías inequívocas:
+ *
+ *   · destilados, cerveza y gaseosas (las vinotecas también las venden)
+ *   · gift cards y vouchers
+ *   · mercadería de almacén (aceite de oliva, aceto, alfajores, jamón)
+ *   · cristalería y barware (sacacorchos, decanters, fraperas)
+ *   · accesorios cuando encabezan el nombre
+ *
+ * Y quedan AFUERA a propósito, medido sobre el snapshot del 24/08/2026:
+ *
+ *   · slugs de faceta (499 grupos) — `coleccion-` es el prefijo de la
+ *     línea Colección de Rutini, y ahí adentro hay un Cabernet Franc en
+ *     16 tiendas; `sin-` agarra "Sin Reglas" y "Sin Fin"; `cepa-` agarra
+ *     "Cepa Tradicional". Un slug mal parseado sigue siendo vino.
+ *   · estuches, bag-in-box y combos (1.973 grupos, 43 multi-tienda) —
+ *     "Las Perdices Reserva Malbec Bag In Box" es vino en otro envase.
+ *     El formato ya lo maneja `comparable`/`variants`, no hace falta
+ *     borrarlo.
+ *   · venta por copa — "SANTA JULIA MALBEC + copa" es una botella con
+ *     una copa de regalo.
+ *
+ * Los tres siguen tratándose como hasta ahora vía `isJunkWineGroup`:
+ * navegables pero con `noindex` y fuera del sitemap.
+ */
+/**
+ * Marcas de destilado y licor que las vinotecas venden y que `NON_WINE_RE`
+ * no nombra: aquella regex lista CATEGORÍAS ("whisky", "gin", "vodka") y
+ * un single malt se publica casi siempre por marca, sin la categoría en el
+ * nombre — "Glenfiddich 12 Años", "Jim Beam Honey", "BEEFEATER 24".
+ * Medido sobre el snapshot del 24/08/2026: 900 fichas sobrevivían al
+ * filtro, 75 de ellas multi-tienda.
+ *
+ * Son marcas, no palabras comunes, así que el riesgo de falso positivo es
+ * bajo. Las dos excepciones que sí lo tenían quedaron ancladas:
+ *   · `isle of jura` en vez de `jura` — Jura es además una región vinícola
+ *     francesa.
+ *   · las cremas y licores van por MARCA (Tres Plumas, Cusenier, Borghetti,
+ *     Wild Africa) y no por sabor: "chocolate" y "café" son notas de cata,
+ *     y `DADA 8 CHOCOLATE` es un vino de Dadá Art.
+ */
+const SPIRIT_BRAND_RE =
+  /\b(macallan|glenfiddich|glenlivet|singleton|talisker|lagavulin|laphroaig|cardhu|monkey\s*shoulder|knob\s*creek|four\s*roses|woodford|elijah\s*craig|evan\s*williams|buffalo\s*trace|makers?'?\s*mark|benchmark|jim\s*beam|bulleit|grangestone|isle\s+of\s+jura|smirnoff|absolut|belvedere|beefeater|tanqueray|bombay|gordon'?s?|hendrick'?s?|jagermeister|jägermeister|baileys|sambuca|amaretto|cusenier|tres\s*plumas|borghetti|wild\s*africa)\b/i;
+
+/** Sidra: fermentado de manzana o pera, no es vino. */
+const SIDRA_RE = /\b(sidra|cider)\b/i;
+
+export function isNonWineGroup(g: { canonicalName: string }): boolean {
+  const n = stripAccentsLower(g.canonicalName ?? "");
+  if (GIFTCARD_RE.test(n)) return true;
+  if (NON_WINE_RE.test(n.replace(BOURBON_MATURATION_RE, " "))) return true;
+  if (SPIRIT_BRAND_RE.test(n)) return true;
+  if (SIDRA_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
   if (BARWARE_RE.test(n)) return true;
   if (ACCESORIO_HEAD_RE.test(n.trim())) return true;
