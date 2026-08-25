@@ -7,6 +7,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { fetchPageWithRetry } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -25,25 +26,6 @@ const MAX_PAGES = 80;
 const PAGE_DELAY_MS = 400;
 const FETCH_TIMEOUT_MS = 20_000;
 const STORE_DELAY_MS = 1500;
-
-// Reintentos ante fallas TRANSITORIAS (403 anti-bot, 429, 5xx, timeout,
-// cuerpo no-JSON). Sin esto un solo 403 en la página 1 dejaba la tienda
-// entera en 0 productos por 24 horas: medido entre el 09 y el 16/08/2026,
-// 17 de las 26 tiendas WooCommerce cayeron a 0 al menos un día y volvieron
-// solas al siguiente, con ~7.000 ofertas entrando y saliendo del sitio.
-//
-// La página 1 es la que mata a la tienda, así que se insiste más ahí. Las
-// siguientes ya eran no-fatales (el loop hacía `continue`), alcanza con un
-// reintento corto. Peor caso por tienda muerta: ~23s extra.
-const RETRY_DELAYS_FIRST_PAGE_MS = [2000, 6000, 15000];
-const RETRY_DELAYS_MS = [2000];
-
-// 404 no se reintenta: es el fin del paginado, no una falla.
-function isTransientStatus(status) {
-  return status === 403 || status === 429 || status >= 500;
-}
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const STORES = JSON.parse(
   readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
@@ -141,45 +123,22 @@ function looksLikeWine(p) {
 /**
  * Pide una página reintentando las fallas transitorias.
  *
- * Devuelve `{ items }` si salió bien, `{ done: true }` si el paginado
- * terminó (404), o `{ failure }` con el último error si se agotaron los
- * intentos. `stats` acumula reintentos para dejarlos en la metadata.
+ * La política vive en `lib-fetch-retry.mjs`, compartida con los otros
+ * scrapers para que no la reimplementen distinta.
  */
-async function fetchPageWithRetry(url, page, stats) {
-  const delays = page === 1 ? RETRY_DELAYS_FIRST_PAGE_MS : RETRY_DELAYS_MS;
-  let failure = null;
-
-  for (let attempt = 0; attempt <= delays.length; attempt++) {
-    if (attempt > 0) {
-      stats.retries++;
-      await sleep(delays[attempt - 1]);
-    }
-
-    let res;
-    try {
-      res = await fetchJson(url);
-    } catch (err) {
-      failure = `fetch failed (${err.message})`;
-      continue;
-    }
-
-    if (!res.ok) {
-      if (res.status === 404) return { done: true };
-      failure = `HTTP ${res.status}`;
-      if (!isTransientStatus(res.status)) break;
-      continue;
-    }
-
-    try {
+function fetchProductsPage(url, page, stats) {
+  return fetchPageWithRetry({
+    page,
+    stats,
+    doFetch: () => fetchJson(url),
+    readBody: async (res) => {
       const body = await res.json();
-      if (attempt > 0) stats.recovered = true;
-      return { items: Array.isArray(body) ? body : [] };
-    } catch {
-      failure = "non-JSON";
-    }
-  }
-
-  return { failure };
+      return Array.isArray(body) ? body : [];
+    },
+    // En la Store API de WooCommerce el 404 es el fin del paginado en
+    // cualquier página, incluida la 1 (tienda sin productos).
+    isDone: (status) => status === 404,
+  });
 }
 
 async function scrapeStore(store, maxPages) {
@@ -195,7 +154,7 @@ async function scrapeStore(store, maxPages) {
     const url = `${base}/wp-json/wc/store/v1/products?per_page=${PER_PAGE}&page=${page}`;
     pagesFetched++;
 
-    const result = await fetchPageWithRetry(url, page, stats);
+    const result = await fetchProductsPage(url, page, stats);
     if (result.done) break;
     if (result.failure) {
       errors.push(`page ${page}: ${result.failure}`);
@@ -203,7 +162,7 @@ async function scrapeStore(store, maxPages) {
       continue;
     }
 
-    const items = result.items;
+    const items = result.value;
     if (items.length === 0) break;
 
     let added = 0;

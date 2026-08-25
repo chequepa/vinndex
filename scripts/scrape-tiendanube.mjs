@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { fetchPageWithRetry } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -152,6 +153,7 @@ async function scrapeStore(config, maxPages) {
   const base = config.baseUrl.replace(/\/+$/, "");
   const catalog = config.catalogPath.replace(/^\/+|\/+$/g, "");
 
+  const stats = { retries: 0, recovered: false };
   let pagesFetched = 0;
   let lastAdded = 1;
 
@@ -160,22 +162,26 @@ async function scrapeStore(config, maxPages) {
     pagesFetched++;
     lastAdded = 0;
 
-    let res;
-    try {
-      res = await fetchWithTimeout(url);
-    } catch (err) {
-      errors.push(`page ${page}: fetch failed (${err.message})`);
-      break;
-    }
-    if (!res.ok) {
-      if (res.status === 404 && page > 1) break;
-      errors.push(`page ${page}: HTTP ${res.status}`);
+    // Un 403 anti-bot en la página 1 dejaba la tienda entera en 0 por 24
+    // horas. growler-store perdió sus 1.694 ofertas así el 20/08/2026.
+    const result = await fetchPageWithRetry({
+      page,
+      stats,
+      doFetch: () => fetchWithTimeout(url),
+      readBody: (res) => res.text(),
+      // En Tiendanube el 404 es fin de paginado sólo a partir de la
+      // página 2: un 404 en la 1 es la tienda que no está.
+      isDone: (status, p) => status === 404 && p > 1,
+    });
+
+    if (result.done) break;
+    if (result.failure) {
+      errors.push(`page ${page}: ${result.failure}`);
       if (page === 1) break;
       continue;
     }
 
-    const html = await res.text();
-    const lds = parseJsonLdFromHtml(html);
+    const lds = parseJsonLdFromHtml(result.value);
 
     for (const ld of lds) {
       const p = normalize(ld, config.slug);
@@ -210,6 +216,12 @@ async function scrapeStore(config, maxPages) {
     durationMs: Date.now() - t0,
     pagesFetched,
     truncated,
+    // Quedan en la metadata a propósito: desde una IP residencial estas
+    // tiendas responden 200 siempre, así que el reintento sólo se puede
+    // MEDIR en el runner. Si el bloqueo resulta persistente, estos
+    // números lo van a decir y el paso siguiente es otro (proxies).
+    retries: stats.retries,
+    recoveredAfterRetry: stats.recovered,
     productCount: products.size,
     products: [...products.values()],
     errors,
