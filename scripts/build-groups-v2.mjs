@@ -127,6 +127,7 @@ const REPORT_PATH = argVal("--report", resolve(ROOT, "data/identity-v2-report.js
 const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
 const SLUG_REGISTRY_PATH = resolve(ROOT, "data/wine-slugs.json");
 const MERGES_PATH = resolve(ROOT, "data/group-merges.json");
+const MANUAL_REDIRECTS_PATH = resolve(ROOT, "data/redirects-manual.json");
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -345,6 +346,12 @@ function main() {
           if (/^stage\d/.test(k)) delete meta[k];
         }
         if (meta.stores || meta.storeCount) prevSnapshotMeta = meta;
+        // Fallback para correr a mano con un offers.json que no traiga
+        // v1Slug. En el daily-scrape NO puede funcionar y no debe
+        // preocupar: merge-snapshots.mjs ya pisó data/snapshot.json con uno
+        // que tiene products[] y no productGroups[], así que acá el mapa
+        // sale vacío. Por eso el v1Slug lo escribe merge-snapshots.mjs,
+        // que es el único que ve el snapshot anterior antes de pisarlo.
         if (!offers.some((o) => o.v1Slug)) {
           const byUrl = new Map();
           for (const g of snap.productGroups ?? []) {
@@ -784,8 +791,24 @@ function main() {
     if (existsSync(MERGES_PATH)) {
       try { prevMerges = JSON.parse(readFileSync(MERGES_PATH, "utf8")); } catch { /* fresco */ }
     }
+    // Overlay curado a mano (data/redirects-manual.json). Va ÚLTIMO: le
+    // gana a lo acumulado y a lo que calculó esta corrida. Existe para el
+    // caso que la reconstrucción automática rechaza con razón — el Colón
+    // del issue #147, que el gate de color de rebuild-legacy-redirects.mjs
+    // separa porque una tienda dice "rosado" y otra "dulce". El gate está
+    // bien; lo que falta es la excepción curada. JSON inválido revienta el
+    // build a propósito: mejor no publicar que publicar redirects rotos.
+    const manualRedirects = {};
+    if (existsSync(MANUAL_REDIRECTS_PATH)) {
+      const manual = JSON.parse(readFileSync(MANUAL_REDIRECTS_PATH, "utf8"));
+      for (const r of manual.redirects ?? []) {
+        if (!r?.from || !r?.to) continue;
+        manualRedirects[r.from] = r.to;
+      }
+      console.log(`  redirects manuales: ${Object.keys(manualRedirects).length}`);
+    }
     const liveSlugs = new Set(outGroups.map((g) => g.groupSlug));
-    const allMerges = { ...prevMerges, ...redirects };
+    const allMerges = { ...prevMerges, ...redirects, ...manualRedirects };
     // Colapsa cadenas con detección de ciclos: si volvemos a pisar un slug
     // ya visto la cadena no tiene final y se descarta entera (antes el tope
     // de profundidad devolvía el slug del medio, que dejaba encadenados).
