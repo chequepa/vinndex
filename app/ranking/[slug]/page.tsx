@@ -7,9 +7,29 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { BottleFallback } from "@/components/BottleFallback";
 import { displayWineName } from "@/lib/displayWineName";
 import { formatArs, displayBrand } from "@/lib/snapshot";
-import { findRanking, applyRanking, RANKINGS } from "@/lib/rankings";
+import {
+  findRanking,
+  applyRanking,
+  rankingStats,
+  RANKINGS,
+} from "@/lib/rankings";
 
 type Params = { params: Promise<{ slug: string }> };
+
+/**
+ * Google recorta la description alrededor de los 160 caracteres. Si
+ * cortamos por índice queda la mitad de una palabra ("Comparamos
+ * precios pa"), que en el SERP se lee como un error del sitio. Cortamos
+ * en el último espacio y avisamos con puntos suspensivos.
+ */
+const MAX_DESCRIPTION_CHARS = 158;
+
+function clampDescription(text: string): string {
+  if (text.length <= MAX_DESCRIPTION_CHARS) return text;
+  const cut = text.slice(0, MAX_DESCRIPTION_CHARS - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:]$/, "")}…`;
+}
 
 export function generateStaticParams() {
   return RANKINGS.map((r) => ({ slug: r.slug }));
@@ -21,14 +41,35 @@ export async function generateMetadata({
   const { slug } = await params;
   const r = findRanking(slug);
   if (!r) return { title: "Ranking no encontrado · Vinndex" };
+
+  // El número concreto en el SERP es la palanca de CTR más barata que
+  // tenemos — ver el comentario largo en `rankingStats`. Google muestra
+  // ~60 caracteres de título, así que entra UN dato y es el precio:
+  // quien busca "espumante argentino" quiere saber desde cuánto.
+  const stats = rankingStats(r);
+  const title =
+    stats.minPrice != null
+      ? `${r.title} · desde ${formatArs(stats.minPrice)} | Vinndex`
+      : `${r.title} | Vinndex`;
+
+  // La description sí tiene lugar para los tres números, y van primero
+  // porque es lo que gana el click. Detrás va la copy curada del
+  // ranking, recortada para no pasarse de los ~160 caracteres que
+  // Google recorta con puntos suspensivos.
+  const lead =
+    stats.minPrice != null
+      ? `${stats.total} vinos comparados en ${stats.storeCount} vinotecas online de Argentina, desde ${formatArs(stats.minPrice)}.`
+      : `${stats.total} vinos comparados en ${stats.storeCount} vinotecas online de Argentina.`;
+  const description = clampDescription(`${lead} ${r.description}`);
+
   return {
-    title: `${r.title} · Vinndex`,
-    description: r.description,
+    title,
+    description,
     keywords: r.keywords,
     alternates: { canonical: `https://vinndex.com.ar/ranking/${r.slug}` },
     openGraph: {
-      title: `${r.title} · Vinndex`,
-      description: r.description,
+      title,
+      description,
       url: `https://vinndex.com.ar/ranking/${r.slug}`,
       siteName: "Vinndex",
       type: "website",
@@ -36,8 +77,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${r.title} · Vinndex`,
-      description: r.description,
+      title,
+      description,
     },
   };
 }
