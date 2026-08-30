@@ -107,8 +107,25 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
       ACTIVE_STORE_SLUGS.has(o.storeSlug),
     );
     // Recalcular agregados sin las offers fantasma.
+    //
+    // El piso de `MIN_VALID_PRICE_ARS` se aplica ACÁ y no sólo abajo:
+    // el punto 3 del comentario de arriba dice que una oferta por
+    // debajo del piso no puede contaminar "el lowPrice del JSON-LD ni
+    // la columna de precios", pero el filtro vivía únicamente en el
+    // `.map()` de `offers`. Los agregados se calculaban sobre el set
+    // sin filtrar, así que la oferta quedaba marcada sin stock en la
+    // tabla y AL MISMO TIEMPO seguía siendo el `minPrice` publicado —
+    // que es de donde salen el hero, el `<title>`, la meta description
+    // y el `lowPrice` del JSON-LD.
+    //
+    // Medido sobre el snapshot del 30/08: 86 fichas publicaban un
+    // precio por debajo del piso (Portillo Malbec a $630 cuando su
+    // oferta real más barata es $3.300).
     const inStockLive = liveOffers.filter(
-      (o) => o.inStock && o.priceArs != null && o.priceArs > 0,
+      (o) =>
+        o.inStock &&
+        o.priceArs != null &&
+        o.priceArs >= MIN_VALID_PRICE_ARS,
     );
     const prices = inStockLive
       .map((o) => o.priceArs)
