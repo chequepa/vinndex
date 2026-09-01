@@ -80,6 +80,50 @@ function main() {
   };
 
   const outPath = resolve(REPO_ROOT, "data/snapshot.json");
+
+  // ANTES de pisar el snapshot, guardamos el slug con el que cada oferta
+  // está publicada HOY (externalUrl → groupSlug). Es la única foto que
+  // queda del estado anterior: este writeFileSync lo borra.
+  //
+  // Por qué importa (bug encontrado el 27/08/2026). build-groups-v2.mjs
+  // arma ese mismo mapa leyendo data/snapshot.json... pero corre DESPUÉS
+  // de este script, así que lee el snapshot que acabamos de escribir, que
+  // tiene products[] y NO productGroups[]. El mapa salía vacío todos los
+  // días — "v1Slug mapeado por URL para 0 ofertas" en cada corrida— y con
+  // él se caían las dos cosas que dependen de conocer el slug anterior:
+  //
+  //   1. Preservar el slug cuando cambia la wineKey. El registro
+  //      wine-slugs.json cubre las keys que ya existían, pero una key
+  //      NUEVA (un override del catálogo, un merge por EAN, un gate que
+  //      cambia) no está en el registro y acuñaba un slug nuevo.
+  //   2. Escribir el redirect 308 del slug viejo al nuevo. `redirects`
+  //      salía siempre vacío: "redirects nuevos: 0" en todas las corridas.
+  //
+  // Resultado: cada vez que una ficha cambiaba de identidad, su URL moría
+  // en 404 sin redirect. Le pasó a la ficha #1 de tráfico del sitio (el
+  // Colón Frutos Rojos, issue #147) cuando el override del catálogo la
+  // unificó el 25/08: 51 clics en 90 días contra un 404.
+  //
+  // build-groups-v2.mjs ya sabe leer `v1Slug` de acá — su fallback está
+  // guardado detrás de `if (!offers.some((o) => o.v1Slug))`. Sólo faltaba
+  // que alguien lo escribiera.
+  const prevSlugByUrl = new Map();
+  if (existsSync(outPath)) {
+    try {
+      const prev = JSON.parse(readFileSync(outPath, "utf8"));
+      for (const g of prev.productGroups ?? []) {
+        for (const o of g.offers ?? []) {
+          if (o.externalUrl) prevSlugByUrl.set(o.externalUrl, g.groupSlug);
+        }
+      }
+    } catch {
+      /* snapshot ilegible o primera corrida → se acuñan slugs nuevos */
+    }
+  }
+  console.log(
+    `Slugs publicados hoy, para preservarlos: ${prevSlugByUrl.size} URLs`,
+  );
+
   writeFileSync(outPath, JSON.stringify(snapshot, null, 2));
   console.log(
     `\nWrote ${outPath} — ${snapshot.storeCount} stores, ${snapshot.productCount} products`,
@@ -103,6 +147,10 @@ function main() {
         priceArs: typeof p.priceArs === "string" ? Number(p.priceArs) || null : p.priceArs ?? null,
         inStock: p.inStock === true || p.inStock === "True" || p.inStock === "true",
         imageUrl: p.imageUrl ?? null,
+        // Slug con el que esta oferta estaba publicada antes de esta
+        // corrida. build-groups-v2.mjs lo usa para conservar la URL y,
+        // si igual cambia, para escribir el redirect 308.
+        v1Slug: prevSlugByUrl.get(p.externalUrl) ?? null,
       })),
     }),
   );

@@ -1,0 +1,20 @@
+{
+  "_doc": "OVERLAY MANUAL DE REDIRECTS 308 — junto con catalog-manual.json, uno de los dos únicos archivos de data/ que se editan a mano. build-groups-v2.mjs lo lee en el publish y lo fusiona con máxima autoridad sobre data/group-merges.json. El builder NUNCA lo escribe. Es para el caso que la reconstrucción automática no puede resolver sola: una ficha que cambió de identidad y cuyo slug viejo tiene tráfico, cuando los gates de rebuild-legacy-redirects.mjs la rechazan con razón. Cada entrada lleva `nota` con la evidencia de por qué es el mismo vino. Las reglas del publish siguen mandando: si el slug de origen es hoy una página viva, la página gana; si el destino no existe, el runtime tira 404 en vez de redirigir. Si el JSON es inválido el build FALLA a propósito.",
+  "redirects": [
+    {
+      "from": "colon-dulce-fresco-frutos-rojos-selecto",
+      "to": "select-frutos-rojos-colon",
+      "nota": "Colón Frutos Rojos — la ficha #1 de tráfico del sitio (39 clics en 90 días, segunda página del sitio después del home). Es una de las dos mitades del split histórico que documenta el issue #147. El override del catálogo (PR #150) por fin las unificó en el scrape del 25/08, pero la ficha unificada acuñó un slug NUEVO y las dos URLs viejas quedaron en 404 sin redirect. Evidencia de que es el mismo vino: las 4 ofertas comparten el EAN 7790168904663, y un usuario votó 'sí, es el mismo vino'."
+    },
+    {
+      "from": "vino-colon-selecto-dulce-fresco-frutos-rojos-7",
+      "to": "select-frutos-rojos-colon",
+      "nota": "La otra mitad del mismo split (12 clics en 90 días, cuarta página del sitio). Vivía hasta el snapshot del 24/08; el del 25/08 ya no la tiene. El '7' final es un artefacto del nombre de producto de Jumbo, y el override lo declara en `edicionesNoDistinguen`. Mismo EAN 7790168904663."
+    },
+    {
+      "from": "vino-rosado-dulce-colon-select-frutos-rojos-en-botella-750-m",
+      "to": "select-frutos-rojos-colon",
+      "nota": "La oferta de Carrefour del mismo vino, que era una tercera ficha aparte. Mismo EAN 7790168904663. Es el caso que rebuild-legacy-redirects.mjs NO puede recuperar solo, y con razón: su gate de color ve 'rosado' contra 'dulce' y los declara vinos distintos. El gate está bien (se midió dos veces: de 51 pares que bloquea, acierta casi siempre), lo que falta es la excepción curada, y esto es ese lugar."
+    }
+  ]
+}

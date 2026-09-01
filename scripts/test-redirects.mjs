@@ -87,7 +87,34 @@ check(
   encadenados.slice(0, 3).join(", "),
 );
 
-// 5. LA IMPORTANTE: el mapa no encogió de golpe contra lo committeado.
+// 5. El overlay manual llegó al mapa publicado. Si alguien agrega una
+//    entrada a data/redirects-manual.json y el publish no la aplica, el
+//    caso que se quiso curar sigue en 404 y nadie se entera. Se permite
+//    la excepción documentada: destino que hoy no existe (el runtime lo
+//    va a rechazar igual) u origen que volvió a ser página viva.
+try {
+  const manual = JSON.parse(
+    readFileSync(resolve(ROOT, "data/redirects-manual.json"), "utf8"),
+  );
+  const faltan = [];
+  for (const r of manual.redirects ?? []) {
+    if (!r?.from || !r?.to) continue;
+    if (live.has(r.from)) continue; // la página viva gana: correcto
+    if (!live.has(r.to)) continue; // destino inexistente: el runtime 404ea
+    if (merges[r.from] !== r.to) faltan.push(`${r.from} → ${r.to}`);
+  }
+  check(
+    "el overlay manual está aplicado",
+    faltan.length === 0,
+    faltan.length ? faltan.slice(0, 3).join(" · ") : `${(manual.redirects ?? []).length} entradas`,
+  );
+} catch (e) {
+  if (e.code !== "ENOENT") {
+    check("data/redirects-manual.json es JSON válido", false, e.message);
+  }
+}
+
+// 6. LA IMPORTANTE: el mapa no encogió de golpe contra lo committeado.
 let prevCount = null;
 try {
   const prev = JSON.parse(
@@ -113,7 +140,7 @@ if (prevCount === null) {
   );
 }
 
-// 6. Cuántos resuelven hoy. No es un test (que un destino esté sin stock
+// 7. Cuántos resuelven hoy. No es un test (que un destino esté sin stock
 //    hoy es normal y la entrada se conserva a propósito), pero el número
 //    sirve para mirar la tendencia en el log del run.
 const vivos = keys.filter((k) => live.has(merges[k])).length;
