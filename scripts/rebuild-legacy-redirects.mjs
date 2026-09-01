@@ -30,8 +30,15 @@
  *   node scripts/rebuild-legacy-redirects.mjs --old /tmp/snapshot-v1.json --write
  *
  * Sin --write hace dry-run e imprime el reporte. Con --write fusiona en
- * data/group-merges.json (que es acumulativo: el pipeline preserva lo
- * previo y descarta solo. lo que apunta a un destino que dejó de existir).
+ * data/group-merges.json, que es acumulativo: el pipeline preserva lo
+ * previo y no borra nunca una entrada.
+ *
+ * OJO con la versión anterior de este comentario, que decía que el
+ * pipeline "descarta sólo lo que apunta a un destino que dejó de existir".
+ * Era cierto y era el bug: como la corrida siguiente releía el archivo ya
+ * podado, un vino sin stock por una mañana borraba para siempre los
+ * redirects que apuntaban a él. Se arregló el 27/08/2026 — ver el bloque
+ * de PUBLISH en build-groups-v2.mjs y scripts/test-redirects.mjs.
  */
 
 import { readFileSync, writeFileSync } from "node:fs";

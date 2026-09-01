@@ -760,25 +760,51 @@ function main() {
       }),
     );
 
-    // Redirects 308: mapa acumulado + los nuevos de esta corrida. Un slug
+    // Redirects 308: mapa ACUMULADO + los nuevos de esta corrida. Un slug
     // que hoy es página viva no puede ser redirect (la página gana — el
     // [slug] resuelve grupo ANTES de mirar merges, pero limpiamos igual).
+    //
+    // El archivo es un ARCHIVO HISTÓRICO, igual que wine-slugs.json: una
+    // entrada no se borra nunca. Hasta el 27/08/2026 esta función tiraba
+    // toda entrada cuyo destino no estuviera vivo ESE día, y como la
+    // corrida siguiente releía el archivo ya podado, la pérdida era
+    // definitiva. Un vino que se queda sin stock una mañana (o una tienda
+    // que ese día no lo lista) borraba para siempre los redirects que
+    // apuntaban a él, y no volvían cuando el vino reponía. Un trinquete
+    // que sólo perdía: 13.494 redirects el 29/07 → 10.018 el 27/08, o sea
+    // ~3.500 URLs indexadas de vuelta en 404 sin que nadie tocara nada.
+    //
+    // No hace falta podar acá porque el runtime ya decide: resolveMergedSlug()
+    // en lib/snapshot.ts sigue la cadena y sólo redirige si findGroup()
+    // encuentra el destino entre los grupos publicados (que además ya
+    // excluye no-vinos y grupos sin ofertas). Un destino sin stock hoy
+    // simplemente no resuelve → 404, exactamente lo que pasaba antes,
+    // pero la entrada sobrevive y vuelve a servir cuando el vino repone.
     let prevMerges = {};
     if (existsSync(MERGES_PATH)) {
       try { prevMerges = JSON.parse(readFileSync(MERGES_PATH, "utf8")); } catch { /* fresco */ }
     }
     const liveSlugs = new Set(outGroups.map((g) => g.groupSlug));
     const allMerges = { ...prevMerges, ...redirects };
-    const finalDest = (slug, depth = 0) => {
-      if (depth > 10) return slug;
-      const d = allMerges[slug];
-      return d ? finalDest(d, depth + 1) : slug;
+    // Colapsa cadenas con detección de ciclos: si volvemos a pisar un slug
+    // ya visto la cadena no tiene final y se descarta entera (antes el tope
+    // de profundidad devolvía el slug del medio, que dejaba encadenados).
+    const finalDest = (slug) => {
+      const seen = new Set([slug]);
+      let cur = slug;
+      while (allMerges[cur]) {
+        const next = allMerges[cur];
+        if (seen.has(next)) return null; // ciclo
+        seen.add(next);
+        cur = next;
+      }
+      return cur;
     };
     const resolved = {};
     for (const from of Object.keys(allMerges)) {
-      if (liveSlugs.has(from)) continue;
+      if (liveSlugs.has(from)) continue; // la página viva gana
       const to = finalDest(from);
-      if (to !== from && liveSlugs.has(to)) resolved[from] = to;
+      if (to && to !== from) resolved[from] = to;
     }
     writeFileSync(MERGES_PATH, JSON.stringify(resolved, null, 2));
     console.log(`  PUBLISH: snapshot.json + wine-slugs.json (${Object.keys(mergedRegistry).length}) + group-merges.json (${Object.keys(resolved).length} redirects)`);

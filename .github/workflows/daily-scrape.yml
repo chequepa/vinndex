@@ -102,6 +102,14 @@ jobs:
       - name: Identidad v2 — agrupación + publish
         run: node scripts/build-groups-v2.mjs --publish
 
+      # Los redirects 308 son el SEO de las URLs viejas y se fueron
+      # borrando solos durante un mes sin que nadie lo viera (13.494 el
+      # 29/07 → 10.018 el 27/08). El mapa ahora es acumulativo; este test
+      # es el que avisa si vuelve a encoger. BLOQUEANTE, misma doctrina
+      # que el harness: mejor el snapshot de ayer que romper 3.500 URLs.
+      - name: Invariantes de redirects (bloqueante)
+        run: node scripts/test-redirects.mjs
+
       # Las preguntas "¿es el mismo vino?" salen de los pares que
       # comparten EAN pero los gates separaron, y ESO cambia con cada
       # snapshot: fichas que se fusionan, se parten o desaparecen. Sin
