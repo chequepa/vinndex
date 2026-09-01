@@ -512,3 +512,45 @@ export function applyRanking(ranking: Ranking): ProductGroup[] {
   const limit = ranking.limit ?? 24;
   return groups.filter(ranking.filter).sort(ranking.sort).slice(0, limit);
 }
+
+export type RankingStats = {
+  /** Vinos que pasan el filtro, SIN el corte de `limit`. */
+  total: number;
+  /** El más barato del ranking entero. `null` si ninguno publica precio. */
+  minPrice: number | null;
+  /** Vinotecas distintas que aparecen entre los vinos del ranking. */
+  storeCount: number;
+};
+
+/**
+ * Números reales del ranking, para el title y la description.
+ *
+ * Search Console (24/08) dice que los /ranking son el peor CTR del
+ * sitio: `top-espumantes` tiene 594 impresiones en posición 9,4 y un
+ * CTR de 0,5%. Rankean y nadie los clickea, y el título no dice nada
+ * que la competencia no diga — "Top espumantes argentinos · Vinndex".
+ *
+ * Es el mismo agujero que tenían las fichas /vino antes de ponerles el
+ * precio en el título, y ahí la palanca funcionó. Se replica: el
+ * número concreto (desde cuánto, cuántos vinos, cuántas vinotecas) es
+ * lo que diferencia un comparador de una nota de blog.
+ *
+ * `total` cuenta el filtro COMPLETO y no la página (`limit` corta en
+ * 24): el reclamo del SERP es cuántos vinos se compararon para armar
+ * la lista, no cuántos entran en pantalla.
+ */
+export function rankingStats(ranking: Ranking): RankingStats {
+  const matched = groups.filter(ranking.filter);
+  const stores = new Set<string>();
+  let minPrice: number | null = null;
+
+  for (const g of matched) {
+    for (const o of g.offers ?? []) stores.add(o.storeSlug);
+    const p = g.minPrice;
+    if (typeof p === "number" && p > 0 && (minPrice === null || p < minPrice)) {
+      minPrice = p;
+    }
+  }
+
+  return { total: matched.length, minPrice, storeCount: stores.size };
+}
