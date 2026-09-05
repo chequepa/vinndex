@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-04T07:28:50.551Z",
-  "snapshotGeneratedAt": "2026-09-04T07:27:21.093Z",
-  "groupCount": 39973,
-  "groupsWithDistinctiveTokens": 34065,
+  "generatedAt": "2026-09-05T07:32:02.857Z",
+  "snapshotGeneratedAt": "2026-09-05T07:31:23.251Z",
+  "groupCount": 40242,
+  "groupsWithDistinctiveTokens": 34291,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
     "total": 23,
@@ -50,6 +50,36 @@
         ]
       },
       {
+        "key": "blend|edition",
+        "totalStoresIfMerged": 10,
+        "members": [
+          {
+            "slug": "black-edition-blend-dona-paula",
+            "brand": "Doña Paula",
+            "canonicalName": "Black Edition Blend",
+            "storeCount": 9
+          },
+          {
+            "slug": "eleven-street-whisky-blend-stout-edition-750cc",
+            "brand": null,
+            "canonicalName": "Eleven Street Whisky Blend Stout Edition (750cc)",
+            "storeCount": 1
+          },
+          {
+            "slug": "crios-blend-susana-balbo",
+            "brand": "Susana Balbo",
+            "canonicalName": "Crios Limited Edition Blend",
+            "storeCount": 0
+          },
+          {
+            "slug": "norton-lote-negro-unique-edition-blend",
+            "brand": null,
+            "canonicalName": "Norton Lote Negro Unique Edition Blend",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
         "key": "especial|extra",
         "totalStoresIfMerged": 9,
         "members": [
@@ -69,36 +99,6 @@
             "slug": "extra-brut-edicion-especial-chandon",
             "brand": "Chandon",
             "canonicalName": "Extra Brut Edición Especial",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "blend|edition",
-        "totalStoresIfMerged": 9,
-        "members": [
-          {
-            "slug": "black-edition-blend-dona-paula",
-            "brand": "Doña Paula",
-            "canonicalName": "Black Edition Blend",
-            "storeCount": 8
-          },
-          {
-            "slug": "eleven-street-whisky-blend-stout-edition-750cc",
-            "brand": null,
-            "canonicalName": "Eleven Street Whisky Blend Stout Edition (750cc)",
-            "storeCount": 1
-          },
-          {
-            "slug": "crios-blend-susana-balbo",
-            "brand": "Susana Balbo",
-            "canonicalName": "Crios Limited Edition Blend",
-            "storeCount": 0
-          },
-          {
-            "slug": "norton-lote-negro-unique-edition-blend",
-            "brand": null,
-            "canonicalName": "Norton Lote Negro Unique Edition Blend",
             "storeCount": 0
           }
         ]
@@ -171,12 +171,6 @@
             "slug": "blend-corte-durigutti-unico",
             "brand": "Durigutti",
             "canonicalName": "Corte Único Blend",
-            "storeCount": 0
-          },
-          {
-            "slug": "amalaya-corte-unico-tinto-750-ml",
-            "brand": null,
-            "canonicalName": "Vino tinto Blend Amalaya corte único 750 ml",
             "storeCount": 0
           }
         ]
@@ -718,12 +712,6 @@
             "brand": "Finca Flichman",
             "canonicalName": "Fino Plata Malbec",
             "storeCount": 0
-          },
-          {
-            "slug": "vino-tinto-fino-malbec-altos-del-plata-375-ml",
-            "brand": null,
-            "canonicalName": "Vino tinto fino Malbec Altos del Plata 375 ml",
-            "storeCount": 0
           }
         ]
       },
@@ -755,7 +743,7 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 13839,
+    "total": 13981,
     "items": [
       {
         "jaccard": 1,
@@ -983,7 +971,7 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 39,
+        "totalStoresIfMerged": 40,
         "a": {
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
@@ -994,7 +982,7 @@
           "slug": "brut-correas-espumante-extra-navarro",
           "brand": "Navarro Correas",
           "canonicalName": "Extra Brut",
-          "storeCount": 12
+          "storeCount": 13
         }
       },
       {
@@ -1175,22 +1163,6 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 37,
-        "a": {
-          "slug": "bodega-con-escorihuela-malbec-pequenas-producciones",
-          "brand": null,
-          "canonicalName": "Pequeñas Producciones Malbec",
-          "storeCount": 23
-        },
-        "b": {
-          "slug": "cabernet-escorihuela-gascon-pequenas-producciones-sauvignon",
-          "brand": "Escorihuela",
-          "canonicalName": "Pequeñas Producciones Cabernet",
-          "storeCount": 14
-        }
-      },
-      {
-        "jaccard": 1,
         "totalStoresIfMerged": 35,
         "a": {
           "slug": "boher-bot-brut-casa-champana-extra",
@@ -1337,16 +1309,16 @@
         "jaccard": 1,
         "totalStoresIfMerged": 33,
         "a": {
-          "slug": "bodega-con-escorihuela-malbec-pequenas-producciones",
-          "brand": null,
-          "canonicalName": "Pequeñas Producciones Malbec",
-          "storeCount": 23
+          "slug": "boher-bot-brut-casa-champana-extra",
+          "brand": "Casa Boher",
+          "canonicalName": "Extra Brut",
+          "storeCount": 20
         },
         "b": {
-          "slug": "noir-pequenas-pinot-producciones",
-          "brand": "Escorihuela",
-          "canonicalName": "Pequeñas Producciones Pinot noir",
-          "storeCount": 10
+          "slug": "brut-correas-espumante-extra-navarro",
+          "brand": "Navarro Correas",
+          "canonicalName": "Extra Brut",
+          "storeCount": 13
         }
       },
       {
@@ -1385,16 +1357,16 @@
         "jaccard": 1,
         "totalStoresIfMerged": 32,
         "a": {
-          "slug": "boher-bot-brut-casa-champana-extra",
-          "brand": "Casa Boher",
+          "slug": "brut-cuvee-espumante-extra-salentein-speciale",
+          "brand": "Salentein",
           "canonicalName": "Extra Brut",
-          "storeCount": 20
+          "storeCount": 19
         },
         "b": {
           "slug": "brut-correas-espumante-extra-navarro",
           "brand": "Navarro Correas",
           "canonicalName": "Extra Brut",
-          "storeCount": 12
+          "storeCount": 13
         }
       },
       {
@@ -1410,6 +1382,22 @@
           "slug": "escorihuela-pequenas-producciones-syrah",
           "brand": "Escorihuela",
           "canonicalName": "Pequeñas Producciones Syrah",
+          "storeCount": 9
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 32,
+        "a": {
+          "slug": "bodega-con-escorihuela-malbec-pequenas-producciones",
+          "brand": null,
+          "canonicalName": "Pequeñas Producciones Malbec",
+          "storeCount": 23
+        },
+        "b": {
+          "slug": "noir-pequenas-pinot-producciones",
+          "brand": "Escorihuela",
+          "canonicalName": "Pequeñas Producciones Pinot noir",
           "storeCount": 9
         }
       },
@@ -1475,22 +1463,6 @@
           "brand": "Trumpeter",
           "canonicalName": "Extra Brut Chardonnay",
           "storeCount": 11
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 31,
-        "a": {
-          "slug": "brut-cuvee-espumante-extra-salentein-speciale",
-          "brand": "Salentein",
-          "canonicalName": "Extra Brut",
-          "storeCount": 19
-        },
-        "b": {
-          "slug": "brut-correas-espumante-extra-navarro",
-          "brand": "Navarro Correas",
-          "canonicalName": "Extra Brut",
-          "storeCount": 12
         }
       },
       {
@@ -1615,40 +1587,8 @@
           "storeCount": 27
         },
         "b": {
-          "slug": "extra-brut-bianchi",
-          "brand": "Bianchi",
-          "canonicalName": "Extra Brut",
-          "storeCount": 3
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 30,
-        "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 27
-        },
-        "b": {
           "slug": "extra-brut-las-perdices",
           "brand": "Las Perdices",
-          "canonicalName": "Extra Brut",
-          "storeCount": 3
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 30,
-        "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 27
-        },
-        "b": {
-          "slug": "extra-brut-mercier",
-          "brand": "Mercier",
           "canonicalName": "Extra Brut",
           "storeCount": 3
         }
@@ -1705,6 +1645,22 @@
         "jaccard": 1,
         "totalStoresIfMerged": 30,
         "a": {
+          "slug": "bodega-con-escorihuela-malbec-pequenas-producciones",
+          "brand": null,
+          "canonicalName": "Pequeñas Producciones Malbec",
+          "storeCount": 23
+        },
+        "b": {
+          "slug": "cabernet-escorihuela-gascon-pequenas-producciones-sauvignon",
+          "brand": "Escorihuela",
+          "canonicalName": "Pequeñas Producciones Cabernet",
+          "storeCount": 7
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 30,
+        "a": {
           "slug": "brut-espumante-nature-salentein",
           "brand": "Salentein",
           "canonicalName": "Brut Nature",
@@ -1743,8 +1699,40 @@
           "storeCount": 27
         },
         "b": {
+          "slug": "extra-brut-bianchi",
+          "brand": "Bianchi",
+          "canonicalName": "Extra Brut",
+          "storeCount": 2
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 29,
+        "a": {
+          "slug": "brut-chandon-espumante-extra",
+          "brand": "Chandon",
+          "canonicalName": "Extra Brut",
+          "storeCount": 27
+        },
+        "b": {
           "slug": "brut-espumante-extra-familia-gascon",
           "brand": "Familia Gascón",
+          "canonicalName": "Extra Brut",
+          "storeCount": 2
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 29,
+        "a": {
+          "slug": "brut-chandon-espumante-extra",
+          "brand": "Chandon",
+          "canonicalName": "Extra Brut",
+          "storeCount": 27
+        },
+        "b": {
+          "slug": "extra-brut-mercier",
+          "brand": "Mercier",
           "canonicalName": "Extra Brut",
           "storeCount": 2
         }
@@ -1926,6 +1914,38 @@
         }
       },
       {
+        "jaccard": 1,
+        "totalStoresIfMerged": 28,
+        "a": {
+          "slug": "brut-champagne-extra-luigibosca-luigibosca",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Extra Brut",
+          "storeCount": 15
+        },
+        "b": {
+          "slug": "brut-correas-espumante-extra-navarro",
+          "brand": "Navarro Correas",
+          "canonicalName": "Extra Brut",
+          "storeCount": 13
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 28,
+        "a": {
+          "slug": "brut-extra-rutini",
+          "brand": "Rutini",
+          "canonicalName": "Extra Brut",
+          "storeCount": 15
+        },
+        "b": {
+          "slug": "brut-correas-espumante-extra-navarro",
+          "brand": "Navarro Correas",
+          "canonicalName": "Extra Brut",
+          "storeCount": 13
+        }
+      },
+      {
         "jaccard": 0.75,
         "totalStoresIfMerged": 28,
         "a": {
@@ -2003,38 +2023,6 @@
           "brand": null,
           "canonicalName": "Baron B Extra Brut en Estuche",
           "storeCount": 2
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 28,
-        "a": {
-          "slug": "brut-espumante-luigibosca-luigibosca-nature",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Brut Nature",
-          "storeCount": 18
-        },
-        "b": {
-          "slug": "brut-nature-nieto-senetiner-2",
-          "brand": "Nieto Senetiner",
-          "canonicalName": "Brut Nature",
-          "storeCount": 10
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 28,
-        "a": {
-          "slug": "brut-espumante-luigibosca-luigibosca-nature",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Brut Nature",
-          "storeCount": 18
-        },
-        "b": {
-          "slug": "brut-champana-nature-rutini",
-          "brand": "Rutini",
-          "canonicalName": "Brut Nature",
-          "storeCount": 10
         }
       }
     ]
