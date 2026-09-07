@@ -34,6 +34,17 @@ const MAX_PAGES = 150;
 const PAGE_DELAY_MS = 600;
 const FETCH_TIMEOUT_MS = 25_000;
 
+/**
+ * Cuántas páginas seguidas pueden fallar antes de dar la tienda por
+ * perdida. El `continue` de abajo existe para que un error suelto en la
+ * página 40 no tire las 39 que ya andaban, pero sin tope convierte un
+ * bloqueo anti-bot en un muro: `ligier` viene devolviendo 403 en las 150
+ * páginas, todas las mañanas, y las pedimos igual una por una.
+ *
+ * Tres es suficiente para distinguir un hipo de un portón cerrado.
+ */
+const MAX_CONSECUTIVE_ERRORS = 3;
+
 const STORES = JSON.parse(
   readFileSync(resolve(REPO_ROOT, "data/stores.json"), "utf8"),
 ).filter((s) => s.platform === "magento");
@@ -127,6 +138,7 @@ async function scrapeStore(store) {
   const base = store.baseUrl.replace(/\/+$/, "");
   let pagesFetched = 0;
   let filtered = 0;
+  let consecutiveErrors = 0;
 
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = page === 1 ? `${base}${store.searchPath}` : `${base}${store.searchPath}?p=${page}`;
@@ -145,8 +157,16 @@ async function scrapeStore(store) {
       errors.push(`page ${page}: HTTP ${res.status}`);
       console.log(`HTTP ${res.status}`);
       if (res.status === 429) break;
+      if (++consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        errors.push(
+          `corte: ${consecutiveErrors} páginas seguidas con error, la tienda no está respondiendo`,
+        );
+        console.log(`  corte tras ${consecutiveErrors} errores seguidos`);
+        break;
+      }
       continue;
     }
+    consecutiveErrors = 0;
 
     const html = await res.text();
     const items = parseProductsFromHtml(html, store);
