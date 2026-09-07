@@ -50,6 +50,16 @@ for (const [n, por] of [
   ["Glen Moray Our Classic Single Malt 700ml", "single malt sin decir whisky"],
   ["Single Malt Glen Moray Chardonnay Cask Finish 700 Ml", "single malt manda sobre chardonnay"],
   ["Cutty Sark Blended Scotch 750 Cc", "blended scotch"],
+  ["TE LA VIRGINIA CEDRON X 25 SAQ.", "té en saquitos"],
+  ["Fika Infusión Herbal x 40 saquitos", "infusión en saquitos"],
+  ["Puritos Panter Mignon Red x 1", "cigarros"],
+  ["Tabaco Cerrito Vainilla Extra para armar cigarrillos", "tabaco encabezando"],
+  ["Habano Montecristo N 4", "habano"],
+  ["Chips De Papa Merken Lyv Snacks X 55g", "snack"],
+  ["Nueces Pecan Mariposa x 100 grs", "frutos secos"],
+  ["Cafe Molido Segafredo Espresso Casa 250g Tostado", "café"],
+  ["Pack 3 Agua De Coco Pura Natural Sin Azucares 500ml Goya", "agua de coco"],
+  ["SAL MARINA GRUESA LIBERATO X 500 GR", "sal gourmet"],
 ]) check(n, fuera(n) === true, por);
 
 console.log("\n=== SÍ ES VINO (no se puede borrar) ===");
@@ -68,6 +78,8 @@ for (const [n, por] of [
   ["DADA 8 CHOCOLATE", "Dadá Art es vino; chocolate es nota de cata"],
   ["Vino Dada Art 1 Moka 750cc", "ídem con café"],
   ["Dadá Malbec", "misma bodega"],
+  ["Angélica Zapata Cabernet Sauvignon - notas de tabaco y cuero", "tabaco al final es nota de cata"],
+  ["Salentein Numina Gran Corte", "control, nada que ver"],
 ]) check(n, fuera(n) === false, por);
 
 console.log();
