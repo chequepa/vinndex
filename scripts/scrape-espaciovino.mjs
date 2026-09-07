@@ -53,6 +53,14 @@ const STORE = {
 };
 const MAX_PAGES = 80;
 const PAGE_DELAY_MS = 600;
+
+/**
+ * Mismo tope que en `scrape-magento.mjs`: el `continue` de abajo protege
+ * contra un error suelto a mitad del paginado, pero sin límite convierte
+ * un bloqueo anti-bot en 80 requests inútiles. Acá es preventivo — la
+ * tienda hoy responde — pero el código es idéntico al que sí se rompió.
+ */
+const MAX_CONSECUTIVE_ERRORS = 3;
 const FETCH_TIMEOUT_MS = 25_000;
 
 const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
@@ -137,6 +145,7 @@ async function main() {
   const errors = [];
   let pagesFetched = 0;
   let filtered = 0;
+  let consecutiveErrors = 0;
   const base = STORE.baseUrl.replace(/\/+$/, "");
 
   console.log(`== ${STORE.name} ==`);
@@ -158,8 +167,16 @@ async function main() {
       errors.push(`page ${page}: HTTP ${res.status}`);
       console.log(`HTTP ${res.status}`);
       if (res.status === 429) break;
+      if (++consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        errors.push(
+          `corte: ${consecutiveErrors} páginas seguidas con error, la tienda no está respondiendo`,
+        );
+        console.log(`  corte tras ${consecutiveErrors} errores seguidos`);
+        break;
+      }
       continue;
     }
+    consecutiveErrors = 0;
 
     const items = parseProductsFromHtml(await res.text());
     if (items.length === 0) {
