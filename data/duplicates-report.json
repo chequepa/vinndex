@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-06T07:34:35.867Z",
-  "snapshotGeneratedAt": "2026-09-06T07:34:02.863Z",
-  "groupCount": 40079,
-  "groupsWithDistinctiveTokens": 34118,
+  "generatedAt": "2026-09-07T07:47:42.248Z",
+  "snapshotGeneratedAt": "2026-09-07T07:47:07.831Z",
+  "groupCount": 39831,
+  "groupsWithDistinctiveTokens": 33911,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
     "total": 21,
@@ -254,6 +254,48 @@
         ]
       },
       {
+        "key": "chenin|semillon",
+        "totalStoresIfMerged": 6,
+        "members": [
+          {
+            "slug": "vino-blanco-clasico-san-felipe-750-ml",
+            "brand": null,
+            "canonicalName": "Vino Blanco Chardonnay, Chenin y Semillón 750 Cc San Felipe",
+            "storeCount": 2
+          },
+          {
+            "slug": "el-regreso-semillon-chenin-750-cc",
+            "brand": null,
+            "canonicalName": "El Regreso Semillon Chenin 750 Cc",
+            "storeCount": 1
+          },
+          {
+            "slug": "dv-catena-semillon-chenin",
+            "brand": null,
+            "canonicalName": "DV Catena Semillon - Chenin",
+            "storeCount": 1
+          },
+          {
+            "slug": "blanco-catena-chenin-dv-historico-semillon",
+            "brand": "DV Catena",
+            "canonicalName": "Blanco Histórico Chenin Semillon",
+            "storeCount": 1
+          },
+          {
+            "slug": "banco-chenin-historico-semillon",
+            "brand": null,
+            "canonicalName": "D.V. Banco Histórico Semillon-Chenin x 750ml.",
+            "storeCount": 1
+          },
+          {
+            "slug": "don-rui-cheninsemillon-martins",
+            "brand": "Martin's",
+            "canonicalName": "Don Rui Chenin Semillon",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
         "key": "casa|corte",
         "totalStoresIfMerged": 6,
         "members": [
@@ -321,42 +363,6 @@
             "slug": "antonieta-brut-nature",
             "brand": null,
             "canonicalName": "ANTONIETA BRUT NATURE",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "chenin|semillon",
-        "totalStoresIfMerged": 4,
-        "members": [
-          {
-            "slug": "el-regreso-semillon-chenin-750-cc",
-            "brand": null,
-            "canonicalName": "El Regreso Semillon Chenin 750 Cc",
-            "storeCount": 1
-          },
-          {
-            "slug": "dv-catena-semillon-chenin",
-            "brand": null,
-            "canonicalName": "DV Catena Semillon - Chenin",
-            "storeCount": 1
-          },
-          {
-            "slug": "blanco-catena-chenin-dv-historico-semillon",
-            "brand": "DV Catena",
-            "canonicalName": "Blanco Histórico Chenin Semillon",
-            "storeCount": 1
-          },
-          {
-            "slug": "banco-chenin-historico-semillon",
-            "brand": null,
-            "canonicalName": "D.V. Banco Histórico Semillon-Chenin x 750ml.",
-            "storeCount": 1
-          },
-          {
-            "slug": "don-rui-cheninsemillon-martins",
-            "brand": "Martin's",
-            "canonicalName": "Don Rui Chenin Semillon",
             "storeCount": 0
           }
         ]
@@ -628,12 +634,6 @@
             "brand": "Finca Flichman",
             "canonicalName": "Fino Plata Malbec",
             "storeCount": 0
-          },
-          {
-            "slug": "vino-tinto-fino-malbec-altos-del-plata-375-ml",
-            "brand": null,
-            "canonicalName": "Vino tinto fino Malbec Altos del Plata 375 ml",
-            "storeCount": 0
           }
         ]
       },
@@ -665,7 +665,7 @@
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 14127,
+    "total": 13598,
     "items": [
       {
         "jaccard": 1,
