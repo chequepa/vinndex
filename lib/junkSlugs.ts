@@ -58,6 +58,35 @@ const ALMACEN_RE =
 const BARWARE_RE =
   /\b(sacacorchos|descorchador|frapera|hielera|cristaleria|libbey|riedel|molinillo|posavaso|portabotella|termometro|fernetometro)\b/i;
 /**
+ * Almacén, segunda tanda. `ALMACEN_RE` nombra fiambre y conserva, pero la
+ * vinoteca que vende jamón también vende té en saquitos, café, snacks,
+ * frutos secos, sal gourmet y cigarros — y nada de eso caía en ningún
+ * filtro. Medido sobre el snapshot del 06/09/2026: **244 fichas, ninguna
+ * multi-tienda**, así que sacarlas no borra ni una comparación de precios.
+ *
+ * Cada término se eligió por precisión, no por cobertura: se validó contra
+ * los 3.441 vinos del catálogo curado y contra los 34.445 grupos que hoy
+ * sobreviven al filtro, con **cero falsos positivos** en ambos.
+ *
+ * Quedan AFUERA a propósito dos palabras que parecían obvias:
+ *   · `chocolate` — es sabor de vino dulce, no producto: `DADA 8
+ *     CHOCOLATE` y `Vino tinto Chocolate Dadá` son vinos de Dadá Art. Ya
+ *     estaba documentado en `SPIRIT_BRAND_RE` y sigue valiendo.
+ *   · `azucar` — "sin azúcares añadidos" aparece en fichas de vino.
+ */
+const ALMACEN2_RE =
+  /\b(saq|saqs|saquitos?|puritos?|cigarrillos?|habanos?|chips|snacks?|mani|nueces|almendras|pistachos?|frutos secos|pasas de uva|capsulas de cafe|cafe molido|cafe en grano|cafe tostado|agua de coco|sal marina|sal fina|sal gruesa|sal entrefina)\b/i;
+
+/**
+ * `tabaco` va anclado al inicio por la misma razón que los accesorios de
+ * abajo: es una NOTA DE CATA clásica de los tintos con crianza, así que
+ * suelta borraría vinos reales. El producto se lista con el objeto
+ * adelante ("Tabaco Cerrito Vainilla", "Tabaco Achalay Virginia"); el vino
+ * lo menciona en la descripción.
+ */
+const TABACO_HEAD_RE = /^tabaco\b/i;
+
+/**
  * Palabras ambiguas: sólo cuentan si ENCABEZAN el nombre. Un accesorio se
  * lista con el objeto adelante ("Decanter Riedel Merlot", "Tapón para
  * espumante"); un vino las menciona al final, y ahí son parte de la
@@ -87,8 +116,10 @@ export function isJunkWineGroup(g: {
   if (BUNDLE_NAME_RE.test(n)) return true;
   if (COPA_NAME_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
+  if (ALMACEN2_RE.test(n)) return true;
   if (BARWARE_RE.test(n)) return true;
   if (ACCESORIO_HEAD_RE.test(n.trim())) return true;
+  if (TABACO_HEAD_RE.test(n.trim())) return true;
   return false;
 }
 
@@ -186,7 +217,9 @@ export function isNonWineGroup(g: { canonicalName: string }): boolean {
   if (SPIRIT_STYLE_RE.test(n)) return true;
   if (SIDRA_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
+  if (ALMACEN2_RE.test(n)) return true;
   if (BARWARE_RE.test(n)) return true;
   if (ACCESORIO_HEAD_RE.test(n.trim())) return true;
+  if (TABACO_HEAD_RE.test(n.trim())) return true;
   return false;
 }
