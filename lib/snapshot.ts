@@ -2,9 +2,15 @@ import snapshotJson from "@/data/snapshot.json";
 import storesConfig from "@/data/stores.json";
 import groupMergesJson from "@/data/group-merges.json";
 import type { ScrapedProduct } from "./adapters/types";
-import type { ProductGroup } from "./matching";
+import type { ProductGroup, ProductOffer } from "./matching";
 import { bestScoreFor } from "./scores";
 import { isJunkWineGroup, isNonWineGroup } from "./junkSlugs";
+import {
+  buildVocabulary,
+  correctTokens,
+  suggestQueries,
+  type Vocabulary,
+} from "./fuzzy";
 
 // Stores actualmente VIGENTES según `data/stores.json` — fuente de verdad.
 // Sirve para filtrar offers fantasma: cuando sacamos una tienda del config
@@ -68,16 +74,77 @@ export function snapshotStats() {
   };
 }
 
+/**
+ * Oferta que entra a la BASE DE PRECIO de un grupo (min/max/storeCount de
+ * la tarjeta, del hero de la ficha, del JSON-LD): botella suelta de 750ml
+ * (`comparable`, o la heurística por volumen/nombre si el snapshot no trae
+ * el campo), no de colección y sin precio sospechoso. Es la misma regla
+ * que `bottleStats()` y que el pipeline (scripts/build-groups-v2.mjs,
+ * buscar "let basis = inStock.filter").
+ */
+function isPriceBasisOffer(o: ProductOffer): boolean {
+  if (o.priceSuspect || o.isCollector) return false;
+  if (typeof o.comparable === "boolean") return o.comparable;
+  return !isNonComparableOffer(o);
+}
+
+/**
+ * Base de precio de un grupo con la MISMA cadena de fallback que el
+ * pipeline: comparables → cualquier in-stock no-colección no-sospechosa
+ * (magnum, caja, estuche) → cualquier in-stock no-sospechosa (colección).
+ * Si no queda nada, la base es vacía y el grupo publica precio null. Los
+ * precios sospechosos NUNCA vuelven a entrar.
+ */
+function priceBasis(inStock: ProductOffer[]): ProductOffer[] {
+  let basis = inStock.filter(isPriceBasisOffer);
+  if (basis.length === 0) {
+    basis = inStock.filter((o) => !o.isCollector && !o.priceSuspect);
+  }
+  if (basis.length === 0) basis = inStock.filter((o) => !o.priceSuspect);
+  return basis;
+}
+
+/**
+ * En Argentina "Cabernet" a secas es Cabernet Sauvignon: el pipeline
+ * emitía las dos etiquetas como facetas distintas ("Cabernet" 763 +
+ * "Cabernet Sauvignon" 1.757) y había fichas con ambas. Unificamos acá,
+ * en la fuente única, y dedupeamos. "Cabernet Franc" no se toca.
+ */
+const VARIETAL_ALIASES: Record<string, string> = {
+  cabernet: "Cabernet Sauvignon",
+};
+function normalizeVarietals(vs: string[] | undefined): string[] | undefined {
+  if (!vs) return vs;
+  const out: string[] = [];
+  for (const v of vs) {
+    const n = VARIETAL_ALIASES[v.trim().toLowerCase()] ?? v;
+    if (!out.includes(n)) out.push(n);
+  }
+  return out;
+}
+
+// Detects "case", "estuche", "pack", "caja x N" wines — different SKU
+// from a single bottle. Pooling them in the same group inflates max
+// price (e.g. "AHORRO MÁXIMO 95%" comparing 1 bottle vs a case of 6).
+// Declarada acá arriba porque `groups` (más abajo) la usa al cargar el
+// módulo vía isPriceBasisOffer → isNonComparableOffer → isCaseOffer; como
+// `const`, más abajo sería TDZ.
+const CASE_OFFER_RE =
+  /\b(estuche|caja\b|cajas\b|caj[ìí]n|pack|gift\s*box|6\s*pack|six\s*pack|x\s*[2-9]\d*\b|x[2-9]\d*\b)/i;
+
 /** All productGroups (sorted by relevance — multi-store first, then price).
  *
- * Dos normalizaciones runtime sobre el snapshot:
+ * Normalizaciones runtime sobre el snapshot:
  *
- * 1. **`offerCount`** — el pipeline tiene 4 stages que setean el campo y
- *    dos de ellas (build-groups, stage1b, stage3) lo computan como
- *    `inStock.length` mientras que stage2 / remerge / split usan
- *    `offers.length`. Resultado: ~28% del catálogo termina desincronizado.
- *    Lo recomputamos como `offers.length` (total) que es lo que el campo
- *    dice ser. Para "ofertas con stock" usar `inStockOfferCount`.
+ * 1. **Agregados de precio** — `minPrice/maxPrice/storeCount/offerCount`
+ *    se recalculan sobre la base de precio (`priceBasis`, ver arriba) y
+ *    no sobre todas las ofertas in-stock. Antes la tarjeta de /buscar
+ *    decía "ahorrá hasta 92%" (DV Catena Malbec-Malbec contra una caja x6
+ *    a $195.000) mientras la ficha, que usa `bottleStats()`, decía 53%;
+ *    "Felipe Rutini" publicaba "desde $442.000 hasta $13.860.000, 97%"
+ *    contra una cosecha 1997. Auditoría 2026-09-13. Los totales sobre
+ *    ofertas vivas quedan en `totalStoreCount/totalOfferCount/
+ *    inStockOfferCount`.
  *
  * 2. **`inStock` vs `priceArs`** — varios adapters marcan ofertas como
  *    `inStock=true` aunque no pudieron extraer el precio (priceArs=null),
@@ -127,7 +194,11 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
         o.priceArs != null &&
         o.priceArs >= MIN_VALID_PRICE_ARS,
     );
-    const prices = inStockLive
+    // Base de precio: misma regla que la ficha y que el pipeline (punto 1
+    // del comentario de arriba). Cajas, magnums, colección y sospechosos
+    // no compiten en el "desde / hasta / ahorrá" de la tarjeta.
+    const basis = priceBasis(inStockLive);
+    const prices = basis
       .map((o) => o.priceArs)
       .filter((p): p is number => p != null);
     return {
@@ -139,9 +210,13 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
         }
         return o;
       }),
-      offerCount: liveOffers.length,
+      varietals: normalizeVarietals(g.varietals),
+      offerCount: basis.length,
+      comparableBasis: basis.length,
+      totalOfferCount: liveOffers.length,
+      totalStoreCount: new Set(liveOffers.map((o) => o.storeSlug)).size,
       inStockOfferCount: inStockLive.length,
-      storeCount: new Set(inStockLive.map((o) => o.storeSlug)).size,
+      storeCount: new Set(basis.map((o) => o.storeSlug)).size,
       minPrice: prices.length > 0 ? Math.min(...prices) : null,
       maxPrice: prices.length > 0 ? Math.max(...prices) : null,
     };
@@ -390,11 +465,23 @@ function getEanIndex(): Map<string, Set<string>> {
   return idx;
 }
 
-export function searchGroups(
-  query: string,
-  limit = 48,
-  options: SearchOptions = {},
-): ProductGroup[] {
+/**
+ * Igualdad "de faceta" tolerante al formato del param: el footer linkea
+ * `?varietal=cabernet-sauvignon` y `?region=valle-de-uco` (slug) mientras
+ * el sidebar linkea `?varietal=Cabernet Sauvignon` (nombre). Comparamos
+ * ambos lados slugificados (minúsculas, sin acentos, no-alfanuméricos →
+ * guión) así "Torrontés", "torrontes" y "Torrontes" son el mismo filtro.
+ */
+function facetEquals(value: string | null | undefined, param: string): boolean {
+  if (!value) return false;
+  return slugify(value) === slugify(param);
+}
+
+/**
+ * Coincidencias de una búsqueda SIN ordenar ni recortar. Es la base
+ * compartida de `searchGroups` (API, home) y `searchGroupsPaged` (/buscar).
+ */
+function filterGroups(query: string, options: SearchOptions): ProductGroup[] {
   const q = stripAccents(query.trim().toLowerCase());
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
   const ean = asEanQuery(query.trim());
@@ -412,18 +499,18 @@ export function searchGroups(
     source = source.filter((g) => (g.storeCount ?? 0) >= 1);
   }
   if (options.varietal) {
-    const v = options.varietal.toLowerCase();
+    const v = options.varietal;
     source = source.filter((g) =>
-      (g.varietals ?? []).some((x) => x.toLowerCase() === v),
+      (g.varietals ?? []).some((x) => facetEquals(x, v)),
     );
   }
   if (options.type) {
-    const t = options.type.toLowerCase();
-    source = source.filter((g) => g.type?.toLowerCase() === t);
+    const t = options.type;
+    source = source.filter((g) => facetEquals(g.type, t));
   }
   if (options.region) {
-    const r = options.region.toLowerCase();
-    source = source.filter((g) => g.region?.toLowerCase() === r);
+    const r = options.region;
+    source = source.filter((g) => facetEquals(g.region, r));
   }
   if (options.brands && options.brands.length > 0) {
     const set = new Set(options.brands.map((b) => b.toLowerCase()));
@@ -446,29 +533,146 @@ export function searchGroups(
 
   // Un EAN es identidad exacta, no texto: se resuelve por índice y no
   // pasa por el matcheo de tokens (el número no aparece en el nombre).
-  const filtered = ean
-    ? (() => {
-        const slugs = getEanIndex().get(ean);
-        return slugs ? source.filter((g) => slugs.has(g.groupSlug)) : [];
-      })()
-    : q
-      ? source.filter((g) => {
-          const haystack = stripAccents(
-            `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase(),
-          );
-          return tokens.every((t) => haystack.includes(t));
-        })
-      : source;
+  if (ean) {
+    const slugs = getEanIndex().get(ean);
+    return slugs ? source.filter((g) => slugs.has(g.groupSlug)) : [];
+  }
+  if (!q) return source;
+  return source.filter((g) => {
+    const haystack = stripAccents(
+      `${g.canonicalName} ${g.brand ?? ""}`.toLowerCase(),
+    );
+    return tokens.every((t) => haystack.includes(t));
+  });
+}
 
-  // When the user has a query and hasn't picked a sort, default to
-  // relevance — a cheap Monnalisa should not outrank an exact-match A
-  // Lisa when the user typed "a lisa".
-  const effectiveSort: SortKey =
-    options.sort ?? (q ? "relevance" : "price-asc");
+/** Orden efectivo: con query y sin sort explícito, relevancia — a cheap
+ * Monnalisa should not outrank an exact-match A Lisa when the user
+ * typed "a lisa". Sin query, precio ascendente. */
+function sortGroups(
+  matches: ProductGroup[],
+  query: string,
+  sort: SortKey | undefined,
+): ProductGroup[] {
+  const q = stripAccents(query.trim().toLowerCase());
+  const effectiveSort: SortKey = sort ?? (q ? "relevance" : "price-asc");
+  return [...matches].sort(groupComparator(effectiveSort, q));
+}
 
-  return [...filtered]
-    .sort(groupComparator(effectiveSort, q))
-    .slice(0, limit);
+export function searchGroups(
+  query: string,
+  limit = 48,
+  options: SearchOptions = {},
+): ProductGroup[] {
+  return sortGroups(filterGroups(query, options), query, options.sort).slice(
+    0,
+    limit,
+  );
+}
+
+// ── Tolerancia a typos ──
+//
+// Vocabulario de tokens (sin acentos, minúsculas, largo ≥ 3) de
+// `canonicalName` y `brand` de todos los grupos, con frecuencia. Se arma
+// una sola vez, en el primer uso (igual que el índice EAN). La búsqueda de
+// vecinos vive en lib/fuzzy.ts y sólo corre cuando una query da 0.
+let vocabulary: Vocabulary | null = null;
+function getVocabulary(): Vocabulary {
+  if (vocabulary) return vocabulary;
+  const texts: string[] = [];
+  for (const g of groups) {
+    texts.push(g.canonicalName);
+    if (g.brand) texts.push(g.brand);
+  }
+  vocabulary = buildVocabulary(texts);
+  return vocabulary;
+}
+
+export type PagedSearchOptions = SearchOptions & {
+  /** `?exact=1`: no corregir typos aunque la búsqueda dé 0. */
+  exact?: boolean;
+};
+
+export type PagedSearch = {
+  /** Grupos de la página pedida. */
+  results: ProductGroup[];
+  /** Coincidencias totales de la búsqueda (sin tope). */
+  total: number;
+  /** Coincidencias con `storeCount >= 2`. */
+  totalMulti: number;
+  /** Todas las coincidencias, ordenadas — para facetas por búsqueda. */
+  matches: ProductGroup[];
+  page: number;
+  pageCount: number;
+  pageSize: number;
+  /** Query efectivamente buscada cuando hubo corrección de typos. */
+  correctedQuery: string | null;
+  /** "¿Quisiste decir…?" cuando ni la corrección encontró nada. */
+  suggestions: string[];
+};
+
+/**
+ * Búsqueda paginada para /buscar. Misma semántica que `searchGroups` más:
+ *   - paginación real (`page`, `pageSize`) con el total sin tope,
+ *   - corrección de typos cuando la query textual da 0 ("catena sapata"
+ *     → "catena zapata"), desactivable con `exact`,
+ *   - sugerencias si ni la corrección encuentra nada.
+ */
+export function searchGroupsPaged(
+  query: string,
+  { page = 1, pageSize = 48 }: { page?: number; pageSize?: number } = {},
+  options: PagedSearchOptions = {},
+): PagedSearch {
+  let matches = filterGroups(query, options);
+  let effectiveQuery = query;
+  let correctedQuery: string | null = null;
+  let suggestions: string[] = [];
+
+  const q = stripAccents(query.trim().toLowerCase());
+  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+  if (
+    matches.length === 0 &&
+    tokens.length > 0 &&
+    !options.exact &&
+    !asEanQuery(query.trim())
+  ) {
+    const correction = correctTokens(tokens, getVocabulary());
+    if (correction.changed) {
+      const retry = filterGroups(correction.query, options);
+      if (retry.length > 0) {
+        matches = retry;
+        effectiveQuery = correction.query;
+        correctedQuery = correction.query;
+      } else {
+        suggestions = suggestQueries(tokens, correction).filter(
+          (s) => filterGroups(s, options).length > 0,
+        );
+      }
+    }
+  }
+
+  const sorted = sortGroups(matches, effectiveQuery, options.sort);
+  const total = sorted.length;
+  const totalMulti = sorted.reduce(
+    (n, g) => (g.storeCount >= 2 ? n + 1 : n),
+    0,
+  );
+  const size = Math.max(1, pageSize);
+  const pageCount = Math.max(1, Math.ceil(total / size));
+  const current = Math.min(Math.max(1, Math.floor(page) || 1), pageCount);
+  const start = (current - 1) * size;
+
+  return {
+    results: sorted.slice(start, start + size),
+    total,
+    totalMulti,
+    matches: sorted,
+    page: current,
+    pageCount,
+    pageSize: size,
+    correctedQuery,
+    suggestions,
+  };
 }
 
 /**
@@ -523,35 +727,90 @@ export function relatedGroups(
     .map((x) => x.g);
 }
 
-/** Get top facets (varietals, types, regions) for sidebar filtering. */
-export function facetCounts(): {
+export type FacetCounts = {
   varietals: { name: string; count: number }[];
   types: { name: string; count: number }[];
   regions: { name: string; count: number }[];
-} {
+  /** Vinotecas con al menos una oferta in-stock entre los grupos dados. */
+  stores: { slug: string; name: string; count: number }[];
+};
+
+/**
+ * Facetas (varietal, tipo, región, vinoteca) contadas sobre un conjunto
+ * de grupos — típicamente las coincidencias de la búsqueda actual, así el
+ * sidebar de /buscar no dice "Malbec 7.259" cuando buscaste "rutini".
+ * Sólo devuelve entradas con count > 0, de mayor a menor.
+ */
+export function facetCountsFor(source: ProductGroup[]): FacetCounts {
   const vCount = new Map<string, number>();
   const tCount = new Map<string, number>();
   const rCount = new Map<string, number>();
+  const sCount = new Map<string, number>();
 
-  for (const g of groups) {
-    if (!looksLikeWineGroup(g)) continue;
+  for (const g of source) {
     for (const v of g.varietals ?? []) {
       vCount.set(v, (vCount.get(v) ?? 0) + 1);
     }
     if (g.type) tCount.set(g.type, (tCount.get(g.type) ?? 0) + 1);
     if (g.region) rCount.set(g.region, (rCount.get(g.region) ?? 0) + 1);
+    const seen = new Set<string>();
+    for (const o of g.offers) {
+      if (!o.inStock || seen.has(o.storeSlug)) continue;
+      seen.add(o.storeSlug);
+      sCount.set(o.storeSlug, (sCount.get(o.storeSlug) ?? 0) + 1);
+    }
   }
 
   const toSorted = (m: Map<string, number>) =>
     [...m.entries()]
       .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "es-AR"));
 
   return {
     varietals: toSorted(vCount),
     types: toSorted(tCount),
     regions: toSorted(rCount),
+    stores: [...sCount.entries()]
+      .map(([slug, count]) => ({ slug, name: storeName(slug), count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "es-AR")),
   };
+}
+
+/** Facetas del catálogo completo (todos los grupos que parecen vino). */
+export function facetCounts(): FacetCounts {
+  return facetCountsFor(groups.filter(looksLikeWineGroup));
+}
+
+/**
+ * Nombre "bonito" de una faceta a partir de lo que vino en la URL
+ * (`cabernet-sauvignon`, `Cabernet Sauvignon`, `torrontes`,
+ * `valle-de-uco`, `espumante`): el que usa el catálogo, o el param tal
+ * cual si no matchea ninguno. Mismo criterio que `facetEquals`.
+ */
+const facetNamesBySlug: Record<"varietal" | "type" | "region", Map<string, string> | null> = {
+  varietal: null,
+  type: null,
+  region: null,
+};
+export function resolveFacetName(
+  kind: "varietal" | "type" | "region",
+  param: string,
+): string {
+  let names = facetNamesBySlug[kind];
+  if (!names) {
+    names = new Map();
+    for (const g of groups) {
+      const values =
+        kind === "varietal" ? (g.varietals ?? []) : kind === "type" ? [g.type] : [g.region];
+      for (const v of values) {
+        if (!v) continue;
+        const s = slugify(v);
+        if (!names.has(s)) names.set(s, v);
+      }
+    }
+    facetNamesBySlug[kind] = names;
+  }
+  return names.get(slugify(param)) ?? param;
 }
 
 // Note: findProductBySlug / searchProducts / productSlug were removed —
@@ -744,12 +1003,6 @@ const NOT_WINE_RE =
 // 33cl/35cl = beer cans, 200ml/250ml/500ml = small spirits/snack sizes.
 const NOT_WINE_SIZE_RE =
   /\b(33|35|473)\s*cl\b|\b(?:100|150|200|250|330|355|473)\s*ml\b|\b200\s*gr\b/i;
-
-// Detects "case", "estuche", "pack", "caja x N" wines — different SKU
-// from a single bottle. Pooling them in the same group inflates max
-// price (e.g. "AHORRO MÁXIMO 95%" comparing 1 bottle vs a case of 6).
-const CASE_OFFER_RE =
-  /\b(estuche|caja\b|cajas\b|caj[ìí]n|pack|gift\s*box|6\s*pack|six\s*pack|x\s*[2-9]\d*\b|x[2-9]\d*\b)/i;
 
 /** True if the offer name suggests a multi-bottle pack/case, not a single bottle. */
 export function isCaseOffer(offerName: string | null | undefined): boolean {

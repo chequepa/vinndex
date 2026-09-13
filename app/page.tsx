@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
 import { HomeFavoriteDrops } from "@/components/HomeFavoriteDrops";
+import { SiteFooter } from "@/components/SiteFooter";
 import Link from "next/link";
 import {
   snapshotStats,
@@ -1423,120 +1424,7 @@ export default async function Home() {
 
       {/* FOOTER */}
       </main>
-      <footer className="bg-ink text-snow/80 px-6 py-16 relative grain">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-10 mb-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <path
-                    d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
-                    fill="#F5EDE0"
-                    stroke="#F5EDE0"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="24" cy="8" r="3" fill="#E8B547" />
-                </svg>
-                <span className="display text-xl font-semibold text-snow">
-                  Vinndex
-                </span>
-              </div>
-              <p className="max-w-md text-sm leading-relaxed">
-                Comparador independiente de precios de vinos online en
-                Argentina. No vendemos vino, te ayudamos a comprarlo al mejor
-                precio.
-              </p>
-              <p className="text-xs text-snow/50 mt-4">
-                Precios relevados 1 vez por día. Confirmá en la vinoteca antes
-                de comprar.
-              </p>
-            </div>
-            <div>
-              <h3 className="display text-snow font-semibold mb-4">Explorar</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/buscar?varietal=malbec"
-                    className="hover:text-snow"
-                  >
-                    Malbec
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/buscar?varietal=cabernet"
-                    className="hover:text-snow"
-                  >
-                    Cabernet Sauvignon
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/buscar?varietal=chardonnay"
-                    className="hover:text-snow"
-                  >
-                    Chardonnay
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/buscar?varietal=espumante"
-                    className="hover:text-snow"
-                  >
-                    Espumantes
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/buscar?region=valle-de-uco"
-                    className="hover:text-snow"
-                  >
-                    Valle de Uco
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="display text-snow font-semibold mb-4">Vinndex</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/sobre" className="hover:text-snow">
-                    Sobre el proyecto
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/como-funciona" className="hover:text-snow">
-                    Cómo funciona
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sumate" className="hover:text-snow">
-                    ¿Sos vinoteca? Sumate
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/opt-out" className="hover:text-snow">
-                    Pedir opt-out
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contacto" className="hover:text-snow">
-                    Contacto
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-snow/10 pt-6 text-xs text-snow/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-            <p>© 2026 Vinndex · Hecho en Argentina</p>
-            <p>
-              Beber con moderación · Prohibida la venta de bebidas alcohólicas a
-              menores de 18 años
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

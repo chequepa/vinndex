@@ -10,8 +10,9 @@
  * (perf: ~500 vinos × ~10 campos vs ~30 campos de ProductGroup completo).
  */
 
-import { groups, displayBrand } from "@/lib/snapshot";
+import { groups, displayBrand, isNonComparableOffer } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
+import type { ProductGroup, ProductOffer } from "@/lib/matching";
 
 export type CompassWine = {
   slug: string;
@@ -37,32 +38,64 @@ export type CompassDataset = {
 };
 
 /**
+ * Añada del grupo. La identidad v2 publica `vintage: null` en TODOS los
+ * grupos (la cosecha vive por oferta en `o.vintage`, porque una ficha
+ * junta varias añadas del mismo vino), así que filtrar por `g.vintage`
+ * dejaba el plano vacío: prometía 600 vinos y dibujaba 0. Tomamos la MODA
+ * entre las ofertas in-stock comparables (botella suelta, precio sano);
+ * si ninguna trae añada, entre todas las ofertas con añada; si tampoco,
+ * null y el vino queda afuera. Empate → la cosecha más nueva.
+ */
+export function groupVintage(g: ProductGroup): number | null {
+  const withVintage = (g.offers ?? []).filter(
+    (o): o is ProductOffer & { vintage: number } =>
+      typeof o.vintage === "number",
+  );
+  if (withVintage.length === 0) return null;
+  const preferred = withVintage.filter(
+    (o) => o.inStock && !isNonComparableOffer(o),
+  );
+  const source = preferred.length > 0 ? preferred : withVintage;
+  const count = new Map<number, number>();
+  for (const o of source) count.set(o.vintage, (count.get(o.vintage) ?? 0) + 1);
+  let best: number | null = null;
+  let bestN = 0;
+  for (const [v, n] of count) {
+    if (n > bestN || (n === bestN && best !== null && v > best)) {
+      best = v;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+/**
  * Build the compass dataset. We cap at `limit` wines, ordered by storeCount
  * (proxy of "popularidad" / "cobertura"). This keeps the DOM under control:
  * 600 dots renders smoothly; 5k would lag interaction.
  */
 export function buildCompassDataset(limit = 600): CompassDataset {
-  const eligible = groups.filter(
-    (g) =>
-      g.storeCount >= 2 &&
-      g.minPrice != null &&
-      g.minPrice > 0 &&
-      g.vintage != null &&
-      g.vintage >= 2008 &&
-      g.vintage <= 2025,
+  const eligible: { g: ProductGroup; vintage: number }[] = [];
+  for (const g of groups) {
+    if (g.storeCount < 2 || g.minPrice == null || g.minPrice <= 0) continue;
+    const vintage = groupVintage(g);
+    if (vintage == null || vintage < 2008 || vintage > 2025) continue;
+    eligible.push({ g, vintage });
+  }
+
+  const sorted = eligible.sort(
+    (a, b) =>
+      b.g.storeCount - a.g.storeCount ||
+      (a.g.minPrice ?? 0) - (b.g.minPrice ?? 0),
   );
 
-  const sorted = [...eligible].sort(
-    (a, b) => b.storeCount - a.storeCount || (a.minPrice ?? 0) - (b.minPrice ?? 0),
-  );
-
-  const wines: CompassWine[] = sorted.slice(0, limit).map((g) => ({
+  const wines: CompassWine[] = sorted.slice(0, limit).map(({ g, vintage }) => ({
     slug: g.groupSlug,
     name: g.canonicalName,
     displayName: displayWineName(g.canonicalName),
     brand: g.brand,
     brandDisplay: displayBrand(g.brand),
-    vintage: g.vintage!,
+    vintage,
     minPrice: g.minPrice!,
     storeCount: g.storeCount,
     varietals: g.varietals ?? [],

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { findFacetPage, formatArs, bodegaUrl } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
 import { SearchInput } from "@/components/SearchInput";
@@ -10,6 +10,13 @@ import { BottleFallback } from "@/components/BottleFallback";
 import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
+
+// Slugs viejos → vigente. "Cabernet" a secas se unificó con Cabernet
+// Sauvignon en lib/snapshot.ts (normalizeVarietals): la faceta ya no
+// existe pero la URL seguía indexada, así que redirige 308 en vez de 404.
+const VARIETAL_SLUG_REDIRECTS: Record<string, string> = {
+  cabernet: "cabernet-sauvignon",
+};
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
@@ -41,7 +48,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function VarietalPage({ params }: Params) {
   const { slug } = await params;
   const facet = findFacetPage("varietal", slug);
-  if (!facet) notFound();
+  if (!facet) {
+    const dest = VARIETAL_SLUG_REDIRECTS[slug];
+    if (dest) permanentRedirect(`/varietal/${dest}`);
+    notFound();
+  }
   return <FacetLayout facet={facet} kindLabel="varietal" slug={slug} />;
 }
 

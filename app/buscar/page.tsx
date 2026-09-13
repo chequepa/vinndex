@@ -6,17 +6,27 @@ import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
 import { MobileFiltersDrawer } from "@/components/MobileFiltersDrawer";
+import { SiteFooter } from "@/components/SiteFooter";
 import Link from "next/link";
 import {
-  searchGroups,
+  searchGroupsPaged,
   formatArs,
   storeName,
-  snapshot,
-  facetCounts,
+  facetCountsFor,
+  resolveFacetName,
   displayBrand,
   displayWineName,
   type SortKey,
 } from "@/lib/snapshot";
+
+const PAGE_SIZE = 48;
+// Vinotecas visibles en el sidebar antes del "ver todas".
+const STORES_COLLAPSED = 12;
+
+function parsePage(raw: string | undefined): number {
+  const n = parseInt(raw ?? "", 10);
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+}
 
 const SORT_OPTIONS_WITH_QUERY: { key: SortKey; label: string }[] = [
   { key: "relevance", label: "Relevancia" },
@@ -66,14 +76,6 @@ function findRangeById(id: string | null | undefined) {
   return PRICE_RANGES.find((r) => r.id === id) ?? null;
 }
 
-export const metadata: Metadata = {
-  title: "Buscar vinos argentinos por precio · Vinndex",
-  description:
-    "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
-  alternates: { canonical: "https://vinndex.com.ar/buscar" },
-  robots: { index: true, follow: true },
-};
-
 type Params = {
   searchParams: Promise<{
     q?: string;
@@ -84,8 +86,29 @@ type Params = {
     sort?: string;
     instock?: string;
     precio?: string; // id de PRICE_RANGES
+    page?: string; // paginación, 1-based
+    exact?: string; // "1" = no corregir typos
   }>;
 };
+
+// El canonical de TODAS las variantes de /buscar (query, filtros, página)
+// apunta a /buscar pelado: la página es un buscador, no un landing por
+// query. Las páginas 2+ además llevan noindex,follow — Google sigue los
+// links a las fichas pero no indexa listados paginados.
+export async function generateMetadata({
+  searchParams,
+}: Params): Promise<Metadata> {
+  const params = await searchParams;
+  const page = parsePage(params.page);
+  return {
+    title: "Buscar vinos argentinos por precio · Vinndex",
+    description:
+      "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
+    alternates: { canonical: "https://vinndex.com.ar/buscar" },
+    robots:
+      page > 1 ? { index: false, follow: true } : { index: true, follow: true },
+  };
+}
 
 function ChevronIcon() {
   return (
@@ -122,19 +145,37 @@ export default async function Buscar({ searchParams }: Params) {
       ? "relevance"
       : "price-asc";
 
-  const results = searchGroups(query, 48, {
-    multiStoreOnly: multiOnly,
-    inStockOnly,
-    priceMin: priceRange?.min ?? null,
-    priceMax: priceRange?.max ?? null,
-    varietal,
-    type,
-    region,
-    sort,
-  });
-  const totalGroups = snapshot.groupCount ?? 0;
-  const totalMulti = snapshot.multiStoreGroupCount ?? 0;
-  const facets = facetCounts();
+  const requestedPage = parsePage(params.page);
+  const exact = params.exact === "1";
+
+  const search = searchGroupsPaged(
+    query,
+    { page: requestedPage, pageSize: PAGE_SIZE },
+    {
+      multiStoreOnly: multiOnly,
+      inStockOnly,
+      priceMin: priceRange?.min ?? null,
+      priceMax: priceRange?.max ?? null,
+      varietal,
+      type,
+      region,
+      sort,
+      exact,
+    },
+  );
+  const { results, total, totalMulti, pageCount, correctedQuery, suggestions } =
+    search;
+  const page = search.page;
+  // Facetas sobre las coincidencias de ESTA búsqueda (con los filtros
+  // aplicados), no sobre el catálogo: "Malbec 7.259" no dice nada cuando
+  // buscaste "rutini". Sin query ni filtros, son las del catálogo.
+  const facets = facetCountsFor(search.matches);
+  // Los params pueden venir como slug (`cabernet-sauvignon`,
+  // `valle-de-uco`, desde el footer) o como nombre (`Cabernet Sauvignon`,
+  // desde el sidebar): mostramos siempre el nombre del catálogo.
+  const varietalLabel = varietal ? resolveFacetName("varietal", varietal) : null;
+  const typeLabel = type ? resolveFacetName("type", type) : null;
+  const regionLabel = region ? resolveFacetName("region", region) : null;
 
   const hasAnyFilter =
     query || multiOnly || inStockOnly || priceRange || varietal || type || region;
@@ -152,17 +193,17 @@ export default async function Buscar({ searchParams }: Params) {
     <>
       Resultados para <span className="italic">&ldquo;{query}&rdquo;</span>
     </>
-  ) : varietal ? (
+  ) : varietalLabel ? (
     <>
-      <span className="italic">{varietal}</span>
+      <span className="italic">{varietalLabel}</span>
     </>
-  ) : type ? (
+  ) : typeLabel ? (
     <>
-      Vinos <span className="italic">{type.toLowerCase()}</span>
+      Vinos <span className="italic">{typeLabel.toLowerCase()}</span>
     </>
-  ) : region ? (
+  ) : regionLabel ? (
     <>
-      Vinos de <span className="italic">{region}</span>
+      Vinos de <span className="italic">{regionLabel}</span>
     </>
   ) : multiOnly ? (
     <>
@@ -178,6 +219,8 @@ export default async function Buscar({ searchParams }: Params) {
   // sobreescribir/quitar uno. Si `value === null` quitamos esa key
   // del URL. Si `value === <string>` la seteamos. Si no se pasa el
   // `key` específico, el helper se comporta como "preservar todo".
+  // `page` NO se preserva a propósito: cambiar un filtro u orden vuelve
+  // a la página 1; sólo `pageHref` la setea.
   function buildHref(
     override?: Partial<Record<string, string | null>>,
   ): string {
@@ -189,6 +232,7 @@ export default async function Buscar({ searchParams }: Params) {
     if (varietal) sp.set("varietal", varietal);
     if (type) sp.set("tipo", type);
     if (region) sp.set("region", region);
+    if (exact) sp.set("exact", "1");
     const defaultSort: SortKey = query ? "relevance" : "price-asc";
     if (sort !== defaultSort) sp.set("sort", sort);
 
@@ -220,6 +264,9 @@ export default async function Buscar({ searchParams }: Params) {
   }
   function clearAllHref(): string {
     return "/buscar";
+  }
+  function pageHref(n: number): string {
+    return buildHref({ page: n > 1 ? String(n) : null });
   }
 
   const sortOptions = query ? SORT_OPTIONS_WITH_QUERY : SORT_OPTIONS_NO_QUERY;
@@ -285,7 +332,7 @@ export default async function Buscar({ searchParams }: Params) {
         <div className="space-y-1.5 text-sm">
           {facets.varietals.slice(0, 12).map((f) => {
             const active =
-              varietal?.toLowerCase() === f.name.toLowerCase();
+              varietalLabel?.toLowerCase() === f.name.toLowerCase();
             return (
               <a
                 key={f.name}
@@ -315,7 +362,7 @@ export default async function Buscar({ searchParams }: Params) {
         <h3 className="display text-lg font-semibold mb-4">Tipo</h3>
         <div className="space-y-1.5 text-sm">
           {facets.types.map((f) => {
-            const active = type?.toLowerCase() === f.name.toLowerCase();
+            const active = typeLabel?.toLowerCase() === f.name.toLowerCase();
             return (
               <a
                 key={f.name}
@@ -347,7 +394,7 @@ export default async function Buscar({ searchParams }: Params) {
           <div className="space-y-1.5 text-sm">
             {facets.regions.slice(0, 10).map((f) => {
               const active =
-                region?.toLowerCase() === f.name.toLowerCase();
+                regionLabel?.toLowerCase() === f.name.toLowerCase();
               return (
                 <a
                   key={f.name}
@@ -373,23 +420,52 @@ export default async function Buscar({ searchParams }: Params) {
         </div>
       )}
 
-      {/* VINOTECAS */}
-      <div>
-        <h3 className="display text-lg font-semibold mb-4">
-          Vinotecas sincronizando
-        </h3>
-        <div className="space-y-1 text-sm text-graphite max-h-64 overflow-y-auto">
-          {snapshot.stores.map((s) => (
-            <div
-              key={s.storeSlug}
-              className="flex items-center justify-between"
-            >
-              <span className="truncate">{s.storeName}</span>
-              <span className="text-xs">{s.productCount}</span>
-            </div>
-          ))}
+      {/* VINOTECAS · cuántos de los vinos de ESTA búsqueda tiene con
+          stock cada vinoteca. Las que tienen 0 no aparecen. Colapsada:
+          las 12 con más resultados + "ver todas" con <details> nativo
+          (server-render, sin JS). */}
+      {facets.stores.length > 0 && (
+        <div>
+          <h3 className="display text-lg font-semibold mb-4">Vinotecas</h3>
+          <ul className="text-sm text-graphite">
+            {facets.stores.slice(0, STORES_COLLAPSED).map((s) => (
+              <li
+                key={s.slug}
+                className="flex items-center justify-between gap-2 min-h-10 py-2"
+              >
+                <span className="truncate">{s.name}</span>
+                <span className="text-xs tabular-nums shrink-0">{s.count}</span>
+              </li>
+            ))}
+          </ul>
+          {facets.stores.length > STORES_COLLAPSED && (
+            <details className="group text-sm text-graphite">
+              <summary className="cursor-wine min-h-10 py-2 flex items-center gap-2 text-ink font-medium list-none [&::-webkit-details-marker]:hidden">
+                <span className="transition-transform group-open:rotate-180">
+                  <ChevronIcon />
+                </span>
+                <span className="group-open:hidden">
+                  Ver todas ({facets.stores.length})
+                </span>
+                <span className="hidden group-open:inline">Ver menos</span>
+              </summary>
+              <ul>
+                {facets.stores.slice(STORES_COLLAPSED).map((s) => (
+                  <li
+                    key={s.slug}
+                    className="flex items-center justify-between gap-2 min-h-10 py-2"
+                  >
+                    <span className="truncate">{s.name}</span>
+                    <span className="text-xs tabular-nums shrink-0">
+                      {s.count}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
-      </div>
+      )}
     </>
   );
 
@@ -483,17 +559,17 @@ export default async function Buscar({ searchParams }: Params) {
           <h1 className="display text-4xl md:text-5xl font-semibold text-ink leading-tight">
             {headerTitle}
           </h1>
+          {/* Números de ESTA búsqueda (sin el tope por página). Sin
+              query ni filtros son los del catálogo completo. */}
           <p className="text-graphite mt-2">
-            <span className="font-semibold text-ink">{results.length}</span>{" "}
+            <span className="font-semibold text-ink">
+              {total.toLocaleString("es-AR")}
+            </span>{" "}
             vinos ·{" "}
             <span className="font-semibold text-ink">
               {totalMulti.toLocaleString("es-AR")}
             </span>{" "}
-            comparables en 2+ tiendas ·{" "}
-            <span className="font-semibold text-ink">
-              {totalGroups.toLocaleString("es-AR")}
-            </span>{" "}
-            en total
+            en 2+ vinotecas
           </p>
 
           {/* ACTIVE FILTERS */}
@@ -503,25 +579,25 @@ export default async function Buscar({ searchParams }: Params) {
                 {query} ×
               </a>
             )}
-            {varietal && (
+            {varietalLabel && (
               <a
                 href={filterHref("varietal", null)}
                 className="filter-chip active"
               >
-                {varietal} ×
+                {varietalLabel} ×
               </a>
             )}
-            {type && (
+            {typeLabel && (
               <a href={filterHref("tipo", null)} className="filter-chip active">
-                {type} ×
+                {typeLabel} ×
               </a>
             )}
-            {region && (
+            {regionLabel && (
               <a
                 href={filterHref("region", null)}
                 className="filter-chip active"
               >
-                {region} ×
+                {regionLabel} ×
               </a>
             )}
             <a
@@ -563,12 +639,18 @@ export default async function Buscar({ searchParams }: Params) {
           <div className="sticky top-24 space-y-8">{filtersInner}</div>
         </aside>
 
-        <section>
+        {/* `min-w-0`: sin esto el item de grid toma como ancho mínimo el
+            min-content de los títulos `truncate` (nowrap) y la página
+            desborda ~136px en desktop; en mobile la columna de precio
+            quedaba fuera de pantalla. Auditoría 2026-09-13. */}
+        <section className="min-w-0">
           <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-ink/10 flex-wrap">
             <div className="flex items-center gap-3 shrink-0">
               <p className="text-sm text-graphite">
-                <span className="font-semibold text-ink">{results.length}</span>{" "}
-                resultados
+                <span className="font-semibold text-ink">
+                  {total.toLocaleString("es-AR")}
+                </span>{" "}
+                {total === 1 ? "resultado" : "resultados"}
               </p>
               <MobileFiltersDrawer activeCount={activeFilterCount}>
                 {filtersInner}
@@ -600,7 +682,25 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           </div>
 
-          {results.length === 0 ? (
+          {/* TYPO CORREGIDO · "catena sapata" → "catena zapata". El link
+              "tal cual" agrega &exact=1 y desactiva la corrección. */}
+          {correctedQuery && (
+            <p
+              role="status"
+              className="text-sm text-graphite mb-5 bg-snow border border-ink/10 rounded-xl px-4 py-3"
+            >
+              Mostrando resultados para{" "}
+              <strong className="text-ink">«{correctedQuery}»</strong> ·{" "}
+              <a
+                href={buildHref({ exact: "1" })}
+                className="text-cobalt hover:underline"
+              >
+                buscar «{query}» tal cual
+              </a>
+            </p>
+          )}
+
+          {total === 0 ? (
             <div className="py-16 md:py-20">
               <div className="max-w-xl mx-auto text-center">
                 {/* Empty state icon */}
@@ -626,6 +726,23 @@ export default async function Buscar({ searchParams }: Params) {
                     ? `No encontramos "${query}"`
                     : "Sin resultados"}
                 </h2>
+                {suggestions.length > 0 && (
+                  <p className="text-ink mb-4 text-lg">
+                    ¿Quisiste decir{" "}
+                    {suggestions.map((s, i) => (
+                      <span key={s}>
+                        {i > 0 && (i === suggestions.length - 1 ? " o " : ", ")}
+                        <a
+                          href={buildHref({ q: s, exact: null })}
+                          className="text-cobalt font-semibold hover:underline"
+                        >
+                          «{s}»
+                        </a>
+                      </span>
+                    ))}
+                    ?
+                  </p>
+                )}
                 <p className="text-graphite mb-8 leading-relaxed">
                   Revisá la ortografía o probá con un término más general.
                   También podés explorar el catálogo por varietal, región o
@@ -728,6 +845,12 @@ export default async function Buscar({ searchParams }: Params) {
                         ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
                       )
                     : 0;
+                // Vinoteca del "desde": la oferta que fija `minPrice`
+                // (con la base de precio limpia puede no ser offers[0],
+                // que suele ser una caja o un magnum más caro).
+                const bestOffer =
+                  g.offers.find((o) => o.inStock && o.priceArs === g.minPrice) ??
+                  g.offers[0];
 
                 return (
                   <a
@@ -802,7 +925,7 @@ export default async function Buscar({ searchParams }: Params) {
                                 letterSpacing: 0,
                               }}
                             >
-                              en {storeName(g.offers[0].storeSlug)}
+                              en {storeName(bestOffer.storeSlug)}
                             </span>
                           )}
                           {g.type && (
@@ -838,26 +961,45 @@ export default async function Buscar({ searchParams }: Params) {
             </div>
           )}
 
-          {results.length >= 48 && (
-            <p className="text-xs text-graphite mt-8 text-center">
-              Mostrando los primeros 48 resultados. Refiná con filtros para ver
-              más opciones.
-            </p>
+          {/* PAGINACIÓN · server-side, <a> con el resto de los params
+              preservados (buildHref). 48 por página. */}
+          {pageCount > 1 && (
+            <nav
+              aria-label="Paginación de resultados"
+              className="mt-10 pt-6 border-t border-ink/10 flex items-center justify-between gap-4 text-sm"
+            >
+              {page > 1 ? (
+                <a
+                  href={pageHref(page - 1)}
+                  rel="prev"
+                  className="cursor-wine inline-flex items-center min-h-10 px-4 py-2 rounded-full border border-ink/15 hover:border-ink/30 text-ink font-medium transition-colors"
+                >
+                  ← Anterior
+                </a>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+              <span className="text-graphite">
+                Página <span className="font-semibold text-ink">{page}</span> de{" "}
+                <span className="font-semibold text-ink">{pageCount}</span>
+              </span>
+              {page < pageCount ? (
+                <a
+                  href={pageHref(page + 1)}
+                  rel="next"
+                  className="cursor-wine inline-flex items-center min-h-10 px-4 py-2 rounded-full border border-ink/15 hover:border-ink/30 text-ink font-medium transition-colors"
+                >
+                  Siguiente →
+                </a>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+            </nav>
           )}
         </section>
       </main>
 
-      <footer className="bg-ink text-snow/70 px-6 py-10 mt-16">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>
-            © 2026 Vinndex ·{" "}
-            <Link href="/" className="hover:text-snow">
-              Inicio
-            </Link>
-          </p>
-          <p>Precios relevados una vez por día · Beber con moderación</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
