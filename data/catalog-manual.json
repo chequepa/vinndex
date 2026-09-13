@@ -17,8 +17,32 @@
       ],
       "parajesNoDistinguen": [],
       "tiersNoDistinguen": [],
-      "edicionesNoDistinguen": ["7"]
+      "edicionesNoDistinguen": [
+        "7"
+      ]
+    },
+    {
+      "id": "rutini-coleccion-malbec-tinto",
+      "nota": "Auditoría 13/09, caso 2: la ficha /vino/malbec-rutini (33 ofertas 'Rutini Malbec', EAN 7790577001151, TiendaVinos lo llama explícito 'Rutini - Colección Malbec') se titulaba 'Apartado Gran Malbec' porque el LLM había creado una línea 'Apartado Gran Malbec' con alias vacío, o sea que el 'Rutini Malbec' pelado caía ahí. El Rutini Malbec a secas es el Colección Malbec: alias '' (línea vacía) lo declara. Los alias viejos ('cab', 'cofre') eran ruido.",
+      "lineAliases": [
+        ""
+      ]
+    },
+    {
+      "id": "rutini-sv-malbec-tinto",
+      "nota": "Con la canonicalización de iniciales (13/09) 'Rutini S.V. Malbec' parsea como línea 'sv', no 'v'. El alias viejo quedaba huérfano.",
+      "lineAliases": [
+        "sv",
+        "v"
+      ]
     }
   ],
-  "vetos": []
+  "vetos": [
+    "rutini-apartado-gran-malbec-malbec-tinto",
+    "rutini-apartado-gran-chardonnay-chardonnay",
+    "catena-zapata-nicasia-malbec-tinto",
+    "catena-zapata-nicasia-vineyards-malbec-tinto",
+    "catena-zapata-nicasia-vineyards-blendmalbec-tinto"
+  ],
+  "_vetos_nota": "rutini-apartado-gran-*: líneas inventadas por el LLM con alias vacío que se comían al 'Rutini Malbec' y 'Rutini Chardonnay' pelados (son Colección; el Apartado Gran real es rutini-apartado-gran-{malbec,chardonnay} con alias 'apartado'). catena-zapata-nicasia-*: 'Nicasia Malbec', 'Nicasia Vineyards Malbec' y 'Nicasia Vineyards Red Blend Malbec' comparten el EAN 7794450000149 con 'Nicasia Red Blend Malbec' y la misma banda de precio ($7-14k); son el mismo vino (el DV Catena Nicasia Vineyard Malbec, $19k+, es otra línea: 'dv nicasia'). Con el veto, la herencia blend del asignador manda 'Nicasia Malbec' a catena-zapata-nicasia-blendmalbec-tinto."
 }

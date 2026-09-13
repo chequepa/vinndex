@@ -43,7 +43,7 @@ export default function ComoFuncionaPage() {
         "@type": "HowToStep",
         position: 2,
         name: "Matcheamos el mismo vino",
-        text: "Pipeline de 4 stages: código de barras (EAN) cuando está, nombres normalizados con tokens ordenados, embeddings de OpenAI con similitud coseno, y LLM adjudicator (GPT-4o-mini) para resolver casos en zona gris.",
+        text: "Cada oferta se canonicaliza (sin puntuación de iniciales, volumen, pack, añada ni muletillas de retail) y se separa en vino (bodega + línea + varietal + color) y variante (botella, magnum, caja, estuche). Un diccionario de bodegas y líneas infiere la bodega desde el título; cada oferta se asigna a un catálogo de 3.000+ vinos validado con GPT-4o-mini; el código de barras fusiona fichas sólo cuando lo cargan 2+ vinotecas sin conflicto de identidad.",
         url: "https://vinndex.com.ar/como-funciona#contenido",
       },
       {
@@ -131,30 +131,45 @@ export default function ComoFuncionaPage() {
               <p className="text-ink/80 leading-relaxed mb-2">
                 El mismo vino se llama distinto en cada tienda: &ldquo;Zuccardi
                 Concreto Malbec&rdquo; vs &ldquo;Vino Concreto Zuccardi
-                750ml&rdquo;. Usamos 4 etapas de matching:
+                750ml&rdquo;, &ldquo;D.V. Catena&rdquo; vs &ldquo;DV
+                Catena&rdquo;. En vez de comparar títulos entre sí, le
+                preguntamos a cada oferta <em>qué vino es</em>:
               </p>
               <ul className="space-y-2 text-sm text-ink/80 leading-relaxed ml-4 list-disc">
                 <li>
-                  <strong>Stage 0 · Código de barras (EAN):</strong> si dos
-                  tiendas exponen el mismo GTIN, es el mismo vino. Zero falsos
-                  positivos.
+                  <strong>Título limpio:</strong> sacamos del nombre la
+                  puntuación de iniciales, el volumen, el pack, la añada,
+                  el estuche y las muletillas de retail (&ldquo;Vino
+                  Tinto&rdquo;, &ldquo;750 Cc&rdquo;, el nombre de la
+                  tienda). Lo que queda es el vino: bodega + línea +
+                  varietal + color. Lo que sacamos no se tira: es la{" "}
+                  <em>variante</em> (botella, magnum, caja x6, estuche),
+                  que vive adentro de la ficha y no compite en el precio.
                 </li>
                 <li>
-                  <strong>Stage 1 · Nombres normalizados:</strong> tokens
-                  ordenados alfabéticamente + brand + cosecha + formato.
-                  Colapsa la mayoría de casos.
+                  <strong>Diccionario de bodegas y líneas:</strong> sabemos
+                  que &ldquo;DV Catena&rdquo;, &ldquo;Saint Felicien&rdquo;
+                  y &ldquo;Nicasia&rdquo; son líneas de Catena Zapata, o
+                  que &ldquo;Trumpeter&rdquo; es de Rutini. Con eso
+                  inferimos la bodega desde el título aunque la tienda no
+                  la declare.
                 </li>
                 <li>
-                  <strong>Stage 2 · Embeddings:</strong> pasamos los nombres
-                  por OpenAI text-embedding-3-small y medimos similitud
-                  coseno. Captura casos como &ldquo;Don David Reserva
-                  Malbec&rdquo; vs &ldquo;Don David Malbec Reserva&rdquo;.
+                  <strong>Catálogo de vinos:</strong> cada oferta se asigna
+                  a un vino de un catálogo de 3.000+ vinos argentinos
+                  validado con GPT-4o-mini, que sabe qué parajes y gamas
+                  distinguen un vino de otro (Aluvional Gualtallary no es
+                  Aluvional Altamira; Concreto es siempre de Paraje
+                  Altamira). Lo que el catálogo todavía no cubre se agrupa
+                  por esa misma identidad estructurada.
                 </li>
                 <li>
-                  <strong>Stage 3 · LLM adjudicator:</strong> los pares en
-                  &ldquo;zona gris&rdquo; (similitud entre 0.85 y 0.93) se los
-                  preguntamos a GPT-4o-mini: &ldquo;¿es el mismo vino?&rdquo;.
-                  Resuelve los casos difíciles.
+                  <strong>Código de barras (EAN):</strong> si dos fichas
+                  comparten un GTIN cargado por dos o más vinotecas y no
+                  hay conflicto de identidad (color, volumen, varietal,
+                  paraje), se fusionan. Nunca fusionamos por parecido de
+                  texto solo: un falso &ldquo;mismo vino&rdquo; es peor que
+                  uno faltante.
                 </li>
               </ul>
             </div>

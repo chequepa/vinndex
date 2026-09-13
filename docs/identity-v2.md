@@ -77,3 +77,33 @@ Fallback determinístico: `bodega|línea|varietal|color|dulzor|discriminadores|e
 - 10 casos de `lineRelation` (política de merge: equal=auto, subset=LLM, crossing/disjoint=humano)
 - 9 de `secondaryKey` (remerge no borra líneas)
 - 7 del parser v2 (claves + comparabilidad: Serie A ≠ Concreto, 375/magnum/caja/estuche fuera de comparables)
+
+## Reglas agregadas el 2026-09-13 (auditoría de producto)
+
+La auditoría del 13/09 midió el sitio publicado: 39.485 fichas para 74.280
+ofertas, el 90 % en clave de fallback y **sin bodega** (el `brand` salía sólo
+del catálogo), el mismo DV Catena Malbec-Malbec en 7 fichas separadas por
+puntuación ("D.V." / "D,V," / "D. V."), las líneas de Rutini partidas en
+dos por el discriminador "colección", y títulos heredados de una tienda
+cualquiera. Todo se resolvió con reglas generales del pipeline (nada
+curado a mano salvo dos entradas del LLM que estaban mal):
+
+| Regla | Dónde | Qué arregla |
+|---|---|---|
+| `canonicalizeName()`: iniciales de 2 letras → una palabra, elisión "L'", romanos → arábigos | `lib-identity.mjs`, aplicado en `parseOffer`, `contentTokens`, `lineTokens`, `editionNums` | D.V. Catena ≡ DV Catena; L'Esploratore ≡ L´ESPLORATORE; Antología XXXVIII ≡ 38 |
+| Ruido de retail fuera de la línea (unidades, lts, botellón, estuche de madera, "x 1u") | `CONTENT_STOPWORDS`, `contentTokens` | "caja x 6 unidades" ya no abre ficha |
+| Etiqueta → bodega madre (DV Catena, Saint Felicien, Nicasia, Trumpeter, Apartado, Felino, Gran Enemigo) | `NAME_PREFIX_TO_BRAND` | la etiqueta queda como línea; /bodegas sin bodegas fantasma |
+| Marca de scraper sin cola de producto + colapso de bodegas por corpus (`buildBodegaCollapser`) | `lib-offer-identity.mjs` | "Nampe Malbec 750 cc" → Nampe; "Manos Negras Artesano" → Manos Negras + línea Artesano |
+| `brand` de los grupos sin catálogo = bodega mayoritaria parseada | `build-groups-v2.mjs` (`pickBrand`) | 35.713 → ~5.300 fichas sin bodega |
+| Título de fallback = nombre normalizado más frecuente | `pickCanonicalName` | ya no hereda el título más corto/raro |
+| Fold de fallbacks: varietal/color nulo → único hermano; "X Malbec" → "X Blend Malbec" | `build-groups-v2.mjs` | "Rutini Antología 38" ≡ "Antología 38 Blend" |
+| Discriminador contenido en la línea del catálogo no distingue; tiers del nombre de la línea son obligatorios para asignar | `wineKeyOf`, `assign` | Colección Cabernet ≡ Rutini Cabernet; "Medalla" ≠ "Gran Medalla" |
+| Herencia estricta: dulzor igual, espumante sólo con espumante, color declarado tiene que coincidir | `assign` | Chandon Extra Brut ≠ Chandon Rosé |
+| Alias implícito de la línea + unión de aliases al reconstruir el catálogo | `buildCatalogIndex`, `build-wine-catalog.mjs` | el catálogo re-aprende cuando cambia el parser |
+| EAN sólo cuenta si lo cargan ≥2 tiendas; representante del grupo = nombre más frecuente | evidencia EAN | un barcode reusado por una tienda no fusiona |
+| Slug: el registro cede ante la página dominante (≥2× ofertas) | registro de slugs | el DV Catena flagship no hereda `estuche-…-x3` |
+| "vineyard" y "coleccion" dejan de ser tiers; parajes parciales canonicalizados (`PARCEL_ALIASES`) | `parcels.json`, `stage4-token-merge.mjs` | Nicasia Vineyard ≡ Nicasia; Cepillo ≡ El Cepillo |
+
+Medido sobre el corpus publicado del 13/09 (ofertas reconstruidas desde el
+snapshot): 39.485 → 36.050 fichas, 5.030 → 5.256 comparables multi-tienda,
+fichas sin bodega 35.713 → 5.272. Harness: 85 casos (30 del parser v2).

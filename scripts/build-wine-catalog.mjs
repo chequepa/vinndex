@@ -35,7 +35,8 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
-import { parseOffer, stripAccents, normalizeBodegaKey } from "./lib-offer-identity.mjs";
+import { parseOffer, stripAccents, normalizeBodegaKey, buildBodegaCollapser } from "./lib-offer-identity.mjs";
+import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -86,9 +87,34 @@ function sha1(s) {
 function aggregate(offers) {
   const cands = new Map();
   let excluded = 0, sinBodega = 0;
-  for (const o of offers) {
-    if (!o.name) continue;
-    const p = parseOffer(o.name, o.brand);
+  // Mismo colapso de bodegas por corpus que build-groups-v2.mjs: si acá
+  // se minara "Trapiche Tesoro" como bodega y allá "Trapiche", las claves
+  // del catálogo no matchearían nunca.
+  const parsed = offers.map((o) => (o.name ? parseOffer(o.name, o.brand) : null));
+  const protect = new Set(Object.values(NAME_PREFIX_TO_BRAND).map((b) => normalizeBodegaKey(b)));
+  const display = new Map(); // key → casing más frecuente
+  {
+    const cnt = new Map();
+    for (const p of parsed) {
+      if (!p?.bodega) continue;
+      const k = normalizeBodegaKey(p.bodega);
+      if (!cnt.has(k)) cnt.set(k, new Map());
+      cnt.get(k).set(p.bodega, (cnt.get(k).get(p.bodega) ?? 0) + 1);
+    }
+    for (const [k, m] of cnt) display.set(k, [...m.entries()].sort((a, b) => b[1] - a[1])[0][0]);
+  }
+  const collapse = buildBodegaCollapser(
+    parsed.map((p, i) => (p?.bodega ? { bodegaKey: normalizeBodegaKey(p.bodega), storeSlug: offers[i].storeSlug } : null)).filter(Boolean),
+    { protect },
+  );
+  for (let i = 0; i < offers.length; i++) {
+    const o = offers[i];
+    let p = parsed[i];
+    if (!p) continue;
+    if (p.bodega) {
+      const to = collapse.get(normalizeBodegaKey(p.bodega));
+      if (to) p = parseOffer(o.name, o.brand, { bodega: display.get(to) ?? to });
+    }
     if (p.excluded) { excluded++; continue; }
     if (!p.bodega) { sinBodega++; continue; }
     const key = [
@@ -482,7 +508,16 @@ async function main() {
     try {
       const prev = JSON.parse(readFileSync(CATALOG_PATH, "utf8"));
       const prevById = new Map((prev.wines ?? []).map((w) => [w.id, w]));
-      out.wines = out.wines.map((w) => prevById.get(w.id) ?? w);
+      // La entrada previa gana (curaciones humanas sobreviven), pero los
+      // ALIASES se unen: cuando el parser cambia (13/09: iniciales,
+      // "vineyard", dulzores) los aliases viejos quedan muertos y la línea
+      // tiene que re-aprender cómo la escriben las tiendas hoy.
+      out.wines = out.wines.map((w) => {
+        const p = prevById.get(w.id);
+        if (!p) return w;
+        const aliases = [...new Set([...(p.lineAliases ?? []), ...(w.lineAliases ?? [])])];
+        return { ...p, lineAliases: aliases };
+      });
       for (const w of prev.wines ?? []) {
         if (!out.wines.some((x) => x.id === w.id)) out.wines.push(w);
       }

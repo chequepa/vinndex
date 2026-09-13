@@ -68,6 +68,10 @@ const LINE_CASES = [
   ["ruido no-identidad = mismo vino", "Vino Luigi Bosca Malbec D.O.C", "Luigi Bosca Malbec", "equal"],
   ["split que el LLM debe poder cerrar", "Concreto Malbec", "Zuccardi Concreto Malbec", "subset"],
   ["genéricos sin identidad no auto-mergean", "Vino Tinto Malbec", "Malbec tinto 750", "disjoint"],
+  // Auditoría 13/09: 7 fichas del mismo DV Catena separadas por puntuación.
+  ["iniciales: D.v. Catena = DV Catena", "DV Catena Malbec-Malbec", "Vino Tinto D.v. Catena Malbec - Malbec 750 Cc", "equal"],
+  ["iniciales: D. V. Catena = DV Catena", "DV CATENA MALBEC MALBEC", "D. V. Catena Malbec-Malbec", "equal"],
+  ["iniciales: D,V, Catena = DV Catena", "DV Catena Malbec-Malbec", "D,V, CATENA MALBEC - MALBEC", "equal"],
 ];
 
 // ── secondaryKey (remerge-groups): la línea NUNCA se strippea ──
@@ -78,7 +82,9 @@ const SECONDARY_CASES = [
   ["Alaris conserva su línea", "Alaris Malbec", "alaris"],
   ["Don David conserva su línea", "Don David Malbec", "don david"],
   ["bodega al frente se strippea, línea queda", "Trapiche Medalla Malbec", "medalla"],
-  ["Adrianna conserva su línea", "DV Catena Adrianna Malbec", "adrianna"],
+  // 13/09: "DV Catena" pasó a ser una LÍNEA de Catena Zapata (ya no una
+  // bodega propia), así que tampoco se strippea — la línea entera queda.
+  ["Adrianna conserva su línea (DV Catena es línea, no bodega)", "DV Catena Adrianna Malbec", "dv catena adrianna"],
   ["Gran Apartado conserva su línea", "Rutini Gran Apartado Chardonnay", "apartado"],
   ["Encuentro conserva su línea", "Rutini Encuentro Chardonnay", "encuentro"],
   ["label-como-marca sí se strippea (identidad vive en brand)", "A Lisa Malbec", ""],
@@ -143,6 +149,32 @@ const PARSE_CASES = [
   ["caja x6 NO comparable", "ZUCCARDI SERIE A MALBEC CAJA X 6 UN", null, "Zuccardi Serie A Malbec", null, true, false],
   ["estuche NO comparable", "Estuche Zuccardi Serie A Malbec 750cc", null, "Zuccardi Serie A Malbec", null, true, false],
   ["Medalla ≠ Alaris", "Medalla Malbec", "Trapiche", "Alaris Malbec", "Trapiche", false, true],
+  // ── Auditoría 13/09: canonicalización de títulos ──
+  ["iniciales con puntos: D.V. = DV", "D.V. Catena Malbec Malbec", null, "DV Catena Malbec-Malbec", null, true, true],
+  ["iniciales con comas: D,V, = DV", "D,V, CATENA MALBEC - MALBEC", "Catena Zapata", "DV Catena Malbec-Malbec", null, true, true],
+  ["iniciales con espacio: D. V. = DV", "D. V. Catena Malbec-Malbec", "Catena", "DV Catena Malbec-Malbec", null, true, true],
+  ["ruido de retail: 'Vino Tinto … 750 Cc'", "Vino Tinto D.v. Catena Malbec - Malbec 750 Cc", null, "DV Catena Malbec-Malbec", null, true, true],
+  ["'1.500 lts' es magnum, no línea", "Vino tinto Malbec Dv Catena 1.500 lts", null, "DV Catena Malbec-Malbec", null, true, false],
+  ["'caja x 6 unidades' es pack, no línea", "DV Catena Cabernet-Malbec caja x 6 unidades", null, "DV Catena Cabernet Malbec", null, true, false],
+  ["botellón = 1,5 L", "Botellon Dv Catena Malbec-malbec De Catena Zapata 1500 Ml año 2023", null, "DV Catena Malbec-Malbec", null, true, false],
+  ["'estuche x 2 botellas' no es línea", "DV CATENA CABERNET MALBEC ESTUCHE x 2 BOTELLAS", null, "DV Catena Cabernet Malbec", null, true, false],
+  ["D.O.C (3 letras) no se toca", "Vino Luigi Bosca Malbec D.O.C", "Luigi Bosca", "Luigi Bosca Malbec", "Luigi Bosca", true, true],
+  ["S.V. sigue siendo una línea", "Rutini S.V. Malbec", null, "Rutini Malbec", null, false, true],
+  // ── etiqueta → bodega madre ──
+  ["Trumpeter es Rutini (sufijo '- Rutini Wines' no es línea)", "Trumpeter Cabernet Sauvignon - Rutini Wines", null, "Rutini Trumpeter Cabernet Sauvignon", null, true, true],
+  ["Apartado es Rutini", "Apartado Gran Malbec", null, "Rutini Apartado Gran Malbec", null, true, true],
+  ["Gran Enemigo ≠ El Enemigo (misma bodega, tier distinto)", "Gran Enemigo Gualtallary Cabernet Franc", null, "El Enemigo Cabernet Franc", null, false, true],
+  ["paraje parcial: 'Cepillo' = 'El Cepillo'", "GRAN ENEMIGO CEPILLO", null, "Gran Enemigo El Cepillo", null, true, true],
+  ["'Corte' es blend, no línea", "Gran Enemigo Corte", null, "Gran Enemigo Blend", null, true, true],
+  // ── elisión, romanos, vineyard ──
+  ["elisión: L`Esploratore = L´ESPLORATORE", "DV Catena L`Esploratore Malbec Salta", null, "DV CATENA L´ESPLORATORE MALBEC  SALTA", null, true, true],
+  ["Esploratore Salta ≠ Esploratore La Rioja", "DV Catena L'Esploratore Malbec Salta", null, "DV Catena L'Esploratore Malbec La Rioja", null, false, true],
+  ["romanos: XXXVIII = 38", "Rutini Antología XXXVIII Blend", null, "Rutini Antología 38 Blend", null, true, true],
+  ["romanos: Antología 57 ≠ 60 sigue distinguiendo", "Rutini Antología LVII", null, "Rutini Antología LX", null, false, true],
+  ["'Vineyard' suelto no distingue", "Nicasia Vineyard Malbec", null, "Nicasia Malbec", null, true, true],
+  ["'Single Vineyard' sí distingue", "Rutini Single Vineyard Malbec", null, "Rutini Malbec", null, false, true],
+  ["'Extra' de Extra Brut no es línea", "Trumpeter Extra Brut", null, "Rutini Trumpeter Extra Brut", null, true, true],
+  ["marca de scraper con cola de producto", "Nampe Malbec 750cc", "Nampe Malbec 750 cc", "Nampe Malbec", "Nampe", true, true],
 ];
 
 console.log("\n=== PARSER v2 (identidad estructurada por oferta) ===");
@@ -175,6 +207,20 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
   const ok2 = colonia !== "Colón";
   if (!ok2) failed++;
   console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  "Colonia Las Liebres" NO es Colón  →  ${colonia ?? "sin bodega"}`);
+}
+{
+  // Etiquetas que son LÍNEAS de una bodega madre, no bodegas (13/09).
+  const expect = { "dv catena": "Catena Zapata", "saint felicien": "Catena Zapata", trumpeter: "Rutini", apartado: "Rutini", "gran enemigo": "El Enemigo", felino: "Viña Cobos" };
+  for (const [k, v] of Object.entries(expect)) {
+    const ok = NAME_PREFIX_TO_BRAND[k] === v;
+    if (!ok) failed++;
+    console.log(`  ${ok ? "✅" : "❌ FALLA"}  "${k}" es una línea de ${v}  →  ${NAME_PREFIX_TO_BRAND[k]}`);
+  }
+  // "Ernesto Catena" es OTRA bodega: el prefijo "catena" no se la come.
+  const ec = resolveBodega("Ernesto Catena Ánimal Malbec", null);
+  const ok = ec === "Ernesto Catena";
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  Ernesto Catena no es Catena Zapata  →  ${ec}`);
 }
 
 console.log("\n=== OVERLAY MANUAL DEL CATÁLOGO ===");
@@ -212,6 +258,21 @@ console.log("\n=== OVERLAY MANUAL DEL CATÁLOGO ===");
     const dropsSeven = (colon.edicionesNoDistinguen ?? []).includes("7");
     if (!dropsSeven) failed++;
     console.log(`  ${dropsSeven ? "✅" : "❌ FALLA"}  el "7" del nombre de Jumbo no abre una ficha aparte`);
+  }
+  // Auditoría 13/09, caso 2: la línea fantasma "Apartado Gran Malbec" (alias
+  // vacío) se comía al "Rutini Malbec" pelado, que es el Colección Malbec.
+  {
+    const w2 = [
+      { id: "rutini-apartado-gran-malbec-malbec-tinto", bodega: "Rutini", linea: "Apartado Gran Malbec", varietal: "malbec", color: "tinto", lineAliases: [] },
+      { id: "rutini-coleccion-malbec-tinto", bodega: "Rutini", linea: "Colección", varietal: "malbec", color: "tinto", lineAliases: ["cab"] },
+    ];
+    applyManualOverlay(w2);
+    const vetoed = !w2.some((w) => w.id === "rutini-apartado-gran-malbec-malbec-tinto");
+    const col = w2.find((w) => w.id === "rutini-coleccion-malbec-tinto");
+    const bare = !!col && col.lineAliases.includes("");
+    const ok = vetoed && bare;
+    if (!ok) failed++;
+    console.log(`  ${ok ? "✅" : "❌ FALLA"}  "Rutini Malbec" pelado es Colección Malbec, no Apartado Gran`);
   }
 }
 
