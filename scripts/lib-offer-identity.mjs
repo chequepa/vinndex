@@ -20,6 +20,9 @@
  * harness dorado, la parte más blindada del sistema actual.
  */
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import {
   colorOf,
   sweetnessOf,
@@ -92,7 +95,7 @@ export function resolveBodega(name, brand) {
 const BRAND_ARTICLES = new Set(["de", "del", "la", "el", "los", "las", "y", "con", "sin", "un", "una"]);
 const BRAND_JUNK_TOKENS = new Set([
   ...[...CONTENT_STOPWORDS].filter((t) => !BRAND_ARTICLES.has(t)),
-  "malbec", "cabernet", "sauvignon", "franc", "merlot", "syrah", "shiraz",
+  "malbec", "cabernet", "sauvignon", "blanc", "franc", "merlot", "syrah", "shiraz",
   "bonarda", "chardonnay", "torrontes", "tempranillo", "pinot", "noir",
   "grigio", "blend", "corte", "tannat", "viognier", "riesling", "semillon",
   "criolla", "moscatel", "petit", "verdot", "sangiovese", "nebbiolo",
@@ -118,7 +121,75 @@ export function cleanScraperBrand(brand) {
   while (kept.length && /^(de|del|la|el|los|las|y|por)$/i.test(stripAccents(kept[kept.length - 1]))) kept.pop();
   while (kept.length && /^(de|del|y|por|en)$/i.test(stripAccents(kept[0]))) kept.shift();
   const out = kept.join(" ").trim();
-  return out ? out : null;
+  if (!out) return null;
+  // Lo que queda tiene que parecer una bodega: "Sauvignon Blanc" → "Blanc",
+  // "Casa Hofmann Té" → "Casa", "Gin" → "Gin" son ruido, no bodegas.
+  return isJunkBodegaKey(normalizeBodegaKey(out)) ? null : out;
+}
+
+// "Bodegas" de una palabra que son artículos, genéricos o categorías. Un
+// scraper que manda "Casa", "San", "The" o "Gin" como marca no está
+// diciendo la bodega, y el colapso por corpus tampoco puede usar esas
+// claves como destino (13/09: "Casa Agostino" → "casa", "San Telmo" →
+// "san", "Don Valentín" → "don" — 700 fichas bajo bodegas fantasma).
+const GENERIC_BODEGA_TOKENS = new Set([
+  "the", "casa", "san", "santa", "don", "dona", "gin", "vodka", "whisky",
+  "whiskey", "ron", "rum", "aceite", "chateau", "domaine", "finca", "bodega",
+  "bodegas", "vina", "vinas", "estate", "cerveza", "licor", "agua", "jugo",
+  "blanc", "blanco", "rouge", "rose", "rosado", "tinto", "gran", "viejo",
+  "nuevo", "alta", "alto", "tierra", "valle", "vino", "vinos", "bebida",
+  "bebidas", "wine", "wines", "winery", "cellar", "cellars", "familia",
+  "family", "grupo", "sur", "norte", "este", "oeste", "mar", "rio", "monte",
+  "sierra", "los", "las", "el", "la", "de", "del", "importado", "nacional",
+  "premium", "select", "selecto", "reserva", "cosecha", "varietal", "vinedo",
+  "vinedos", "copa", "botella", "estuche", "caja", "pack", "kit", "set",
+  "mix", "combo", "promo", "oferta", "regalo",
+]);
+export function isJunkBodegaKey(key) {
+  if (!key) return true;
+  const toks = key.split(" ").filter(Boolean);
+  if (toks.length === 1) {
+    return toks[0].length <= 3 || /^\d+$/.test(toks[0]) || GENERIC_BODEGA_TOKENS.has(toks[0]);
+  }
+  return toks.every((t) => t.length <= 2 || GENERIC_BODEGA_TOKENS.has(t));
+}
+
+// ── La tienda no es la bodega ──
+// Algunas tiendas mandan SU nombre como marca de sus productos ("Aldo's
+// Vinoteca" en 400 fichas). Comparamos la bodega parseada contra el nombre
+// y el slug de la tienda que publica la oferta (data/stores.json).
+const __dirname_oi = dirname(fileURLToPath(import.meta.url));
+let STORE_NAME_KEYS = null;
+function storeNameKeys() {
+  if (STORE_NAME_KEYS) return STORE_NAME_KEYS;
+  STORE_NAME_KEYS = new Map(); // storeSlug → Set(claves)
+  try {
+    const stores = JSON.parse(readFileSync(resolve(__dirname_oi, "..", "data/stores.json"), "utf8"));
+    for (const s of stores) {
+      const keys = new Set();
+      for (const raw of [s.name ?? "", String(s.name ?? "").replace(/['’`]/g, ""), String(s.slug ?? "").replace(/-/g, " ")]) {
+        const k = normalizeBodegaKey(raw);
+        if (!k) continue;
+        keys.add(k);
+        const short = k
+          .replace(/\b(vinoteca|vinotecas|vinos?|wines?|store|tienda|boutique|club|cava|cavas|enoteca|la|el|de|los|las)\b/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (short.length >= 3) keys.add(short);
+      }
+      STORE_NAME_KEYS.set(s.slug, keys);
+    }
+  } catch {
+    /* sin stores.json no hay guard */
+  }
+  return STORE_NAME_KEYS;
+}
+/** true si la "bodega" es el nombre de la tienda que publica la oferta. */
+export function isStoreBrand(bodega, storeSlug) {
+  if (!bodega || !storeSlug) return false;
+  const keys = storeNameKeys().get(storeSlug);
+  if (!keys) return false;
+  return keys.has(normalizeBodegaKey(bodega));
 }
 
 // Valores de brand que son placeholder del scraper, no una bodega.
@@ -275,6 +346,7 @@ export function buildBodegaCollapser(rows, opts = {}) {
         const ct = cand.split(" ");
         if (ct.length >= toks.length) continue;
         if (!ct.every((x) => toks.includes(x))) continue;
+        if (!protect.has(cand) && isJunkBodegaKey(cand)) continue;
         const cs = stores.get(cand).size;
         if (cs < 3 || cs < ks.size) continue;
         // más tokens compartidos primero, después más tiendas
