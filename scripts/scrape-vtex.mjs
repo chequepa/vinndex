@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { fetchPageWithRetry } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -120,32 +121,31 @@ async function scrapeQuery(base, queryString, products, counters) {
     const url = `${base}/api/catalog_system/pub/products/search?${queryString}&_from=${from}&_to=${to}`;
     counters.pagesFetched++;
 
-    let res;
-    try {
-      res = await fetchJson(url);
-    } catch (err) {
-      errors.push(`${queryString} from ${from}: fetch failed (${err.message})`);
+    // Un 500 suelto cortaba la categoría entera sin reintentar: Disco
+    // perdió 798 productos el 13/09/2026 por un único "HTTP 500" en el
+    // offset 1650 de /2/45/216/. Mismo helper que WooCommerce y Tiendanube.
+    const result = await fetchPageWithRetry({
+      page: from / BATCH + 1,
+      stats: counters.retry,
+      doFetch: () => fetchJson(url),
+      readBody: async (res) => {
+        const body = await res.json();
+        return Array.isArray(body) ? body : [];
+      },
+      // 416 = nos pasamos del final del resultado.
+      isDone: (status) => status === 416,
+    });
+
+    if (result.done) break;
+    if (result.failure) {
+      // Agotados los reintentos se corta la consulta, como antes con los
+      // 5xx: seguir pidiendo offsets a una API que no responde es el muro
+      // de 150 requests que tenía ligier.
+      errors.push(`${queryString} from ${from}: ${result.failure}`);
       break;
-    }
-    if (!res.ok) {
-      if (res.status === 416) break;
-      if (res.status >= 500) {
-        errors.push(`${queryString} from ${from}: HTTP ${res.status}`);
-        break;
-      }
-      errors.push(`${queryString} from ${from}: HTTP ${res.status}`);
-      if (from === 0) break;
-      continue;
     }
 
-    let items;
-    try {
-      const body = await res.json();
-      items = Array.isArray(body) ? body : [];
-    } catch {
-      errors.push(`${queryString} from ${from}: non-JSON`);
-      break;
-    }
+    const items = result.value;
     if (items.length === 0) break;
     counters.rawSeen += items.length;
 
@@ -176,6 +176,7 @@ async function scrapeStore(store) {
     pagesFetched: 0,
     rawSeen: 0,
     filtered: 0,
+    retry: { retries: 0, recovered: false },
   };
 
   if (store.categoryPaths && store.categoryPaths.length > 0) {
@@ -202,6 +203,8 @@ async function scrapeStore(store) {
     startedAt,
     durationMs: Date.now() - t0,
     pagesFetched: counters.pagesFetched,
+    retries: counters.retry.retries,
+    recoveredAfterRetry: counters.retry.recovered,
     rawSeen: counters.rawSeen,
     filtered: counters.filtered,
     productCount: products.size,

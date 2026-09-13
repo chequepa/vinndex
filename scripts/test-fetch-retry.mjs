@@ -49,6 +49,7 @@ const jsonBody = async (res) => {
 };
 const woo = { readBody: jsonBody, isDone: (s) => s === 404 };
 const tn = { readBody: (res) => res.text(), isDone: (s, p) => s === 404 && p > 1 };
+const vtex = { readBody: jsonBody, isDone: (s) => s === 416 };
 
 // Los delays reales suman ~23s; para el test se parchea el reloj.
 const realSetTimeout = globalThis.setTimeout;
@@ -158,6 +159,39 @@ console.log("\n=== TIENDANUBE (HTML, 404 distinto) ===");
     "404 en la página 1 NO es fin de paginado, es error",
     !!r.failure && r.done !== true,
     `failure="${r.failure}" tras ${calls.n} intento`,
+  );
+}
+
+console.log("\n=== VTEX (JSON, 416 = fin) ===");
+{
+  // el caso real: Disco, "fq=C:/2/45/216/ from 1650: HTTP 500" el 13/09
+  const { doFetch, calls } = stub([500, 200]);
+  const stats = { retries: 0, recovered: false };
+  const r = await fetchPageWithRetry({ page: 34, stats, doFetch, ...vtex });
+  check(
+    "recupera un 500 suelto a mitad del paginado",
+    r.value?.length === 1 && stats.recovered === true,
+    `${calls.n} intentos, recovered=${stats.recovered}`,
+  );
+}
+{
+  const { doFetch, calls } = stub([416]);
+  const stats = { retries: 0, recovered: false };
+  const r = await fetchPageWithRetry({ page: 51, stats, doFetch, ...vtex });
+  check(
+    "416 es fin de resultados, sin reintentar",
+    r.done === true && calls.n === 1,
+    `done=${r.done}, ${calls.n} intento`,
+  );
+}
+{
+  const { doFetch, calls } = stub([404]);
+  const stats = { retries: 0, recovered: false };
+  const r = await fetchPageWithRetry({ page: 2, stats, doFetch, ...vtex });
+  check(
+    "404 en VTEX es error, no fin de paginado",
+    !!r.failure && r.done !== true && calls.n === 1,
+    `failure="${r.failure}"`,
   );
 }
 
