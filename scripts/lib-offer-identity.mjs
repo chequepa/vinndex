@@ -79,8 +79,10 @@ export function resolveBodega(name, brand) {
     if (k.length < 4) continue; // mid-name sólo con keys largas (evita falsos hits)
     if (padded.includes(" " + k + " ")) return NAME_PREFIX_TO_BRAND[k];
   }
-  // Brand del scraper (limpio de "Bodega(s)/Familia")
-  const b = normalizeLoose(brand).replace(/^(bodegas?|familia)\s+/, "");
+  // Brand del scraper (limpio de "Bodega(s)/Familia" y de puntuación:
+  // "SIN MARCA." con punto se saltaba el placeholder y publicaba 157
+  // fichas con bodega "Sin Marca.").
+  const b = normalizeLoose(brand).replace(/[.\/]/g, " ").replace(/\s+/g, " ").trim().replace(/^(bodegas?|familia)\s+/, "");
   if (!b || PLACEHOLDER_BRANDS.has(b)) return null;
   for (const k of PREFIX_KEYS_BY_LENGTH) {
     if (b === k || b.startsWith(k + " ")) return NAME_PREFIX_TO_BRAND[k];
@@ -143,7 +145,8 @@ const GENERIC_BODEGA_TOKENS = new Set([
   "sierra", "los", "las", "el", "la", "de", "del", "importado", "nacional",
   "premium", "select", "selecto", "reserva", "cosecha", "varietal", "vinedo",
   "vinedos", "copa", "botella", "estuche", "caja", "pack", "kit", "set",
-  "mix", "combo", "promo", "oferta", "regalo",
+  "mix", "combo", "promo", "oferta", "regalo", "marca", "sin", "s", "n",
+  "generico", "generica", "otro", "otra", "otras", "varios", "varias",
 ]);
 export function isJunkBodegaKey(key) {
   if (!key) return true;
@@ -198,6 +201,8 @@ const PLACEHOLDER_BRANDS = new Set([
   "varios", "otros", "s d", "s m", "vino", "vinos", "wine", "wines",
   "select", "cosecha", "varietal", "generico", "genérico", "importado",
   "tinto", "blanco", "rosado", "malbec", "cabernet", "espumante",
+  "marca", "sin marca", "s m", "s d", "sd", "sm", "n a", "na", "nn", "no aplica",
+  "sin datos", "sin especificar", "otro", "otra", "otras", "varias", "generica",
 ]);
 
 // ── Flags de variante (no-identidad de vino, sí de SKU) ──

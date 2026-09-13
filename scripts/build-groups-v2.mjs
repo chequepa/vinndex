@@ -946,11 +946,16 @@ function main() {
       const exprTokens = g.expr ? g.expr.split(" ").filter((t) => !lineaNorm.includes(t)) : [];
       const pre = exprTokens.filter((t) => t === "gran");
       const post = exprTokens.filter((t) => t !== "gran");
+      // Un rosado del catálogo cuya línea/varietal no lo dicen ("Trumpeter
+      // Reserva Malbec" para el Rosé de Malbec) lleva "Rosé" en el título.
+      const needsRose =
+        w.color === "rosado" && !/\b(rose|rosado|rosada)\b/.test(norm(`${w.linea} ${w.varietal ?? ""}`));
       canonicalName = [
         pre.length ? cap(pre.join(" ")) : "",
         w.linea,
         post.length ? cap(post.join(" ")) : "",
         needsVarietal ? varietalDisplay : "",
+        needsRose ? "Rosé" : "",
       ]
         .filter(Boolean)
         .join(" ");
