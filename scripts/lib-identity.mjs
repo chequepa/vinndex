@@ -36,6 +36,70 @@ export function decodeEntities(s) {
 }
 
 /**
+ * Iniciales con puntuación → una sola palabra: "D.V. Catena", "D,V, Catena",
+ * "D. V. Catena" y "D.V Catena" → "DV Catena"; "S.V." → "SV"; "J.P." → "JP".
+ *
+ * Es la fábrica de duplicados más visible del sitio (auditoría 13/09):
+ * el mismo DV Catena Malbec-Malbec vivía en 7 fichas separadas SOLO por
+ * cómo cada tienda puntúa las iniciales — la "v" suelta sobrevivía como
+ * token de línea y la "d" se perdía, así que "d.v. catena" nunca era
+ * "dv catena" ni para el prefijo de bodega ni para la relación de líneas.
+ *
+ * Sólo runs de EXACTAMENTE dos letras. "D.O.C" (tres) se deja como está:
+ * el harness exige que "Luigi Bosca Malbec D.O.C" siga siendo el mismo
+ * vino que "Luigi Bosca Malbec" (las letras sueltas caen como ruido, y
+ * "doc" como token nuevo los partiría).
+ */
+export function joinInitials(s) {
+  return String(s ?? "").replace(
+    /(?<![\p{L}\d])(?:\p{L}[.,]\s?)+\p{L}[.,]?(?![\p{L}\d])/gu,
+    (run) => {
+      const letters = run.replace(/[^\p{L}]/gu, "");
+      return letters.length === 2 ? letters : run;
+    },
+  );
+}
+
+/** Elisión romance: "L'Esploratore", "L`Esploratore", "L ’ESPLORATORE",
+ * "D'Angelo" → "Esploratore", "Angelo". Sin esto cada tienda que usa un
+ * apóstrofo distinto (', `, ´, ’) partía la línea. */
+export function stripElision(s) {
+  return String(s ?? "").replace(/(?<![\p{L}\d])[lLdD]\s?['´’`‘]\s?(?=\p{L})/gu, "");
+}
+
+/** Números romanos (2 a 7 letras, ≤ 89) → arábigos, como token entero:
+ * "Antología XXXVIII" y "Antología 38" son la misma edición. Se exigen
+ * ≥2 letras para no tocar "V" (inicial) ni "X" (pack). */
+// Límites Unicode a mano: el \b de JS es ASCII y partía "Viña" en "Vi"+"ña"
+// (→ "6ña"). Un romano sólo cuenta si NO está pegado a otra letra o dígito.
+const ROMAN_TOKEN_RE = /(?<![\p{L}\d])[ivxlIVXL]{2,7}(?![\p{L}\d])/gu;
+const ROMAN_VALID_RE = /^(?=[ivxl]{2,7}$)(l?x{0,3})(ix|iv|v?i{0,3})$/;
+const ROMAN_VAL = { i: 1, v: 5, x: 10, l: 50 };
+export function romanToArabic(s) {
+  return String(s ?? "").replace(ROMAN_TOKEN_RE, (t) => {
+    const low = t.toLowerCase();
+    if (!ROMAN_VALID_RE.test(low)) return t;
+    let n = 0;
+    for (let i = 0; i < low.length; i++) {
+      const a = ROMAN_VAL[low[i]];
+      const b = ROMAN_VAL[low[i + 1]] ?? 0;
+      n += a < b ? -a : a;
+    }
+    return n >= 2 ? String(n) : t;
+  });
+}
+
+/**
+ * Canonicalización de un nombre de producto ANTES de cualquier extractor.
+ * Idempotente. Es el "paso 0" que la auditoría del 13/09 pedía: lo que
+ * entra al parser, al catálogo y a los gates ya viene sin la puntuación
+ * y el ruido tipográfico que las tiendas meten en el título.
+ */
+export function canonicalizeName(raw) {
+  return romanToArabic(stripElision(joinInitials(decodeEntities(String(raw ?? "")))));
+}
+
+/**
  * Prefijo de nombre → bodega canónica. Corre ANTES de cualquier matching.
  * Algunas etiquetas se atribuyen inconsistentemente entre tiendas (una
  * lista "A Lisa Malbec" con brand="A Lisa", otra con brand="Noemia"):
@@ -50,13 +114,20 @@ export const NAME_PREFIX_TO_BRAND = {
   "a. lisa": "A Lisa",
   "j alberto": "J. Alberto",
   "j. alberto": "J. Alberto",
-  "dv catena": "DV Catena",
-  "dv adrianna": "DV Catena",
-  "dv catena adrianna": "DV Catena",
+  // Etiquetas → bodega MADRE (auditoría 13/09: "DV Catena", "Saint Felicien",
+  // "Trumpeter" o "Gran Enemigo" figuraban como bodegas propias en /bodegas y
+  // partían el mismo vino según qué tienda nombrara a la madre). La etiqueta
+  // queda como token de LÍNEA; la bodega es la real.
+  "dv catena": "Catena Zapata",
+  "dv adrianna": "Catena Zapata",
+  "dv catena adrianna": "Catena Zapata",
+  "catena zapata": "Catena Zapata",
+  catena: "Catena Zapata",
+  "ernesto catena": "Ernesto Catena",
   alamos: "Alamos",
-  "saint felicien": "Saint Felicien",
+  "saint felicien": "Catena Zapata",
   luca: "Luca",
-  "nicolas catena": "Nicolas Catena Zapata",
+  "nicolas catena": "Catena Zapata",
   "angelica zapata": "Catena Zapata",
   "angélica zapata": "Catena Zapata",
   adrianna: "Catena Zapata",
@@ -66,7 +137,7 @@ export const NAME_PREFIX_TO_BRAND = {
   padrillos: "Padrillos",
   tikal: "Tikal",
   "el enemigo": "El Enemigo",
-  "gran enemigo": "Gran Enemigo",
+  "gran enemigo": "El Enemigo",
   portillo: "Salentein",
   numina: "Salentein",
   primus: "Salentein",
@@ -87,8 +158,8 @@ export const NAME_PREFIX_TO_BRAND = {
   antologia: "Rutini",
   "antología": "Rutini",
   expresiones: "Rutini",
-  trumpeter: "Trumpeter",
-  apartado: "Rutini Apartado",
+  trumpeter: "Rutini",
+  apartado: "Rutini",
   paradigma: "Luigi Bosca",
   "finca los nobles": "Luigi Bosca",
   "la linda": "La Linda",
@@ -124,7 +195,7 @@ export const NAME_PREFIX_TO_BRAND = {
   "cheval des andes": "Cheval Des Andes",
   "cheval-des-andes": "Cheval Des Andes",
   malamado: "Malamado",
-  felino: "Felino",
+  felino: "Viña Cobos",
   "casa boher": "Casa Boher",
   amalaya: "Amalaya",
   chandon: "Chandon",
@@ -190,7 +261,7 @@ export const NAME_PREFIX_TO_BRAND = {
   "los cardos": "Doña Paula",
   "almacen de la quebrada": "Almacén de la Quebrada",
   "almacén de la quebrada": "Almacén de la Quebrada",
-  "nicola catena": "Nicolas Catena Zapata",
+  "nicola catena": "Catena Zapata",
   "un mundo chiquito": "Un Mundo Chiquito",
   judas: "Sottano",
   patriota: "Tikal",
@@ -248,6 +319,15 @@ export const CONTENT_STOPWORDS = new Set([
   // Abreviaturas de bodega/familia que nunca son identidad ("FLIA.
   // ZUCCARDI SERIE A" partía el grupo de Serie A).
   "flia", "fla", "bod", "fca",
+  // Ruido de retail que sobrevivía como "línea" (auditoría 13/09): "caja x
+  // 6 unidades" dejaba "unidades", "1.500 lts" dejaba "lts", "estuche x 2
+  // botellas" dejaba "botellas", y cada uno abría una ficha aparte.
+  "unidades", "unidad", "unid", "und", "botellas", "botellon", "botellones",
+  "lts", "lt", "litro", "litros", "cm3", "cajas", "estuches", "cofre",
+  "en", "por", "para", "c", "u", "cl",
+  // "Nicasia Vineyard(s) Malbec" = "Nicasia Malbec"; "Viñedo Elena" idem.
+  // El viñedo que SÍ distingue vive en parcels.json (Tilcara, Gualtallary…).
+  "vineyard", "vineyards", "vinedo", "vinedos",
 ]);
 
 /**
@@ -256,13 +336,20 @@ export const CONTENT_STOPWORDS = new Set([
  * sin números sueltos, len ≥ 2.
  */
 export function contentTokens(name) {
-  return stripAccents(name)
+  return stripAccents(canonicalizeName(name))
     .toLowerCase()
     // "año 2023" / "añada 2019" / "cosecha 2020": la palabra pegada al
     // vintage se va CON el vintage (sola no — "Año Cero" es una etiqueta).
     .replace(/\b(ano|anada|cosecha)\s+(?=(19\d{2}|20[0-2]\d)\b)/g, " ")
     .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
-    .replace(/\b\d+\s*(ml|cc|cm3|cm³|l)\b/g, " ")
+    // "caja de madera x6" es envase, no línea ("Madera" sí es una línea de
+    // Rutini — por eso se saca la frase entera y no la palabra).
+    .replace(/\b(caja|estuche)\s+(?:de\s+)?madera\b/g, " ")
+    // "x 1u.", "x 2 bot", "6 unidades": firma de pack, no de línea.
+    .replace(/\bx?\s*\d{1,2}\s*(u|un|unid|unidades|bot|botellas)\b/g, " ")
+    // Volúmenes con cualquier unidad, con o sin espacio y con decimales:
+    // "750 Cc", "1.500 lts", "1,5 L", "300cl", "X750CC".
+    .replace(/\bx?\d+(?:[.,]\d+)?\s*(ml|cc|cm3|cm³|l|lt|lts|litros?|cl)\b/g, " ")
     .replace(/\bx\s*\d+\b/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)

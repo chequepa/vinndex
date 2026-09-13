@@ -56,7 +56,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, resolve } from "node:path";
-import { stripAccents, contentTokens, NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
+import { stripAccents, contentTokens, canonicalizeName, NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
 import { toEan } from "./lib-ean.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +86,24 @@ const PARCEL_TOKENS = new Set(
   parcelsCfg.parcels.flatMap((p) => stripAccents(p).toLowerCase().split(/\s+/)),
 );
 
+// Parajes escritos a medias: "Gran Enemigo Cepillo" es "El Cepillo",
+// "Polígonos Altamira" es "Paraje Altamira". El token suelto se
+// canonicaliza a la frase completa para que ambas formas den la misma
+// clave (13/09: "GRAN ENEMIGO CEPILLO" (7 tiendas) y "Gran Enemigo El
+// Cepillo" (6) eran dos fichas).
+const PARCEL_ALIASES = {
+  cepillo: "el cepillo",
+  compuertas: "las compuertas",
+  peral: "el peral",
+  arboles: "los arboles",
+  mirador: "el mirador",
+  drummond: "mayor drummond",
+  coria: "chacras de coria",
+  chacayes: "los chacayes",
+  altamira: "paraje altamira",
+};
+const PARCEL_ALIAS_KEYS = Object.keys(PARCEL_ALIASES);
+
 /** Set de discriminadores (parcela/tier) presentes en un nombre. */
 function discriminatorSet(name) {
   const s = " " + stripAccents(name).toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ") + " ";
@@ -93,6 +111,9 @@ function discriminatorSet(name) {
   for (const d of DISCRIMINATORS) {
     // word-boundary por padding de espacios (sirve para frases multi-palabra)
     if (s.includes(" " + d + " ")) out.add(d);
+  }
+  for (const k of PARCEL_ALIAS_KEYS) {
+    if (s.includes(" " + k + " ")) { out.delete(k); out.add(PARCEL_ALIASES[k]); }
   }
   return out;
 }
@@ -171,7 +192,7 @@ function editionNums(name) {
   //     fantasma y "Magnum 1.5L" vs "Magnum" conflictuaba falso.
   //   · packs ("x6", "caja x 6 un", "6 botellas") — son firma de pack
   //     (packSig), no edición; contaminaban la clave de vino v2.
-  const s = stripAccents(name)
+  const s = stripAccents(canonicalizeName(name))
     .toLowerCase()
     .replace(/\b\d+[.,]\d+\s*(l|lt|lts|litros?)\b/g, " ")
     .replace(/\bx\s*\d{1,2}\b/g, " ")
@@ -236,8 +257,16 @@ function styleSet(g) {
 // divergencia de línea de Stage 6.5. EXPORT para stage6-llm-adjudicate.mjs.
 const VARIETAL_TOKENS = new Set(VARIETAL_RE.flatMap(([k]) => k.split(" ")));
 const DISC_TOKENS = new Set(DISCRIMINATORS.flatMap((d) => d.split(" ")));
+// Alternativas de las regex de varietal/dulzor que no son la key ("corte"
+// detecta blend pero quedaba como token de línea: "Gran Enemigo Corte" ≠
+// "Gran Enemigo Blend"), más los marcadores de dulzor de espumantes
+// ("Trumpeter Extra Brut" dejaba "extra" como línea).
+const EXTRA_IDENTITY_TOKENS = new Set([
+  "corte", "assemblage", "ensamble", "shiraz", "grenache", "monastrell",
+  "extra", "nature", "demi", "sec", "doux", "brut", "dulce", "seco",
+]);
 export function isIdentityToken(t) {
-  return VARIETAL_TOKENS.has(t) || DISC_TOKENS.has(t);
+  return VARIETAL_TOKENS.has(t) || DISC_TOKENS.has(t) || EXTRA_IDENTITY_TOKENS.has(t);
 }
 
 /**
@@ -255,7 +284,9 @@ export function lineTokens(name) {
   // "Serie A"). Pero algunas consonantes sueltas SÍ son la línea entera
   // ("Zuccardi Q", "Baron B") — sin ellas "Zuccardi Q Malbec" quedaría
   // idéntico a "Zuccardi Malbec". Las recuperamos acá.
-  const singles = stripAccents(String(name ?? ""))
+  // Sobre el nombre CANONICALIZADO: "D.V. Catena" ya es "DV Catena", así
+  // que la "v" de las iniciales no vuelve a colarse como línea.
+  const singles = stripAccents(canonicalizeName(name))
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
@@ -315,6 +346,9 @@ function volMl(name) {
   const s = stripAccents(name).toLowerCase();
   if (/\bmagnum\b/.test(s)) return 1500;
   let m = s.match(/\b(\d+(?:[.,]\d+)?)\s*(?:l|lt|lts|litro|litros)\b/);
+  // "Botellón" sin volumen explícito = 1,5 L en el retail argentino. Antes
+  // caía en 750 y competía en el "mejor precio" de la botella.
+  if (!m && /\bbotellon(es)?\b/.test(s)) return 1500;
   if (m) return Math.round(parseFloat(m[1].replace(",", ".")) * 1000);
   m = s.match(/\b(\d+(?:[.,]\d+)?)\s*cl\b/); // centilitros: 300cl = 3000ml
   if (m) return Math.round(parseFloat(m[1].replace(",", ".")) * 10);
