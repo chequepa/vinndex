@@ -1,15 +1,46 @@
 import Link from "next/link";
 
 /**
- * Site-wide footer. Includes the 4 columns of links used in the home
- * page + the copyright + drinking-responsibly disclaimer. Imported by
- * every top-level page so users always have a way to reach /sobre,
- * /contacto, /sumate, /opt-out from anywhere.
+ * Site-wide footer. Bloque de marca (logo + qué es Vinndex + aviso de
+ * precios) heredado del footer inline que tenía el home, las 4 columnas
+ * de links y el copyright + disclaimer de consumo. Lo importa cada
+ * página top-level (home y /buscar incluidas, desde la auditoría del
+ * 2026-09-13) así el usuario siempre llega a /sobre, /contacto, /sumate,
+ * /opt-out desde cualquier lado.
  */
 export function SiteFooter() {
   return (
     <footer className="bg-ink text-snow/70 px-6 py-12 mt-16">
       <div className="max-w-7xl mx-auto">
+        <div className="max-w-md mb-10">
+          <Link
+            href="/"
+            aria-label="Vinndex · inicio"
+            className="inline-flex items-center gap-2 mb-4"
+          >
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path
+                d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
+                fill="#F5EDE0"
+                stroke="#F5EDE0"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              <circle cx="24" cy="8" r="3" fill="#E8B547" />
+            </svg>
+            <span className="display text-xl font-semibold text-snow">
+              Vinndex
+            </span>
+          </Link>
+          <p className="text-sm leading-relaxed">
+            Comparador independiente de precios de vinos online en Argentina.
+            No vendemos vino, te ayudamos a comprarlo al mejor precio.
+          </p>
+          <p className="text-xs text-snow/50 mt-4">
+            Precios relevados 1 vez por día. Confirmá en la vinoteca antes de
+            comprar.
+          </p>
+        </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <div>
             <h3 className="display text-snow font-semibold mb-4">Catálogo</h3>
