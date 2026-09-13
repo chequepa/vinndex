@@ -38,6 +38,7 @@ import {
   normalizeBodegaKey,
 } from "./lib-offer-identity.mjs";
 import { colorOf, hardConflict, lineRelation } from "./stage4-token-merge.mjs";
+import { collapseRedirects } from "./lib-redirects.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { toEan } from "./lib-ean.mjs";
 
@@ -809,26 +810,9 @@ function main() {
     }
     const liveSlugs = new Set(outGroups.map((g) => g.groupSlug));
     const allMerges = { ...prevMerges, ...redirects, ...manualRedirects };
-    // Colapsa cadenas con detección de ciclos: si volvemos a pisar un slug
-    // ya visto la cadena no tiene final y se descarta entera (antes el tope
-    // de profundidad devolvía el slug del medio, que dejaba encadenados).
-    const finalDest = (slug) => {
-      const seen = new Set([slug]);
-      let cur = slug;
-      while (allMerges[cur]) {
-        const next = allMerges[cur];
-        if (seen.has(next)) return null; // ciclo
-        seen.add(next);
-        cur = next;
-      }
-      return cur;
-    };
-    const resolved = {};
-    for (const from of Object.keys(allMerges)) {
-      if (liveSlugs.has(from)) continue; // la página viva gana
-      const to = finalDest(from);
-      if (to && to !== from) resolved[from] = to;
-    }
+    // Colapsa cadenas; una página viva corta la cadena (ver lib-redirects:
+    // sin eso, una ficha que alterna entre dos slugs perdía el redirect).
+    const resolved = collapseRedirects(allMerges, liveSlugs);
     writeFileSync(MERGES_PATH, JSON.stringify(resolved, null, 2));
     console.log(`  PUBLISH: snapshot.json + wine-slugs.json (${Object.keys(mergedRegistry).length}) + group-merges.json (${Object.keys(resolved).length} redirects)`);
   }
