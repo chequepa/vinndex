@@ -92,6 +92,9 @@ const PARCEL_TOKENS = new Set(
 // clave (13/09: "GRAN ENEMIGO CEPILLO" (7 tiendas) y "Gran Enemigo El
 // Cepillo" (6) eran dos fichas).
 const PARCEL_ALIASES = {
+  // Rutini escribe "Reserve" en la etiqueta y las tiendas "Reserva":
+  // "Trumpeter Reserve Malbec" y "Trumpeter Reserva Malbec" eran dos fichas.
+  reserve: "reserva",
   cepillo: "el cepillo",
   compuertas: "las compuertas",
   peral: "el peral",
@@ -262,6 +265,7 @@ const DISC_TOKENS = new Set(DISCRIMINATORS.flatMap((d) => d.split(" ")));
 // "Gran Enemigo Blend"), más los marcadores de dulzor de espumantes
 // ("Trumpeter Extra Brut" dejaba "extra" como línea).
 const EXTRA_IDENTITY_TOKENS = new Set([
+  "reserve",
   "corte", "assemblage", "ensamble", "shiraz", "grenache", "monastrell",
   "extra", "nature", "demi", "sec", "doux", "brut", "dulce", "seco",
 ]);

@@ -184,6 +184,8 @@ const PARSE_CASES = [
   ["'Single Vineyard' sí distingue", "Rutini Single Vineyard Malbec", null, "Rutini Malbec", null, false, true],
   ["'Extra' de Extra Brut no es línea", "Trumpeter Extra Brut", null, "Rutini Trumpeter Extra Brut", null, true, true],
   ["marca de scraper con cola de producto", "Nampe Malbec 750cc", "Nampe Malbec 750 cc", "Nampe Malbec", "Nampe", true, true],
+  ["Reserve = Reserva (Trumpeter)", "Trumpeter Reserve Malbec", null, "Rutini Trumpeter Reserva Malbec", null, true, true],
+  ["Reserva sigue distinguiendo de la base", "Trumpeter Reserve Malbec", null, "Trumpeter Malbec", null, false, true],
 ];
 
 console.log("\n=== PARSER v2 (identidad estructurada por oferta) ===");
@@ -237,6 +239,8 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
   const cases = [
     ["Sauvignon Blanc", null],
     ["Casa", null],
+    ["SIN MARCA.", null],
+    ["S/M", null],
     ["Gin", null],
     ["Casa Bianchi", "Casa Bianchi"],
     ["Nampe Malbec 750 cc", "Nampe"],
