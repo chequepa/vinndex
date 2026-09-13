@@ -38,6 +38,8 @@ import {
   normalizeBodegaKey,
   buildBodegaCollapser,
   collapseContainedPhrases,
+  isJunkBodegaKey,
+  isStoreBrand,
 } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
 import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet } from "./stage4-token-merge.mjs";
@@ -451,6 +453,18 @@ function main() {
     Object.values(NAME_PREFIX_TO_BRAND).map((b) => normalizeBodegaKey(b)),
   );
   const parsed = offers.map((o) => (o.name ? parseOffer(o.name, o.brand) : null));
+  // La tienda no es la bodega: si la "bodega" parseada es el nombre de la
+  // vinoteca que publica la oferta, no sabemos la bodega.
+  let storeAsBrand = 0;
+  for (let i = 0; i < parsed.length; i++) {
+    const p = parsed[i];
+    if (!p?.bodega) continue;
+    if (isStoreBrand(p.bodega, offers[i].storeSlug)) {
+      parsed[i] = parseOffer(offers[i].name, offers[i].brand, { bodega: null });
+      storeAsBrand++;
+    }
+  }
+  if (storeAsBrand) console.log(`  marca = nombre de la tienda (descartada): ${storeAsBrand} ofertas`);
   // casing de display por clave de bodega: la del diccionario si existe,
   // si no la forma cruda más frecuente en el corpus.
   const bodegaDisplay = new Map(); // key → raw
@@ -798,6 +812,7 @@ function main() {
     const best = [...cnt.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best) return null;
     const key = normalizeBodegaKey(best[0]);
+    if (!PROTECTED_BODEGAS.has(key) && isJunkBodegaKey(key)) return null;
     const trusted =
       PROTECTED_BODEGAS.has(key) ||
       (bodegaStores.get(key)?.size ?? 0) >= 2 ||

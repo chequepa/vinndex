@@ -138,7 +138,16 @@ for (const [desc, name, expected] of SECONDARY_CASES) {
 }
 
 // ── parseOffer (identidad v2): clave de vino + comparabilidad ──
-import { parseOffer, fallbackWineKey, isComparable, resolveBodega } from "./lib-offer-identity.mjs";
+import {
+  parseOffer,
+  fallbackWineKey,
+  isComparable,
+  resolveBodega,
+  cleanScraperBrand,
+  isJunkBodegaKey,
+  isStoreBrand,
+  buildBodegaCollapser,
+} from "./lib-offer-identity.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 const PARSE_CASES = [
   // [descripción, nombreA, brandA, nombreB, brandB, mismaClave?, comparableA?]
@@ -221,6 +230,44 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
   const ok = ec === "Ernesto Catena";
   if (!ok) failed++;
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  Ernesto Catena no es Catena Zapata  →  ${ec}`);
+}
+{
+  // Marcas de scraper que no son bodegas (13/09: "casa", "san", "the",
+  // "blanc" terminaban como bodegas de cientos de fichas).
+  const cases = [
+    ["Sauvignon Blanc", null],
+    ["Casa", null],
+    ["Gin", null],
+    ["Casa Bianchi", "Casa Bianchi"],
+    ["Nampe Malbec 750 cc", "Nampe"],
+    ["Bodega La Rural", "La Rural"],
+  ];
+  for (const [raw, want] of cases) {
+    const got = cleanScraperBrand(raw);
+    const ok2 = got === want;
+    if (!ok2) failed++;
+    console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  marca de scraper "${raw}" → ${JSON.stringify(got)}${ok2 ? "" : ` (esperaba ${JSON.stringify(want)})`}`);
+  }
+  const junk = [["san", true], ["the", true], ["san telmo", false], ["catena zapata", false], ["casa de vinos", true], ["luca", false]];
+  for (const [k, want] of junk) {
+    const ok2 = isJunkBodegaKey(k) === want;
+    if (!ok2) failed++;
+    console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  clave de bodega "${k}" ${want ? "es" : "no es"} basura`);
+  }
+  // El colapso por corpus nunca lleva a una clave basura, sí a una bodega.
+  const col = buildBodegaCollapser([
+    ...["a", "b", "c", "d"].map((st) => ({ bodegaKey: "casa", storeSlug: st })),
+    { bodegaKey: "casa agostino", storeSlug: "e" },
+    ...["a", "b", "c"].map((st) => ({ bodegaKey: "manos negras", storeSlug: st })),
+    { bodegaKey: "manos negras artesano", storeSlug: "d" },
+  ]);
+  const ok3 = !col.has("casa agostino") && col.get("manos negras artesano") === "manos negras";
+  if (!ok3) failed++;
+  console.log(`  ${ok3 ? "✅" : "❌ FALLA"}  colapso: "Casa Agostino" no cae en "casa"; "Manos Negras Artesano" sí en Manos Negras`);
+  // La tienda no es la bodega.
+  const ok4 = isStoreBrand("Aldo's Vinoteca", "aldos-vinoteca") && isStoreBrand("Aldos Vinoteca", "aldos-vinoteca") && !isStoreBrand("Catena Zapata", "aldos-vinoteca");
+  if (!ok4) failed++;
+  console.log(`  ${ok4 ? "✅" : "❌ FALLA"}  "Aldo's Vinoteca" como marca en aldos-vinoteca es la tienda, no una bodega`);
 }
 
 console.log("\n=== OVERLAY MANUAL DEL CATÁLOGO ===");

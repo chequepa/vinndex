@@ -35,7 +35,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
-import { parseOffer, stripAccents, normalizeBodegaKey, buildBodegaCollapser } from "./lib-offer-identity.mjs";
+import { parseOffer, stripAccents, normalizeBodegaKey, buildBodegaCollapser, isStoreBrand } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 
@@ -91,6 +91,12 @@ function aggregate(offers) {
   // se minara "Trapiche Tesoro" como bodega y allá "Trapiche", las claves
   // del catálogo no matchearían nunca.
   const parsed = offers.map((o) => (o.name ? parseOffer(o.name, o.brand) : null));
+  for (let i = 0; i < parsed.length; i++) {
+    const p = parsed[i];
+    if (p?.bodega && isStoreBrand(p.bodega, offers[i].storeSlug)) {
+      parsed[i] = parseOffer(offers[i].name, offers[i].brand, { bodega: null });
+    }
+  }
   const protect = new Set(Object.values(NAME_PREFIX_TO_BRAND).map((b) => normalizeBodegaKey(b)));
   const display = new Map(); // key → casing más frecuente
   {
