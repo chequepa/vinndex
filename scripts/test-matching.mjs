@@ -12,7 +12,7 @@
  */
 import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 import { secondaryKey } from "./remerge-groups.mjs";
-import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
+import { NAME_PREFIX_TO_BRAND, canonicalizeName } from "./lib-identity.mjs";
 import { isValidEan } from "./lib-ean.mjs";
 
 const g = (canonicalName, extra = {}) => ({ canonicalName, type: null, varietals: [], brand: null, ...extra });
@@ -38,6 +38,13 @@ const MUST_CONFLICT = [
   ["color: espumante E/B vs rosé", g("Chandon E/B x 750ml"), g("Chandon Rosé")],
   ["dulzor: extra brut vs demi sec", g("Chandon Extra Brut"), g("Chandon Demi Sec")],
   ["dulzor: extra brut vs brut nature", g("Baron B Extra Brut"), g("Baron B Brut Nature")],
+  // Taquigrafía (17/09, evaluación Jev): la normalización NO puede borrar
+  // diferencias reales de edición, nivel ni alcohol.
+  ["taquigrafía: Capítulo Uno vs Cap 2", g("Ruca Malen Capítulo Uno Chardonnay"), g("Ruca Malen Cap 2 Chardonnay")],
+  ["taquigrafía: Rva vs Gran Reserva", g("Escorihuela Rva Malbec"), g("Escorihuela Gran Reserva Malbec")],
+  ["taquigrafía: Gran R. vs Reserva", g("Fabre Montmayou Gran R. Malbec"), g("Fabre Montmayou Reserva Malbec")],
+  ["taquigrafía: 12 YO vs 18 Years", g("Glenfiddich 12 YO"), g("Glenfiddich 18 Years")],
+  ["taquigrafía: Grand Cabernet vs Cabernet (línea gran)", g("Terrazas Grand Cabernet"), g("Terrazas Cabernet")],
 ];
 
 // POSITIVOS: hardConflict DEBE devolver null (compatibles). Mismo vino con
@@ -48,6 +55,18 @@ const MUST_PASS = [
   ["ruido vs limpio", g("Vino Luigi Bosca Malbec D.O.C", { varietals: ["Malbec"] }), g("Luigi Bosca Malbec", { varietals: ["Malbec"] })],
   ["acentos/caps", g("ANGELICA ZAPATA CABERNET S.", { varietals: ["Cabernet Sauvignon"] }), g("Angélica Zapata Cabernet Sauvignon", { varietals: ["Cabernet Sauvignon"] })],
   ["espumante: E/B vs Extra Brut (mismo dulzor)", g("Chandon E/B x 750ml"), g("Chandon Extra Brut")],
+  // Taquigrafía de tienda (17/09, evaluación Jev: pares que un modelo daba
+  // "mismo" con ≥0,9 y el gate vetaba por leer otra edición/nivel).
+  ["taquigrafía: Capítulo Dos = Cap II", g("Ruca Malen Capítulo Dos Cabernet"), g("Vino tinto Cabernet Ruca Malen Cap II 750 ml")],
+  ["taquigrafía: Capítulo Dos = cap 2", g("Ruca Malen Capítulo Dos Chardonnay"), g("Vino blanco Chardonnay Ruca Malen cap 2 750 ml")],
+  ["taquigrafía: Cuartel Dos = Cuartel 2", g("Marchiori & Barraud Cuartel 2 Malbec"), g("Marchiori y Barraud Cuartel Dos Malbec")],
+  ["taquigrafía: Gran Rva = Gran Reserva", g("Escorihuela Gascón Gran Reserva Rosé"), g("ESCORIHUELA GRAN RVA ROSE")],
+  ["taquigrafía: Gran R. = Gran Reserva", g("Vino Fabre Gran Reserva Malbec"), g("FABRE MONTMAYOU GRAN R. MALBEC")],
+  ["taquigrafía: Res Malbec = Reserva Malbec", g("Finca Flichman Finca Reserva Malbec"), g("FINCA FLICHMAN Vino Flichman Res Malbec Bot-750cc-")],
+  ["taquigrafía: Grand Vin = Gran Vin", g("Vino tinto Gran Vin Fabre Montmayou 750 ml"), g("Fabre Montmayou Grand Vin")],
+  ["taquigrafía: 0% = sin alcohol", g("Vino Blanco Chardonnay 0% 750 Ml Nieto Senetiner"), g("Vino blanco sin alcohol Nieto Senetiner Chardonnay 750 ml")],
+  ["taquigrafía: 20Y Old = 20 Year Old", g("Oporto Taylors 20 Year Old Tawny Port"), g("Taylor´S Vino De Oporto 20Y Old Tawny Port")],
+  ["taquigrafía: graduación no es edición", g("Alma Mora Malbec 13,5% vol"), g("Alma Mora Malbec")],
 ];
 
 // ── lineRelation: la política de auto-merge del pipeline ──
@@ -89,6 +108,18 @@ const SECONDARY_CASES = [
   ["Encuentro conserva su línea", "Rutini Encuentro Chardonnay", "encuentro"],
   ["label-como-marca sí se strippea (identidad vive en brand)", "A Lisa Malbec", ""],
   ["Trapiche pelado queda vacío (identidad = brand+varietal)", "Trapiche Malbec", ""],
+];
+
+// Taquigrafía: [desc, nombre crudo, nombre canonicalizado esperado]
+// Los números en palabra sueltos son MARCA y no se tocan.
+const SHORTHAND_CASES = [
+  ["Dos Almas es marca", "Dos Almas Malbec", "Dos Almas Malbec"],
+  ["Tres Esquinas es marca", "Tres Esquinas Bonarda", "Tres Esquinas Bonarda"],
+  ["Latitud 33° es marca", "LATITUD 33° MALBEC", "LATITUD 33° MALBEC"],
+  ["Resero no es Reserva", "Resero Tinto", "Resero Tinto"],
+  ["Cap de Creus no es Capítulo", "Cap de Creus", "Cap de Creus"],
+  ["Capítulo Tres → 3", "Ruca Malen Capitulo Tres Malbec", "Ruca Malen Capitulo 3 Malbec"],
+  ["0,0% → sin alcohol, sin duplicar", "Vino sin alcohol 0,0%", "Vino sin alcohol"],
 ];
 
 // EAN: [desc, valor crudo, ¿sirve como evidencia de identidad?]
@@ -327,6 +358,14 @@ console.log("\n=== OVERLAY MANUAL DEL CATÁLOGO ===");
   }
 }
 
+console.log("\n=== TAQUIGRAFÍA (canonicalizeName) ===");
+for (const [desc, raw, expected] of SHORTHAND_CASES) {
+  const got = canonicalizeName(raw);
+  const ok = got === expected;
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  "${got}"${ok ? "" : ` (esperaba "${expected}")`}`);
+}
+
 console.log("\n=== EAN (evidencia de identidad) ===");
 for (const [desc, raw, expected] of EAN_CASES) {
   const got = isValidEan(raw);
@@ -340,4 +379,4 @@ if (failed > 0) {
   console.error(`❌ ${failed} caso(s) fallaron. NO publicar — revisar gates en stage4-token-merge.mjs / remerge-groups.mjs.`);
   process.exit(1);
 }
-console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary + ${PARSE_CASES.length} parser v2 + ${EAN_CASES.length} EAN).`);
+console.log(`✅ Todos los casos dorados pasan (${MUST_CONFLICT.length} negativos + ${MUST_PASS.length} positivos + ${LINE_CASES.length} líneas + ${SECONDARY_CASES.length} secondary + ${PARSE_CASES.length} parser v2 + ${SHORTHAND_CASES.length} taquigrafía + ${EAN_CASES.length} EAN).`);
