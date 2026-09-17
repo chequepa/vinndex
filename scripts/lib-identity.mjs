@@ -96,7 +96,57 @@ export function romanToArabic(s) {
  * y el ruido tipográfico que las tiendas meten en el título.
  */
 export function canonicalizeName(raw) {
-  return romanToArabic(stripElision(joinInitials(decodeEntities(String(raw ?? "")))));
+  return normalizeShorthand(romanToArabic(stripElision(joinInitials(decodeEntities(String(raw ?? ""))))));
+}
+
+/**
+ * Taquigrafía de tienda → forma canónica. Salió de la evaluación con Jev
+ * del 17/09/2026: de los pares que un modelo daba como "mismo vino" con
+ * ≥0,9 de seguridad pero un gate vetaba, casi todos eran la MISMA etiqueta
+ * escrita de otra forma, y el gate lo leía como otro vino:
+ *
+ *   · "Capítulo Dos" / "Cap 2" / "Cap II"  → edición {2} vs {} (gate edición)
+ *   · "Rva", "Res", "Gran R."              → tier {reserva} vs {} (gate tier)
+ *   · "Grand Vin" / "Gran Vin"             → tier {gran} vs {}
+ *   · "0%" / "sin alcohol"                 → edición {0} vs {}
+ *   · "20Y" / "20 Year Old" / "20 años"    → edición {} vs {20}
+ *   · "25º", "13,5%" (graduación)          → edición fantasma
+ *
+ * Criterio: sólo equivalencias que NUNCA cambian el vino. Los números en
+ * palabra se convierten únicamente detrás de un marcador de edición
+ * ("Capítulo", "Cuartel", "Nº"...), porque sueltos son marca: "Dos Almas",
+ * "Tres Esquinas", "Siete Fincas". Idempotente.
+ */
+const NUM_WORDS = { uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10 };
+const L = "(?<![\\p{L}\\d])"; // límite izquierdo Unicode
+const R = "(?![\\p{L}\\d])";  // límite derecho Unicode
+const EDITION_MARK = "(cap[ií]tulo|cap\\.?|cuartel|lote|n[º°]|nro\\.?|n[uú]mero)";
+const SHORTHAND_RULES = [
+  // graduación alcohólica: "0%" es un producto (sin alcohol); el resto no es identidad
+  [new RegExp(`${L}0(?:[.,]0)?\\s*%(?:\\s*(?:alc(?:ohol)?|vol)\\.?)?`, "giu"), " sin alcohol "],
+  // "%" siempre es graduación; "º/°" sólo con decimal o con "alc/vol"
+  // detrás, porque sueltos son parte de la marca ("Latitud 33°").
+  [new RegExp(`${L}\\d{1,2}(?:[.,]\\d)?\\s*%(?:\\s*(?:alc(?:ohol)?|vol)\\.?)?`, "giu"), " "],
+  [new RegExp(`${L}\\d{1,2}(?:[.,]\\d\\s*[º°]|\\s*[º°]\\s*(?:alc(?:ohol)?|vol|gl)\\.?)`, "giu"), " "],
+  // edad: "20Y", "20 yo", "20 Year Old", "12 yrs" → "20 años"
+  [new RegExp(`${L}(\\d{1,2})\\s*(?:y\\.?o\\.?|years?|yrs?|y)(?:\\s+old)?${R}`, "giu"), "$1 años"],
+  // marcador de edición + número en palabra: "Capítulo Dos", "Cuartel Uno"
+  [new RegExp(`${L}${EDITION_MARK}\\s*(${Object.keys(NUM_WORDS).join("|")})${R}`, "giu"), (_, m, w) => `${m} ${NUM_WORDS[w.toLowerCase()]}`],
+  // "Cap 2", "Cap. 2" → "Capitulo 2"
+  [new RegExp(`${L}cap\\.?\\s*(\\d{1,2})${R}`, "giu"), "Capitulo $1"],
+  // nivel: "Gran R.", "Gran Rva", "Gran Res" → "Gran Reserva"; "Rva"/"Res" → "Reserva"
+  [new RegExp(`${L}gran\\s+(?:rva|rsva|resv|res|r)\\.?${R}`, "giu"), "Gran Reserva"],
+  [new RegExp(`${L}(?:rva|rsva|resv)\\.?${R}`, "giu"), "Reserva"],
+  [new RegExp(`${L}res\\.?(?=\\s+(?:malbec|cabernet|merlot|syrah|chardonnay|blend|bonarda|pinot|tannat|torront[eé]s|sauvignon|petit|tempranillo|rosado|ros[eé])${R})`, "giu"), "Reserva"],
+  [new RegExp(`${L}grand${R}`, "giu"), "Gran"],
+];
+export function normalizeShorthand(s) {
+  let out = String(s ?? "");
+  for (const [re, rep] of SHORTHAND_RULES) out = out.replace(re, rep);
+  return out
+    .replace(/(sin alcohol)(?:\s+sin alcohol)+/giu, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 /**

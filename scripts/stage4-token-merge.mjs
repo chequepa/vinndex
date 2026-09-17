@@ -422,6 +422,10 @@ function brandsCompatible(a, b) {
 export function hardConflict(a, b) {
   const id = identityConflict(a, b);
   if (id) return id;
+  // Nombres canonicalizados: "Cap II" / "Capítulo Dos" o "Gran Rva" no
+  // pueden leerse como otra edición u otro nivel (evaluación Jev 17/09).
+  a = { ...a, canonicalName: canonicalizeName(a.canonicalName ?? "") };
+  b = { ...b, canonicalName: canonicalizeName(b.canonicalName ?? "") };
   // Gates de PACKAGING (formato): separan SKUs de empaque distinto. Se
   // chequean en el par directo, pero NO en la validación transitiva de
   // ofertas (un grupo ya puede mezclar botella+caja del pipeline original).
@@ -439,6 +443,8 @@ export function hardConflict(a, b) {
  * pero un color/varietal/parcela distinto SÍ (caso ROSÉ oculto vs BLANCO).
  * EXPORT para stage6-llm-adjudicate.mjs. */
 export function identityConflict(a, b) {
+  a = { ...a, canonicalName: canonicalizeName(a.canonicalName ?? "") };
+  b = { ...b, canonicalName: canonicalizeName(b.canonicalName ?? "") };
   const an = a.canonicalName, bn = b.canonicalName;
   if (a.type && b.type && a.type !== b.type) return "type";
   const ca = colorOf(an), cb = colorOf(bn);
