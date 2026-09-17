@@ -46,6 +46,7 @@ import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet } fro
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { toEan } from "./lib-ean.mjs";
+import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN } from "./lib-jev.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
 // que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
@@ -137,6 +138,8 @@ const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
 const SLUG_REGISTRY_PATH = resolve(ROOT, "data/wine-slugs.json");
 const MERGES_PATH = resolve(ROOT, "data/group-merges.json");
 const MANUAL_REDIRECTS_PATH = resolve(ROOT, "data/redirects-manual.json");
+const JEV_CACHE_PATH = resolve(ROOT, "data/jev-cache.json");
+const JEV_SUSPECTS_PATH = resolve(ROOT, "data/jev-gate-suspects.json");
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -281,7 +284,7 @@ function wineKeyOf(p, w) {
   return { key: `${w.id}::${slugify(expr)}`, expr };
 }
 
-function main() {
+async function main() {
   const raw = JSON.parse(readFileSync(OFFERS_PATH, "utf8"));
   let offers = raw.offers ?? raw.products ?? raw;
   // Dedup global por (tienda|url|nombre) — los merges v1 podían duplicar
@@ -632,7 +635,9 @@ function main() {
     // grupo sin varietal y los gates dejaban pasar un Pinot Noir adentro
     // del Cabernet (13/09).
     const repName = (g) => pickCanonicalName(g.offers);
-    let eanMerges = 0, eanBlocked = 0;
+    // Pares candidatos por EAN, en el orden en que se van a evaluar. Se
+    // arman ANTES de fusionar para poder consultar a Jev en lote.
+    const eanPlan = [];
     for (const [ean, keys] of eanToKeys) {
       if (keys.size < 2) continue;
       // Un barcode que sólo carga UNA tienda no es evidencia entre fichas:
@@ -649,7 +654,48 @@ function main() {
         if (!!gb.wine !== !!ga.wine) return gb.wine ? 1 : -1;
         return gb.offers.length - ga.offers.length;
       });
+      eanPlan.push({ ean, live });
+    }
+
+    // ── Jev: juez de los pares que sólo veta la relación de LÍNEA ──
+    // Nunca pasa por encima de un gate duro ni del catálogo (lib-jev.mjs).
+    const jevAsk = [];
+    for (const { live } of eanPlan) {
       const target = groups.get(live[0]);
+      for (const k of live.slice(1)) {
+        const src = groups.get(k);
+        if (target.wine && src.wine && target.wine.id !== src.wine.id) continue;
+        const an = repName(target), bn = repName(src);
+        const gate = hardConflict({ canonicalName: an }, { canonicalName: bn });
+        if (gate === "pack" || gate === "volumen") continue; // obvio, no se pregunta
+        const rel = lineRelation(an, bn);
+        if (!gate && (rel === "equal" || rel === "subset")) continue; // ya fusiona solo
+        jevAsk.push([an, bn]);
+      }
+    }
+    const { verdicts: jev, stats: jevStats } = await adjudicatePairs(jevAsk, {
+      apiKey: process.env.TYPESAFE_API_KEY,
+      cachePath: PUBLISH ? JEV_CACHE_PATH : null,
+    });
+    let jevEligible = 0;
+    for (const [an, bn] of jevAsk) {
+      const v = jev.get(pairKey(an, bn));
+      const gate = hardConflict({ canonicalName: an }, { canonicalName: bn });
+      if (v && jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: false }) === "merge") jevEligible++;
+    }
+    const jevEnabled = jevEligible <= JEV_MAX_MERGES_PER_RUN;
+    console.log(
+      `  jev: ${jevStats.pares} pares · ${jevStats.enCache} en caché · ${jevStats.consultados} consultados · ${jevStats.errores} errores` +
+        (jevStats.sinClave ? " · SIN TYPESAFE_API_KEY (sólo caché)" : "") +
+        ` · ${jevEligible} fusionables` +
+        (jevEnabled ? "" : ` · CIRCUIT BREAKER: > ${JEV_MAX_MERGES_PER_RUN}, Jev no fusiona en esta corrida`),
+    );
+
+    let eanMerges = 0, eanBlocked = 0, jevMerges = 0;
+    const gateSuspects = [];
+    for (const { ean, live } of eanPlan) {
+      const target = groups.get(live[0]);
+      if (!target) continue;
       for (const k of live.slice(1)) {
         const src = groups.get(k);
         if (!src) continue;
@@ -658,14 +704,46 @@ function main() {
         if (target.wine && src.wine && target.wine.id !== src.wine.id) { eanBlocked++; continue; }
         const a = { canonicalName: repName(target) };
         const b = { canonicalName: repName(src) };
+        const gate = hardConflict(a, b);
         const rel = lineRelation(a.canonicalName, b.canonicalName);
-        if (hardConflict(a, b) || (rel !== "equal" && rel !== "subset")) { eanBlocked++; continue; }
-        target.offers.push(...src.offers);
-        groups.delete(k);
-        eanMerges++;
+        if (!gate && (rel === "equal" || rel === "subset")) {
+          target.offers.push(...src.offers);
+          groups.delete(k);
+          eanMerges++;
+          continue;
+        }
+        const v = jev.get(pairKey(a.canonicalName, b.canonicalName));
+        const decision = v ? jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: false }) : "no";
+        if (decision === "merge" && jevEnabled) {
+          target.offers.push(...src.offers);
+          groups.delete(k);
+          eanMerges++;
+          jevMerges++;
+          continue;
+        }
+        if (decision === "gate-sospechoso") {
+          gateSuspects.push({ ean, gate, pMismo: Number(v.pMismo.toFixed(3)), a: a.canonicalName, b: b.canonicalName });
+        }
+        eanBlocked++;
       }
     }
-    console.log(`  evidencia EAN: ${eanMerges} merges · ${eanBlocked} bloqueados por gates/catálogo`);
+    console.log(`  evidencia EAN: ${eanMerges} merges (${jevMerges} por Jev) · ${eanBlocked} bloqueados por gates/catálogo · ${gateSuspects.length} gates sospechosos`);
+    if (PUBLISH) {
+      gateSuspects.sort((x, y) => y.pMismo - x.pMismo);
+      writeFileSync(
+        JEV_SUSPECTS_PATH,
+        JSON.stringify(
+          {
+            _doc: "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta. NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
+            generatedAt: new Date().toISOString(),
+            count: gateSuspects.length,
+            pairs: gateSuspects,
+          },
+          null,
+          1,
+        ),
+      );
+    }
   }
 
   // ── Slugs: preservar el slug v1 dominante ──
@@ -1165,4 +1243,4 @@ function main() {
   console.log(`  → ${OUT_PATH}\n  → ${REPORT_PATH}`);
 }
 
-main();
+await main();

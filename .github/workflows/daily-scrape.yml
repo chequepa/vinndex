@@ -81,6 +81,11 @@ jobs:
       - name: Harness dorado (bloqueante)
         run: node scripts/test-matching.mjs
 
+      # Política de Jev (sin red): nunca fusiona contra un gate duro ni el
+      # catálogo, y sin clave o con la API caída no rompe nada.
+      - name: Casos dorados de Jev (bloqueante)
+        run: node scripts/test-jev.mjs
+
       # Catálogo incremental: sólo los candidatos NUEVOS van al LLM
       # (cache committeado en data/catalog-llm-cache.json). Si falla o no
       # hay key, se agrupa con el catálogo committeado del último run.
@@ -99,8 +104,14 @@ jobs:
       # data/wine-slugs.json (URLs estables) + data/group-merges.json
       # (redirects 308). BLOQUEANTE: si falla, el job muere antes del
       # commit y el sitio conserva el snapshot anterior.
+      # Jev (typesafe.ai) juzga los pares que comparten EAN y sólo veta la
+      # relación de línea. Sin la clave o con la API caída el paso sigue
+      # igual que antes (scripts/lib-jev.mjs); nunca pasa por encima de un
+      # gate duro. Los veredictos se cachean en data/jev-cache.json.
       - name: Identidad v2 — agrupación + publish
         run: node scripts/build-groups-v2.mjs --publish
+        env:
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
 
       # Los redirects 308 son el SEO de las URLs viejas y se fueron
       # borrando solos durante un mes sin que nadie lo viera (13.494 el
@@ -200,7 +211,7 @@ jobs:
           git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
           # Artefactos de identidad v2 — el registro de slugs y el catálogo
           # son estado persistente del sistema; agregamos sólo los presentes.
-          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json; do
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json data/jev-cache.json data/jev-gate-suspects.json; do
             [ -f "$f" ] && git add "$f" || true
           done
           if git diff --staged --quiet; then
