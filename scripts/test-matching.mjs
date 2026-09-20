@@ -91,6 +91,19 @@ const LINE_CASES = [
   ["iniciales: D.v. Catena = DV Catena", "DV Catena Malbec-Malbec", "Vino Tinto D.v. Catena Malbec - Malbec 750 Cc", "equal"],
   ["iniciales: D. V. Catena = DV Catena", "DV CATENA MALBEC MALBEC", "D. V. Catena Malbec-Malbec", "equal"],
   ["iniciales: D,V, Catena = DV Catena", "DV Catena Malbec-Malbec", "D,V, CATENA MALBEC - MALBEC", "equal"],
+  // 20/09: primer voto de usuario del sitio + EAN 7798269720342 en dos
+  // tiendas. Una escribe la línea pegada y la otra con espacio; el token
+  // pegado no coincidía con ninguna pieza y daba "disjoint" = otro vino.
+  ["línea pegada: Kungfu = Kung Fu", "KUNG FU MALBEC", "Riccitelli Kungfu Malbec", "subset"],
+  ["línea pegada, sin marca de por medio", "Vino Kung Fu Malbec 750 Ml", "Kungfu Malbec", "equal"],
+  // Límite conocido de la regla: cuando la forma con espacio es un PARAJE,
+  // el otro lado ya la strippeó como token de identidad y no queda vocabulario
+  // para partir la pegada ("vistaflores"). Queda en subset — no lo arregla
+  // esta capa sino un alias de paraje. Anotado para la próxima corrida.
+  ["línea pegada sobre paraje: queda en subset", "Zuccardi Vista Flores Malbec", "Zuccardi Vistaflores Malbec", "subset"],
+  // La regla sólo parte si las piezas están del OTRO lado: estas NO se tocan.
+  ["no inventa piezas: Alaris ≠ Ala Ris", "Alaris Malbec", "Medalla Malbec", "disjoint"],
+  ["no parte una línea en sílabas ajenas", "Zuccardi Serie A Malbec", "Zuccardi Concreto Malbec", "crossing"],
 ];
 
 // ── secondaryKey (remerge-groups): la línea NUNCA se strippea ──
