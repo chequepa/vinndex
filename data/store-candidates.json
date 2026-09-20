@@ -1,0 +1,63 @@
+{
+  "evaluadas": {
+    "tiendadevinos.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "descartada",
+      "motivo": "catalog-mode: add-to-cart oculto por CSS",
+      "platform": "woocommerce",
+      "productos": 50
+    },
+    "enotek.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "duplicada",
+      "motivo": "ya está como enotek"
+    },
+    "ellagarwineshop.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "duplicada",
+      "motivo": "ya está como el-lagar"
+    },
+    "vinoslabarrica.com": {
+      "fecha": "2026-09-20",
+      "veredicto": "duplicada",
+      "motivo": "ya está como la-barrica"
+    },
+    "tiendavinos.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "duplicada",
+      "motivo": "ya está como tienda-vinos"
+    },
+    "vintagevinoteca.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "viners.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "winery.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "descartada",
+      "motivo": "backend no scrapeable: Store API v1 404",
+      "platform": "woocommerce"
+    },
+    "vinotecaargentina.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "biendevinos.com.ar": {
+      "fecha": "2026-09-20",
+      "veredicto": "duplicada",
+      "motivo": "slug ocupado por biendevinos"
+    }
+  },
+  "_doc": "Vinotecas candidatas ya evaluadas por scripts/vet-store-candidates.mjs, con su veredicto y por qué. Existe para que la corrida semanal no gaste tiempo en las mismas rechazadas todas las semanas. Un descarte se puede reevaluar con --recheck <días>: una tienda puede prender el carrito más adelante.",
+  "actualizado": "2026-09-20",
+  "total": 10
+}
