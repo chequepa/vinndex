@@ -313,12 +313,59 @@ export function lineTokens(name) {
  *   merge por LLM (Stage 3 / 6.5) → hasta "subset"
  *   "crossing"/"disjoint" → sólo ancla de paraje raro o known-merges.json
  */
+/**
+ * Token de línea pegado → las piezas sueltas del OTRO nombre.
+ *
+ * Una tienda escribe la línea sin el espacio y la otra con él: "Kungfu"
+ * por "Kung Fu", "Vistaflores" por "Vista Flores". El token pegado no
+ * coincide con ninguna de las dos piezas, así que lineRelation leía
+ * "crossing" (= otro vino) sobre el MISMO vino. Caso testigo, confirmado
+ * por EAN compartido en dos tiendas (7798269720342) y por el primer voto
+ * de usuario del sitio (19/09): "KUNG FU MALBEC" contra "Riccitelli
+ * Kungfu Malbec".
+ *
+ * La regla NO es fuzzy y no inventa piezas: un token se parte sólo si se
+ * segmenta EXACTO en 2 o 3 tokens que el otro nombre YA tiene. Esa es
+ * toda la evidencia — si las piezas no están del otro lado, no se toca.
+ * Mínimos (token ≥ 5, pieza ≥ 2) para que no se parta una palabra corta
+ * en sílabas que por casualidad sean tokens.
+ */
+const DESEG_MIN_TOKEN = 5;
+const DESEG_MIN_PIECE = 2;
+const DESEG_MAX_PIECES = 3;
+function segmentInto(token, vocab, depth = DESEG_MAX_PIECES) {
+  if (token.length >= DESEG_MIN_PIECE && vocab.has(token)) return [token];
+  if (depth <= 1) return null;
+  for (let i = DESEG_MIN_PIECE; i <= token.length - DESEG_MIN_PIECE; i++) {
+    const head = token.slice(0, i);
+    if (!vocab.has(head)) continue;
+    const rest = segmentInto(token.slice(i), vocab, depth - 1);
+    if (rest) return [head, ...rest];
+  }
+  return null;
+}
+/** Devuelve `set` con los tokens pegados reemplazados por sus piezas. */
+function desegment(set, vocab) {
+  let out = null;
+  for (const t of set) {
+    if (t.length < DESEG_MIN_TOKEN || vocab.has(t)) continue;
+    const parts = segmentInto(t, vocab);
+    if (!parts || parts.length < 2) continue;
+    out ??= new Set(set);
+    out.delete(t);
+    for (const p of parts) out.add(p);
+  }
+  return out ?? set;
+}
+
 export function lineRelation(aName, bName) {
-  const a = lineTokens(aName);
-  const b = lineTokens(bName);
+  let a = lineTokens(aName);
+  let b = lineTokens(bName);
   // Sin tokens de línea en ambos lados = cero evidencia de identidad
   // ("Vino Tinto Malbec" vs "Malbec tinto"): no habilita auto-merge.
   if (a.size === 0 && b.size === 0) return "disjoint";
+  a = desegment(a, b);
+  b = desegment(b, a);
   let inter = 0;
   for (const t of a) if (b.has(t)) inter++;
   if (inter === a.size && inter === b.size) return "equal";
