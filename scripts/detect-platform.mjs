@@ -42,7 +42,7 @@ const UA =
 const HEADERS = { "user-agent": UA, accept: "*/*", "accept-language": "es-AR,es;q=0.9" };
 const TIMEOUT_MS = 15000;
 
-async function probe(url, asText = true) {
+export async function probe(url, asText = true) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -61,7 +61,7 @@ async function probe(url, asText = true) {
  * las sondas de API (Shopify, Woo) son inequívocas y van primero; el resto
  * cae a markers del HTML del home.
  */
-async function detectPlatform(base) {
+export async function detectPlatform(base) {
   const sj = await probe(base + "/products.json?limit=1");
   if (sj.ok && /json/.test(sj.ct) && sj.body && /"products"\s*:/.test(sj.body)) {
     return "shopify";
@@ -76,7 +76,12 @@ async function detectPlatform(base) {
   if (/cdn\.shopify\.com|shopify\.com\/s\/files/.test(h)) return "shopify";
   if (/mitiendanube\.com|tiendanube|nuvemshop/.test(h)) return "tiendanube";
   if (/prestashop|\/modules\/ps_|prestashop-/.test(h)) return "prestashop";
-  if (/\/static\/version\d|\/pub\/static\/|data-mage-init|mage\//.test(h)) return "magento";
+  // `mage\/` sin la barra de adelante matchea dentro de "image/", así que
+  // CUALQUIER sitio con una imagen daba Magento. El commit 89c39cc ya había
+  // anotado "4 falsos-positivos magento del detector (bug image/→magento)"
+  // y el bug seguía vivo: el 20/09 mandó a winery.com.ar y vintagevinoteca
+  // (que es VTEX) al limbo de "necesita IDs de categoría a mano".
+  if (/\/static\/version\d|\/pub\/static\/|data-mage-init|\/mage\//.test(h)) return "magento";
   if (/\/wp-content\/|wp-json|woocommerce/.test(h)) return "woocommerce";
   const gen = (home.body || "").match(
     /<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)/i,
@@ -90,7 +95,7 @@ async function detectPlatform(base) {
   return "unknown";
 }
 
-function normalizeBase(input) {
+export function normalizeBase(input) {
   let u = input.trim();
   if (!/^https?:\/\//i.test(u)) u = "https://" + u;
   try {
@@ -101,7 +106,7 @@ function normalizeBase(input) {
   }
 }
 
-function slugFromHost(host) {
+export function slugFromHost(host) {
   return host
     .replace(/^www\./, "")
     .replace(/\.(com|ar|net|org|store|shop)(\.[a-z]{2})?$/i, "")
@@ -239,7 +244,11 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Sólo corre como CLI. scripts/vet-store-candidates.mjs importa las sondas
+// de acá para no duplicar el fingerprint de plataforma.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
