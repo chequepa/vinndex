@@ -8,6 +8,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { planCarryover } from "./lib-carryover.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -108,10 +109,14 @@ function main() {
   // guardado detrás de `if (!offers.some((o) => o.v1Slug))`. Sólo faltaba
   // que alguien lo escribiera.
   const prevSlugByUrl = new Map();
+  let prevGroups = [];
+  let prevRunAt = null;
   if (existsSync(outPath)) {
     try {
       const prev = JSON.parse(readFileSync(outPath, "utf8"));
-      for (const g of prev.productGroups ?? []) {
+      prevGroups = prev.productGroups ?? [];
+      prevRunAt = prev.groupsGeneratedAt ?? prev.generatedAt ?? null;
+      for (const g of prevGroups) {
         for (const o of g.offers ?? []) {
           if (o.externalUrl) prevSlugByUrl.set(o.externalUrl, g.groupSlug);
         }
@@ -123,6 +128,40 @@ function main() {
   console.log(
     `Slugs publicados hoy, para preservarlos: ${prevSlugByUrl.size} URLs`,
   );
+
+  // Fichas que el scrape de HOY no vio. Se calculan acá por la misma razón
+  // que el mapa de arriba: éste es el único punto del pipeline que ve los
+  // grupos publicados ayer antes de que este script pise el snapshot.
+  // build-groups-v2.mjs --publish las relee y las vuelve a publicar sin
+  // precio. Ver scripts/lib-carryover.mjs para el porqué y la medición.
+  {
+    const carryPath = resolve(REPO_ROOT, "data/carryover.json");
+    let prevCarry = [];
+    if (existsSync(carryPath)) {
+      try { prevCarry = JSON.parse(readFileSync(carryPath, "utf8")).groups ?? []; } catch { /* ignorar */ }
+    }
+    const liveUrls = new Set();
+    for (const p of merged) if (p.externalUrl) liveUrls.add(p.externalUrl);
+    const { groups: carried, stats } = planCarryover({
+      prevGroups,
+      prevCarry,
+      liveUrls,
+      today: snapshot.generatedAt,
+      prevRunAt,
+    });
+    writeFileSync(
+      carryPath,
+      JSON.stringify({
+        _doc: "Fichas publicadas antes que el scrape de hoy no vio en ninguna tienda. Se republican SIN precio hasta CARRYOVER_DAYS días para que su URL no caiga en 404 y vuelva sola cuando el producto reaparezca. Lo escribe merge-snapshots.mjs; lo consume build-groups-v2.mjs --publish.",
+        generatedAt: snapshot.generatedAt,
+        count: carried.length,
+        groups: carried,
+      }),
+    );
+    console.log(
+      `Fichas arrastradas (no vistas hoy): ${stats.arrastradas} · ${stats.vencidas} vencidas por ventana · ${stats.vivas} siguen vivas`,
+    );
+  }
 
   writeFileSync(outPath, JSON.stringify(snapshot, null, 2));
   console.log(

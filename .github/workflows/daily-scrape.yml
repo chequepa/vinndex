@@ -86,6 +86,12 @@ jobs:
       - name: Casos dorados de Jev (bloqueante)
         run: node scripts/test-jev.mjs
 
+      # Arrastre de fichas que el scrape no vio hoy. Bloqueante porque un
+      # error acá publica precios viejos como si fueran de hoy, o arrastra
+      # para siempre una ficha muerta.
+      - name: Casos dorados del arrastre (bloqueante)
+        run: node scripts/test-lib-carryover.mjs
+
       # Catálogo incremental: sólo los candidatos NUEVOS van al LLM
       # (cache committeado en data/catalog-llm-cache.json). Si falla o no
       # hay key, se agrupa con el catálogo committeado del último run.
@@ -211,7 +217,10 @@ jobs:
           git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
           # Artefactos de identidad v2 — el registro de slugs y el catálogo
           # son estado persistente del sistema; agregamos sólo los presentes.
-          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json data/jev-cache.json data/jev-gate-suspects.json; do
+          # data/carryover.json es estado PERSISTENTE: la ventana de días de
+          # una ficha arrastrada se cuenta contra lo que quedó committeado.
+          # Si no viaja entre corridas, el arrastre dura un solo día.
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json data/jev-cache.json data/jev-gate-suspects.json data/carryover.json; do
             [ -f "$f" ] && git add "$f" || true
           done
           if git diff --staged --quiet; then
