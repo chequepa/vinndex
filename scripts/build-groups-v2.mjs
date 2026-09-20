@@ -44,6 +44,7 @@ import {
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
 import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
+import { dropResolved } from "./lib-carryover.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { toEan } from "./lib-ean.mjs";
 import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN } from "./lib-jev.mjs";
@@ -140,6 +141,7 @@ const MERGES_PATH = resolve(ROOT, "data/group-merges.json");
 const MANUAL_REDIRECTS_PATH = resolve(ROOT, "data/redirects-manual.json");
 const JEV_CACHE_PATH = resolve(ROOT, "data/jev-cache.json");
 const JEV_SUSPECTS_PATH = resolve(ROOT, "data/jev-gate-suspects.json");
+const CARRYOVER_PATH = resolve(ROOT, "data/carryover.json");
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -1102,6 +1104,37 @@ async function main() {
       variants: [...variants.values()].sort((a, b) => (a.volumeMl ?? 0) - (b.volumeMl ?? 0)),
       offers: offersOut,
     });
+  }
+
+  // ── Fichas que el scrape de hoy no vio ──
+  // merge-snapshots.mjs las apartó antes de pisar el snapshot (es el único
+  // que ve los grupos de ayer). Se republican SIN precio para que su URL no
+  // caiga en 404 un día y vuelva al siguiente. No entran al sitemap: el
+  // filtro de lib/sitemap-buckets.ts ya saca todo lo que no tiene una sola
+  // oferta con stock. Medición y doctrina: scripts/lib-carryover.mjs.
+  {
+    let carried = [];
+    if (existsSync(CARRYOVER_PATH)) {
+      try { carried = JSON.parse(readFileSync(CARRYOVER_PATH, "utf8")).groups ?? []; } catch { /* ignorar */ }
+    }
+    if (carried.length) {
+      // Un slug que hoy es página viva, o una identidad que se republicó
+      // bajo otro slug (de eso se encarga el redirect 308), o un slug que ya
+      // es origen de un redirect: la página viva siempre gana.
+      let redirectFrom = new Set();
+      if (existsSync(MERGES_PATH)) {
+        try { redirectFrom = new Set(Object.keys(JSON.parse(readFileSync(MERGES_PATH, "utf8")))); } catch { /* ignorar */ }
+      }
+      const keep = dropResolved(carried, {
+        liveSlugs: new Set(outGroups.map((g) => g.groupSlug)),
+        liveWineKeys: new Set(outGroups.map((g) => g.wineKey)),
+        redirectFrom,
+      });
+      outGroups.push(...keep);
+      console.log(
+        `  fichas arrastradas (el scrape no las vio hoy): ${keep.length} de ${carried.length} · ${carried.length - keep.length} ya resueltas por página viva o redirect`,
+      );
+    }
   }
 
   outGroups.sort((a, b) => {
