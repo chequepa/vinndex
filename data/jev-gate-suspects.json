@@ -1,6 +1,6 @@
 {
  "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta. NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-09-22T07:38:04.109Z",
+ "generatedAt": "2026-09-23T07:35:44.825Z",
  "count": 30,
  "pairs": [
   {
@@ -9,13 +9,6 @@
    "pMismo": 1,
    "a": "GLENFIDDICH 12 YO",
    "b": "SINGLE MALT GLENFIDDICH 12 AÑOS 750cc"
-  },
-  {
-   "ean": "7798108834636",
-   "gate": "tier/parcela",
-   "pMismo": 1,
-   "a": "Vino Pyros Valle De Pedernal Sauvignon Blanc 750 Ml",
-   "b": "Vino blanco Sauvignon Blanc Pyros Valle de Perdenal 750 ml"
   },
   {
    "ean": "7794450004215",
@@ -60,6 +53,13 @@
    "b": "Vino blanco Blasfemia en lata 269 ml"
   },
   {
+   "ean": "7790762052357",
+   "gate": "edicion",
+   "pMismo": 0.99,
+   "a": "Vino Santa Ana Blanco Seleccion Especial    Bot-700-cc.",
+   "b": "Vino blanco Santa Ana selección especial 700 ml"
+  },
+  {
    "ean": "7791670003738",
    "gate": "edicion",
    "pMismo": 0.98,
@@ -81,25 +81,11 @@
    "b": "Vino Septima Tierra Malbec 750 Ml"
   },
   {
-   "ean": "7790070651068",
-   "gate": "edicion",
-   "pMismo": 0.98,
-   "a": "RUCA MALEN CAP 1 MALBEC",
-   "b": "Vino tinto Malbec Ruca Malen Cap I 750 ml"
-  },
-  {
    "ean": "7798124010236",
    "gate": "tier/parcela",
    "pMismo": 0.98,
    "a": "PIATTELLI GRAND RVA MALBEC SALTA",
    "b": "Piattelli Grand Reserve Malbec Salta"
-  },
-  {
-   "ean": "7791540050251",
-   "gate": "color",
-   "pMismo": 0.98,
-   "a": "Vino Blanco Dulce Sabor Miel 750 Cc Dada",
-   "b": "Vino blanco Honey Dadá 750 ml"
   },
   {
    "ean": "7796138000021",
@@ -109,11 +95,25 @@
    "b": "Vino San Pedro De Yacuchaya Torrontes 750 Ml"
   },
   {
+   "ean": "040232855030",
+   "gate": "tier/parcela",
+   "pMismo": 0.97,
+   "a": "Piattelli - Reserva Malbec - Tannat (Salta)",
+   "b": "PIATTELLI RESERVA MALBEC TANNAT CAFAYATE"
+  },
+  {
    "ean": "7503000677966",
    "gate": "edicion",
    "pMismo": 0.97,
    "a": "TEQUILA CORRALEJO REPOSADO",
    "b": "Tequila Corralejo Reposado 100% De Agave 750 Ml"
+  },
+  {
+   "ean": "7790945007969",
+   "gate": "tier/parcela",
+   "pMismo": 0.97,
+   "a": "NINA GRAN VIOGNIER SEMILLON",
+   "b": "Vino blanco Viognier Semillón Nina en botella 750 ml"
   },
   {
    "ean": "7798039598140",
@@ -196,7 +196,7 @@
    "ean": "7798039597815",
    "gate": "tier/parcela",
    "pMismo": 0.92,
-   "a": "TRIVENTO GOLDEN RESERVE CABERNET SAUVIGNON",
+   "a": "Trivento Golden Reserve Cabernet Sauvignon",
    "b": "Vino tinto Cabernet Sauvignon Trivento Golden 750 ml"
   },
   {
