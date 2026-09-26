@@ -8,7 +8,9 @@ colors:
   snow: "#f5ede0"
   magenta: "#d63a7a"
   terracota: "#d97449"
+  terracota-ink: "#b04a20"
   mustard: "#e8b547"
+  gold: "#8a6512"
   malbec: "#6b1e2e"
   rosado: "#e8859e"
   chardonnay: "#e8d47c"
@@ -148,7 +150,8 @@ Paleta vinosa de 13 colores nombrados semánticamente (no `blue-800` / `red-500`
 
 ### Secondary
 - **Mustard** (#e8b547): highlight / pricing positivo. Underline editorial debajo de keywords del hero, bg del "AHORRA X%" badge, color del "ahorro máximo" numérico en ficha de vino, fila ganadora de comparación (bg tint `rgba(232,181,71,0.14)`), exit arrows en ilustraciones.
-- **Terracota** (#d97449): eyebrows de sección sobre cream ("BAJARON DE PRECIO", "CÓMO FUNCIONA"). El paso 03 de "Cómo funciona". Acentos cálidos en regiones del norte.
+- **Terracota** (#d97449): eyebrows de sección sobre cream ("BAJARON DE PRECIO", "CÓMO FUNCIONA"). El paso 03 de "Cómo funciona". Acentos cálidos en regiones del norte. **Como token (`text-terracota`) en light vale #b04a20 ("terracota-ink")**: el #d97449 da 3.3:1 sobre cream y 3.9:1 sobre blanco, fail AA en texto chico. En dark el token vuelve a #d97449 (>5:1 sobre surface oscuro). Las ilustraciones siguen usando el hex original.
+- **Gold** (#8a6512, token `text-gold`): mustard oscurecido SOLO para texto e íconos sobre cream/blanco (mustard sobre blanco da 1.9:1). En dark vale #e8b547. Mustard sigue siendo el color de fondos, halos, subrayados y texto sobre gradients/ink.
 
 ### Tertiary
 - **Magenta** (#d63a7a) / **Rosado** (#e8859e) / **Chardonnay** (#e8d47c) / **Andes** (#7c8fd9): paleta de placas de bodega (hashed por nombre) y stops del gradient sky del hero. No se usan sueltos como acento; son colores de placa / gradient.
@@ -163,6 +166,8 @@ Paleta vinosa de 13 colores nombrados semánticamente (no `blue-800` / `red-500`
 ### Named Rules
 
 **The Cobalt-Is-The-Action Rule.** El cobalt es el único color que pertenece al lenguaje de acción primaria. No usar mustard, malbec o terracota para botones que el usuario tiene que clickear; esos son colores de contenido (precios, badges, highlights). El cream/snow como bg + malbec como texto es la única excepción, reservada para el CTA principal sobre el gradient hero de ficha de vino.
+
+**The Text-Needs-Ink Rule.** Los colores de la paleta son de superficie. Cuando uno se usa como TEXTO sobre cream o blanco tiene que pasar 4.5:1: mustard pasa a `gold`, terracota usa su versión ink (el token ya lo resuelve), el verde de "N vinotecas" es `.tag-green` (#145936). Nada de `style={{ color: "#..." }}` inline para tags: no tiene par dark. Las clases `.tag-green`, `.tag-cobalt`, `.tag-neutral` y `.tag-malbec` en `globals.css` traen su versión dark.
 
 **The Drenched-Hero Rule.** El hero de homepage es Drenched (la superficie ES el color): gradient sky completo con grain encima, sin contenedor blanco que lo "encierre". La estrategia de color del resto del sitio es Restrained con accents tonales por sección.
 
@@ -243,10 +248,16 @@ Sistema mayormente flat con shadows como respuesta a hover (no como decoración 
 ### Navigation
 
 - **Hero nav** (sobre gradient): `position: absolute`, sin bg propio, links como chips glass, padding `20–24px`. ThemeToggle + FavoritesNavLink siempre a la derecha. Logo Vinndex con el ícono SVG montaña + estrella mustard.
-- **Sticky header** (ficha de vino, /buscar): `sticky top-0 z-30`, bg white, border-bottom `ink/10`, `shadow-sm`. Logo a la izquierda + form de búsqueda al medio (flex-1) + favoritos + theme toggle.
+- **Sticky header** (`components/SiteHeader.tsx`, todas las páginas menos la home): `sticky top-0 z-30`, bg white, border-bottom `ink/10`, `shadow-sm`. Logo a la izquierda + form de búsqueda (flex-1) + nav Explorar / Rankings / Bodegas (lg+) + favoritos + theme toggle (sm+; en mobile el toggle vive en el footer). En mobile el submit es un botón-lupa de 40px y no hay ícono decorativo, para que el input tenga ancho real. No copiar el header inline en una página nueva: usar `<SiteHeader />`.
+- **Footer** (`components/SiteFooter.tsx`): el mismo en todas las páginas, incluida la ficha de vino. Links en 2 columnas en mobile, 4 en desktop.
+- **Tap targets**: favoritos y theme toggle miden 44px en mobile (40px desde sm).
 - **Skip-to-content**: `position: absolute, left: -9999px`. En `:focus` se materializa: bg ink, texto snow, padding `12px 20px`, border-radius `0 0 12px 0`.
 
 ### Signature Components
+
+- **Tabla de precios** (ficha de vino, el corazón del producto): va ANTES de la escalera de precios. Cada fila es un único `<a>` a la vinoteca (`target="_blank" rel="noopener noreferrer nofollow"`). Mobile: fila compacta de ~64px (logo + vinoteca + nombre de la oferta | precio + "+X%"). Desktop: grilla de 4 columnas con la píldora "Visitar". El mejor precio lleva tint mustard `rgba(232,181,71,0.14)` + badge `bg-mustard/35 text-ink`. Las vinotecas sin stock y los "otros formatos" (magnum, cajas, estuches) van en `<details>` debajo, cerrados; en cajas se muestra el precio por botella. Nunca `opacity-50` sobre filas enteras: rompe el contraste del texto.
+- **Escalera de precios** (`PriceLadder`): los puntos van sobre el eje en su precio real; las etiquetas se reparten con separación mínima de 28px y una línea guía las une con su punto. Mismo precio = un solo peldaño ("Disco, Tinte Vinos y 5 más").
+- **Foto de botella** (`WineImage`): siempre con fallback a `BottleFallback` si la URL falta o la carga falla. Nunca `<Image>` suelto para fotos de vinotecas.
 
 - **Hero bottle SVG** (homepage): ilustración inline de 240×560, botella Bordeaux con wax cap dripped, label cream con grape cluster + vine leaf, wordmark "VINNDEX" Fraunces 22 letter-spacing 2.5, "MENDOZA · ARGENTINA" Inter 7.5 tracking 3.5, "EST · 2026" stamp. La drop-shadow narrativa la separa del cielo.
 - **Sky gradient** (`.nagai-sky`): `linear-gradient(180deg, #0F1E4D 0%, #1E3FBF 30%, #4D79E8 55%, #E8859E 78%, #E8B547 92%, #F5EDE0 100%)`. Hero homepage exclusivo. Inspirado en Hiroshi Nagai.

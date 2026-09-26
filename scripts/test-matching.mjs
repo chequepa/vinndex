@@ -13,7 +13,7 @@
 import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
 import { secondaryKey } from "./remerge-groups.mjs";
 import { NAME_PREFIX_TO_BRAND, canonicalizeName } from "./lib-identity.mjs";
-import { isValidEan } from "./lib-ean.mjs";
+import { isValidEan, eanFromSku } from "./lib-ean.mjs";
 
 const g = (canonicalName, extra = {}) => ({ canonicalName, type: null, varietals: [], brand: null, ...extra });
 
@@ -133,6 +133,13 @@ const SHORTHAND_CASES = [
   ["Cap de Creus no es Capítulo", "Cap de Creus", "Cap de Creus"],
   ["Capítulo Tres → 3", "Ruca Malen Capitulo Tres Malbec", "Ruca Malen Capitulo 3 Malbec"],
   ["0,0% → sin alcohol, sin duplicar", "Vino sin alcohol 0,0%", "Vino sin alcohol"],
+  // Ruido de formato de tienda (auditoría 26/09).
+  ["código de tienda entre paréntesis", "DON NICANOR BLEND (77590)", "DON NICANOR BLEND"],
+  ["código pegado entre paréntesis", "NIETO SENETINER PATRIMONIAL MALBEC DOC(77315)", "NIETO SENETINER PATRIMONIAL MALBEC DOC"],
+  ["la añada entre paréntesis se queda", "Luigi Bosca Malbec (2019)", "Luigi Bosca Malbec (2019)"],
+  ["unidad pegada al pack: 750mlx1", "Vino Novecento Cabernet Sauvignon Botella 750mlx1", "Vino Novecento Cabernet Sauvignon Botella 750ml x1"],
+  ["unidad con guiones: Bot-0.75-lt.", "Pascual Toso Reserva Cabernet 750cc - Bot-0.75-lt.", "Pascual Toso Reserva Cabernet 750cc - Bot 0.75 lt."],
+  ["dulzor con guion: Extra-Brut", "Norton Cosecha Especial - Extra-Brut", "Norton Cosecha Especial - Extra Brut"],
 ];
 
 // EAN: [desc, valor crudo, ¿sirve como evidencia de identidad?]
@@ -230,6 +237,14 @@ const PARSE_CASES = [
   ["marca de scraper con cola de producto", "Nampe Malbec 750cc", "Nampe Malbec 750 cc", "Nampe Malbec", "Nampe", true, true],
   ["Reserve = Reserva (Trumpeter)", "Trumpeter Reserve Malbec", null, "Rutini Trumpeter Reserva Malbec", null, true, true],
   ["Reserva sigue distinguiendo de la base", "Trumpeter Reserve Malbec", null, "Trumpeter Malbec", null, false, true],
+  // ── Auditoría 26/09: el mismo vino partido por ruido de formato ──
+  ["código de tienda (77315) no es edición", "NIETO SENETINER PATRIMONIAL MALBEC DOC(77315)", "Nieto Senetiner", "Nieto Senetiner Patrimonial Malbec Doc 750 ml", "Nieto Senetiner", true, true],
+  ["750mlx1 no es edición", "Vino Novecento Cabernet Sauvignon Botella 750mlx1", null, "Vino tinto Cabernet Sauvignon Novecento 750 ml", null, true, true],
+  ["Bot-0.75-lt. es la botella de 750", "Vino Pascual Toso Reserva Cabernet Sauvignon 750cc - Bot-0.75-lt. - Sin Atributo", null, "Pascual Toso Reserva Cabernet Sauvignon", null, true, true],
+  ["Extra-Brut = Extra Brut", "Norton Cosecha Especial - Extra-Brut", null, "Norton Cosecha Especial Extra Brut", null, true, true],
+  ["Extra-Brut sigue distinto de Brut", "Norton Cosecha Especial - Extra-Brut", null, "Norton Cosecha Especial Brut", null, false, true],
+  ["'Champaña' no es línea", "Champaña Alamos Brut Rosé", null, "Alamos Brut Rosé", null, true, true],
+  ["'Champaña' marca espumante", "Champaña Federico de Alvear Extra Brut", null, "Federico de Alvear Extra Brut", null, true, true],
 ];
 
 console.log("\n=== PARSER v2 (identidad estructurada por oferta) ===");
@@ -385,6 +400,72 @@ for (const [desc, raw, expected] of EAN_CASES) {
   const ok = got === expected;
   if (!ok) failed++;
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  ${got ? "válido" : "rechazado"}`);
+}
+
+console.log("\n=== BODEGA ESCRITA / COLOR POR UVA (consenso 26/09) ===");
+{
+  const { bodegaInName, effectiveColor } = await import("./lib-offer-identity.mjs");
+  const cases = [
+    ["El Enemigo está en 'Enemigo Malbec'", bodegaInName("El Enemigo", "Enemigo Malbec"), true],
+    ["Catena Zapata NO está en 'El Enemigo Malbec'", bodegaInName("Catena Zapata", "El Enemigo Malbec"), false],
+    ["Catena Zapata está en 'Angélica Zapata Malbec'", bodegaInName("Catena Zapata", "Angélica Zapata Malbec"), true],
+    ["'Bodega' sola no cuenta como bodega escrita", bodegaInName("Bodega Casa", "Vino Bodega Malbec"), false],
+    ["Chardonnay sin color es blanco", effectiveColor(null, "chardonnay") === "blanco", true],
+    ["Malbec sin color es tinto", effectiveColor(null, "malbec") === "tinto", true],
+    ["Malbec Rosé sigue rosado", effectiveColor("rosado", "malbec") === "rosado", true],
+    ["corte de tinta y blanca no implica color", effectiveColor(null, "malbec+torrontes") === null, true],
+  ];
+  for (const [desc, got, want] of cases) {
+    const ok = got === want;
+    if (!ok) failed++;
+    console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}`);
+  }
+}
+
+console.log("\n=== TIPEO APRENDIDO DEL CORPUS (lib-typos.mjs) ===");
+{
+  const { buildTypoMap, applyTypoMap, editDistance } = await import("./lib-typos.mjs");
+  const { isIdentityToken } = await import("./stage4-token-merge.mjs");
+  const rows = [];
+  const add = (name, n, prefix = "t") => { for (let i = 0; i < n; i++) rows.push({ name, storeSlug: `${prefix}${i}` }); };
+  add("Saint Felicien Bonarda", 8);
+  add("Saint Felicen Bonarda", 1, "r");
+  add("Luca Historia de Familia Malbec", 12);
+  add("E's Vino Histeria 2020", 1, "h");
+  add("Susana Balbo Crios Syrah Rosé", 12);
+  add("Sarah Malbec", 1, "s");
+  add("Catalpa Assemblage", 6);
+  add("Catalina Assemblage", 1, "c");
+  add("Rutini Sauvignon Blanc", 20);
+  add("Vino blanco Sauvignon Blanc Ruttini 750 ml", 1, "x");
+  const m = buildTypoMap(rows, { isIdentityToken });
+  const cases = [
+    ["transposición cuenta 1 (sauvginon)", editDistance("sauvginon", "sauvignon"), 1],
+    ["Felicen → Felicien (con contexto 'saint')", m.get("felicen"), "felicien"],
+    ["Ruttini → Rutini (título de súper, bodega muy establecida)", m.get("ruttini"), "rutini"],
+    ["'Vino Histeria' NO es 'Historia' (sin contexto propio)", m.get("histeria"), undefined],
+    ["'Sarah' NO es 'Syrah' (corta, hacia un varietal)", m.get("sarah"), undefined],
+    ["'Catalina' NO es 'Catalpa' (distancia 2 en 8 letras)", m.get("catalina"), undefined],
+    ["corrige la palabra en el nombre de identidad (el título publicado se restaura aparte)", applyTypoMap("Saint Felicen Bonarda", m), "Saint felicien Bonarda"],
+  ];
+  for (const [desc, got, want] of cases) {
+    const ok = got === want;
+    if (!ok) failed++;
+    console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  ${got ?? "sin corrección"}`);
+  }
+}
+
+console.log("\n=== EAN DE SKU (con añada pegada) ===");
+for (const [desc, raw, expected] of [
+  ["EAN + '-2023' (Bebiendo Estrellas)", "7794450090096-2023", "7794450090096"],
+  ["EAN pelado", "7794450090096", "7794450090096"],
+  ["sufijo que no es año", "7794450090096-X01", null],
+  ["EAN inválido con año", "7794450090097-2023", null],
+]) {
+  const got = eanFromSku(raw);
+  const ok = got === expected;
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  ${got ?? "rechazado"}`);
 }
 
 console.log("");

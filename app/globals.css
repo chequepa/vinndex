@@ -8,8 +8,16 @@
   --color-andes: #7c8fd9;
   --color-snow: #f5ede0;
   --color-magenta: #d63a7a;
-  --color-terracota: #d97449;
+  /* Terracota en light es la versión "tinta" (#b04a20): el #d97449 de la
+   * paleta daba 3.3:1 sobre cream y 3.9:1 sobre blanco (fail AA en
+   * eyebrows, "ahorrá hasta X%", badges). En dark vuelve a #d97449, que
+   * sobre surface oscuro da >5:1. Las ilustraciones usan el hex directo. */
+  --color-terracota: #b04a20;
   --color-mustard: #e8b547;
+  /* Gold = mustard para TEXTO sobre fondos claros (mustard sobre blanco
+   * da 1.9:1). En dark vuelve al mustard original. Mustard sigue siendo
+   * el color de fondos, halos e ilustración. */
+  --color-gold: #8a6512;
   --color-malbec: #6b1e2e;
   --color-rosado: #e8859e;
   --color-chardonnay: #e8d47c;
@@ -45,6 +53,11 @@
    * desentonar contra los acentos (mustard/terracota) de la paleta. */
   --color-cobalt: #6b8fff;
   --color-malbec: #d96a82;
+  --color-terracota: #d97449;
+  --color-gold: #e8b547;
+  /* Verde/rojo semánticos: los originales sobre surface dark dan <3:1. */
+  --color-green2: #5bc48e;
+  --color-red2: #f0a5ba;
   --vx-bg: #0b1020;
   --vx-surface: #141b2d;
   --vx-surface-2: #1a2240;
@@ -85,6 +98,8 @@ body {
  */
 .dark .bg-cobalt { background-color: #1e3fbf; }
 .dark .bg-malbec { background-color: #6b1e2e; }
+.dark .bg-terracota { background-color: #b04a20; }
+.dark .bg-green2 { background-color: #1b7a4f; }
 .dark .bg-cobalt\/10 { background-color: rgba(30, 63, 191, 0.12); }
 .dark .bg-cobalt\/15 { background-color: rgba(30, 63, 191, 0.18); }
 .dark .bg-cobalt\/20 { background-color: rgba(30, 63, 191, 0.22); }
@@ -187,6 +202,21 @@ body {
 .float {
   animation: float 6s ease-in-out infinite;
 }
+/* Usuarios con vestibular sensible: sin sol flotando ni cards que saltan
+ * (TODO que figuraba en PRODUCT.md). */
+@media (prefers-reduced-motion: reduce) {
+  .float {
+    animation: none;
+  }
+  .postcard,
+  .chip {
+    transition: none;
+  }
+  .postcard:hover,
+  .chip:hover {
+    transform: none;
+  }
+}
 
 .varietal-tag {
   display: inline-flex;
@@ -254,6 +284,21 @@ body {
 .tag-malbec {
   background: #6b1e2e15;
   color: #6b1e2e;
+}
+/* Antes estos tres vivían como style={{}} inline en /buscar y en las
+ * páginas de bodega/varietal/región: en dark quedaban verde/azul oscuro
+ * sobre surface oscuro (~1.5:1). Como clases tienen su par dark abajo. */
+.tag-green {
+  background: #14593620;
+  color: #145936;
+}
+.tag-cobalt {
+  background: #16319215;
+  color: #163192;
+}
+.tag-neutral {
+  background: rgba(31, 38, 56, 0.1);
+  color: #1f2638;
 }
 
 .filter-chip {
@@ -642,6 +687,18 @@ tr.row-no {
 .dark .tag-malbec {
   background: rgba(232, 133, 158, 0.15);
   color: #f0a5ba;
+}
+.dark .tag-green {
+  background: rgba(91, 196, 142, 0.14);
+  color: #7fd6a8;
+}
+.dark .tag-cobalt {
+  background: rgba(107, 143, 255, 0.15);
+  color: #a9bdff;
+}
+.dark .tag-neutral {
+  background: rgba(236, 228, 210, 0.1);
+  color: var(--color-ink);
 }
 
 .dark .st-alive { background: rgba(27, 122, 79, 0.2); color: #5bc48e; }

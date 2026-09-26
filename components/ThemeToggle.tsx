@@ -73,7 +73,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       onClick={cycle}
       aria-label={label}
       title={label}
-      className={`cursor-wine inline-flex items-center justify-center w-9 h-9 rounded-full border border-current/15 hover:bg-current/10 transition text-current ${className}`}
+      className={`cursor-wine inline-flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-current/15 hover:bg-current/10 transition text-current ${className}`}
     >
       {theme === "dark" ? (
         <MoonIcon />

@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRecentlyViewed } from "@/components/RecentlyViewed";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 
 type Group = {
   groupSlug: string;
@@ -82,21 +81,15 @@ export function RecentlyViewedSection({ limit = 6 }: { limit?: number }) {
                 className="group block postcard p-3"
               >
                 <div className="wine-thumb !w-full !h-32 mb-3">
-                  {g.imageUrl ? (
-                    <Image
-                      src={g.imageUrl}
-                      alt={g.canonicalName}
-                      width={120}
-                      height={128}
-                      className="w-full h-full object-contain"
-                      unoptimized
-                    />
-                  ) : (
-                    <BottleFallback
-                      brand={g.brand}
-                      name={g.canonicalName}
-                    />
-                  )}
+                  <WineImage
+                    src={g.imageUrl}
+                    name={g.canonicalName}
+                    brand={g.brand}
+                    width={120}
+                    height={128}
+                    className="w-full h-full object-contain"
+                    unoptimized
+                  />
                 </div>
                 {g.brand && (
                   <p className="text-[10px] uppercase tracking-wide text-graphite truncate">

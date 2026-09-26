@@ -61,3 +61,16 @@ export function toEan(raw) {
   const v = String(raw ?? "").trim();
   return isValidEan(v) ? v : null;
 }
+
+/**
+ * EAN de un SKU de tienda, para IDENTIDAD. Igual que toEan, pero acepta el
+ * código con la añada pegada: Bebiendo Estrellas publica
+ * "7794450090096-2023" (EAN + "-" + año) y esas 59 fichas quedaban fuera de
+ * la evidencia de código de barras (auditoría 26/09). La añada no define la
+ * ficha (vive en las variantes), así que el EAN de adelante es la evidencia.
+ */
+export function eanFromSku(raw) {
+  const v = String(raw ?? "").trim().replace(/-(?:19|20)\d{2}$/, "");
+  return isValidEan(v) ? v : null;
+}
+

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { SearchInput } from "@/components/SearchInput";
-import Image from "next/image";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
@@ -226,7 +225,7 @@ function HeroBottle() {
         x="120"
         y="368"
         textAnchor="middle"
-        fontFamily="Fraunces, Georgia, serif"
+        style={{ fontFamily: "var(--font-display)" }}
         fontSize="22"
         fontWeight="700"
         letterSpacing="2.5"
@@ -251,9 +250,13 @@ function HeroBottle() {
         x="120"
         y="402"
         textAnchor="middle"
-        fontFamily="Inter, system-ui, sans-serif"
+        style={{ fontFamily: "var(--font-sans)" }}
         fontSize="7.5"
         letterSpacing="3.5"
+        // textLength: con tracking 3.5 el texto medía ~150 y la etiqueta
+        // tiene 124 de ancho útil; se salía por los costados.
+        textLength="112"
+        lengthAdjust="spacing"
         fontWeight="600"
         fill="#0F1729"
         opacity="0.78"
@@ -266,7 +269,7 @@ function HeroBottle() {
         x="120"
         y="427"
         textAnchor="middle"
-        fontFamily="Fraunces, Georgia, serif"
+        style={{ fontFamily: "var(--font-display)" }}
         fontSize="10"
         fontStyle="italic"
         fill="#3D0F1C"
@@ -280,7 +283,7 @@ function HeroBottle() {
         x="120"
         y="462"
         textAnchor="middle"
-        fontFamily="Fraunces, Georgia, serif"
+        style={{ fontFamily: "var(--font-display)" }}
         fontSize="13"
         fontWeight="600"
         letterSpacing="4"
@@ -413,28 +416,34 @@ export default async function Home() {
               Cómo funciona
             </a>
           </div>
-          <a
-            href="/preguntas"
-            className="cursor-wine hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium transition-colors"
-            title="Por qué decimos CABA"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Agrupados: con justify-between sueltos, en mobile la
+              estrella quedaba flotando en el medio del nav y en desktop
+              "Precios en CABA" quedaba suelto entre los chips y los
+              íconos. */}
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href="/preguntas"
+              className="cursor-wine hidden sm:flex items-center gap-2 text-snow text-sm bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur rounded-full px-3 py-1.5 font-medium transition-colors"
+              title="Por qué decimos CABA"
             >
-              <path d="M12 2a10 10 0 1 0 10 10" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>Precios en CABA</span>
-          </a>
-          <FavoritesNavLink className="text-snow shrink-0" />
-          <ThemeToggle className="text-snow shrink-0" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2a10 10 0 1 0 10 10" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Precios en CABA</span>
+            </a>
+            <FavoritesNavLink className="text-snow" />
+            <ThemeToggle className="text-snow" />
+          </div>
         </div>
       </nav>
 
@@ -443,7 +452,7 @@ export default async function Home() {
       <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
         {/* Sun — on mobile sits as a corner ornament (no collision with the
             headline); on desktop expands behind the bottle illustration. */}
-        <div className="absolute top-[5%] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
+        <div className="absolute top-[84px] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
           <div
             className="w-24 h-24 lg:w-48 lg:h-48 rounded-full opacity-80 lg:opacity-100"
             style={{
@@ -512,7 +521,7 @@ export default async function Home() {
         </svg>
 
         <div className="relative z-20 max-w-7xl w-full mx-auto px-6 lg:px-12 pt-28 lg:pt-16 pb-20">
-          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
             {/* COPY + SEARCH */}
             <div className="text-center lg:text-left hero-text">
               <p className="text-snow/90 text-sm md:text-base tracking-[0.25em] uppercase mb-5 font-medium">
@@ -617,7 +626,7 @@ export default async function Home() {
             </div>
           </div>
           <div>
-            <div className="display text-5xl md:text-6xl font-semibold text-mustard leading-none">
+            <div className="display text-5xl md:text-6xl font-semibold text-gold leading-none">
               $0
             </div>
             <div className="text-graphite text-sm mt-2">gratis para vos</div>
@@ -664,20 +673,14 @@ export default async function Home() {
                       −{Math.round(d.dropPct * 100)}%
                     </span>
                     <div className="relative w-14 h-20 rounded overflow-hidden bg-snow border border-ink/10 shrink-0">
-                      {d.imageUrl ? (
-                        <Image
-                          src={d.imageUrl}
-                          alt={d.canonicalName}
-                          fill
-                          sizes="56px"
-                          className="object-contain"
-                        />
-                      ) : (
-                        <BottleFallback
-                          name={d.canonicalName}
-                          brand={d.brand}
-                        />
-                      )}
+                      <WineImage
+                        src={d.imageUrl}
+                        name={d.canonicalName}
+                        brand={d.brand}
+                        fill
+                        sizes="56px"
+                        className="object-contain"
+                      />
                     </div>
                   </div>
                   <p className="text-[10px] uppercase tracking-wide text-graphite truncate">
@@ -751,17 +754,14 @@ export default async function Home() {
                     className="postcard p-6 flex gap-5 items-start"
                   >
                     <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                      {g.imageUrl ? (
-                        <Image
-                          src={g.imageUrl}
-                          alt={g.canonicalName}
-                          fill
-                          sizes="96px"
-                          className="object-contain"
-                        />
-                      ) : (
-                        <BottleFallback name={g.canonicalName} brand={g.brand} />
-                      )}
+                      <WineImage
+                        src={g.imageUrl}
+                        name={g.canonicalName}
+                        brand={g.brand}
+                        fill
+                        sizes="96px"
+                        className="object-contain"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="inline-flex items-center gap-1.5 bg-malbec text-snow text-xs font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wide">
@@ -775,12 +775,15 @@ export default async function Home() {
                         {g.storeCount} vinoteca{g.storeCount === 1 ? "" : "s"}
                         {g.vintage ? ` · ${g.vintage}` : ""}
                       </p>
-                      <div className="flex items-baseline gap-2">
-                        <div className="display text-2xl font-semibold text-cobalt">
+                      {/* Sin tachado: el máximo no es un "precio anterior"
+                          sino lo que cobra la vinoteca más cara hoy. El
+                          tachado sugería una rebaja que no existe. */}
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <div className="display text-2xl font-semibold text-cobalt tabular-nums">
                           {formatArs(g.minPrice)}
                         </div>
-                        <div className="text-xs text-graphite line-through">
-                          {formatArs(g.maxPrice)}
+                        <div className="text-xs text-graphite tabular-nums">
+                          vs {formatArs(g.maxPrice)} en la más cara
                         </div>
                       </div>
                     </div>
@@ -903,7 +906,7 @@ export default async function Home() {
                         fontWeight="700"
                         textAnchor="middle"
                         fill="#0F1729"
-                        fontFamily="Fraunces, Georgia, serif"
+                        style={{ fontFamily: "var(--font-display)" }}
                       >
                         {b.price}
                       </text>

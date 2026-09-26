@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 import { formatArs, displayBrand } from "@/lib/snapshot";
 import {
@@ -74,11 +73,16 @@ export async function generateMetadata({
       siteName: "Vinndex",
       type: "website",
       locale: "es_AR",
+      // Un `openGraph` propio reemplaza entero al del layout (merge
+      // superficial) y se llevaba la imagen: sin esto la página se
+      // compartía sin preview.
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/opengraph-image"],
     },
   };
 }
@@ -186,29 +190,26 @@ export default async function RankingPage({ params }: Params) {
               <li key={g.groupSlug}>
                 <Link
                   href={`/vino/${g.groupSlug}`}
-                  className="block bg-white rounded-2xl border border-ink/10 hover:border-cobalt hover:shadow-md transition-all p-4 grid grid-cols-[48px_72px_1fr_auto] gap-4 items-center"
+                  className="block bg-white rounded-2xl border border-ink/10 hover:border-cobalt transition-colors p-3 sm:p-4 grid grid-cols-[24px_48px_minmax(0,1fr)_auto] sm:grid-cols-[48px_72px_minmax(0,1fr)_auto] gap-3 sm:gap-4 items-center"
                 >
-                  <span className="display text-3xl font-semibold text-cobalt/40 text-center">
+                  <span className="display text-lg sm:text-3xl font-semibold text-cobalt/60 text-center tabular-nums">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="relative w-16 h-24 bg-snow rounded-lg overflow-hidden">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="64px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                  <div className="relative w-12 h-[72px] sm:w-16 sm:h-24 bg-snow rounded-lg overflow-hidden">
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="64px"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs uppercase tracking-wide text-graphite truncate">
                       {displayBrand(g.brand)}
                     </p>
-                    <p className="display text-lg md:text-xl font-semibold text-ink leading-tight">
+                    <p className="display text-base sm:text-lg md:text-xl font-semibold text-ink leading-tight line-clamp-2">
                       {displayWineName(g.canonicalName)}
                       {g.vintage && (
                         <span className="font-normal text-graphite">
@@ -217,26 +218,22 @@ export default async function RankingPage({ params }: Params) {
                         </span>
                       )}
                     </p>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-graphite flex-wrap">
-                      <span>
-                        {g.storeCount} vinoteca{g.storeCount === 1 ? "" : "s"}
-                      </span>
-                      {g.varietals && g.varietals.length > 0 && (
-                        <>
-                          <span>·</span>
-                          <span>{g.varietals.slice(0, 2).join(", ")}</span>
-                        </>
-                      )}
-                      {g.region && (
-                        <>
-                          <span>·</span>
-                          <span>{g.region}</span>
-                        </>
-                      )}
-                    </div>
+                    {/* Un solo texto: con spans sueltos el "·" quedaba
+                        huérfano al principio o final de renglón en mobile. */}
+                    <p className="mt-1 text-xs text-graphite line-clamp-2">
+                      {[
+                        `${g.storeCount} vinoteca${g.storeCount === 1 ? "" : "s"}`,
+                        g.varietals && g.varietals.length > 0
+                          ? g.varietals.slice(0, 2).join(", ")
+                          : null,
+                        g.region,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="display text-xl md:text-2xl font-semibold text-cobalt">
+                    <p className="display text-lg sm:text-xl md:text-2xl font-semibold text-cobalt tabular-nums whitespace-nowrap">
                       {formatArs(g.minPrice)}
                     </p>
                     <p className="text-xs text-graphite mt-0.5">desde</p>

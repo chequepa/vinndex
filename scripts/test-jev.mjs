@@ -2,8 +2,10 @@
  * Casos dorados de Jev como juez de pares (scripts/lib-jev.mjs). Sin red:
  * la política es pura y la API se stubbea.
  *
- * Lo sagrado: Jev NUNCA fusiona contra un gate duro ni contra el catálogo,
- * y sin clave o con la API caída el pipeline sigue como si no existiera.
+ * Lo sagrado: Jev NUNCA levanta un gate de varietal, dulzor, pack o
+ * volumen; contra el catálogo o contra un gate de nivel/edición/color sólo
+ * con código de barras en 2+ tiendas y vara alta; y sin clave o con la API
+ * caída el pipeline sigue como si no existiera.
  *
  * Correr: node scripts/test-jev.mjs
  */
@@ -23,9 +25,17 @@ console.log("\n=== POLÍTICA ===");
 check("seguro y sin gate → fusiona", jevPolicy({ pMismo: 0.97, gate: null }) === "merge", "merge");
 check("umbral exacto fusiona", jevPolicy({ pMismo: JEV_MERGE_MIN, gate: null }) === "merge", `p=${JEV_MERGE_MIN}`);
 check("0,89 NO fusiona (la elección cruda de Jev mezcla vinos)", jevPolicy({ pMismo: 0.89, gate: null }) === "no", "no");
-check("seguro contra gate de color → NO fusiona, queda sospechoso", jevPolicy({ pMismo: 0.99, gate: "color" }) === "gate-sospechoso", "gate-sospechoso");
-check("seguro contra tier → NO fusiona", jevPolicy({ pMismo: 1, gate: "tier/parcela" }) !== "merge", "no merge");
-check("catálogo distinto gana siempre", jevPolicy({ pMismo: 1, gate: null, catalogConflict: true }) === "no", "no");
+check("seguro contra gate de color SIN código compartido → NO fusiona, queda sospechoso", jevPolicy({ pMismo: 0.99, gate: "color" }) === "gate-sospechoso", "gate-sospechoso");
+check("seguro contra tier con código de UNA tienda → NO fusiona", jevPolicy({ pMismo: 1, gate: "tier/parcela", eanStores: 1 }) !== "merge", "no merge");
+check("tier con código en 2 tiendas y ≥0,97 → fusiona (Perdenal/Pedernal)", jevPolicy({ pMismo: 0.97, gate: "tier/parcela", eanStores: 2 }) === "merge", "merge");
+check("tier con código en 2 tiendas pero 0,96 → sospechoso", jevPolicy({ pMismo: 0.96, gate: "tier/parcela", eanStores: 2 }) === "gate-sospechoso", "gate-sospechoso");
+for (const g of ["varietal", "dulzor", "pack", "volumen"]) {
+  check(`gate de ${g} NUNCA se levanta`, jevPolicy({ pMismo: 1, gate: g, eanStores: 9 }) !== "merge", "no merge");
+}
+check("catálogo distinto sin código compartido → no", jevPolicy({ pMismo: 1, gate: null, catalogConflict: true }) === "no", "no");
+check("catálogo distinto, código en 2 tiendas, ≥0,95 y sin gate → fusiona", jevPolicy({ pMismo: 0.95, gate: null, catalogConflict: true, eanStores: 2 }) === "merge", "merge");
+check("catálogo distinto con 0,94 → no", jevPolicy({ pMismo: 0.94, gate: null, catalogConflict: true, eanStores: 2 }) === "no", "no");
+check("catálogo distinto con gate → no (aunque sea tier)", jevPolicy({ pMismo: 1, gate: "tier/parcela", catalogConflict: true, eanStores: 5 }) === "no", "no");
 check("sin veredicto → no", jevPolicy({ pMismo: undefined, gate: null }) === "no", "no");
 
 console.log("\n=== CLAVE DEL PAR ===");

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useFavorites, FavoriteButton } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 
 type Group = {
@@ -235,22 +234,19 @@ export function FavoritesList() {
               <FavoriteButton
                 slug={g.groupSlug}
                 size={18}
-                className="absolute top-3 right-3 w-9 h-9 bg-snow hover:bg-snow/80 text-mustard"
+                className="absolute top-3 right-3 w-9 h-9 bg-snow hover:bg-snow/80 text-gold"
               />
               <Link href={`/vino/${g.groupSlug}`} className="block">
                 <div className="wine-thumb mx-auto mb-4 !w-20 !h-32">
-                  {g.imageUrl ? (
-                    <Image
-                      src={g.imageUrl}
-                      alt={g.canonicalName}
-                      width={80}
-                      height={128}
-                      className="w-full h-full object-contain"
-                      unoptimized
-                    />
-                  ) : (
-                    <BottleFallback brand={g.brand} name={g.canonicalName} />
-                  )}
+                  <WineImage
+                    src={g.imageUrl}
+                    name={g.canonicalName}
+                    brand={g.brand}
+                    width={80}
+                    height={128}
+                    className="w-full h-full object-contain"
+                    unoptimized
+                  />
                 </div>
                 {g.brand && (
                   <p className="text-xs uppercase tracking-wider text-graphite mb-1 truncate">

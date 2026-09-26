@@ -15,13 +15,15 @@
  *
  * QUÉ PUEDE Y QUÉ NO (doctrina cero-quimeras, julio 2026: "Stage 3 aplica el
  * yes del LLM sin gates" fue una de las tres fábricas de quimeras):
- *   · Jev NUNCA pasa por encima de un gate duro (color, varietal, nivel,
- *     edición, formato) ni de dos vinos distintos del catálogo.
- *   · Lo único que destraba es el veto por relación de LÍNEA (crossing /
+ *   · Lo que destraba sin más es el veto por relación de LÍNEA (crossing /
  *     disjoint), que es texto y es donde las tiendas escriben distinto.
- *   · Si Jev está seguro y un gate duro veta, el par NO se fusiona: va a
- *     data/jev-gate-suspects.json, porque suele ser un gate partiendo de
- *     más (así se encontró la taquigrafía del #174).
+ *   · Desde el 26/09, con código de barras compartido en 2+ tiendas, dos
+ *     casos más con vara alta: dos entradas distintas del catálogo sin
+ *     gate duro (≥0,95) y un gate de nivel/paraje, edición o color que Jev
+ *     da como falso (≥0,97). Ver JEV_CATALOG_MIN y JEV_GATE_OVERRIDE_MIN.
+ *   · Varietal, dulzor, pack y volumen NUNCA se levantan. Un gate que Jev
+ *     da como falso por debajo de la vara va a data/jev-gate-suspects.json
+ *     (así se encontró la taquigrafía del #174).
  *
  * NUNCA ROMPE EL BUILD. Sin clave, sin red o con la API caída devuelve lo
  * que haya en caché y el pipeline sigue como antes de Jev.
@@ -32,6 +34,32 @@ import { canonicalizeName, stripAccents } from "./lib-identity.mjs";
 
 export const JEV_MODEL = "jev-latest";
 export const JEV_MERGE_MIN = 0.9;
+// Dos vinos distintos del CATÁLOGO que comparten código de barras en 2+
+// tiendas: el catálogo minado tiene el mismo vino dos veces ("Pulenta Gran
+// Malbec" / "Pulenta Estate Gran Malbec", "La Linda Malbec" / "Finca La
+// Linda Malbec": 142 pares el 26/09), pero también hay tiendas que reusan el
+// código entre dos vinos de verdad distintos (Luigi Bosca Malbec / De Sangre
+// Malbec). Ahí Jev decide, con la vara más alta, y nunca contra un gate.
+export const JEV_CATALOG_MIN = 0.95;
+// Un gate de nivel/paraje, edición o color que Jev da como falso con
+// ≥0,97 CON código de barras compartido en 2+ tiendas es casi siempre un
+// error de tipeo o de formato ("Valle de Perdenal", "Guatallary", "Cap I",
+// "750mlx1", "Norton Ct" por Cosecha Tardía): los 18 pares de
+// jev-gate-suspects.json ≥0,97 del 26/09 eran todos el mismo vino. Dos
+// señales independientes y fuertes. Varietal, dulzor, pack y volumen no se
+// levantan nunca: ahí el nombre dice otro producto.
+export const JEV_GATE_OVERRIDE_MIN = 0.97;
+export const JEV_OVERRIDABLE_GATES = new Set(["tier/parcela", "edicion", "color"]);
+// Pares SIN código de barras compartido: misma bodega, varietal, color,
+// dulzor, parajes y ediciones, y la línea de uno contenida en la del otro
+// ("La Contienda Malbec" / "La Contienda Malbec Uco Valley", pero también
+// "Lagarde Malbec" / "Lagarde Guarda Malbec"). Sin el código como segunda
+// señal, la vara es la de catálogo y nunca contra un gate.
+export const JEV_NAME_MIN = 0.95;
+// Circuit breaker del paso por nombre: si Jev da "mismo" a más de esta
+// fracción de los candidatos juzgados, algo cambió (modelo, prompt, datos)
+// y no se fusiona nada en esa corrida.
+export const JEV_NAME_MAX_SHARE = 0.6;
 // Circuit breaker: la evaluación dio ~130 fusiones posibles sobre 821 pares.
 // Si una corrida quiere fusionar muchas más, algo cambió (el modelo, el
 // prompt, los datos) y es preferible no fusionar nada y avisar.
@@ -59,12 +87,20 @@ export function pairKey(aName, bName) {
 
 /**
  * Decisión sobre un par. Pura, sin red: la prueba el harness.
+ * @param {object} a
+ * @param {number} [a.pMismo]           probabilidad de "mismo" según Jev
+ * @param {string|null} [a.gate]         gate duro que veta, o null
+ * @param {boolean} [a.catalogConflict]  los dos lados son vinos DISTINTOS del catálogo
+ * @param {number} [a.eanStores]         tiendas que cargan el código compartido
  * @returns {"merge" | "gate-sospechoso" | "no"}
  */
-export function jevPolicy({ pMismo, gate, catalogConflict }) {
-  if (catalogConflict) return "no";
+export function jevPolicy({ pMismo, gate, catalogConflict, eanStores = 0 }) {
   if (typeof pMismo !== "number" || pMismo < JEV_MERGE_MIN) return "no";
-  if (gate) return "gate-sospechoso";
+  if (catalogConflict) return !gate && pMismo >= JEV_CATALOG_MIN && eanStores >= 2 ? "merge" : "no";
+  if (gate) {
+    if (JEV_OVERRIDABLE_GATES.has(gate) && pMismo >= JEV_GATE_OVERRIDE_MIN && eanStores >= 2) return "merge";
+    return "gate-sospechoso";
+  }
   return "merge";
 }
 
@@ -90,7 +126,9 @@ function loadCache(cachePath) {
  * @returns {Promise<{verdicts: Map<string,{pMismo:number,choice:string}>, stats:object}>}
  */
 export async function adjudicatePairs(pairs, o = {}) {
-  const { apiKey, cachePath, fetchImpl = fetch, concurrency = 16, timeoutMs = 20_000 } = o;
+  // `persist: false` lee la caché pero no la escribe (corridas en shadow:
+  // miden lo mismo que producción sin tocar data/jev-cache.json).
+  const { apiKey, cachePath, persist = true, fetchImpl = fetch, concurrency = 16, timeoutMs = 20_000 } = o;
   const cache = loadCache(cachePath);
   const stats = { pares: 0, enCache: 0, consultados: 0, errores: 0, sinClave: false };
   const verdicts = new Map();
@@ -157,7 +195,7 @@ export async function adjudicatePairs(pairs, o = {}) {
     );
   }
 
-  if (cachePath && stats.consultados > 0) {
+  if (cachePath && persist && stats.consultados > 0) {
     writeFileSync(
       cachePath,
       JSON.stringify({

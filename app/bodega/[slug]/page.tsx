@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { notFound } from "next/navigation";
 import {
   findBrandPage,
@@ -8,14 +9,25 @@ import {
   regionUrl,
 } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
-import { SearchInput } from "@/components/SearchInput";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { isJunkSlug } from "@/lib/junkSlugs";
+import { brandCrawlTargets } from "@/lib/internalLinks";
+import { wineFullName } from "@/lib/wineNames";
+import { WineLinkList } from "@/components/WineLinkList";
 import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
+
+/** Precio más bajo con stock entre los vinos rastreables de la bodega. */
+function bodegaMinPrice(slug: string): number | null {
+  let min: number | null = null;
+  for (const g of brandCrawlTargets(slug)) {
+    if (g.minPrice != null && g.minPrice > 0 && (min == null || g.minPrice < min)) {
+      min = g.minPrice;
+    }
+  }
+  return min;
+}
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
@@ -29,9 +41,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // isJunkSlug = misparse de marca (numéricos "1615", facetas "coleccion-privada"):
   // título sin sentido, noindex como las thin. Espejo de /vino/[slug].
   const isThin = b.storeCount < 2 || isJunkSlug(b.slug);
+  // "Vinos X" + "precios" es como se busca una bodega para comprar
+  // ("vinos rutini precios", "rutini precio"). El título viejo
+  // ("Rutini · 327 vinos en 59 vinotecas") no decía ninguna de las dos.
+  const nf = new Intl.NumberFormat("es-AR");
+  const minPrice = bodegaMinPrice(b.slug);
   return {
-    title: `${b.name} · ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
-    description: `Compará precios de ${b.name}. ${b.groupCount} etiquetas relevadas en ${b.storeCount} vinotecas online de Argentina.`,
+    title: `Vinos ${b.name}: precios en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online | Vinndex`,
+    description: `Precios de ${nf.format(b.groupCount)} vinos de ${b.name} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina${
+      minPrice != null ? `, desde ${formatArs(minPrice)}` : ""
+    }. Encontrá dónde comprar cada etiqueta al mejor precio, actualizado a diario.`,
     alternates: {
       canonical: `https://vinndex.com.ar/bodega/${slug}`,
     },
@@ -63,6 +82,18 @@ export default async function BodegaPage({ params }: Params) {
 
   const multiStore = b.topGroups.filter((g) => g.storeCount >= 2);
   const singleStore = b.topGroups.filter((g) => g.storeCount === 1);
+  // Índice completo: las tarjetas de arriba muestran el top 24, pero
+  // Rutini tiene 327 vinos y Catena Zapata 454. Sin esta lista, el resto
+  // no recibía ningún link interno (ver lib/internalLinks.ts).
+  const shownInCards = new Set([
+    ...multiStore.map((g) => g.groupSlug),
+    ...singleStore.slice(0, 16).map((g) => g.groupSlug),
+  ]);
+  const restOfCatalog = brandCrawlTargets(slug)
+    .filter((g) => !shownInCards.has(g.groupSlug))
+    .map((g) => ({ g, name: wineFullName(g) }))
+    .sort((a, c) => a.name.localeCompare(c.name, "es-AR"))
+    .map(({ g }) => g);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org/",
@@ -129,52 +160,7 @@ export default async function BodegaPage({ params }: Params) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
       />
-      <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 shrink-0 cursor-wine">
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
-                fill="#1E3FBF"
-                stroke="#1E3FBF"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <circle cx="24" cy="8" r="3" fill="#E8B547" />
-            </svg>
-            <span className="display text-xl font-semibold text-ink hidden sm:block">
-              Vinndex
-            </span>
-          </Link>
-          <form action="/buscar" className="flex-1 max-w-2xl">
-            <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-graphite shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <SearchInput
-                placeholder="Malbec, Luigi Bosca, Catena Zapata..."
-                className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
-                withAutocomplete
-              />
-              <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
-                Buscar
-              </button>
-            </div>
-          </form>
-          <FavoritesNavLink className="text-ink shrink-0" />
-          <ThemeToggle className="text-ink shrink-0" />
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
@@ -254,17 +240,14 @@ export default async function BodegaPage({ params }: Params) {
                   className="postcard p-5 flex gap-4"
                 >
                   <div className="relative w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="80px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="80px"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="display text-lg font-semibold text-ink leading-tight line-clamp-2 min-h-[2.5em]">
@@ -272,8 +255,7 @@ export default async function BodegaPage({ params }: Params) {
                     </div>
                     <div className="text-xs text-graphite mt-1">
                       <span
-                        className="inline-block px-2 py-0.5 rounded-full font-semibold"
-                        style={{ background: "#1B7A4F20", color: "#1B7A4F" }}
+                        className="inline-block px-2 py-0.5 rounded-full font-semibold tag-green"
                       >
                         {g.storeCount} vinotecas
                       </span>
@@ -306,17 +288,14 @@ export default async function BodegaPage({ params }: Params) {
                   className="bg-white rounded-2xl p-4 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="display text-sm font-semibold line-clamp-2 min-h-[2.5em] text-ink">
                     {displayWineName(g.canonicalName)}
@@ -329,19 +308,16 @@ export default async function BodegaPage({ params }: Params) {
             </div>
           </section>
         )}
+
+        <WineLinkList
+          title={`Todos los vinos de ${b.name}`}
+          intro={`${restOfCatalog.length} etiquetas más con stock hoy, por orden alfabético.`}
+          wines={restOfCatalog}
+          columns={3}
+        />
       </main>
 
-      <footer className="bg-ink text-snow/70 px-6 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>
-            © 2026 Vinndex ·{" "}
-            <Link href="/" className="hover:text-snow">
-              Inicio
-            </Link>
-          </p>
-          <p>Precios relevados una vez por día · Beber con moderación</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

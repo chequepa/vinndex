@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Site-wide footer. Bloque de marca (logo + qué es Vinndex + aviso de
@@ -41,18 +42,18 @@ export function SiteFooter() {
             comprar.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 mb-10">
           <div>
             <h3 className="display text-snow font-semibold mb-4">Catálogo</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/buscar?varietal=malbec" className="hover:text-snow">
+                <Link href="/varietal/malbec" className="hover:text-snow">
                   Malbec
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/buscar?varietal=cabernet-sauvignon"
+                  href="/varietal/cabernet-sauvignon"
                   className="hover:text-snow"
                 >
                   Cabernet Sauvignon
@@ -60,14 +61,14 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/buscar?varietal=chardonnay"
+                  href="/varietal/chardonnay"
                   className="hover:text-snow"
                 >
                   Chardonnay
                 </Link>
               </li>
               <li>
-                <Link href="/buscar?varietal=bonarda" className="hover:text-snow">
+                <Link href="/varietal/bonarda" className="hover:text-snow">
                   Bonarda
                 </Link>
               </li>
@@ -189,8 +190,13 @@ export function SiteFooter() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-snow/10 pt-6 text-xs text-snow/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-          <p>© 2026 Vinndex · Hecho en Argentina</p>
+        <div className="border-t border-snow/10 pt-6 text-xs text-snow/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div className="flex items-center gap-3">
+            {/* En mobile el header no tiene lugar para el toggle de tema;
+                acá queda a mano en todas las páginas. */}
+            <ThemeToggle className="text-snow/80" />
+            <p>© 2026 Vinndex · Hecho en Argentina</p>
+          </div>
           <p>
             Beber con moderación · Prohibida la venta de bebidas alcohólicas a
             menores de 18 años

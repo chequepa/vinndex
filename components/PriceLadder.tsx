@@ -12,9 +12,12 @@
  *   o de error de scraping no aplastan visualmente al cluster del cuerpo
  *   de la distribución. Duplicar precio siempre se ve a la misma distancia.
  * - Solo offers en stock y no "colección" entran al ladder. La tabla
- *   detallada de abajo sigue mostrando todo.
- * - Click en un nodo abre la vinoteca en pestaña nueva (mismo contrato
- *   que la fila de la tabla).
+ *   detallada (que va ARRIBA en la ficha) sigue mostrando todo.
+ * - Etiquetas sin superposición: los puntos quedan sobre el eje en su
+ *   precio real y las etiquetas se reparten con una separación mínima,
+ *   unidas a su punto por una línea guía. Mismo precio = mismo peldaño.
+ * - Click en una etiqueta de una sola vinoteca abre la tienda en pestaña
+ *   nueva (mismo contrato que la fila de la tabla).
  */
 import { displayWineName } from "@/lib/displayWineName";
 
@@ -54,6 +57,25 @@ function buildTicks(minP: number, maxP: number) {
   return ticks;
 }
 
+type Rung = {
+  key: string;
+  price: number;
+  offers: LadderOffer[];
+  isBest: boolean;
+  diffPct: number | null;
+  /** Posición real del precio (px desde abajo). */
+  idealY: number;
+  /** Posición de la etiqueta después de esquivar colisiones. */
+  labelY: number;
+};
+
+/** Separación vertical mínima entre etiquetas (una línea de text-sm). */
+const ROW_GAP = 28;
+const PAD = 14;
+/** Columna del eje: a la izquierda los ticks, a la derecha las etiquetas. */
+const AXIS_X = 84;
+const LABEL_X = AXIS_X + 36;
+
 export function PriceLadder({ offers, formatArs, wineName }: Props) {
   if (offers.length < 2) return null;
 
@@ -72,48 +94,64 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
   const ticks = buildTicks(minP, maxP);
   const savingsPct = Math.round(((maxP - minP) / maxP) * 100);
 
-  // Altura proporcional a la cantidad de nodos para evitar superposición
-  // de labels. Cada nodo ocupa ~22px de "altura legible"; piso 480, techo 720.
+  // Vinotecas con el MISMO precio comparten peldaño ("Disco, Tinte Vinos
+  // y 5 más"). Antes cada una era un nodo propio y con 40 tiendas los
+  // nombres se encimaban hasta ser ilegibles.
+  const byPrice = new Map<number, LadderOffer[]>();
+  for (const o of offers) {
+    const list = byPrice.get(o.priceArs) ?? [];
+    list.push(o);
+    byPrice.set(o.priceArs, list);
+  }
+  const sortedPrices = [...byPrice.keys()].sort((a, b) => a - b);
+
+  // Alto: lo suficiente para que todas las etiquetas entren separadas por
+  // ROW_GAP, con un poco de aire; piso 280 para que 2-3 peldaños no se
+  // vean aplastados.
   const ladderHeight = Math.max(
-    480,
-    Math.min(720, 320 + offers.length * 22),
+    280,
+    Math.round(sortedPrices.length * ROW_GAP * 1.25) + PAD * 2,
   );
-  // Inner area excluye los 12px de "margen" arriba y abajo donde no
-  // queremos que los nodos pisen el borde del frame.
-  const PAD = 12;
-  const innerHeight = ladderHeight - PAD * 2;
-  const pctToBottomPx = (pct: number) => (pct / 100) * innerHeight + PAD;
+  const inner = ladderHeight - PAD * 2;
+  const yOf = (pct: number) => PAD + (pct / 100) * inner;
 
-  // Si dos nodos caen muy cerca en Y, los stagger ligeramente en X. La idea
-  // es que los labels no se pisen. Calculamos una "fila" virtual por bucket.
-  const sorted = [...offers].sort((a, b) => b.priceArs - a.priceArs);
-  const lanesByOffer = new Map<string, number>();
-  const buckets: number[][] = []; // each bucket: array of pcts already taken
-  const PROXIMITY = 4; // % de cercanía donde consideramos colisión
+  const rungs: Rung[] = sortedPrices.map((price) => {
+    const list = byPrice.get(price)!;
+    const idealY = yOf(pctOf(price));
+    return {
+      key: String(price),
+      price,
+      offers: list,
+      isBest: list.some((o) => o.isBest),
+      diffPct: list[0].diffPct,
+      idealY,
+      labelY: idealY,
+    };
+  });
 
-  for (const o of sorted) {
-    const p = pctOf(o.priceArs);
-    let placed = false;
-    for (let lane = 0; lane < buckets.length; lane++) {
-      const collides = buckets[lane].some((q) => Math.abs(q - p) < PROXIMITY);
-      if (!collides) {
-        buckets[lane].push(p);
-        lanesByOffer.set(o.externalUrl, lane);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) {
-      buckets.push([p]);
-      lanesByOffer.set(o.externalUrl, buckets.length - 1);
+  // Esquivar colisiones: de abajo hacia arriba cada etiqueta queda al
+  // menos ROW_GAP arriba de la anterior; si la última se pasa del techo,
+  // de arriba hacia abajo se empujan para abajo. La línea guía une cada
+  // etiqueta con la posición REAL de su precio sobre el eje.
+  for (let i = 1; i < rungs.length; i++) {
+    rungs[i].labelY = Math.max(rungs[i].labelY, rungs[i - 1].labelY + ROW_GAP);
+  }
+  const top = ladderHeight - PAD;
+  if (rungs[rungs.length - 1].labelY > top) {
+    rungs[rungs.length - 1].labelY = top;
+    for (let i = rungs.length - 2; i >= 0; i--) {
+      rungs[i].labelY = Math.min(
+        rungs[i].labelY,
+        rungs[i + 1].labelY - ROW_GAP,
+      );
     }
   }
-  const maxLane = Math.max(0, buckets.length - 1);
+  const svgY = (y: number) => ladderHeight - y;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-ink/10 bg-snow/40 dark:bg-[color-mix(in_oklab,var(--vx-surface)_70%,transparent)]">
       {/* Eyebrow + summary */}
-      <div className="px-6 lg:px-10 pt-8 pb-2 flex items-end justify-between gap-4 flex-wrap">
+      <div className="px-5 sm:px-6 lg:px-10 pt-7 sm:pt-8 pb-2 flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-malbec text-[11px] tracking-[0.22em] uppercase font-semibold mb-3">
             Dispersión de precios
@@ -130,7 +168,7 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
             </div>
             <div className="display text-xl md:text-2xl font-semibold text-ink tabular-nums whitespace-nowrap">
               {formatArs(minP)}
-              <span className="text-graphite/60 mx-1.5">·</span>
+              <span className="text-graphite mx-1.5">·</span>
               {formatArs(maxP)}
             </div>
           </div>
@@ -138,7 +176,7 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
             <div className="text-[10px] uppercase tracking-[0.18em] text-graphite font-semibold">
               Te ahorrás
             </div>
-            <div className="display text-3xl md:text-4xl font-semibold text-mustard tabular-nums">
+            <div className="display text-3xl md:text-4xl font-semibold text-gold tabular-nums">
               {savingsPct}%
             </div>
           </div>
@@ -146,9 +184,9 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
       </div>
 
       {/* Ladder */}
-      <div className="px-2 sm:px-6 lg:px-10 pb-10">
+      <div className="px-2 sm:px-6 lg:px-10 pb-8 sm:pb-10">
         <div
-          className="relative"
+          className="relative mt-4"
           style={{ height: ladderHeight }}
           aria-label={
             wineName
@@ -156,16 +194,85 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
               : `Escalera de precios en ${offers.length} vinotecas`
           }
         >
-          {/* Vertical axis line */}
-          <div className="absolute left-[88px] sm:left-[96px] top-3 bottom-3 w-px bg-ink/15" />
+          {/* Atmósfera: mustard abajo (donde vive el ahorro), malbec arriba. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(107,30,46,0.04) 0%, transparent 30%, transparent 70%, rgba(232,181,71,0.10) 100%)",
+            }}
+          />
 
-          {/* Axis tick labels */}
+          {/* Eje, puntos de precio y líneas guía, todo en px. */}
+          <svg
+            aria-hidden="true"
+            className="absolute inset-0 overflow-visible text-ink"
+            width="100%"
+            height={ladderHeight}
+          >
+            <line
+              x1={AXIS_X}
+              x2={AXIS_X}
+              y1={PAD}
+              y2={ladderHeight - PAD}
+              stroke="currentColor"
+              strokeOpacity="0.15"
+            />
+            {ticks.map((t, i) => (
+              <circle
+                key={`tick-${i}`}
+                cx={AXIS_X}
+                cy={svgY(yOf(t.pct))}
+                r="2"
+                fill="currentColor"
+                fillOpacity="0.25"
+              />
+            ))}
+            {rungs.map((r) => (
+              <path
+                key={`lead-${r.key}`}
+                d={`M ${AXIS_X} ${svgY(r.idealY)} L ${AXIS_X + 12} ${svgY(r.idealY)} L ${LABEL_X - 8} ${svgY(r.labelY)}`}
+                fill="none"
+                stroke={r.isBest ? "#E8B547" : "currentColor"}
+                strokeOpacity={r.isBest ? 1 : 0.25}
+                strokeWidth={r.isBest ? 2 : 1}
+              />
+            ))}
+            {rungs.map((r) =>
+              r.isBest ? (
+                <g key={`dot-${r.key}`}>
+                  <circle
+                    cx={AXIS_X}
+                    cy={svgY(r.idealY)}
+                    r="10"
+                    fill="#E8B547"
+                    fillOpacity="0.25"
+                  />
+                  <circle cx={AXIS_X} cy={svgY(r.idealY)} r="6" fill="#E8B547" />
+                </g>
+              ) : (
+                <circle
+                  key={`dot-${r.key}`}
+                  cx={AXIS_X}
+                  cy={svgY(r.idealY)}
+                  r={r.offers.length > 1 ? 5 : 4}
+                  className="fill-malbec"
+                  fillOpacity="0.85"
+                />
+              ),
+            )}
+          </svg>
+
+          {/* Precios de referencia del eje */}
           {ticks.map((t, i) => (
             <div
-              key={`tick-${i}`}
-              className="absolute left-0 w-[80px] sm:w-[88px] pr-3 text-right text-[11px] text-graphite tabular-nums font-medium"
+              key={`tick-label-${i}`}
+              aria-hidden="true"
+              className="absolute left-0 pr-3 text-right text-[11px] text-graphite tabular-nums font-medium"
               style={{
-                bottom: `${pctToBottomPx(t.pct)}px`,
+                width: AXIS_X,
+                bottom: yOf(t.pct),
                 transform: "translateY(50%)",
               }}
             >
@@ -173,117 +280,101 @@ export function PriceLadder({ offers, formatArs, wineName }: Props) {
             </div>
           ))}
 
-          {/* Tick dots along axis (subtle visual rhythm) */}
-          {ticks.map((t, i) => (
-            <span
-              key={`dot-${i}`}
-              className="absolute h-1 w-1 rounded-full bg-ink/25"
-              style={{
-                left: "calc(88px - 2px)",
-                bottom: `${pctToBottomPx(t.pct)}px`,
-                transform: "translateY(50%)",
-              }}
-            />
-          ))}
-
-          {/* Nodes */}
-          {offers.map((offer) => {
-            const pct = pctOf(offer.priceArs);
-            const lane = lanesByOffer.get(offer.externalUrl) ?? 0;
-            // Offset horizontal por lane para evitar colisiones de labels.
-            // Cada lane = 8px de offset hacia la derecha sobre el inicio del label.
-            const laneOffset = lane * 8;
-            return (
+          {/* Etiquetas */}
+          {rungs.map((r) => {
+            const single =
+              new Set(r.offers.map((o) => o.storeSlug)).size === 1
+                ? r.offers[0]
+                : null;
+            // Una misma vinoteca con dos SKUs al mismo precio cuenta una vez.
+            const names = [...new Set(r.offers.map((o) => o.storeName))];
+            const label = single
+              ? single.storeName
+              : names.length === 2
+                ? `${names[0]} y ${names[1]}`
+                : `${names[0]}, ${names[1]} y ${names.length - 2} más`;
+            const title = `${names.join(", ")} · ${formatArs(r.price)}${
+              r.isBest
+                ? " · mejor precio"
+                : r.diffPct
+                  ? ` · +${r.diffPct}% vs el mínimo`
+                  : ""
+            }`;
+            const content = (
+              <>
+                {single ? (
+                  <span
+                    aria-hidden="true"
+                    className="hidden sm:inline-flex shrink-0 items-center justify-center h-6 w-6 rounded-md text-[10px] font-bold tracking-wide"
+                    style={{
+                      backgroundColor: single.storeColor,
+                      color: "#F5EDE0",
+                      textShadow: "0 1px 2px rgba(15,23,41,0.55)",
+                    }}
+                  >
+                    {single.storeInitials}
+                  </span>
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="hidden sm:inline-flex shrink-0 items-center justify-center h-6 min-w-6 px-1 rounded-md text-[10px] font-bold bg-ink/10 text-ink tabular-nums"
+                  >
+                    {names.length}
+                  </span>
+                )}
+                <span
+                  className={
+                    r.isBest
+                      ? "display text-sm sm:text-base font-semibold text-ink truncate min-w-0"
+                      : "display text-sm text-ink/85 group-hover:text-ink truncate min-w-0 transition-colors"
+                  }
+                >
+                  {label}
+                </span>
+                {r.isBest ? (
+                  <span className="shrink-0 text-[10px] bg-mustard/35 text-ink px-2 py-0.5 rounded-full font-bold uppercase tracking-[0.12em] whitespace-nowrap">
+                    ★ Mejor
+                  </span>
+                ) : r.diffPct != null && r.diffPct > 0 ? (
+                  <span className="shrink-0 text-[11px] text-graphite tabular-nums whitespace-nowrap">
+                    +{r.diffPct}%
+                  </span>
+                ) : null}
+              </>
+            );
+            const style = {
+              left: LABEL_X,
+              bottom: r.labelY,
+              transform: "translateY(50%)",
+            } as const;
+            const cls =
+              "absolute right-0 flex items-center gap-2 sm:gap-2.5 min-w-0 h-6";
+            return single ? (
               <a
-                key={offer.externalUrl}
-                href={offer.externalUrl}
+                key={r.key}
+                href={single.externalUrl}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="absolute left-[88px] sm:left-[96px] flex items-center gap-2.5 sm:gap-3 cursor-wine group hover:z-10"
-                style={{
-                  bottom: `${pctToBottomPx(pct)}px`,
-                  transform: "translateY(50%)",
-                  paddingLeft: laneOffset,
-                }}
-                title={`${offer.storeName} · ${formatArs(offer.priceArs)}${offer.isBest ? " · mejor precio" : ` · +${offer.diffPct}% vs el mínimo`}`}
+                className={`${cls} cursor-wine group`}
+                style={style}
+                title={title}
               >
-                {/* Tick line from axis to node */}
-                <span
-                  className={
-                    offer.isBest
-                      ? "h-[2px] w-7 sm:w-10 bg-mustard transition-colors"
-                      : "h-px w-7 sm:w-10 bg-ink/25 group-hover:bg-ink/55 transition-colors"
-                  }
-                />
-
-                {/* Node circle — best gets the halo + larger size */}
-                <span
-                  aria-hidden="true"
-                  className={
-                    offer.isBest
-                      ? "shrink-0 inline-block h-3.5 w-3.5 rounded-full bg-mustard shadow-[0_0_0_5px_rgba(232,181,71,0.25)] ring-1 ring-mustard/70"
-                      : "shrink-0 inline-block h-2.5 w-2.5 rounded-full bg-malbec/80 group-hover:bg-malbec group-hover:scale-110 transition-transform"
-                  }
-                />
-
-                {/* Tiny store logo chip */}
-                <span
-                  aria-hidden="true"
-                  className="hidden sm:inline-flex shrink-0 items-center justify-center h-6 w-6 rounded-md text-[10px] font-bold tracking-wide"
-                  style={{
-                    backgroundColor: offer.storeColor,
-                    color: "#F5EDE0",
-                    textShadow: "0 1px 2px rgba(15,23,41,0.55)",
-                  }}
-                >
-                  {offer.storeInitials}
-                </span>
-
-                {/* Store name + delta */}
-                <span className="flex items-baseline gap-2 min-w-0">
-                  <span
-                    className={
-                      offer.isBest
-                        ? "display text-sm sm:text-base font-semibold text-ink truncate max-w-[140px] sm:max-w-[200px]"
-                        : "display text-sm text-ink/85 group-hover:text-ink truncate max-w-[140px] sm:max-w-[200px] transition-colors"
-                    }
-                  >
-                    {offer.storeName}
-                  </span>
-                  {offer.isBest ? (
-                    <span className="text-[10px] bg-mustard/30 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-[0.12em] whitespace-nowrap">
-                      ★ Mejor
-                    </span>
-                  ) : offer.diffPct != null && offer.diffPct > 0 ? (
-                    <span className="text-[11px] text-graphite tabular-nums whitespace-nowrap">
-                      +{offer.diffPct}%
-                    </span>
-                  ) : null}
-                </span>
+                {content}
               </a>
+            ) : (
+              <div key={r.key} className={cls} style={style} title={title}>
+                {content}
+              </div>
             );
           })}
-
-          {/* Decorative price arc behind the ladder — the "atmosphere" that
-              keeps the chart from feeling like a generic axis. Faint mustard
-              glow at the bottom (where the deal lives), faint malbec at top. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(107,30,46,0.04) 0%, transparent 30%, transparent 70%, rgba(232,181,71,0.08) 100%)",
-            }}
-          />
         </div>
 
         {/* Footnote */}
-        <p className="text-[11px] text-graphite/80 mt-4 max-w-3xl leading-relaxed">
-          {maxLane > 0
-            ? "Cuando dos vinotecas tienen precios muy parecidos, las separamos un poquito en horizontal para que se lean. "
-            : ""}
-          Las cosechas de colección y las que no tienen stock no entran a la
-          escalera (sí están en la lista de abajo).
+        <p className="text-[11px] text-graphite mt-4 max-w-3xl leading-relaxed">
+          Cada punto del eje es un precio real. Cuando varias vinotecas cobran
+          casi lo mismo, separamos las etiquetas y una línea las une con su
+          precio. Las cosechas de colección y las que no tienen stock no
+          entran a la escalera (sí están en la tabla de arriba).
         </p>
       </div>
     </div>

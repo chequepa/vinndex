@@ -139,6 +139,22 @@ const SHORTHAND_RULES = [
   [new RegExp(`${L}(?:rva|rsva|resv)\\.?${R}`, "giu"), "Reserva"],
   [new RegExp(`${L}res\\.?(?=\\s+(?:malbec|cabernet|merlot|syrah|chardonnay|blend|bonarda|pinot|tannat|torront[eé]s|sauvignon|petit|tempranillo|rosado|ros[eé])${R})`, "giu"), "Reserva"],
   [new RegExp(`${L}grand${R}`, "giu"), "Gran"],
+  // ── Ruido de formato de tienda (auditoría 26/09) ──
+  // Código interno de la tienda entre paréntesis: "Don Nicanor Blend
+  // (77590)", "Patrimonial Malbec DOC(77315)". El número se leía como
+  // edición y abría una ficha aparte. Un año entre paréntesis se queda
+  // (es la añada).
+  [/\(\s*(?!(?:19|20)\d{2}\s*\))\d{4,6}\s*\)/gu, " "],
+  // Unidad pegada a otra cosa: "750mlx1" (el "1" quedaba como edición),
+  // "Bot-0.75-lt." (el "0" y el "75" también).
+  [/(\d(?:[.,]\d+)?\s*(?:ml|cc|cl|lts|lt|l))x(?=\s*\d)/giu, "$1 x"],
+  [/(\d)\s*-\s*(?=(?:ml|cc|cl|lts|lt|l)\b)/giu, "$1 "],
+  [new RegExp(`${L}(bot|botella)\\s*-\\s*(?=\\d)`, "giu"), "$1 "],
+  // Dulzor escrito con guion: "Extra-Brut", "Brut-Nature" (el gate de
+  // dulzor sólo reconocía el espacio y "Cosecha Especial - Extra-Brut"
+  // quedaba como Brut, otra ficha).
+  [new RegExp(`${L}extra\\s*-\\s*brut${R}`, "giu"), "Extra Brut"],
+  [new RegExp(`${L}brut\\s*-\\s*nature${R}`, "giu"), "Brut Nature"],
 ];
 export function normalizeShorthand(s) {
   let out = String(s ?? "");
@@ -378,6 +394,11 @@ export const CONTENT_STOPWORDS = new Set([
   // "Nicasia Vineyard(s) Malbec" = "Nicasia Malbec"; "Viñedo Elena" idem.
   // El viñedo que SÍ distingue vive en parcels.json (Tilcara, Gualtallary…).
   "vineyard", "vineyards", "vinedo", "vinedos",
+  // "Champaña" (sin la ñ, "champana") y "espumoso" son la categoría, no la
+  // línea: "Champaña Alamos Brut Rosé" abría la línea "champana" y quedaba
+  // en otra ficha que "Alamos Brut Rosé" (26/09: 5 fichas de catálogo
+  // duplicadas y ~30 de fallback). "Sin Atributo" es relleno de VTEX.
+  "champana", "champan", "espumoso", "espumosos", "atributo",
 ]);
 
 /**

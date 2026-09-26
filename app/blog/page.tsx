@@ -13,6 +13,7 @@ export const metadata: Metadata = {
       "Notas sobre vinos argentinos: regiones, varietales, bodegas y cómo comparar precios online de forma honesta.",
     type: "website",
     url: "/blog",
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",

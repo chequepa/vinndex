@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     siteName: "Vinndex",
     type: "website",
     locale: "es_AR",
+    images: ["/opengraph-image"],
   },
 };
 

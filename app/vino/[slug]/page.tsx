@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { notFound, permanentRedirect } from "next/navigation";
-import { SearchInput } from "@/components/SearchInput";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { FavoriteButton } from "@/components/Favorites";
+import { WineImage } from "@/components/WineImage";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
@@ -14,7 +13,7 @@ import { PriceLadder } from "@/components/PriceLadder";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
-import { extractVintage } from "@/lib/matching";
+import { extractVintage, type ProductOffer } from "@/lib/matching";
 import Link from "next/link";
 import {
   findGroup,
@@ -31,12 +30,15 @@ import {
   bodegaUrl,
   varietalUrl,
   regionUrl,
-  snapshotStats,
+  snapshot,
 } from "@/lib/snapshot";
 import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
 import { ReportIssue } from "@/components/ReportIssue";
 import { MatchQuestion } from "@/components/MatchQuestion";
 import { questionForSlug } from "@/lib/matchQuestions";
+import { wineFullName } from "@/lib/wineNames";
+import { brandSiblings, priceNeighbors } from "@/lib/internalLinks";
+import { WineLinkList } from "@/components/WineLinkList";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -61,17 +63,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       ? Math.round(((bs.maxPrice - bs.minPrice) / bs.maxPrice) * 100)
       : null;
 
-  // Title: include brand only if not already part of the canonical name.
-  // Both brand and canonicalName get pretty-cased · many scrapers return
-  // CAPS LOCK / lowercase strings that look shouty in <title> and OG tags.
-  const prettyName = displayWineName(g.canonicalName);
-  const prettyBrand = displayBrand(g.brand);
-  const canonicalLower = g.canonicalName.toLowerCase();
-  const brandNotInName =
-    g.brand && !canonicalLower.includes(g.brand.toLowerCase());
-  const titleName = brandNotInName
-    ? `${prettyBrand} ${prettyName}`
-    : prettyName;
+  // Nombre con bodega y sin ruido de góndola ("Vino tinto … 750 ml"):
+  // ver lib/wineNames.ts. Es el mismo que usan el <h1> y el JSON-LD.
+  const titleName = wineFullName(g);
   const titleVintage = g.vintage ? ` ${g.vintage}` : "";
 
   // El PRECIO va en el <title>, no sólo en la description.
@@ -88,19 +82,25 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // caracteres que Google muestra y es la afirmación más frágil de las
   // dos (depende del máximo, que se infla con formatos raros). Sigue en
   // la description, donde hay lugar.
+  //
+  // "precio" va escrito: es la palabra que acompaña al nombre del vino en
+  // las consultas ("<vino> precio") y Google la resalta en el SERP.
   let titleTail: string;
   if (allOutOfStock) {
     titleTail = `sin stock en ${totalStores} vinoteca${totalStores === 1 ? "" : "s"}`;
   } else if (bs.minPrice != null && g.storeCount >= 2) {
-    titleTail = `desde ${fmt.format(bs.minPrice)} en ${g.storeCount} vinotecas`;
+    titleTail = `precio desde ${fmt.format(bs.minPrice)} en ${g.storeCount} vinotecas`;
   } else if (bs.minPrice != null) {
-    titleTail = `desde ${fmt.format(bs.minPrice)}`;
+    titleTail = `precio desde ${fmt.format(bs.minPrice)}`;
   } else if (g.storeCount >= 2) {
-    titleTail = `compará en ${g.storeCount} vinotecas`;
+    titleTail = `compará precios en ${g.storeCount} vinotecas`;
   } else {
     titleTail = "precio al día";
   }
-  const title = `${titleName}${titleVintage} · ${titleTail} | Vinndex`;
+  const baseTitle = `${titleName}${titleVintage} · ${titleTail}`;
+  // Google corta en ~60 caracteres: si el nombre es largo, la marca del
+  // sitio es lo primero que sobra (el dato es el precio, no "Vinndex").
+  const title = baseTitle.length > 62 ? baseTitle : `${baseTitle} | Vinndex`;
 
   let description: string;
   if (allOutOfStock) {
@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       totalStores === 1 ? "" : "s"
     } online de Argentina, actualmente sin stock en todas. Te mostramos dónde suele aparecer cuando vuelve.`;
   } else {
-    description = `${titleName}${titleVintage} en ${g.storeCount} vinoteca${
+    description = `Dónde comprar ${titleName}${titleVintage}: ${g.storeCount} vinoteca${
       g.storeCount === 1 ? "" : "s"
     } online de Argentina.`;
     if (bs.minPrice != null) {
@@ -131,15 +131,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title,
     description,
-    keywords: [
-      g.canonicalName,
-      g.brand ?? undefined,
-      ...(g.varietals ?? []),
-      g.region ?? undefined,
-      "comparar precios",
-      "vino argentino",
-      "vinoteca online",
-    ].filter(Boolean) as string[],
+    // Sin `images`: la imagen OG la pone ./opengraph-image.tsx (1200×630
+    // con nombre, precio y vinotecas). Antes se pisaba con la foto de la
+    // botella hotlinkeada del CDN de la tienda — tamaño arbitrario, a
+    // veces con protección anti-hotlink, y sin el precio.
     openGraph: {
       title,
       description,
@@ -147,13 +142,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       siteName: "Vinndex",
       type: "website",
       locale: "es_AR",
-      images: g.imageUrl ? [{ url: g.imageUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: g.imageUrl ? [g.imageUrl] : undefined,
     },
     alternates: {
       canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
@@ -172,11 +165,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-function ExternalIcon() {
+function ExternalIcon({ size = 14 }: { size?: number }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width={size}
+      height={size}
+      aria-hidden="true"
       viewBox="0 0 14 14"
       fill="none"
       stroke="currentColor"
@@ -236,6 +230,221 @@ function prettyOfferName(name: string, brand: string | null): string {
   return s;
 }
 
+function Chevron({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+/**
+ * Fila de la tabla de precios. Toda la fila es el link a la vinoteca
+ * (target de toque grande en mobile, mismo contrato `nofollow` que antes).
+ *
+ * Mobile: una sola fila compacta · logo + vinoteca + nombre de la oferta a
+ * la izquierda, precio y diferencia a la derecha. Antes cada oferta era una
+ * tarjeta de ~220px con "Precio:" / "Diferencia:" / botón a lo ancho, y el
+ * SKU largo sin cortar empujaba el botón fuera de la tarjeta.
+ * Desktop (md+): la grilla de 4 columnas de siempre, con la píldora
+ * "Visitar" como affordance visual.
+ */
+function OfferRow({
+  offer,
+  brand,
+  bestOffer,
+  variant = "bottle",
+  highlightBest = true,
+}: {
+  offer: ProductOffer;
+  brand: string | null;
+  bestOffer?: ProductOffer;
+  variant?: "bottle" | "format";
+  /** Con una sola oferta con stock, "mejor precio" no compara nada. */
+  highlightBest?: boolean;
+}) {
+  const sname = storeName(offer.storeSlug);
+  const outOfStock = !offer.inStock;
+  const isBest =
+    highlightBest &&
+    variant === "bottle" &&
+    offer === bestOffer &&
+    offer.inStock;
+  const diffPct =
+    variant === "bottle" &&
+    bestOffer &&
+    offer.priceArs != null &&
+    bestOffer.priceArs != null &&
+    bestOffer.priceArs > 0 &&
+    offer.priceArs > bestOffer.priceArs
+      ? Math.round(
+          ((offer.priceArs - bestOffer.priceArs) / bestOffer.priceArs) * 100,
+        )
+      : null;
+  const vintage = extractVintage(offer.name);
+  const formatLabel = variant === "format" ? offerVariantLabel(offer) : null;
+  // En cajas, el precio por botella es lo único que permite comparar
+  // contra la tabla de arriba.
+  const perBottle =
+    variant === "format" &&
+    offer.priceArs != null &&
+    (offer.pack ?? 0) > 1 &&
+    !offer.priceSuspect
+      ? Math.round(offer.priceArs / (offer.pack as number))
+      : null;
+
+  const badge =
+    "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap";
+  const priceText =
+    variant === "format"
+      ? "text-ink"
+      : outOfStock
+        ? "text-graphite"
+        : "text-cobalt";
+
+  const ariaLabel = [
+    `${sname}: ${formatArs(offer.priceArs)}`,
+    formatLabel ?? null,
+    isBest ? "mejor precio" : null,
+    diffPct != null ? `${diffPct}% más caro que el mejor precio` : null,
+    outOfStock ? "sin stock" : null,
+    "abre la vinoteca en otra pestaña",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <a
+      href={offer.externalUrl}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      aria-label={ariaLabel}
+      title={offer.name}
+      className={`price-row group cursor-wine grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-x-3 md:gap-4 items-center px-4 md:px-5 py-3 md:py-4 border-b border-ink/5 last:border-b-0 ${
+        isBest ? "best" : ""
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className={`store-logo ${outOfStock ? "grayscale opacity-60" : ""}`}
+          style={{ background: colorForStore(offer.storeSlug) }}
+          aria-hidden="true"
+        >
+          {storeInitials(sname)}
+        </div>
+        <div className="min-w-0">
+          <div
+            className={`font-semibold leading-snug truncate ${
+              outOfStock ? "text-graphite" : "text-ink"
+            }`}
+          >
+            {sname}
+          </div>
+          {(isBest || outOfStock || offer.isCollector || vintage || formatLabel) && (
+            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+              {isBest && (
+                <span className={`${badge} bg-mustard/35 text-ink`}>
+                  ★ Mejor precio
+                </span>
+              )}
+              {formatLabel && (
+                <span
+                  className={`${badge} bg-cobalt/10 text-cobalt`}
+                  title={
+                    offer.priceSuspect
+                      ? "El precio no parece corresponder al formato: confirmalo en la vinoteca."
+                      : undefined
+                  }
+                >
+                  {formatLabel}
+                </span>
+              )}
+              {outOfStock && (
+                <span className={`${badge} bg-ink/10 text-graphite`}>
+                  Sin stock
+                </span>
+              )}
+              {offer.isCollector && (
+                <span
+                  className={`${badge} bg-malbec/15 text-malbec`}
+                  title="Cosecha vieja · precio de colección, no comparable con el precio actual"
+                >
+                  Colección
+                </span>
+              )}
+              {vintage && (
+                <span className={`${badge} bg-cobalt/10 text-cobalt`}>
+                  Cosecha {vintage}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="text-xs text-graphite truncate mt-0.5">
+            {prettyOfferName(offer.name, brand)}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-right md:text-center">
+        <div
+          className={`display text-xl md:text-2xl font-semibold tabular-nums leading-tight whitespace-nowrap ${priceText}`}
+        >
+          {formatArs(offer.priceArs)}
+        </div>
+        {perBottle != null && (
+          <div className="text-[11px] text-graphite tabular-nums whitespace-nowrap">
+            {formatArs(perBottle)} c/botella
+          </div>
+        )}
+        {variant === "bottle" && (
+          <div className="md:hidden flex items-center justify-end gap-1 text-xs text-graphite tabular-nums whitespace-nowrap mt-0.5">
+            {isBest ? "el más barato" : diffPct != null ? `+${diffPct}%` : null}
+            <ExternalIcon size={11} />
+          </div>
+        )}
+      </div>
+
+      {variant === "bottle" ? (
+        <div className="hidden md:block text-center text-sm tabular-nums">
+          {isBest ? (
+            <span className="text-graphite">—</span>
+          ) : diffPct != null ? (
+            <span className="text-ink">+{diffPct}%</span>
+          ) : (
+            <span className="text-graphite">—</span>
+          )}
+        </div>
+      ) : (
+        <div className="hidden md:block" />
+      )}
+
+      <span
+        aria-hidden="true"
+        className={`hidden md:inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+          isBest
+            ? "bg-cobalt text-snow group-hover:bg-ink"
+            : outOfStock
+              ? "border border-ink/15 text-graphite group-hover:border-ink/30"
+              : "border border-ink/20 text-ink group-hover:border-cobalt group-hover:text-cobalt"
+        }`}
+      >
+        {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
+      </span>
+    </a>
+  );
+}
+
 export default async function Vino({ params }: Params) {
   const { slug } = await params;
   const group = findGroup(slug);
@@ -244,6 +453,14 @@ export default async function Vino({ params }: Params) {
     // superviviente para no perder el ranking SEO de la URL vieja.
     const dest = resolveMergedSlug(slug);
     if (dest) permanentRedirect(`/vino/${dest}`);
+    // Los slugs son siempre minúsculas; un link externo con mayúsculas
+    // (/vino/Enemigo-Malbec) no tiene por qué ser 404.
+    const lower = slug.toLowerCase();
+    if (lower !== slug) {
+      if (findGroup(lower)) permanentRedirect(`/vino/${lower}`);
+      const lowerDest = resolveMergedSlug(lower);
+      if (lowerDest) permanentRedirect(`/vino/${lowerDest}`);
+    }
     notFound();
   }
 
@@ -266,6 +483,23 @@ export default async function Vino({ params }: Params) {
   const inStockOffers = offers.filter((o) => o.inStock);
   const allOutOfStock = inStockOffers.length === 0;
   const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
+  // La tabla principal muestra sólo lo comprable hoy; las vinotecas sin
+  // stock van a un desplegable abajo (antes eran 1/3 de la tabla, en gris
+  // al 50% de opacidad, ilegibles). Si TODAS están sin stock no hay nada
+  // que esconder: se listan todas.
+  const mainOffers = allOutOfStock ? offers : inStockOffers;
+  const hiddenOutOfStock = allOutOfStock
+    ? []
+    : offers.filter((o) => !o.inStock);
+  // Resumen de "otros formatos" para el summary del desplegable.
+  const formatKinds = [
+    ...new Set(
+      caseOffersAll
+        .map((o) => offerVariantLabel(o))
+        .filter((l): l is string => !!l && l !== "Precio a verificar"),
+    ),
+  ].slice(0, 4);
+  if (formatKinds.length === 0) formatKinds.push("Cajas y otros envases");
 
   // Ladder dataset: solo botellas con stock real y precio válido. Las
   // cosechas de colección quedan fuera del ladder (distorsionan la escala)
@@ -331,296 +565,175 @@ export default async function Vino({ params }: Params) {
   const scores = getScoresForSlug(group.groupSlug);
   const priceSeries = getPriceHistory(group.groupSlug);
 
-  // JSON-LD Product schema for rich search snippets. Usamos `bottleStats`
-  // (precios sin cajas) para evitar que Google muestre el precio de un
-  // pack x6 como si fuese el precio del vino · los rich snippets son
-  // engañosos cuando "$48.000" en realidad es la caja.
-  const bottleStatsForJsonLd = bottleStats(group);
-  // Precios válidos hasta el próximo daily-scrape (+24h del último snapshot).
-  // Google degrada el snippet sin `priceValidUntil`.
-  const snapStats = snapshotStats();
+  // ── JSON-LD ──────────────────────────────────────────────────────
+  //
+  // Product + AggregateOffer (fragmento de producto: rango de precios y
+  // cantidad de ofertas). Reglas, auditoría SEO del 26/09:
+  //
+  // · Sólo ofertas con precio. Antes 5.359 fichas publicaban un
+  //   AggregateOffer sin `lowPrice` y 6.171 tenían algún Offer sin
+  //   `price` — Search Console los marca como ítems NO VÁLIDOS ("Missing
+  //   field price"). Si no hay un solo precio, no hay Product.
+  // · Las ofertas listadas son la base de precio de la ficha (botella de
+  //   750 con stock, sin colección): `lowPrice`/`highPrice`/`offerCount`
+  //   salen de esa misma lista y coinciden con el hero. Si nada tiene
+  //   stock, se listan las de catálogo con `OutOfStock`.
+  // · Sin `aggregateRating` armado con puntajes de críticos: Google pide
+  //   no agregar reseñas de otros sitios. Las reseñas individuales (que
+  //   se ven en la ficha, con su autor) siguen.
+  // · Sin `hasMerchantReturnPolicy`: es un campo de fichas de comercio
+  //   (merchant listings) y Vinndex no vende; sólo sumaba bytes x oferta.
+  // · Sin FAQPage: desde 2023 Google sólo muestra FAQ de sitios de
+  //   gobierno/salud, y las preguntas no estaban visibles en la página
+  //   (el contenido marcado tiene que verse). Eran ~1 KB por ficha x 2
+  //   (HTML + payload RSC) sin ningún beneficio.
+  const fullName = wineFullName(group);
+  const fullNameVintage = `${fullName}${group.vintage ? ` ${group.vintage}` : ""}`;
+
+  // Precios válidos hasta el próximo daily-scrape (+24h del snapshot).
   const priceValidUntil = new Date(
-    new Date(snapStats.generatedAt).getTime() + 24 * 60 * 60 * 1000,
+    new Date(snapshot.generatedAt).getTime() + 24 * 60 * 60 * 1000,
   )
     .toISOString()
     .slice(0, 10);
-  // Category armada desde type + varietal principal · clasifica el Product
-  // en el Knowledge Graph (ej: "Vino tinto > Malbec").
+  // Misma cadena de fallback que la base de precio del grupo
+  // (lib/snapshot.ts → priceBasis): botella comparable con stock →
+  // cualquier formato con stock sin colección (fichas que sólo existen en
+  // magnum o 375) → cualquiera con stock → catálogo sin stock.
+  const priced = offers.filter(
+    (o) => o.priceArs != null && o.priceArs >= 1000 && !o.priceSuspect,
+  );
+  const ldTiers = [
+    priced.filter((o) => o.inStock && !o.isCollector && !isNonComparableOffer(o)),
+    priced.filter((o) => o.inStock && !o.isCollector),
+    priced.filter((o) => o.inStock),
+    priced.filter((o) => !o.isCollector && !isNonComparableOffer(o)),
+    priced,
+  ];
+  const ldOffers = ldTiers.find((t) => t.length > 0) ?? [];
+  const ldPrices = ldOffers.map((o) => o.priceArs as number);
+  // EAN: sólo si todas las ofertas que lo publican coinciden en uno.
+  const eans = new Set(
+    ldOffers
+      .map((o) => o.externalSku?.trim() ?? "")
+      .filter((sku) => /^\d{12,14}$/.test(sku)),
+  );
+  const gtin = eans.size === 1 ? [...eans][0] : null;
+  // Category armada desde type + varietal principal (ej: "Vino tinto > Malbec").
   const categoryParts: string[] = [];
   categoryParts.push(group.type ? `Vino ${group.type.toLowerCase()}` : "Vino");
   if (group.varietals && group.varietals.length > 0) {
     categoryParts.push(group.varietals[0]);
   }
-  const category = categoryParts.join(" > ");
-  // Vinndex no es el seller · cada Offer apunta a la tienda. La política
-  // de devolución la define cada vinoteca; no la conocemos. Usamos
-  // `MerchantReturnNotSpecified` (categoría válida del schema) para no
-  // mentir pero igual cumplir el requisito de Google que pide el campo.
-  const returnPolicyStub = {
-    "@type": "MerchantReturnPolicy",
-    returnPolicyCategory:
-      "https://schema.org/MerchantReturnNotSpecified",
-  };
-  // Si hay scores de críticos, emitir AggregateRating + Review[]. Cierra
-  // los warnings "optional" del Rich Results Test y habilita estrellas
-  // en SERP. Hoy hay 2 vinos en scores.json · para el resto los warnings
-  // siguen, no rompe nada.
-  const aggregateRating =
-    scores.length > 0
-      ? {
-          "@type": "AggregateRating",
-          ratingValue:
-            Math.round(
-              (scores.reduce(
-                (sum, s) => sum + (s.score / s.maxScore) * 100,
-                0,
-              ) /
-                scores.length) *
-                10,
-            ) / 10,
-          bestRating: 100,
-          worstRating: 0,
-          ratingCount: scores.length,
-          reviewCount: scores.length,
-        }
-      : undefined;
-  const reviewArray =
-    scores.length > 0
-      ? scores.map((s) => ({
-          "@type": "Review",
-          author: { "@type": "Person", name: s.critic },
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: Math.round((s.score / s.maxScore) * 100),
-            bestRating: 100,
-            worstRating: 0,
-          },
-          reviewBody: s.note,
-          datePublished: String(s.year),
-        }))
-      : undefined;
-  const productJsonLd = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    name: group.canonicalName,
-    image: group.imageUrl ?? undefined,
-    description: group.offers[0]?.name ?? group.canonicalName,
-    category,
-    aggregateRating,
-    review: reviewArray,
-    brand: group.brand
-      ? { "@type": "Brand", name: group.brand }
-      : undefined,
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "ARS",
-      lowPrice: bottleStatsForJsonLd.minPrice ?? undefined,
-      highPrice: bottleStatsForJsonLd.maxPrice ?? undefined,
-      offerCount: offers.length,
-      offers: offers.map((o) => ({
-        "@type": "Offer",
-        price: o.priceArs ?? undefined,
-        priceCurrency: "ARS",
-        priceValidUntil,
-        itemCondition: "https://schema.org/NewCondition",
-        availability: o.inStock
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-        url: o.externalUrl,
-        seller: { "@type": "Organization", name: storeName(o.storeSlug) },
-        hasMerchantReturnPolicy: returnPolicyStub,
-      })),
-    },
-  };
-
-  // FAQ JSON-LD · preguntas autogeneradas del snapshot. Todas las
-  // respuestas reflejan info visible en la ficha (precio, vinotecas,
-  // stock, varietal/región), requisito de Google para FAQ schema sin
-  // riesgo de "spammy structured data" flag. Skip de Q&As cuyo dato
-  // falte.
-  const wineLabel = displayWineName(group.canonicalName);
-  // Par candidato a "¿es el mismo vino?" para esta ficha, si lo hay.
-  const matchQuestion = questionForSlug(group.groupSlug);
-  const faqEntities: Array<{
-    "@type": "Question";
-    name: string;
-    acceptedAnswer: { "@type": "Answer"; text: string };
-  }> = [];
-  if (bottleStatsLocal.minPrice != null && bestOffer) {
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿Cuánto cuesta ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `Hoy se consigue desde ${formatArs(bottleStatsLocal.minPrice)} en ${storeName(bestOffer.storeSlug)}${
-          bottleStatsLocal.maxPrice && bottleStatsLocal.maxPrice > bottleStatsLocal.minPrice
-            ? `. El precio más alto entre las vinotecas que lo venden online es ${formatArs(bottleStatsLocal.maxPrice)}`
-            : ""
-        }.`,
-      },
-    });
-  }
-  if (group.storeCount >= 1) {
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿En cuántas vinotecas online se vende ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `${wineLabel} está disponible en ${group.storeCount} vinoteca${group.storeCount === 1 ? "" : "s"} online de Argentina${
-          offers.length > 1
-            ? `: ${offers
-                .slice(0, 5)
-                .map((o) => storeName(o.storeSlug))
-                .join(", ")}${offers.length > 5 ? " y más" : ""}`
-            : ""
-        }.`,
-      },
-    });
-  }
-  faqEntities.push({
-    "@type": "Question",
-    name: `¿Hay stock de ${wineLabel}?`,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: allOutOfStock
-        ? `Actualmente ${wineLabel} está sin stock en todas las vinotecas online relevadas. Vinndex actualiza el stock todas las noches, volvé a chequear pronto.`
-        : `Sí, ${wineLabel} tiene stock disponible en ${inStockOffers.length} de las ${offers.length} vinotecas relevadas.`,
-    },
-  });
-  if (group.brand) {
-    const regionPart = group.region ? `, de ${group.region}` : "";
-    const varietalPart =
-      group.varietals && group.varietals.length > 0
-        ? ` Es un ${group.varietals[0]}${group.type ? ` (${group.type.toLowerCase()})` : ""}.`
-        : "";
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿Qué bodega produce ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `${wineLabel} lo produce ${displayBrand(group.brand)}${regionPart}.${varietalPart}`,
-      },
-    });
-  }
-  const faqJsonLd =
-    faqEntities.length >= 2
+  const productJsonLd =
+    ldOffers.length > 0
       ? {
           "@context": "https://schema.org/",
-          "@type": "FAQPage",
-          mainEntity: faqEntities,
+          "@type": "Product",
+          name: fullNameVintage,
+          image: group.imageUrl ?? undefined,
+          description: `${fullNameVintage}: precio en ${ldOffers.length} oferta${
+            ldOffers.length === 1 ? "" : "s"
+          } de vinotecas online de Argentina, relevadas a diario.`,
+          category: categoryParts.join(" > "),
+          ...(gtin ? { [gtin.length === 13 ? "gtin13" : "gtin"]: gtin } : {}),
+          brand: group.brand
+            ? { "@type": "Brand", name: displayBrand(group.brand) }
+            : undefined,
+          review:
+            scores.length > 0
+              ? scores.map((s) => ({
+                  "@type": "Review",
+                  author: { "@type": "Person", name: s.critic },
+                  reviewRating: {
+                    "@type": "Rating",
+                    ratingValue: Math.round((s.score / s.maxScore) * 100),
+                    bestRating: 100,
+                    worstRating: 0,
+                  },
+                  reviewBody: s.note ?? undefined,
+                  datePublished: String(s.year),
+                }))
+              : undefined,
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "ARS",
+            lowPrice: Math.min(...ldPrices),
+            highPrice: Math.max(...ldPrices),
+            offerCount: ldOffers.length,
+            offers: ldOffers.map((o) => ({
+              "@type": "Offer",
+              price: o.priceArs,
+              priceCurrency: "ARS",
+              priceValidUntil,
+              itemCondition: "https://schema.org/NewCondition",
+              availability: o.inStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+              url: o.externalUrl,
+              seller: { "@type": "Organization", name: storeName(o.storeSlug) },
+            })),
+          },
         }
       : null;
 
-  // Breadcrumb JSON-LD → Google muestra breadcrumbs en SERPs
+  const wineLabel = displayWineName(group.canonicalName);
+  // Par candidato a "¿es el mismo vino?" para esta ficha, si lo hay.
+  const matchQuestion = questionForSlug(group.groupSlug);
+
+  // BreadcrumbList: Inicio › Bodega › Vino. La bodega sólo entra si su
+  // página existe — antes la URL se armaba a mano (brand.toLowerCase()
+  // con guiones) y en 3.603 fichas apuntaba a un /bodega/* que da 404.
+  const bodegaHref = bodegaUrl(group.brand);
   const breadcrumbJsonLd = {
     "@context": "https://schema.org/",
     "@type": "BreadcrumbList",
     itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Inicio",
-        item: "https://vinndex.com.ar",
-      },
-      ...(group.brand
+      { name: "Inicio", item: "https://vinndex.com.ar" },
+      ...(bodegaHref && group.brand
         ? [
             {
-              "@type": "ListItem",
-              position: 2,
-              name: group.brand,
-              item: `https://vinndex.com.ar/bodega/${encodeURIComponent(
-                group.brand.toLowerCase().replace(/\s+/g, "-"),
-              )}`,
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: group.canonicalName,
-              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+              name: displayBrand(group.brand),
+              item: `https://vinndex.com.ar${bodegaHref}`,
             },
           ]
-        : [
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: group.canonicalName,
-              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
-            },
-          ]),
-    ],
+        : []),
+      {
+        name: fullNameVintage,
+        item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+      },
+    ].map((it, i) => ({ "@type": "ListItem", position: i + 1, ...it })),
   };
+
+  // Enlazado interno (lib/internalLinks.ts): hermanas de bodega y vecinas
+  // de precio. Sin repetir las de "Te pueden gustar".
+  const shownSlugs = new Set(related.map((r) => r.groupSlug));
+  const siblings = brandSiblings(group, 6).filter(
+    (g) => !shownSlugs.has(g.groupSlug),
+  );
+  for (const g of siblings) shownSlugs.add(g.groupSlug);
+  const neighbors = priceNeighbors(group, 6, shownSlugs);
+  const priceLabel = group.varietals?.[0] ?? (group.type ? `vinos ${group.type.toLowerCase()}s` : "vinos");
 
   return (
     <div className="bg-white min-h-[100dvh]">
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-      />
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      )}
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
-      <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Vinndex · inicio"
-            className="flex items-center gap-2 shrink-0 cursor-wine"
-          >
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
-                fill="#1E3FBF"
-                stroke="#1E3FBF"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <circle cx="24" cy="8" r="3" fill="#E8B547" />
-            </svg>
-            <span className="display text-xl font-semibold text-ink hidden sm:block">
-              Vinndex
-            </span>
-          </Link>
+      <SiteHeader placeholder="Buscá otro vino o bodega" />
 
-          <form action="/buscar" className="flex-1 max-w-2xl">
-            <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-graphite shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <SearchInput
-                placeholder="Buscar otro vino..."
-                className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
-                withAutocomplete
-              />
-              <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
-                Buscar
-              </button>
-            </div>
-          </form>
-          <FavoritesNavLink className="text-ink shrink-0" />
-          <ThemeToggle className="text-ink shrink-0" />
-        </div>
-      </header>
-
+      {/* <main> envuelve también al hero: el skip-link salta a #contenido y
+          antes caía debajo del h1, en la escalera. */}
+      <main id="contenido">
       {/* HERO */}
       <section className="relative ficha-hero text-snow overflow-hidden grain">
         <svg
@@ -640,7 +753,7 @@ export default async function Vino({ params }: Params) {
           />
         </svg>
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
           <div className="flex items-center gap-2 text-xs text-snow/70 uppercase tracking-wider mb-5">
             <Link href="/" className="hover:text-snow">
               Inicio
@@ -653,26 +766,20 @@ export default async function Vino({ params }: Params) {
             <span className="truncate">{group.canonicalName}</span>
           </div>
 
-          <div className="grid lg:grid-cols-[280px_1fr] gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 sm:gap-10 items-start">
             <div className="flex justify-center lg:justify-start">
               <div className="relative">
                 <div className="absolute inset-0 bg-snow/15 blur-2xl rounded-full" />
-                <div className="relative w-56 h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
-                  {group.imageUrl ? (
-                    <Image
-                      src={group.imageUrl}
-                      alt={group.canonicalName}
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 224px, 224px"
-                      className="object-contain"
-                    />
-                  ) : (
-                    <BottleFallback
-                      name={group.canonicalName}
-                      brand={group.brand}
-                    />
-                  )}
+                <div className="relative w-28 h-40 sm:w-56 sm:h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
+                  <WineImage
+                    src={group.imageUrl}
+                    name={group.canonicalName}
+                    brand={group.brand}
+                    fill
+                    preload
+                    sizes="(max-width: 1024px) 224px, 224px"
+                    className="object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -783,7 +890,7 @@ export default async function Vino({ params }: Params) {
 
               <div className="flex items-start gap-4 mb-3">
                 <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] flex-1">
-                  {displayWineName(group.canonicalName)}
+                  {fullName}
                 </h1>
                 <FavoriteButton
                   slug={group.groupSlug}
@@ -913,9 +1020,14 @@ export default async function Vino({ params }: Params) {
                   href={bestOffer.externalUrl}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
+                  // Hex fijos y no bg-snow/text-malbec: en dark esas
+                  // utilities se invierten (surface oscuro + rosa) y el CTA
+                  // principal quedaba como un botón apagado sobre el hero.
+                  className="cursor-wine bg-[#f5ede0] text-[#6b1e2e] font-semibold px-6 sm:px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
                 >
-                  Ir al mejor precio en {storeName(bestOffer.storeSlug)}{" "}
+                  {inStockOffers.length >= 2
+                    ? `Ir al mejor precio en ${storeName(bestOffer.storeSlug)}`
+                    : `Ir a ${storeName(bestOffer.storeSlug)}`}{" "}
                   <ExternalIcon />
                 </a>
               )}
@@ -943,10 +1055,13 @@ export default async function Vino({ params }: Params) {
 
       <StickyCTA
         priceLabel={
+          // Mismo número que el hero (sólo botellas de 750 comparables):
+          // group.minPrice cuenta también 375 ml / cajas y podía mostrar
+          // un "mejor precio" distinto al de arriba.
           allOutOfStock
             ? "Sin stock"
-            : group.minPrice != null
-              ? formatArs(group.minPrice)
+            : heroMinPrice != null
+              ? formatArs(heroMinPrice)
               : "Ver precios"
         }
         storeName={bestOffer ? storeName(bestOffer.storeSlug) : ""}
@@ -955,230 +1070,98 @@ export default async function Vino({ params }: Params) {
       />
 
       {/* TABLA DE PRECIOS */}
-      <main id="contenido" className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
-        {/* Price Ladder — visualización editorial del rango de precios.
-            Solo aparece cuando hay 2+ vinotecas con stock (sino no hay
-            "dispersión" que contar). La tabla detallada de abajo sigue
-            siendo la fuente de verdad para revisar SKU + visitar. */}
-        {ladderOffers.length >= 2 && (
-          <section id="ladder" className="mb-12 scroll-mt-8">
-            <PriceLadder
-              offers={ladderOffers}
-              formatArs={formatArs}
-              wineName={group.canonicalName}
-            />
-          </section>
-        )}
-
-        <section id="precios" className="scroll-mt-8">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
-            <div>
-              <h2 className="display text-3xl font-semibold text-ink">
-                Comparación de precios
-              </h2>
-              <p className="text-graphite text-sm mt-1">
-                Ordenado de menor a mayor ·{" "}
-                {inStockOffers.length} con stock
-                {offers.length > inStockOffers.length
-                  ? ` · ${offers.length - inStockOffers.length} sin stock`
-                  : ""}
-              </p>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
+        {/* La tabla va PRIMERO: es el trabajo de la página ("¿dónde lo
+            compro más barato?"). Antes la escalera de precios iba arriba y
+            en mobile empujaba la tabla ~2.000px hacia abajo. */}
+        <section id="precios" className="scroll-mt-24">
+          <div className="mb-5">
+            <h2 className="display text-2xl sm:text-3xl font-semibold text-ink">
+              Comparación de precios
+            </h2>
+            <p className="text-graphite text-sm mt-1">
+              Botella de 750&nbsp;ml, de menor a mayor precio ·{" "}
+              {allOutOfStock
+                ? `${offers.length} sin stock`
+                : `${inStockOffers.length} con stock`}
+            </p>
           </div>
 
           <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
-            <div className="hidden md:grid grid-cols-[2fr_1fr_1.1fr_auto] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
               <div>Vinoteca</div>
               <div className="text-center">Precio</div>
-              <div className="text-center">Diferencia vs min</div>
+              <div className="text-center">Vs. mejor precio</div>
               <div />
             </div>
-
-            {offers.map((offer, i) => {
-              const isBest = offer === bestOffer && offer.inStock;
-              const outOfStock = !offer.inStock;
-              const rowClasses = isBest
-                ? "price-row best grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5"
-                : outOfStock
-                  ? "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5 opacity-50 grayscale"
-                  : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
-              const ctaClasses = isBest
-                ? "cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
-                : outOfStock
-                  ? "cursor-wine border border-ink/15 text-graphite font-medium px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full hover:border-ink/30"
-                  : "cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full";
-              const diffPct =
-                offer.priceArs != null &&
-                bestOffer.priceArs != null &&
-                bestOffer.priceArs > 0 &&
-                offer.priceArs > bestOffer.priceArs
-                  ? Math.round(
-                      ((offer.priceArs - bestOffer.priceArs) /
-                        bestOffer.priceArs) *
-                        100,
-                    )
-                  : null;
-              const sname = storeName(offer.storeSlug);
-
-              return (
-                <div key={offer.externalUrl} className={rowClasses}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="store-logo"
-                      style={{ background: colorForStore(offer.storeSlug) }}
-                    >
-                      {storeInitials(sname)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
-                        <span className="truncate">{sname}</span>
-                        {isBest && (
-                          <span className="text-[10px] bg-mustard/25 text-mustard px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                            ★ Mejor precio
-                          </span>
-                        )}
-                        {outOfStock && (
-                          <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-                            Sin stock
-                          </span>
-                        )}
-                        {offer.isCollector && (
-                          <span
-                            className="text-[10px] bg-malbec/15 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
-                            title="Cosecha vieja · precio de colección, no comparable con el precio actual"
-                          >
-                            Colección
-                          </span>
-                        )}
-                        {(() => {
-                          const v = extractVintage(offer.name);
-                          return v ? (
-                            <span className="text-[10px] bg-cobalt/15 text-cobalt px-2 py-0.5 rounded-full font-semibold">
-                              Cosecha {v}
-                            </span>
-                          ) : null;
-                        })()}
-                      </div>
-                      <div
-                        className="text-xs text-graphite truncate"
-                        title={offer.name}
-                      >
-                        {prettyOfferName(offer.name, group.brand)}
-                        {offer.externalSku ? ` · SKU ${offer.externalSku}` : ""}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="md:text-center">
-                    <span className="md:hidden text-xs text-graphite">
-                      Precio:{" "}
-                    </span>
-                    <span className="display text-2xl font-semibold text-cobalt">
-                      {formatArs(offer.priceArs)}
-                    </span>
-                  </div>
-                  <div className="md:text-center">
-                    <span className="md:hidden text-xs text-graphite">
-                      Diferencia:{" "}
-                    </span>
-                    {isBest ? (
-                      <span className="text-terracota font-semibold text-sm">
-                        —
-                      </span>
-                    ) : diffPct != null ? (
-                      <span className="text-ink text-sm">+{diffPct}%</span>
-                    ) : (
-                      <span className="text-graphite text-sm">—</span>
-                    )}
-                  </div>
-                  <a
-                    href={offer.externalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className={ctaClasses}
-                  >
-                    {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
-                  </a>
-                </div>
-              );
-            })}
+            {mainOffers.map((offer) => (
+              <OfferRow
+                key={offer.externalUrl}
+                offer={offer}
+                brand={group.brand}
+                bestOffer={bestOffer}
+                highlightBest={inStockOffers.length >= 2}
+              />
+            ))}
           </div>
 
+          {hiddenOutOfStock.length > 0 && (
+            <details className="group/oos mt-3 bg-white border border-ink/10 rounded-2xl overflow-hidden">
+              <summary className="cursor-wine list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-3 px-4 md:px-5 py-3.5 min-h-11 text-sm font-semibold text-ink hover:bg-snow/60">
+                <span>
+                  {hiddenOutOfStock.length}{" "}
+                  {hiddenOutOfStock.length === 1
+                    ? "vinoteca lo tiene"
+                    : "vinotecas lo tienen"}{" "}
+                  en catálogo pero sin stock hoy
+                </span>
+                <Chevron className="shrink-0 text-graphite transition-transform group-open/oos:rotate-180" />
+              </summary>
+              <div className="border-t border-ink/10">
+                {hiddenOutOfStock.map((offer) => (
+                  <OfferRow
+                    key={offer.externalUrl}
+                    offer={offer}
+                    brand={group.brand}
+                    bestOffer={bestOffer}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
+
           {caseOffersAll.length > 0 && (
-            <div className="mt-8">
-              <h3 className="display text-xl font-semibold text-ink mb-1">
-                Otros formatos
-              </h3>
-              <p className="text-graphite text-sm mb-4">
-                Mismo vino, otro envase — no compiten con el precio por
-                botella de arriba.
-              </p>
-              <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
+            <details className="group/fmt mt-3 bg-white border border-ink/10 rounded-2xl overflow-hidden">
+              <summary className="cursor-wine list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-3 px-4 md:px-5 py-3.5 min-h-11 hover:bg-snow/60">
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-ink">
+                    Otros formatos · {caseOffersAll.length}{" "}
+                    {caseOffersAll.length === 1 ? "oferta" : "ofertas"}
+                  </span>
+                  <span className="block text-xs text-graphite mt-0.5">
+                    {formatKinds.join(", ")}. No entran en la comparación
+                    por botella de arriba.
+                  </span>
+                </span>
+                <Chevron className="shrink-0 text-graphite transition-transform group-open/fmt:rotate-180" />
+              </summary>
+              <div className="border-t border-ink/10">
                 {caseOffersAll
                   .slice()
                   .sort((a, b) => {
                     if (!!a.inStock !== !!b.inStock) return a.inStock ? -1 : 1;
                     return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
                   })
-                  .map((offer) => {
-                    const sname = storeName(offer.storeSlug);
-                    const label = offerVariantLabel(offer);
-                    return (
-                      <div
-                        key={offer.externalUrl}
-                        className={`grid md:grid-cols-[2.2fr_1fr_150px] gap-4 items-center px-5 py-3.5 border-b border-ink/5 ${
-                          offer.inStock ? "" : "opacity-50 grayscale"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="store-logo"
-                            style={{ background: colorForStore(offer.storeSlug) }}
-                          >
-                            {storeInitials(sname)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
-                              <span className="truncate">{sname}</span>
-                              {label && (
-                                <span className="text-[10px] bg-cobalt/10 text-cobalt px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                                  {label}
-                                </span>
-                              )}
-                              {!offer.inStock && (
-                                <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-                                  Sin stock
-                                </span>
-                              )}
-                            </div>
-                            <div
-                              className="text-xs text-graphite truncate"
-                              title={offer.name}
-                            >
-                              {prettyOfferName(offer.name, group.brand)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="md:text-center">
-                          <span className="md:hidden text-xs text-graphite">
-                            Precio:{" "}
-                          </span>
-                          <span className="display text-xl font-semibold text-ink">
-                            {formatArs(offer.priceArs)}
-                          </span>
-                        </div>
-                        <a
-                          href={offer.externalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          className="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-medium px-5 py-2 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
-                        >
-                          Visitar <ExternalIcon />
-                        </a>
-                      </div>
-                    );
-                  })}
+                  .map((offer) => (
+                    <OfferRow
+                      key={offer.externalUrl}
+                      offer={offer}
+                      brand={group.brand}
+                      variant="format"
+                    />
+                  ))}
               </div>
-            </div>
+            </details>
           )}
 
           <p className="text-xs text-graphite mt-4">
@@ -1217,6 +1200,19 @@ export default async function Vino({ params }: Params) {
           )}
         </section>
 
+        {/* Price Ladder — la dispersión contada como postal. Va DESPUÉS
+            de la tabla: es contexto, no la decisión. Sólo con 2+ vinotecas
+            con stock (sino no hay dispersión que contar). */}
+        {ladderOffers.length >= 2 && (
+          <section id="ladder" className="mt-12 scroll-mt-24">
+            <PriceLadder
+              offers={ladderOffers}
+              formatArs={formatArs}
+              wineName={group.canonicalName}
+            />
+          </section>
+        )}
+
         {priceSeries.length >= 2 && (
           <section className="mt-14 pt-10 border-t border-ink/10">
             <PriceHistoryChart series={priceSeries} />
@@ -1233,34 +1229,36 @@ export default async function Vino({ params }: Params) {
                 ? `Similares en varietal${group.region ? `, región` : ""} y precio.`
                 : "Selección basada en precio y región."}
             </p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {related.map((r) => (
                 <a
                   key={r.groupSlug}
                   href={`/vino/${r.groupSlug}`}
-                  className="bg-white rounded-2xl p-5 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
+                  className="bg-white rounded-2xl p-3 sm:p-5 border border-ink/10 hover:border-ink/25 transition-colors flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
-                    {r.imageUrl ? (
-                      <Image
-                        src={r.imageUrl}
-                        alt={r.canonicalName}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={r.canonicalName} brand={r.brand} />
-                    )}
+                    <WineImage
+                      src={r.imageUrl}
+                      name={r.canonicalName}
+                      brand={r.brand}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+                      className="object-contain"
+                    />
                   </div>
-                  <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
+                  {r.brand && (
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-graphite truncate">
+                      {displayBrand(r.brand)}
+                    </div>
+                  )}
+                  <div className="display text-sm sm:text-base font-semibold text-ink leading-snug line-clamp-2 min-h-[2.5em]">
                     {displayWineName(r.canonicalName)}
                   </div>
                   <div className="text-xs text-graphite mt-0.5">
                     {r.storeCount} vinoteca{r.storeCount === 1 ? "" : "s"}
                     {r.vintage ? ` · ${r.vintage}` : ""}
                   </div>
-                  <div className="display text-xl font-semibold text-cobalt mt-3">
+                  <div className="display text-lg sm:text-xl font-semibold text-cobalt tabular-nums mt-auto pt-2">
                     {formatArs(r.minPrice)}
                   </div>
                 </a>
@@ -1268,19 +1266,32 @@ export default async function Vino({ params }: Params) {
             </div>
           </section>
         )}
+
+        {group.brand && (
+          <WineLinkList
+            title={`Más vinos de ${displayBrand(group.brand)}`}
+            wines={siblings}
+            more={
+              bodegaHref
+                ? {
+                    href: bodegaHref,
+                    label: `Ver todos los vinos de ${displayBrand(group.brand)} →`,
+                  }
+                : undefined
+            }
+          />
+        )}
+        <WineLinkList
+          title={`Otros ${priceLabel} de precio parecido`}
+          wines={neighbors}
+        />
+      </div>
       </main>
 
-      <footer className="bg-ink text-snow/70 px-6 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>
-            © 2026 Vinndex ·{" "}
-            <Link href="/" className="hover:text-snow">
-              Inicio
-            </Link>
-          </p>
-          <p>Precios relevados una vez por día · Beber con moderación</p>
-        </div>
-      </footer>
+      <SiteFooter />
+      {/* Colchón bajo el footer para que el StickyCTA (fixed, sólo <lg)
+          no tape la última línea del footer al llegar al final. */}
+      <div aria-hidden="true" className="h-24 bg-ink lg:hidden" />
     </div>
   );
 }

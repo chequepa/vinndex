@@ -115,7 +115,7 @@ export default function SumatePage() {
               suscripción.
             </li>
             <li>
-              · <strong>No promocionamos.</strong> No hay &ldquo;destacados
+              · <strong>No promocionamos.</strong>{" "}No hay &ldquo;destacados
               pagos&rdquo; · el ranking es precio real.
             </li>
             <li>

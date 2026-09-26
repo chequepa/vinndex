@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import { SearchInput } from "@/components/SearchInput";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { SiteHeader } from "@/components/SiteHeader";
+import { WineImage } from "@/components/WineImage";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
 import { MobileFiltersDrawer } from "@/components/MobileFiltersDrawer";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -99,14 +96,25 @@ export async function generateMetadata({
   searchParams,
 }: Params): Promise<Metadata> {
   const params = await searchParams;
-  const page = parsePage(params.page);
+  // Sólo /buscar pelado es indexable. Cualquier variante con parámetros
+  // (q, filtros, orden, página) es un resultado de búsqueda interna: un
+  // espacio de URLs infinito (q × varietal × tipo × región × precio ×
+  // orden × página) con contenido que se superpone a /varietal, /region,
+  // /bodega y /ranking, que son los landings que sí queremos rankear.
+  // Antes /buscar?q=malbec salía "index, follow" con canonical a /buscar:
+  // dos señales contradictorias, y Google termina eligiendo él. noindex +
+  // follow: las fichas enlazadas se siguen descubriendo.
+  const hasParams = Object.values(params).some(
+    (v) => typeof v === "string" && v.trim() !== "",
+  );
   return {
     title: "Buscar vinos argentinos por precio · Vinndex",
     description:
       "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
     alternates: { canonical: "https://vinndex.com.ar/buscar" },
-    robots:
-      page > 1 ? { index: false, follow: true } : { index: true, follow: true },
+    robots: hasParams
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   };
 }
 
@@ -286,7 +294,7 @@ export default async function Buscar({ searchParams }: Params) {
                 : "bg-snow hover:bg-snow border border-ink/15"
             }`}
           >
-            <span>Solo con stock</span>
+            <span>Sólo con stock</span>
             {inStockOnly && <span className="text-xs">✓</span>}
           </a>
           <a
@@ -472,80 +480,7 @@ export default async function Buscar({ searchParams }: Params) {
   return (
     <div className="bg-white min-h-[100dvh]">
       {/* NAV */}
-      <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Vinndex · inicio"
-            className="flex items-center gap-2 shrink-0 cursor-wine"
-          >
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
-                fill="#1E3FBF"
-                stroke="#1E3FBF"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <circle cx="24" cy="8" r="3" fill="#E8B547" />
-            </svg>
-            <span className="display text-xl font-semibold text-ink hidden sm:block">
-              Vinndex
-            </span>
-          </Link>
-
-          <form action="/buscar" className="flex-1 max-w-2xl">
-            <div className="relative flex items-center bg-snow rounded-full border border-ink/10 focus-within:border-cobalt p-1 pl-4">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-graphite shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <SearchInput
-                defaultValue={query}
-                placeholder="Malbec, Luigi Bosca, Catena Zapata..."
-                className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
-                withAutocomplete
-              />
-              <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
-                Buscar
-              </button>
-            </div>
-          </form>
-
-          <a
-            href="/preguntas"
-            className="cursor-wine hidden lg:flex items-center gap-2 text-sm shrink-0 bg-snow hover:bg-mustard/20 border border-ink/10 rounded-full px-3 py-2 font-medium text-ink transition-colors"
-            title="Por qué decimos CABA"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-graphite"
-            >
-              <path d="M12 2a10 10 0 1 0 10 10" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>Precios en CABA</span>
-          </a>
-          <FavoritesNavLink className="text-ink shrink-0" />
-          <ThemeToggle className="text-ink shrink-0" />
-        </div>
-      </header>
+      <SiteHeader defaultQuery={query} showZoneNote />
 
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
@@ -656,21 +591,23 @@ export default async function Buscar({ searchParams }: Params) {
                 {filtersInner}
               </MobileFiltersDrawer>
             </div>
-            <div
-              role="tablist"
+            {/* Mobile: una sola fila con scroll horizontal. Antes las 6
+                opciones hacían wrap en 5 renglones (~200px) antes del
+                primer resultado. Son links de navegación, no tabs: el
+                role="tablist" prometía flechas y tabpanel que no existen. */}
+            <nav
               aria-label="Ordenar por"
-              className="flex items-center gap-2 flex-wrap"
+              className="w-full sm:w-auto min-w-0 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 overflow-x-auto sm:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              <span className="text-xs text-graphite mr-1 uppercase tracking-wide">
+              <span className="shrink-0 text-xs text-graphite mr-1 uppercase tracking-wide">
                 Ordenar
               </span>
               {sortOptions.map((o) => (
                 <a
                   key={o.key}
                   href={sortHref(o.key)}
-                  role="tab"
-                  aria-selected={sort === o.key}
-                  className={`text-sm px-3.5 py-2 rounded-full border transition ${
+                  aria-current={sort === o.key ? "true" : undefined}
+                  className={`shrink-0 whitespace-nowrap text-sm px-3.5 py-2 rounded-full border transition ${
                     sort === o.key
                       ? "bg-ink text-snow border-ink font-semibold"
                       : "bg-white text-graphite border-ink/15 hover:border-ink/30 hover:text-ink"
@@ -679,7 +616,7 @@ export default async function Buscar({ searchParams }: Params) {
                   {o.label}
                 </a>
               ))}
-            </div>
+            </nav>
           </div>
 
           {/* TYPO CORREGIDO · "catena sapata" → "catena zapata". El link
@@ -860,29 +797,35 @@ export default async function Buscar({ searchParams }: Params) {
                   >
                     <div className="flex gap-5">
                       <div className="relative w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                        {g.imageUrl ? (
-                          <Image
-                            src={g.imageUrl}
-                            alt={g.canonicalName}
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <BottleFallback name={g.canonicalName} brand={g.brand} />
-                        )}
+                        <WineImage
+                          src={g.imageUrl}
+                          name={g.canonicalName}
+                          brand={g.brand}
+                          fill
+                          sizes="64px"
+                          className="object-contain"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4 mb-1">
+                          {/* Bodega como eyebrow (igual que rankings, vs y
+                              "Bajaron de precio"): buscando "malbec" todos
+                              los títulos decían "Malbec" y la bodega, lo que
+                              los distingue, quedaba truncada en gris. */}
                           <div className="min-w-0">
-                            <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight truncate">
+                            {g.brand && (
+                              <p className="text-[11px] uppercase tracking-wider font-semibold text-graphite truncate">
+                                {displayBrand(g.brand)}
+                              </p>
+                            )}
+                            <h3 className="display text-lg md:text-xl font-semibold text-ink leading-tight line-clamp-2">
                               {displayWineName(g.canonicalName)}
                             </h3>
-                            <p className="text-sm text-graphite mt-0.5 truncate">
-                              {g.brand ? displayBrand(g.brand) : "Sin bodega identificada"}
-                              {g.vintage ? ` · ${g.vintage}` : ""}
-                              {g.region ? ` · ${g.region}` : ""}
-                            </p>
+                            {(g.vintage || g.region) && (
+                              <p className="text-sm text-graphite mt-0.5 truncate">
+                                {[g.vintage, g.region].filter(Boolean).join(" · ")}
+                              </p>
+                            )}
                           </div>
                           <div className="text-right shrink-0">
                             <div className="text-xs text-graphite">desde</div>
@@ -900,42 +843,16 @@ export default async function Buscar({ searchParams }: Params) {
                         </div>
                         <div className="flex items-center gap-2 mt-3 flex-wrap">
                           {g.storeCount >= 2 ? (
-                            <span
-                              className="tag"
-                              // Contraste WCAG AA exige ≥4.5 para texto
-                              // chico. Antes el bg `#1B7A4F20` (verde
-                              // sobre cream casi transparente) + texto
-                              // `#1B7A4F` daba ratio 3.5 · subimos
-                              // saturación del bg para llegar a 4.6.
-                              style={{
-                                background: "#14593620",
-                                color: "#145936",
-                              }}
-                            >
+                            <span className="tag tag-green">
                               {g.storeCount} vinotecas
                             </span>
                           ) : (
-                            <span
-                              className="tag"
-                              style={{
-                                background: "rgba(31, 38, 56, 0.14)",
-                                color: "#1F2638",
-                                fontWeight: 500,
-                                textTransform: "none",
-                                letterSpacing: 0,
-                              }}
-                            >
+                            <span className="tag tag-neutral !font-medium !normal-case !tracking-normal">
                               en {storeName(bestOffer.storeSlug)}
                             </span>
                           )}
                           {g.type && (
-                            <span
-                              className="tag"
-                              style={{
-                                background: "#16319215",
-                                color: "#163192",
-                              }}
-                            >
+                            <span className="tag tag-cobalt">
                               {g.type}
                             </span>
                           )}
@@ -944,13 +861,12 @@ export default async function Buscar({ searchParams }: Params) {
                               {v}
                             </span>
                           ))}
+                          {/* Sin el "•" suelto: al wrappear quedaba
+                              huérfano al final de la línea de tags. */}
                           {savings > 0 && (
-                            <>
-                              <span className="text-xs text-graphite">•</span>
-                              <span className="text-xs text-terracota font-semibold">
-                                ahorrá hasta {savings}%
-                              </span>
-                            </>
+                            <span className="text-xs text-terracota font-semibold whitespace-nowrap">
+                              ahorrá hasta {savings}%
+                            </span>
                           )}
                         </div>
                       </div>
