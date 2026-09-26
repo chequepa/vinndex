@@ -209,6 +209,39 @@ const SPIRIT_STYLE_RE =
 /** Sidra: fermentado de manzana o pera, no es vino. */
 const SIDRA_RE = /\b(sidra|cider)\b/i;
 
+/**
+ * Tercera tanda (auditoría 26/09/2026): 7.442 fichas publicadas sin una
+ * sola palabra de vino y fuera del catálogo; muestreadas a mano, una de
+ * cada seis era otra cosa — salsas, especias, café en cápsulas, pastas,
+ * copas y utensilios, mates, libros, eventos, amargos y destilados que se
+ * listan por marca o con el prefijo "W." (whisky) de algunas tiendas.
+ * ~1.180 fichas, 25 multi-tienda.
+ *
+ * Validado contra los 4.112 vinos del catálogo y los grupos vivos: los
+ * dos falsos positivos del primer intento quedaron afuera a propósito —
+ * `cuchillo` suelto (Cuchillo de Palo es una bodega) y `miel` suelta
+ * ("Dadá Sabor Miel" es un vino): los dos van anclados al inicio.
+ */
+const ALMACEN3_RE =
+  /\b(chupetin|chupetines|golosinas?|sazonador(es)?|condimentos?|pimienta|pimenton|oregano|azafran|curry|salsas?|ketchup|mayonesa|mostaza|pulpa de|pickles|encurtidos?|almibar|infusion(es)?|penne|spaghetti|spaguetti|tallarines|ravioles|grisines|crackers?|budin|panettone|nespresso|capsulas?|cappuccino|jarabe|sirop)\b/i;
+const OBJETOS_RE =
+  /\b(jigger|coctelera|medidor para tragos|pourer|pico vertedor|dosificador|tazon|juego de copas|set de copas|spiegelau|schott|zwiesel|poker|naipes|libro|agenda|delantal|bolsa termica|conservadora|heladera|cava electrica|bombilla|visita guiada|masterclass|suscripcion|membresia)\b/i;
+const OBJETOS_HEAD_RE =
+  /^(copa|copas|vaso|vasos|bandeja|balde|mate|cuchillos?(?!\s+de\s+palo)|tenedor(es)?|(pack \d+ )?miel)\b|^set\b(?=.*\b(accesorios?|piezas|elementos|sacacorchos?|cocteleria|aireador|pulltex)\b)|^juego\b(?=.*\b(copas?|vasos?|cubiertos|accesorios?)\b)/i;
+/**
+ * Un VINO que viene con un objeto de regalo sigue siendo un vino:
+ * "Dominio Malbec + libro", "Estuche Doña Paula Estate Malbec + Delantal",
+ * "Veuve Clicquot Brut Heladera Estuche". Si el nombre dice un varietal,
+ * champagne/espumante o botellas, las listas de objetos de arriba no lo
+ * sacan — salvo que el objeto ENCABECE el nombre ("Copa Cabernet").
+ */
+const WINE_PRODUCT_RE =
+  /\b(malbec|cabernet|merlot|syrah|shiraz|bonarda|pinot|chardonnay|sauvignon|torrontes|tempranillo|tannat|petit verdot|semillon|viognier|riesling|champagne|champana|espumante|botellas?)\b/i;
+/** "W. THE ARRAN 10 AÑOS": algunas tiendas prefijan los whiskies con "W.". */
+const SPIRIT_PREFIX_RE = /^(min\.\s+)?w\.\s/i;
+const SPIRIT_BRAND2_RE =
+  /\b(canadian club|yamazakura|glenrothes|arran|liqueur|poire williams|cachaca|limoncello|anis|ouzo|amargo|bitter angostura|angostura)\b/i;
+
 export function isNonWineGroup(g: { canonicalName: string }): boolean {
   const n = stripAccentsLower(g.canonicalName ?? "");
   if (GIFTCARD_RE.test(n)) return true;
@@ -216,6 +249,8 @@ export function isNonWineGroup(g: { canonicalName: string }): boolean {
   if (SPIRIT_BRAND_RE.test(n)) return true;
   if (SPIRIT_STYLE_RE.test(n)) return true;
   if (SIDRA_RE.test(n)) return true;
+  if (OBJETOS_HEAD_RE.test(n.trim()) || SPIRIT_PREFIX_RE.test(n.trim()) || SPIRIT_BRAND2_RE.test(n)) return true;
+  if ((ALMACEN3_RE.test(n) || OBJETOS_RE.test(n)) && !WINE_PRODUCT_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
   if (ALMACEN2_RE.test(n)) return true;
   if (BARWARE_RE.test(n)) return true;
