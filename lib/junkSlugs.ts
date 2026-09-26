@@ -223,9 +223,9 @@ const SIDRA_RE = /\b(sidra|cider)\b/i;
  * ("Dadá Sabor Miel" es un vino): los dos van anclados al inicio.
  */
 const ALMACEN3_RE =
-  /\b(chupetin|chupetines|golosinas?|sazonador(es)?|condimentos?|pimienta|pimenton|oregano|azafran|curry|salsas?|ketchup|mayonesa|mostaza|pulpa de|pickles|encurtidos?|almibar|infusion(es)?|penne|spaghetti|spaguetti|tallarines|ravioles|grisines|crackers?|budin|panettone|nespresso|capsulas?|cappuccino|jarabe|sirop)\b/i;
+  /\b(chupetin|chupetines|golosinas?|sazonador(es)?|condimentos?|pimienta|pimenton|oregano|azafran|curry|salsas?|ketchup|mayonesa|mostaza|pulpa de|pickles|encurtidos?|alcaparras?|salmuera|almibar|infusion(es)?|penne|spaghetti|spaguetti|tallarines|ravioles|grisines|crackers?|budin|panettone|nespresso|capsulas?|cappuccino|jarabe|sirop)\b/i;
 const OBJETOS_RE =
-  /\b(jigger|coctelera|medidor para tragos|pourer|pico vertedor|dosificador|tazon|juego de copas|set de copas|spiegelau|schott|zwiesel|poker|naipes|libro|agenda|delantal|bolsa termica|conservadora|heladera|cava electrica|bombilla|visita guiada|masterclass|suscripcion|membresia)\b/i;
+  /\b(copas? (de )?agua|vasos? (de )?agua|jarra|jigger|coctelera|medidor para tragos|pourer|pico vertedor|dosificador|tazon|juego de copas|set de copas|spiegelau|schott|zwiesel|poker|naipes|libro|agenda|delantal|bolsa termica|conservadora|heladera|cava electrica|bombilla|visita guiada|masterclass|suscripcion|membresia)\b/i;
 const OBJETOS_HEAD_RE =
   /^(copa|copas|vaso|vasos|bandeja|balde|mate|cuchillos?(?!\s+de\s+palo)|tenedor(es)?|(pack \d+ )?miel)\b|^set\b(?=.*\b(accesorios?|piezas|elementos|sacacorchos?|cocteleria|aireador|pulltex)\b)|^juego\b(?=.*\b(copas?|vasos?|cubiertos|accesorios?)\b)/i;
 /**
@@ -237,6 +237,13 @@ const OBJETOS_HEAD_RE =
  */
 const WINE_PRODUCT_RE =
   /\b(malbec|cabernet|merlot|syrah|shiraz|bonarda|pinot|chardonnay|sauvignon|torrontes|tempranillo|tannat|petit verdot|semillon|viognier|riesling|champagne|champana|espumante|botellas?)\b/i;
+/**
+ * Bebidas sin alcohol y otros productos que se listan con la categoría
+ * ADELANTE ("Jugo Citric Naranja", "Agua Con Gas Orizon", "Petaca Peters
+ * De Menta", "COUS COUS R&C"). Anclado al inicio porque en un vino la
+ * palabra aparece en el medio: "Ojo de Agua Malbec", "Como Pez en el Agua".
+ */
+const BEBIDA_HEAD_RE = /^(pack\s+\d+\s+|lata\s+)?(jugos?|aguas?|acqua|petacas?|cous\s*cous|soda|sifon(es)?|gaseosas?|tomato\s+juice)\b/i;
 /** "W. THE ARRAN 10 AÑOS": algunas tiendas prefijan los whiskies con "W.". */
 const SPIRIT_PREFIX_RE = /^(min\.\s+)?w\.\s/i;
 const SPIRIT_BRAND2_RE =
@@ -249,7 +256,7 @@ export function isNonWineGroup(g: { canonicalName: string }): boolean {
   if (SPIRIT_BRAND_RE.test(n)) return true;
   if (SPIRIT_STYLE_RE.test(n)) return true;
   if (SIDRA_RE.test(n)) return true;
-  if (OBJETOS_HEAD_RE.test(n.trim()) || SPIRIT_PREFIX_RE.test(n.trim()) || SPIRIT_BRAND2_RE.test(n)) return true;
+  if (OBJETOS_HEAD_RE.test(n.trim()) || BEBIDA_HEAD_RE.test(n.trim()) || SPIRIT_PREFIX_RE.test(n.trim()) || SPIRIT_BRAND2_RE.test(n)) return true;
   if ((ALMACEN3_RE.test(n) || OBJETOS_RE.test(n)) && !WINE_PRODUCT_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;
   if (ALMACEN2_RE.test(n)) return true;
