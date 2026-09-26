@@ -1,15 +1,8 @@
 {
  "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta. NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-09-25T07:39:15.665Z",
- "count": 30,
+ "generatedAt": "2026-09-26T07:30:18.598Z",
+ "count": 34,
  "pairs": [
-  {
-   "ean": "7798159560232",
-   "gate": "tier/parcela",
-   "pMismo": 1,
-   "a": "Vino Argento Estate Reserve Malbec Organico 750cc",
-   "b": "Vino tinto Argento malbec organico est res 750 cc."
-  },
   {
    "ean": "5010327000176",
    "gate": "tier/parcela",
@@ -60,11 +53,18 @@
    "b": "The Macallan - Double Cask 18 Años X 700 cc"
   },
   {
-   "ean": "7792798004096",
+   "ean": "7790945006863",
+   "gate": "color",
+   "pMismo": 0.99,
+   "a": "Vino San Huberto Blanco Dulce Natural",
+   "b": "Vino blanco dule San Huberto natural 750 ml"
+  },
+  {
+   "ean": "7790717152019",
    "gate": "edicion",
    "pMismo": 0.99,
-   "a": "Vino Blasfemia Blanco Lata 269mlx1",
-   "b": "Vino blanco Blasfemia en lata 269 ml"
+   "a": "Vino Novecento Cabernet Sauvignon Botella 750mlx1",
+   "b": "Vino tinto Cabernet Sauvignon Novecento 750 ml"
   },
   {
    "ean": "7791670003738",
@@ -147,8 +147,8 @@
    "ean": "7798109156348",
    "gate": "varietal",
    "pMismo": 0.96,
-   "a": "Vino Fuego Negro Blend Petit Verdotmalbec",
-   "b": "Fuego Negro Petit Verdot - Malbec"
+   "a": "Fuego Negro Petit Verdot - Malbec",
+   "b": "Vino Fuego Negro Blend Petit Verdotmalbec"
   },
   {
    "ean": "7790975198750",
@@ -200,6 +200,20 @@
    "b": "Whisky Sir Edwards Smoky 700"
   },
   {
+   "ean": "7798123972511",
+   "gate": "color",
+   "pMismo": 0.93,
+   "a": "LAS PERDICES ICE MALBEC X 375",
+   "b": "Las Perdices Ice Malbec Rosé 375ml"
+  },
+  {
+   "ean": "7798074862343",
+   "gate": "tier/parcela",
+   "pMismo": 0.93,
+   "a": "Salentein Single Vineyard La Pampa Malbec",
+   "b": "Salentein - Single Vineyard La Pampa Malbec IG San Pablo"
+  },
+  {
    "ean": "8006063002632",
    "gate": "edicion",
    "pMismo": 0.91,
@@ -209,9 +223,23 @@
   {
    "ean": "7798074865399",
    "gate": "tier/parcela",
-   "pMismo": 0.9,
+   "pMismo": 0.91,
    "a": "SALENTEIN RVA PINOT NOIR",
-   "b": "Vino Tinto Pinot Noir 750 Ml Salentein"
+   "b": "Vino tinto Pinot Noir Salentein 750 ml"
+  },
+  {
+   "ean": "7798074865290",
+   "gate": "tier/parcela",
+   "pMismo": 0.91,
+   "a": "SALENTEIN RVA CORTE DE TINTAS",
+   "b": "Vino Tinto Corte De Tintas Salentein 750 ml"
+  },
+  {
+   "ean": "7798074865450",
+   "gate": "tier/parcela",
+   "pMismo": 0.9,
+   "a": "SALENTEIN RVA SAUVIGNON BLANC",
+   "b": "Vino blanco Sauvignon Blanc Salentein 750 ml"
   }
  ]
 }
