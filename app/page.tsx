@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { SearchInput } from "@/components/SearchInput";
-import Image from "next/image";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
@@ -664,20 +663,14 @@ export default async function Home() {
                       −{Math.round(d.dropPct * 100)}%
                     </span>
                     <div className="relative w-14 h-20 rounded overflow-hidden bg-snow border border-ink/10 shrink-0">
-                      {d.imageUrl ? (
-                        <Image
-                          src={d.imageUrl}
-                          alt={d.canonicalName}
-                          fill
-                          sizes="56px"
-                          className="object-contain"
-                        />
-                      ) : (
-                        <BottleFallback
-                          name={d.canonicalName}
-                          brand={d.brand}
-                        />
-                      )}
+                      <WineImage
+                        src={d.imageUrl}
+                        name={d.canonicalName}
+                        brand={d.brand}
+                        fill
+                        sizes="56px"
+                        className="object-contain"
+                      />
                     </div>
                   </div>
                   <p className="text-[10px] uppercase tracking-wide text-graphite truncate">
@@ -751,17 +744,14 @@ export default async function Home() {
                     className="postcard p-6 flex gap-5 items-start"
                   >
                     <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                      {g.imageUrl ? (
-                        <Image
-                          src={g.imageUrl}
-                          alt={g.canonicalName}
-                          fill
-                          sizes="96px"
-                          className="object-contain"
-                        />
-                      ) : (
-                        <BottleFallback name={g.canonicalName} brand={g.brand} />
-                      )}
+                      <WineImage
+                        src={g.imageUrl}
+                        name={g.canonicalName}
+                        brand={g.brand}
+                        fill
+                        sizes="96px"
+                        className="object-contain"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="inline-flex items-center gap-1.5 bg-malbec text-snow text-xs font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wide">

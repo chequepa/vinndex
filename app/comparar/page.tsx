@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { CompareRemoveButton } from "./CompareRemoveButton";
 import Link from "next/link";
 import {
@@ -120,18 +119,15 @@ function CompareCard({
       <CompareRemoveButton slug={g.groupSlug} allSlugs={allSlugs} />
 
       <div className="wine-thumb mx-auto mb-4 !w-24 !h-36">
-        {g.imageUrl ? (
-          <Image
-            src={g.imageUrl}
-            alt={g.canonicalName}
-            width={96}
-            height={144}
-            className="w-full h-full object-contain"
-            unoptimized
-          />
-        ) : (
-          <BottleFallback name={g.canonicalName} brand={g.brand} />
-        )}
+        <WineImage
+          src={g.imageUrl}
+          name={g.canonicalName}
+          brand={g.brand}
+          width={96}
+          height={144}
+          className="w-full h-full object-contain"
+          unoptimized
+        />
       </div>
 
       {g.brand && (

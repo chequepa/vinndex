@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { findFacetPage, formatArs, bodegaUrl } from "@/lib/snapshot";
 import { displayWineName } from "@/lib/displayWineName";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -234,17 +233,14 @@ function FacetLayout({
                   className="postcard p-5 flex gap-4"
                 >
                   <div className="relative w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="80px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="80px"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="display text-lg font-semibold text-ink leading-tight line-clamp-2 min-h-[2.5em]">
@@ -284,17 +280,14 @@ function FacetLayout({
                   className="bg-white rounded-2xl p-4 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="display text-sm font-semibold line-clamp-2 min-h-[2.5em] text-ink">
                     {displayWineName(g.canonicalName)}

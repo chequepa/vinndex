@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
 import { MobileFiltersDrawer } from "@/components/MobileFiltersDrawer";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -871,17 +870,14 @@ export default async function Buscar({ searchParams }: Params) {
                   >
                     <div className="flex gap-5">
                       <div className="relative w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                        {g.imageUrl ? (
-                          <Image
-                            src={g.imageUrl}
-                            alt={g.canonicalName}
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <BottleFallback name={g.canonicalName} brand={g.brand} />
-                        )}
+                        <WineImage
+                          src={g.imageUrl}
+                          name={g.canonicalName}
+                          brand={g.brand}
+                          fill
+                          sizes="64px"
+                          className="object-contain"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4 mb-1">

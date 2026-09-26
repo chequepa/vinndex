@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 import { formatArs, displayBrand } from "@/lib/snapshot";
 import type { ProductGroup } from "@/lib/matching";
@@ -37,17 +36,14 @@ export function SharedFavoritesView({ groups }: { groups: ProductGroup[] }) {
         <li key={g.groupSlug} className="postcard p-5">
           <Link href={`/vino/${g.groupSlug}`} className="block">
             <div className="wine-thumb mx-auto mb-4 !w-20 !h-32">
-              {g.imageUrl ? (
-                <Image
-                  src={g.imageUrl}
-                  alt={g.canonicalName}
-                  width={80}
-                  height={128}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <BottleFallback brand={g.brand} name={g.canonicalName} />
-              )}
+              <WineImage
+                src={g.imageUrl}
+                name={g.canonicalName}
+                brand={g.brand}
+                width={80}
+                height={128}
+                className="w-full h-full object-contain"
+              />
             </div>
             {g.brand && (
               <p className="text-xs uppercase tracking-wider text-graphite mb-1 truncate">

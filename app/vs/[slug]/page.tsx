@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { wineFullName } from "@/lib/wineNames";
 import {
   findGroup,
@@ -289,17 +288,14 @@ function Card({
       )}
 
       <div className="relative w-28 h-40 mx-auto mb-4 rounded-lg overflow-hidden bg-snow border border-ink/10">
-        {wine.imageUrl ? (
-          <Image
-            src={wine.imageUrl}
-            alt={wine.canonicalName}
-            fill
-            sizes="112px"
-            className="object-contain"
-          />
-        ) : (
-          <BottleFallback name={wine.canonicalName} brand={wine.brand} />
-        )}
+        <WineImage
+          src={wine.imageUrl}
+          name={wine.canonicalName}
+          brand={wine.brand}
+          fill
+          sizes="112px"
+          className="object-contain"
+        />
       </div>
 
       <p className="text-xs uppercase tracking-wide text-graphite truncate">

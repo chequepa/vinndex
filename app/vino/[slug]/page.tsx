@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
@@ -586,21 +585,15 @@ export default async function Vino({ params }: Params) {
               <div className="relative">
                 <div className="absolute inset-0 bg-snow/15 blur-2xl rounded-full" />
                 <div className="relative w-56 h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
-                  {group.imageUrl ? (
-                    <Image
-                      src={group.imageUrl}
-                      alt={group.canonicalName}
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 224px, 224px"
-                      className="object-contain"
-                    />
-                  ) : (
-                    <BottleFallback
-                      name={group.canonicalName}
-                      brand={group.brand}
-                    />
-                  )}
+                  <WineImage
+                    src={group.imageUrl}
+                    name={group.canonicalName}
+                    brand={group.brand}
+                    fill
+                    preload
+                    sizes="(max-width: 1024px) 224px, 224px"
+                    className="object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -1169,17 +1162,14 @@ export default async function Vino({ params }: Params) {
                   className="bg-white rounded-2xl p-5 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
-                    {r.imageUrl ? (
-                      <Image
-                        src={r.imageUrl}
-                        alt={r.canonicalName}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={r.canonicalName} brand={r.brand} />
-                    )}
+                    <WineImage
+                      src={r.imageUrl}
+                      name={r.canonicalName}
+                      brand={r.brand}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
                     {displayWineName(r.canonicalName)}

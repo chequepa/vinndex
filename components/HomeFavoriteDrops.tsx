@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useFavorites } from "./Favorites";
-import { BottleFallback } from "./BottleFallback";
+import { WineImage } from "./WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 
 type DropInfo = {
@@ -117,17 +116,14 @@ export function HomeFavoriteDrops() {
                     −{Math.round(d.dropPct * 100)}%
                   </span>
                   <div className="relative w-14 h-20 rounded overflow-hidden bg-snow border border-ink/10 shrink-0">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="56px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="56px"
+                      className="object-contain"
+                    />
                   </div>
                 </div>
                 <p className="text-[10px] uppercase tracking-wide text-graphite truncate">

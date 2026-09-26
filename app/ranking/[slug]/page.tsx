@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BottleFallback } from "@/components/BottleFallback";
+import { WineImage } from "@/components/WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 import { formatArs, displayBrand } from "@/lib/snapshot";
 import {
@@ -197,17 +196,14 @@ export default async function RankingPage({ params }: Params) {
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="relative w-16 h-24 bg-snow rounded-lg overflow-hidden">
-                    {g.imageUrl ? (
-                      <Image
-                        src={g.imageUrl}
-                        alt={g.canonicalName}
-                        fill
-                        sizes="64px"
-                        className="object-contain"
-                      />
-                    ) : (
-                      <BottleFallback name={g.canonicalName} brand={g.brand} />
-                    )}
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="64px"
+                      className="object-contain"
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs uppercase tracking-wide text-graphite truncate">
