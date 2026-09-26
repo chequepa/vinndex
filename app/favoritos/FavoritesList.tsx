@@ -234,7 +234,7 @@ export function FavoritesList() {
               <FavoriteButton
                 slug={g.groupSlug}
                 size={18}
-                className="absolute top-3 right-3 w-9 h-9 bg-snow hover:bg-snow/80 text-mustard"
+                className="absolute top-3 right-3 w-9 h-9 bg-snow hover:bg-snow/80 text-gold"
               />
               <Link href={`/vino/${g.groupSlug}`} className="block">
                 <div className="wine-thumb mx-auto mb-4 !w-20 !h-32">

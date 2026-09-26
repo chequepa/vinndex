@@ -152,7 +152,7 @@ export default function SobrePage() {
             <li>
               · Si sos dueño/a de una vinoteca y no querés aparecer, podés
               pedirlo en{" "}
-              <Link href="/opt-out" className="underline hover:text-mustard">
+              <Link href="/opt-out" className="underline hover:text-gold">
                 /opt-out
               </Link>
               .
