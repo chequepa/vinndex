@@ -129,6 +129,7 @@ bodega es parte de la clave del vino.
 | Ruido de formato: código de tienda "(77590)", "750mlx1", "Bot-0.75-lt.", "Extra-Brut", "Champaña" como línea | `lib-identity.mjs` | ediciones y líneas fantasma |
 | EAN con la añada pegada ("7794450090096-2023") cuenta como evidencia | `lib-ean.mjs` (`eanFromSku`) | 59 fichas fuera de la evidencia de código de barras |
 | Jev también juzga dos entradas distintas del catálogo (≥0,95, sin gate) y levanta gates de nivel/paraje, edición o color (≥0,97); siempre con EAN en 2+ tiendas | `lib-jev.mjs` | catálogo con el mismo vino dos veces; "Perdenal", "Cap I", "Norton Ct" |
+| Jev sobre pares SIN código de barras: misma bodega, varietal, color, dulzor, parajes y ediciones, línea de uno contenida en la del otro y sin gate (~1.550 candidatos); ≥0,95 fusiona, un "distinto" explícito veta cualquier cadena que junte esas fichas, y si >60 % sale "mismo" no se fusiona nada | `build-groups-v2.mjs` (jev por nombre) | "Wapisa Malbec" / "Wapisa Malbec de la Patagonia" sin tocar "Lagarde Malbec" / "Lagarde Guarda Malbec" |
 | Un slug del registro sigue a su contenido: si sus ofertas de ayer hoy están mayormente en otra ficha, la URL queda libre y redirige | registro de slugs | al separar una quimera, la URL quedaba en la mitad chica |
 | Las corridas en shadow leen la caché de Jev (sin escribirla) | `lib-jev.mjs` (`persist`) | medir en local lo mismo que producción |
 

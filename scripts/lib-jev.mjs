@@ -50,6 +50,16 @@ export const JEV_CATALOG_MIN = 0.95;
 // levantan nunca: ahí el nombre dice otro producto.
 export const JEV_GATE_OVERRIDE_MIN = 0.97;
 export const JEV_OVERRIDABLE_GATES = new Set(["tier/parcela", "edicion", "color"]);
+// Pares SIN código de barras compartido: misma bodega, varietal, color,
+// dulzor, parajes y ediciones, y la línea de uno contenida en la del otro
+// ("La Contienda Malbec" / "La Contienda Malbec Uco Valley", pero también
+// "Lagarde Malbec" / "Lagarde Guarda Malbec"). Sin el código como segunda
+// señal, la vara es la de catálogo y nunca contra un gate.
+export const JEV_NAME_MIN = 0.95;
+// Circuit breaker del paso por nombre: si Jev da "mismo" a más de esta
+// fracción de los candidatos juzgados, algo cambió (modelo, prompt, datos)
+// y no se fusiona nada en esa corrida.
+export const JEV_NAME_MAX_SHARE = 0.6;
 // Circuit breaker: la evaluación dio ~130 fusiones posibles sobre 821 pares.
 // Si una corrida quiere fusionar muchas más, algo cambió (el modelo, el
 // prompt, los datos) y es preferible no fusionar nada y avisar.

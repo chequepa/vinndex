@@ -51,7 +51,7 @@ import { dropResolved } from "./lib-carryover.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { eanFromSku } from "./lib-ean.mjs";
 import { buildTypoMap, applyTypoMap } from "./lib-typos.mjs";
-import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN } from "./lib-jev.mjs";
+import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN, JEV_NAME_MIN, JEV_NAME_MAX_SHARE } from "./lib-jev.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
 // que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
@@ -1061,6 +1061,82 @@ async function main() {
         ),
       );
     }
+  }
+
+  // ── Jev sobre nombres contenidos, sin código de barras ──
+  // Bloque: fichas sin catálogo con la misma bodega, varietal, color,
+  // dulzor, parajes y ediciones (la clave de fallback sin la línea). Par
+  // candidato: la línea de una contenida en la de la otra y sin gate duro.
+  // Lo típico es ruido de tienda ("Altaland Merlot 750cc Bodega Casa
+  // Pirques", "Wapisa Malbec de la Patagonia"); lo peligroso, una línea más
+  // alta de la misma bodega ("Lagarde Guarda Malbec"). Jev decide con la
+  // vara de catálogo (lib-jev.mjs: JEV_NAME_MIN) y las cadenas se validan:
+  // dos fichas no se juntan si Jev ya dijo que algún par entre ellas es
+  // distinto, aunque un tercero las conecte.
+  {
+    const canon = (g) => pickCanonicalName(g.offers);
+    const blocks = new Map();
+    for (const key of groups.keys()) {
+      if (!key.startsWith("fb|")) continue;
+      const pz = key.slice(3).split("|");
+      if (!pz[0] || !pz[2]) continue; // sin bodega o sin varietal no hay bloque confiable
+      const bk = [pz[0], pz[2], pz[3], pz[4], pz[5], pz[6]].join("|");
+      if (!blocks.has(bk)) blocks.set(bk, []);
+      blocks.get(bk).push(key);
+    }
+    const cands = [];
+    for (const keys of blocks.values()) {
+      if (keys.length < 2 || keys.length > 12) continue;
+      for (let i = 0; i < keys.length; i++) {
+        for (let j = i + 1; j < keys.length; j++) {
+          const an = canon(groups.get(keys[i])), bn = canon(groups.get(keys[j]));
+          if (lineRelation(an, bn) !== "subset") continue;
+          if (hardConflict({ canonicalName: an }, { canonicalName: bn })) continue;
+          cands.push({ a: keys[i], b: keys[j], an, bn });
+        }
+      }
+    }
+    const { verdicts, stats } = await adjudicatePairs(
+      cands.map((c) => [c.an, c.bn]),
+      { apiKey: process.env.TYPESAFE_API_KEY, cachePath: JEV_CACHE_PATH, persist: PUBLISH },
+    );
+    const pOf = (c) => verdicts.get(pairKey(c.an, c.bn))?.pMismo;
+    const judged = cands.filter((c) => typeof pOf(c) === "number");
+    const yes = judged.filter((c) => pOf(c) >= JEV_NAME_MIN).sort((x, y) => pOf(y) - pOf(x));
+    const tripped = judged.length >= 20 && yes.length > JEV_NAME_MAX_SHARE * judged.length;
+    // "distinto" explícito entre dos fichas: veta cualquier cadena que las junte.
+    const distinct = new Set();
+    for (const c of judged) if (pOf(c) < 0.5) distinct.add(`${c.a}\u0000${c.b}`).add(`${c.b}\u0000${c.a}`);
+    const members = new Map(); // clave viva → Set(claves originales absorbidas)
+    const liveOf = new Map(); // clave original → clave viva
+    const find = (k) => { let x = k; while (liveOf.has(x) && liveOf.get(x) !== x) x = liveOf.get(x); return x; };
+    let nameMerges = 0, vetoed = 0;
+    if (!tripped) {
+      for (const c of yes) {
+        const ra = find(c.a), rb = find(c.b);
+        if (ra === rb || !groups.has(ra) || !groups.has(rb)) continue;
+        const ma = members.get(ra) ?? new Set([ra]);
+        const mb = members.get(rb) ?? new Set([rb]);
+        let bad = false;
+        for (const x of ma) for (const y of mb) if (distinct.has(`${x}\u0000${y}`)) bad = true;
+        const [ta, tb] = [groups.get(ra), groups.get(rb)];
+        if (bad || hardConflict({ canonicalName: canon(ta) }, { canonicalName: canon(tb) })) { vetoed++; continue; }
+        const [dst, src] = ta.offers.length >= tb.offers.length ? [ra, rb] : [rb, ra];
+        groups.get(dst).offers.push(...groups.get(src).offers);
+        groups.delete(src);
+        const merged = new Set([...ma, ...mb]);
+        members.set(dst, merged);
+        members.delete(src);
+        liveOf.set(src, dst);
+        nameMerges++;
+      }
+    }
+    console.log(
+      `  jev por nombre: ${cands.length} candidatos · ${stats.enCache} en caché · ${stats.consultados} consultados · ` +
+        `${yes.length} "mismo" ≥${JEV_NAME_MIN} · ${nameMerges} fusiones · ${vetoed} vetadas por cadena` +
+        (stats.sinClave ? " · SIN TYPESAFE_API_KEY (sólo caché)" : "") +
+        (tripped ? ` · CIRCUIT BREAKER: > ${Math.round(JEV_NAME_MAX_SHARE * 100)}% "mismo", no fusiona` : ""),
+    );
   }
 
   // ── Slugs: preservar el slug v1 dominante ──
