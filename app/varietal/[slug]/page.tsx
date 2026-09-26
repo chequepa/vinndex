@@ -22,13 +22,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const p = findFacetPage("varietal", slug);
   if (!p) return { title: "Varietal no encontrado · Vinndex" };
+  // "Malbec precio", "vinos malbec": el título dice qué es (vinos +
+  // varietal), el dato (cuántos) y dónde (vinotecas online).
+  const nf = new Intl.NumberFormat("es-AR");
   return {
-    title: `${p.name} · ${p.groupCount} etiquetas comparadas | Vinndex`,
-    description: `Precios de ${p.name} en ${p.storeCount} vinotecas online de Argentina. ${p.groupCount} etiquetas relevadas.`,
+    title: `Vinos ${p.name}: precios de ${nf.format(p.groupCount)} etiquetas en ${p.storeCount} vinotecas | Vinndex`,
+    description: `Compará precios de ${nf.format(p.groupCount)} vinos ${p.name} en ${p.storeCount} vinotecas online de Argentina. Los más comparados, del más barato al más caro, actualizados a diario.`,
     alternates: {
       canonical: `https://vinndex.com.ar/varietal/${slug}`,
     },
     openGraph: {
+      url: `https://vinndex.com.ar/varietal/${slug}`,
       title: `${p.name} · Vinndex`,
       description: `${p.groupCount} etiquetas de ${p.name} en ${p.storeCount} vinotecas`,
       type: "website",

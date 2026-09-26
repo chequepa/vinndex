@@ -15,13 +15,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const p = findFacetPage("region", slug);
   if (!p) return { title: "Región no encontrada · Vinndex" };
+  const nf = new Intl.NumberFormat("es-AR");
   return {
-    title: `Vinos de ${p.name} · ${p.groupCount} etiquetas | Vinndex`,
-    description: `Precios de vinos de ${p.name} en ${p.storeCount} vinotecas online de Argentina.`,
+    title: `Vinos de ${p.name}: precios de ${nf.format(p.groupCount)} etiquetas en ${p.storeCount} vinotecas | Vinndex`,
+    description: `Compará precios de ${nf.format(p.groupCount)} vinos de ${p.name} en ${p.storeCount} vinotecas online de Argentina. Bodegas, varietales y los más comparados, actualizados a diario.`,
     alternates: {
       canonical: `https://vinndex.com.ar/region/${slug}`,
     },
     openGraph: {
+      url: `https://vinndex.com.ar/region/${slug}`,
       title: `Vinos de ${p.name} · Vinndex`,
       description: `${p.groupCount} etiquetas de ${p.name} en ${p.storeCount} vinotecas`,
       type: "website",

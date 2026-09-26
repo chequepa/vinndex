@@ -20,6 +20,17 @@ import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
 
+/** Precio más bajo con stock entre los vinos rastreables de la bodega. */
+function bodegaMinPrice(slug: string): number | null {
+  let min: number | null = null;
+  for (const g of brandCrawlTargets(slug)) {
+    if (g.minPrice != null && g.minPrice > 0 && (min == null || g.minPrice < min)) {
+      min = g.minPrice;
+    }
+  }
+  return min;
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const b = findBrandPage(slug);
@@ -32,9 +43,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // isJunkSlug = misparse de marca (numéricos "1615", facetas "coleccion-privada"):
   // título sin sentido, noindex como las thin. Espejo de /vino/[slug].
   const isThin = b.storeCount < 2 || isJunkSlug(b.slug);
+  // "Vinos X" + "precios" es como se busca una bodega para comprar
+  // ("vinos rutini precios", "rutini precio"). El título viejo
+  // ("Rutini · 327 vinos en 59 vinotecas") no decía ninguna de las dos.
+  const nf = new Intl.NumberFormat("es-AR");
+  const minPrice = bodegaMinPrice(b.slug);
   return {
-    title: `${b.name} · ${b.groupCount} vinos en ${b.storeCount} vinotecas | Vinndex`,
-    description: `Compará precios de ${b.name}. ${b.groupCount} etiquetas relevadas en ${b.storeCount} vinotecas online de Argentina.`,
+    title: `Vinos ${b.name}: precios en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online | Vinndex`,
+    description: `Precios de ${nf.format(b.groupCount)} vinos de ${b.name} comparados en ${b.storeCount} vinoteca${b.storeCount === 1 ? "" : "s"} online de Argentina${
+      minPrice != null ? `, desde ${formatArs(minPrice)}` : ""
+    }. Encontrá dónde comprar cada etiqueta al mejor precio, actualizado a diario.`,
     alternates: {
       canonical: `https://vinndex.com.ar/bodega/${slug}`,
     },
