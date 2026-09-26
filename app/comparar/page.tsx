@@ -66,8 +66,8 @@ export default async function Comparar({ searchParams }: Params) {
                 : `Comparando ${groups.length} vinos`}
           </h1>
           <p className="text-graphite mt-3 max-w-xl">
-            Tocá la estrella de comparar en cualquier ficha. Hasta 4 vinos a la
-            vez. La lista queda en tu dispositivo.
+            Tocá &ldquo;Comparar&rdquo; en cualquier ficha de vino. Hasta 4
+            vinos a la vez. La lista queda en tu dispositivo.
           </p>
         </header>
 

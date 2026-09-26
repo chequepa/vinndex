@@ -137,7 +137,7 @@ export default function ComoFuncionaPage() {
               </p>
               <ul className="space-y-2 text-sm text-ink/80 leading-relaxed ml-4 list-disc">
                 <li>
-                  <strong>Título limpio:</strong> sacamos del nombre la
+                  <strong>Título limpio:</strong>{" "}sacamos del nombre la
                   puntuación de iniciales, el volumen, el pack, la añada,
                   el estuche y las muletillas de retail (&ldquo;Vino
                   Tinto&rdquo;, &ldquo;750 Cc&rdquo;, el nombre de la
@@ -147,7 +147,7 @@ export default function ComoFuncionaPage() {
                   que vive adentro de la ficha y no compite en el precio.
                 </li>
                 <li>
-                  <strong>Diccionario de bodegas y líneas:</strong> sabemos
+                  <strong>Diccionario de bodegas y líneas:</strong>{" "}sabemos
                   que &ldquo;DV Catena&rdquo;, &ldquo;Saint Felicien&rdquo;
                   y &ldquo;Nicasia&rdquo; son líneas de Catena Zapata, o
                   que &ldquo;Trumpeter&rdquo; es de Rutini. Con eso
@@ -164,7 +164,7 @@ export default function ComoFuncionaPage() {
                   por esa misma identidad estructurada.
                 </li>
                 <li>
-                  <strong>Código de barras (EAN):</strong> si dos fichas
+                  <strong>Código de barras (EAN):</strong>{" "}si dos fichas
                   comparten un GTIN cargado por dos o más vinotecas y no
                   hay conflicto de identidad (color, volumen, varietal,
                   paraje), se fusionan. Nunca fusionamos por parecido de

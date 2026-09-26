@@ -173,7 +173,7 @@ export default async function BodegasIndex({ searchParams }: Params) {
         <div className="overflow-x-auto -mx-4 lg:mx-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wider text-graphite border-b border-ink/10">
+              <tr className="text-left text-[11px] sm:text-xs uppercase tracking-wide sm:tracking-wider text-graphite border-b border-ink/10">
                 <th className="py-2 px-4 font-semibold">Bodega</th>
                 <th className="py-2 px-2 font-semibold text-right whitespace-nowrap">
                   Vinos
@@ -181,8 +181,11 @@ export default async function BodegasIndex({ searchParams }: Params) {
                 <th className="py-2 px-2 font-semibold text-right whitespace-nowrap">
                   Vinotecas
                 </th>
-                <th className="py-2 px-2 font-semibold text-right whitespace-nowrap">
-                  Precio prom.
+                {/* En 390px "PRECIO PROM." empujaba la tabla a 409px y la
+                    última columna quedaba cortada contra el borde. */}
+                <th className="py-2 pl-2 pr-4 md:pr-2 font-semibold text-right whitespace-nowrap">
+                  <span className="sm:hidden" aria-hidden="true">Precio</span>
+                  <span className="sr-only sm:not-sr-only">Precio prom.</span>
                 </th>
                 <th className="py-2 px-4 font-semibold hidden md:table-cell">
                   Regiones
@@ -212,7 +215,7 @@ export default async function BodegasIndex({ searchParams }: Params) {
                     <td className="py-2.5 px-2 text-right tabular-nums text-ink">
                       {p.storeCount.toLocaleString("es-AR")}
                     </td>
-                    <td className="py-2.5 px-2 text-right tabular-nums text-ink">
+                    <td className="py-2.5 pl-2 pr-4 md:pr-2 text-right tabular-nums text-ink whitespace-nowrap">
                       {avg !== null && avg !== undefined
                         ? `$${avg.toLocaleString("es-AR")}`
                         : "—"}
