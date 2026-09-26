@@ -46,13 +46,13 @@ export function SiteFooter() {
             <h3 className="display text-snow font-semibold mb-4">Catálogo</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/buscar?varietal=malbec" className="hover:text-snow">
+                <Link href="/varietal/malbec" className="hover:text-snow">
                   Malbec
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/buscar?varietal=cabernet-sauvignon"
+                  href="/varietal/cabernet-sauvignon"
                   className="hover:text-snow"
                 >
                   Cabernet Sauvignon
@@ -60,14 +60,14 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/buscar?varietal=chardonnay"
+                  href="/varietal/chardonnay"
                   className="hover:text-snow"
                 >
                   Chardonnay
                 </Link>
               </li>
               <li>
-                <Link href="/buscar?varietal=bonarda" className="hover:text-snow">
+                <Link href="/varietal/bonarda" className="hover:text-snow">
                   Bonarda
                 </Link>
               </li>

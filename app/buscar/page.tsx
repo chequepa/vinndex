@@ -99,14 +99,25 @@ export async function generateMetadata({
   searchParams,
 }: Params): Promise<Metadata> {
   const params = await searchParams;
-  const page = parsePage(params.page);
+  // Sólo /buscar pelado es indexable. Cualquier variante con parámetros
+  // (q, filtros, orden, página) es un resultado de búsqueda interna: un
+  // espacio de URLs infinito (q × varietal × tipo × región × precio ×
+  // orden × página) con contenido que se superpone a /varietal, /region,
+  // /bodega y /ranking, que son los landings que sí queremos rankear.
+  // Antes /buscar?q=malbec salía "index, follow" con canonical a /buscar:
+  // dos señales contradictorias, y Google termina eligiendo él. noindex +
+  // follow: las fichas enlazadas se siguen descubriendo.
+  const hasParams = Object.values(params).some(
+    (v) => typeof v === "string" && v.trim() !== "",
+  );
   return {
     title: "Buscar vinos argentinos por precio · Vinndex",
     description:
       "Compará precios de vinos argentinos en 100+ vinotecas online. Filtrá por varietal, región, bodega o precio. Ordenados por mejor oferta del día.",
     alternates: { canonical: "https://vinndex.com.ar/buscar" },
-    robots:
-      page > 1 ? { index: false, follow: true } : { index: true, follow: true },
+    robots: hasParams
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   };
 }
 
