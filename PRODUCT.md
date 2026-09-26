@@ -66,4 +66,4 @@ Voz: directa, cálida, técnicamente honesta. Cuando algo es complejo (matching 
 - **Voseo y es-AR**: lang attribute, accesible a screen readers en castellano rioplatense.
 - **Aria-labels en inputs**: SearchInput deriva aria-label desde placeholder cuando el caller no lo provee.
 - **Reducción de glassmorphism decorativo**: limitado a contextos justificados (chips sobre gradient hero, info-box sobre ficha hero). Sobre cream, los chips son sólidos para no entorpecer a usuarios con baja agudeza visual.
-- **Reduced-motion**: la única animación always-on es `.float` (sol del hero). El resto son transiciones de estado (hover, focus). Aún así, falta un `@media (prefers-reduced-motion)` que desactive el float para usuarios sensibles — TODO conocido.
+- **Reduced-motion**: la única animación always-on es `.float` (sol del hero). El resto son transiciones de estado (hover, focus). Con `prefers-reduced-motion: reduce` el float y los saltos de hover de postcards/chips se desactivan (globals.css).
