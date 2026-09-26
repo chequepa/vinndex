@@ -23,7 +23,9 @@ import {
 import { POST_SLUGS, type PostMeta } from "@/content/blog/posts";
 import { RANKINGS } from "@/lib/rankings";
 import { readVsPairs } from "@/lib/vsPairs";
-import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
+import { isJunkSlug } from "@/lib/junkSlugs";
+import { isCrawlTargetWine } from "@/lib/internalLinks";
+import { getPriceHistory } from "@/lib/priceHistory";
 
 export const SITE = "https://vinndex.com.ar";
 
@@ -47,23 +49,20 @@ function eligibleWineGroups() {
   // Filtro + orden alfabético estable: cada vino siempre cae en el mismo
   // bucket entre runs (el snapshot reordena por storeCount cada
   // daily-scrape, lo que rompería el chunking si no ordenáramos).
+  // La regla vive en lib/internalLinks.ts (isCrawlTargetWine) porque el
+  // enlazado interno usa exactamente el mismo conjunto:
+  //   · con imagen;
+  //   · no-vino (espirituosas/cerveza), bundles/gift y venta por copa
+  //     llevan noindex en la ficha → tampoco van al sitemap (señal
+  //     consistente para Google; aviso GSC 2026-07-03);
+  //   · al menos una oferta con stock. Las fichas sin stock (8.272 al
+  //     29/07, todas `minPrice: null`) NO llevan noindex — si Google ya
+  //     las tiene o alguien las linkea, que sigan sirviendo — pero
+  //     tampoco le pedimos que las visite: las reportaba como "soft 404"
+  //     o "crawled - currently not indexed" (13.146 en GSC al 29/07).
+  //     Vuelven solas al sitemap en cuanto una tienda repone.
   return groups
-    .filter((g) => g.imageUrl !== null)
-    // No-vino (espirituosas/cerveza), bundles/gift y venta por copa
-    // llevan noindex en la ficha → tampoco van al sitemap (señal
-    // consistente para Google; aviso GSC 2026-07-03).
-    .filter((g) => !isJunkWineGroup(g))
-    // Fichas sin una sola oferta con stock: no hay precio que mostrar ni
-    // nada que comparar. Hoy son 8.272 (21% de las elegibles) y todas
-    // tienen `minPrice: null` y una sola tienda — la página existe pero
-    // no dice nada. Pedirle a Google que las rastree gasta crawl budget
-    // en URLs que después reporta como "soft 404" o "crawled - currently
-    // not indexed" (13.146 entre las dos en GSC al 29/07).
-    //
-    // NO llevan noindex: si Google ya las tiene o alguien las linkea,
-    // que sigan sirviendo. Lo que dejamos de hacer es *pedirle* que las
-    // visite. Vuelven solas al sitemap en cuanto una tienda repone.
-    .filter((g) => g.offers?.some((o) => o.inStock))
+    .filter(isCrawlTargetWine)
     .slice()
     .sort((a, b) => a.groupSlug.localeCompare(b.groupSlug));
 }
@@ -86,6 +85,31 @@ export function listBuckets(): string[] {
     "blog",
     ...Array.from({ length: wines }, (_, i) => `vinos-${i + 1}`),
   ];
+}
+
+/**
+ * `lastmod` real de una ficha: el último día en que cambió lo que el
+ * <title> y el hero publican (precio mínimo o cantidad de vinotecas),
+ * según data/price-history.json (30 días, sólo fichas multi-tienda).
+ *
+ * Antes TODAS las URLs declaraban la hora del snapshot de hoy. Google
+ * usa `lastmod` sólo si es "consistente y verificablemente preciso"; un
+ * sitemap que dice que 21.609 páginas cambiaron hoy, todos los días, le
+ * enseña a ignorar el campo. Sin historial (single-store) se omite: es
+ * preferible no decir nada a decir algo falso.
+ */
+function wineLastModified(slug: string): Date | undefined {
+  const series = getPriceHistory(slug);
+  if (series.length === 0) return undefined;
+  let last = series[0].date;
+  for (let i = 1; i < series.length; i++) {
+    const prev = series[i - 1];
+    const cur = series[i];
+    if (cur.min !== prev.min || cur.stores !== prev.stores) last = cur.date;
+  }
+  // Fecha del scrape en hora argentina (el daily-scrape corre ~03:00 ART).
+  const d = new Date(`${last}T03:00:00-03:00`);
+  return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
 function winePriority(storeCount: number): number {
@@ -120,7 +144,7 @@ export async function entriesForBucket(
       // que el caso "sin stock → priority 0.2" ya no existe.
       return {
         url: `${SITE}/vino/${g.groupSlug}`,
-        lastModified: generatedAt,
+        lastModified: wineLastModified(g.groupSlug),
         changeFrequency: "daily" as const,
         priority: winePriority(g.storeCount),
       };
@@ -129,25 +153,27 @@ export async function entriesForBucket(
 
   switch (id) {
     case "static":
+      // Las páginas institucionales (/sobre, /preguntas…) no cambian con
+      // el scrape: sin `lastmod` en vez de "hoy" todos los días.
       return [
         { url: `${SITE}/`, lastModified: generatedAt, changeFrequency: "daily", priority: 1.0 },
         { url: `${SITE}/buscar`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.9 },
         // `/buscar?multi=1` removido (aviso GSC 2026-07-03): su canonical
         // apunta a /buscar, así que ponerla en el sitemap generaba
         // "Alternate page with proper canonical tag" — señal contradictoria.
-        { url: `${SITE}/sobre`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
-        { url: `${SITE}/como-funciona`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
-        { url: `${SITE}/preguntas`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.6 },
-        { url: `${SITE}/sumate`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.4 },
+        { url: `${SITE}/sobre`, changeFrequency: "monthly", priority: 0.5 },
+        { url: `${SITE}/como-funciona`, changeFrequency: "monthly", priority: 0.5 },
+        { url: `${SITE}/preguntas`, changeFrequency: "monthly", priority: 0.6 },
+        { url: `${SITE}/sumate`, changeFrequency: "monthly", priority: 0.4 },
         // `/opt-out` removido del sitemap (audit 22/05): form para
         // vinotecas que piden ser excluidas; no debe rankear.
-        { url: `${SITE}/contacto`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.4 },
+        { url: `${SITE}/contacto`, changeFrequency: "monthly", priority: 0.4 },
         { url: `${SITE}/blog`, lastModified: generatedAt, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE}/ranking`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.8 },
         { url: `${SITE}/bodegas`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/explorar`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/data`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
-        { url: `${SITE}/developers`, lastModified: generatedAt, changeFrequency: "monthly", priority: 0.5 },
+        { url: `${SITE}/developers`, changeFrequency: "monthly", priority: 0.5 },
       ];
 
     case "rankings":
