@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { notFound, permanentRedirect } from "next/navigation";
-import { SearchInput } from "@/components/SearchInput";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { FavoriteButton, FavoritesNavLink } from "@/components/Favorites";
+import { FavoriteButton } from "@/components/Favorites";
 import { WineImage } from "@/components/WineImage";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
@@ -13,7 +13,7 @@ import { PriceLadder } from "@/components/PriceLadder";
 import { getScoresForSlug, formatScore } from "@/lib/scores";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { displayWineName } from "@/lib/displayWineName";
-import { extractVintage } from "@/lib/matching";
+import { extractVintage, type ProductOffer } from "@/lib/matching";
 import Link from "next/link";
 import {
   findGroup,
@@ -165,11 +165,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-function ExternalIcon() {
+function ExternalIcon({ size = 14 }: { size?: number }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width={size}
+      height={size}
+      aria-hidden="true"
       viewBox="0 0 14 14"
       fill="none"
       stroke="currentColor"
@@ -229,6 +230,221 @@ function prettyOfferName(name: string, brand: string | null): string {
   return s;
 }
 
+function Chevron({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+/**
+ * Fila de la tabla de precios. Toda la fila es el link a la vinoteca
+ * (target de toque grande en mobile, mismo contrato `nofollow` que antes).
+ *
+ * Mobile: una sola fila compacta · logo + vinoteca + nombre de la oferta a
+ * la izquierda, precio y diferencia a la derecha. Antes cada oferta era una
+ * tarjeta de ~220px con "Precio:" / "Diferencia:" / botón a lo ancho, y el
+ * SKU largo sin cortar empujaba el botón fuera de la tarjeta.
+ * Desktop (md+): la grilla de 4 columnas de siempre, con la píldora
+ * "Visitar" como affordance visual.
+ */
+function OfferRow({
+  offer,
+  brand,
+  bestOffer,
+  variant = "bottle",
+  highlightBest = true,
+}: {
+  offer: ProductOffer;
+  brand: string | null;
+  bestOffer?: ProductOffer;
+  variant?: "bottle" | "format";
+  /** Con una sola oferta con stock, "mejor precio" no compara nada. */
+  highlightBest?: boolean;
+}) {
+  const sname = storeName(offer.storeSlug);
+  const outOfStock = !offer.inStock;
+  const isBest =
+    highlightBest &&
+    variant === "bottle" &&
+    offer === bestOffer &&
+    offer.inStock;
+  const diffPct =
+    variant === "bottle" &&
+    bestOffer &&
+    offer.priceArs != null &&
+    bestOffer.priceArs != null &&
+    bestOffer.priceArs > 0 &&
+    offer.priceArs > bestOffer.priceArs
+      ? Math.round(
+          ((offer.priceArs - bestOffer.priceArs) / bestOffer.priceArs) * 100,
+        )
+      : null;
+  const vintage = extractVintage(offer.name);
+  const formatLabel = variant === "format" ? offerVariantLabel(offer) : null;
+  // En cajas, el precio por botella es lo único que permite comparar
+  // contra la tabla de arriba.
+  const perBottle =
+    variant === "format" &&
+    offer.priceArs != null &&
+    (offer.pack ?? 0) > 1 &&
+    !offer.priceSuspect
+      ? Math.round(offer.priceArs / (offer.pack as number))
+      : null;
+
+  const badge =
+    "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap";
+  const priceText =
+    variant === "format"
+      ? "text-ink"
+      : outOfStock
+        ? "text-graphite"
+        : "text-cobalt";
+
+  const ariaLabel = [
+    `${sname}: ${formatArs(offer.priceArs)}`,
+    formatLabel ?? null,
+    isBest ? "mejor precio" : null,
+    diffPct != null ? `${diffPct}% más caro que el mejor precio` : null,
+    outOfStock ? "sin stock" : null,
+    "abre la vinoteca en otra pestaña",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <a
+      href={offer.externalUrl}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      aria-label={ariaLabel}
+      title={offer.name}
+      className={`price-row group cursor-wine grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-x-3 md:gap-4 items-center px-4 md:px-5 py-3 md:py-4 border-b border-ink/5 last:border-b-0 ${
+        isBest ? "best" : ""
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className={`store-logo ${outOfStock ? "grayscale opacity-60" : ""}`}
+          style={{ background: colorForStore(offer.storeSlug) }}
+          aria-hidden="true"
+        >
+          {storeInitials(sname)}
+        </div>
+        <div className="min-w-0">
+          <div
+            className={`font-semibold leading-snug truncate ${
+              outOfStock ? "text-graphite" : "text-ink"
+            }`}
+          >
+            {sname}
+          </div>
+          {(isBest || outOfStock || offer.isCollector || vintage || formatLabel) && (
+            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+              {isBest && (
+                <span className={`${badge} bg-mustard/35 text-ink`}>
+                  ★ Mejor precio
+                </span>
+              )}
+              {formatLabel && (
+                <span
+                  className={`${badge} bg-cobalt/10 text-cobalt`}
+                  title={
+                    offer.priceSuspect
+                      ? "El precio no parece corresponder al formato: confirmalo en la vinoteca."
+                      : undefined
+                  }
+                >
+                  {formatLabel}
+                </span>
+              )}
+              {outOfStock && (
+                <span className={`${badge} bg-ink/10 text-graphite`}>
+                  Sin stock
+                </span>
+              )}
+              {offer.isCollector && (
+                <span
+                  className={`${badge} bg-malbec/15 text-malbec`}
+                  title="Cosecha vieja · precio de colección, no comparable con el precio actual"
+                >
+                  Colección
+                </span>
+              )}
+              {vintage && (
+                <span className={`${badge} bg-cobalt/10 text-cobalt`}>
+                  Cosecha {vintage}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="text-xs text-graphite truncate mt-0.5">
+            {prettyOfferName(offer.name, brand)}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-right md:text-center">
+        <div
+          className={`display text-xl md:text-2xl font-semibold tabular-nums leading-tight whitespace-nowrap ${priceText}`}
+        >
+          {formatArs(offer.priceArs)}
+        </div>
+        {perBottle != null && (
+          <div className="text-[11px] text-graphite tabular-nums whitespace-nowrap">
+            {formatArs(perBottle)} c/botella
+          </div>
+        )}
+        {variant === "bottle" && (
+          <div className="md:hidden flex items-center justify-end gap-1 text-xs text-graphite tabular-nums whitespace-nowrap mt-0.5">
+            {isBest ? "el más barato" : diffPct != null ? `+${diffPct}%` : null}
+            <ExternalIcon size={11} />
+          </div>
+        )}
+      </div>
+
+      {variant === "bottle" ? (
+        <div className="hidden md:block text-center text-sm tabular-nums">
+          {isBest ? (
+            <span className="text-graphite">—</span>
+          ) : diffPct != null ? (
+            <span className="text-ink">+{diffPct}%</span>
+          ) : (
+            <span className="text-graphite">—</span>
+          )}
+        </div>
+      ) : (
+        <div className="hidden md:block" />
+      )}
+
+      <span
+        aria-hidden="true"
+        className={`hidden md:inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+          isBest
+            ? "bg-cobalt text-snow group-hover:bg-ink"
+            : outOfStock
+              ? "border border-ink/15 text-graphite group-hover:border-ink/30"
+              : "border border-ink/20 text-ink group-hover:border-cobalt group-hover:text-cobalt"
+        }`}
+      >
+        {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
+      </span>
+    </a>
+  );
+}
+
 export default async function Vino({ params }: Params) {
   const { slug } = await params;
   const group = findGroup(slug);
@@ -267,6 +483,23 @@ export default async function Vino({ params }: Params) {
   const inStockOffers = offers.filter((o) => o.inStock);
   const allOutOfStock = inStockOffers.length === 0;
   const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
+  // La tabla principal muestra sólo lo comprable hoy; las vinotecas sin
+  // stock van a un desplegable abajo (antes eran 1/3 de la tabla, en gris
+  // al 50% de opacidad, ilegibles). Si TODAS están sin stock no hay nada
+  // que esconder: se listan todas.
+  const mainOffers = allOutOfStock ? offers : inStockOffers;
+  const hiddenOutOfStock = allOutOfStock
+    ? []
+    : offers.filter((o) => !o.inStock);
+  // Resumen de "otros formatos" para el summary del desplegable.
+  const formatKinds = [
+    ...new Set(
+      caseOffersAll
+        .map((o) => offerVariantLabel(o))
+        .filter((l): l is string => !!l && l !== "Precio a verificar"),
+    ),
+  ].slice(0, 4);
+  if (formatKinds.length === 0) formatKinds.push("Cajas y otros envases");
 
   // Ladder dataset: solo botellas con stock real y precio válido. Las
   // cosechas de colección quedan fuera del ladder (distorsionan la escala)
@@ -496,58 +729,11 @@ export default async function Vino({ params }: Params) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Vinndex · inicio"
-            className="flex items-center gap-2 shrink-0 cursor-wine"
-          >
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M4 26 L12 14 L18 20 L22 12 L28 26 Z"
-                fill="#1E3FBF"
-                stroke="#1E3FBF"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <circle cx="24" cy="8" r="3" fill="#E8B547" />
-            </svg>
-            <span className="display text-xl font-semibold text-ink hidden sm:block">
-              Vinndex
-            </span>
-          </Link>
+      <SiteHeader placeholder="Buscá otro vino o bodega" />
 
-          <form action="/buscar" className="flex-1 max-w-2xl">
-            <div className="relative flex items-center bg-snow rounded-full border border-ink/10 p-1 pl-4">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-graphite shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <SearchInput
-                placeholder="Buscar otro vino..."
-                className="w-full bg-transparent border-0 outline-none px-3 py-2 text-ink"
-                withAutocomplete
-              />
-              <button className="cursor-wine bg-cobalt text-snow font-semibold px-5 py-2 rounded-full text-sm">
-                Buscar
-              </button>
-            </div>
-          </form>
-          <FavoritesNavLink className="text-ink shrink-0" />
-          <ThemeToggle className="text-ink shrink-0" />
-        </div>
-      </header>
-
+      {/* <main> envuelve también al hero: el skip-link salta a #contenido y
+          antes caía debajo del h1, en la escalera. */}
+      <main id="contenido">
       {/* HERO */}
       <section className="relative ficha-hero text-snow overflow-hidden grain">
         <svg
@@ -567,7 +753,7 @@ export default async function Vino({ params }: Params) {
           />
         </svg>
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
           <div className="flex items-center gap-2 text-xs text-snow/70 uppercase tracking-wider mb-5">
             <Link href="/" className="hover:text-snow">
               Inicio
@@ -580,11 +766,11 @@ export default async function Vino({ params }: Params) {
             <span className="truncate">{group.canonicalName}</span>
           </div>
 
-          <div className="grid lg:grid-cols-[280px_1fr] gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 sm:gap-10 items-start">
             <div className="flex justify-center lg:justify-start">
               <div className="relative">
                 <div className="absolute inset-0 bg-snow/15 blur-2xl rounded-full" />
-                <div className="relative w-56 h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
+                <div className="relative w-28 h-40 sm:w-56 sm:h-80 rounded-xl overflow-hidden bg-snow/10 border border-snow/20">
                   <WineImage
                     src={group.imageUrl}
                     name={group.canonicalName}
@@ -834,9 +1020,14 @@ export default async function Vino({ params }: Params) {
                   href={bestOffer.externalUrl}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
+                  // Hex fijos y no bg-snow/text-malbec: en dark esas
+                  // utilities se invierten (surface oscuro + rosa) y el CTA
+                  // principal quedaba como un botón apagado sobre el hero.
+                  className="cursor-wine bg-[#f5ede0] text-[#6b1e2e] font-semibold px-6 sm:px-8 py-3.5 rounded-full hover:bg-mustard transition-colors inline-flex items-center gap-2"
                 >
-                  Ir al mejor precio en {storeName(bestOffer.storeSlug)}{" "}
+                  {inStockOffers.length >= 2
+                    ? `Ir al mejor precio en ${storeName(bestOffer.storeSlug)}`
+                    : `Ir a ${storeName(bestOffer.storeSlug)}`}{" "}
                   <ExternalIcon />
                 </a>
               )}
@@ -864,10 +1055,13 @@ export default async function Vino({ params }: Params) {
 
       <StickyCTA
         priceLabel={
+          // Mismo número que el hero (sólo botellas de 750 comparables):
+          // group.minPrice cuenta también 375 ml / cajas y podía mostrar
+          // un "mejor precio" distinto al de arriba.
           allOutOfStock
             ? "Sin stock"
-            : group.minPrice != null
-              ? formatArs(group.minPrice)
+            : heroMinPrice != null
+              ? formatArs(heroMinPrice)
               : "Ver precios"
         }
         storeName={bestOffer ? storeName(bestOffer.storeSlug) : ""}
@@ -876,230 +1070,98 @@ export default async function Vino({ params }: Params) {
       />
 
       {/* TABLA DE PRECIOS */}
-      <main id="contenido" className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
-        {/* Price Ladder — visualización editorial del rango de precios.
-            Solo aparece cuando hay 2+ vinotecas con stock (sino no hay
-            "dispersión" que contar). La tabla detallada de abajo sigue
-            siendo la fuente de verdad para revisar SKU + visitar. */}
-        {ladderOffers.length >= 2 && (
-          <section id="ladder" className="mb-12 scroll-mt-8">
-            <PriceLadder
-              offers={ladderOffers}
-              formatArs={formatArs}
-              wineName={group.canonicalName}
-            />
-          </section>
-        )}
-
-        <section id="precios" className="scroll-mt-8">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
-            <div>
-              <h2 className="display text-3xl font-semibold text-ink">
-                Comparación de precios
-              </h2>
-              <p className="text-graphite text-sm mt-1">
-                Ordenado de menor a mayor ·{" "}
-                {inStockOffers.length} con stock
-                {offers.length > inStockOffers.length
-                  ? ` · ${offers.length - inStockOffers.length} sin stock`
-                  : ""}
-              </p>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10 lg:py-14">
+        {/* La tabla va PRIMERO: es el trabajo de la página ("¿dónde lo
+            compro más barato?"). Antes la escalera de precios iba arriba y
+            en mobile empujaba la tabla ~2.000px hacia abajo. */}
+        <section id="precios" className="scroll-mt-24">
+          <div className="mb-5">
+            <h2 className="display text-2xl sm:text-3xl font-semibold text-ink">
+              Comparación de precios
+            </h2>
+            <p className="text-graphite text-sm mt-1">
+              Botella de 750&nbsp;ml, de menor a mayor precio ·{" "}
+              {allOutOfStock
+                ? `${offers.length} sin stock`
+                : `${inStockOffers.length} con stock`}
+            </p>
           </div>
 
           <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
-            <div className="hidden md:grid grid-cols-[2fr_1fr_1.1fr_auto] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-4 px-5 py-3 bg-snow border-b border-ink/10 text-xs font-semibold text-graphite uppercase tracking-wider">
               <div>Vinoteca</div>
               <div className="text-center">Precio</div>
-              <div className="text-center">Diferencia vs min</div>
+              <div className="text-center">Vs. mejor precio</div>
               <div />
             </div>
-
-            {offers.map((offer, i) => {
-              const isBest = offer === bestOffer && offer.inStock;
-              const outOfStock = !offer.inStock;
-              const rowClasses = isBest
-                ? "price-row best grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5"
-                : outOfStock
-                  ? "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5 opacity-50 grayscale"
-                  : "price-row grid md:grid-cols-[2.2fr_1fr_1.1fr_150px] gap-4 items-center px-5 py-4 border-b border-ink/5";
-              const ctaClasses = isBest
-                ? "cursor-wine bg-cobalt hover:bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
-                : outOfStock
-                  ? "cursor-wine border border-ink/15 text-graphite font-medium px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full hover:border-ink/30"
-                  : "cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-semibold px-5 py-2.5 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full";
-              const diffPct =
-                offer.priceArs != null &&
-                bestOffer.priceArs != null &&
-                bestOffer.priceArs > 0 &&
-                offer.priceArs > bestOffer.priceArs
-                  ? Math.round(
-                      ((offer.priceArs - bestOffer.priceArs) /
-                        bestOffer.priceArs) *
-                        100,
-                    )
-                  : null;
-              const sname = storeName(offer.storeSlug);
-
-              return (
-                <div key={offer.externalUrl} className={rowClasses}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="store-logo"
-                      style={{ background: colorForStore(offer.storeSlug) }}
-                    >
-                      {storeInitials(sname)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
-                        <span className="truncate">{sname}</span>
-                        {isBest && (
-                          <span className="text-[10px] bg-mustard/25 text-mustard px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                            ★ Mejor precio
-                          </span>
-                        )}
-                        {outOfStock && (
-                          <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-                            Sin stock
-                          </span>
-                        )}
-                        {offer.isCollector && (
-                          <span
-                            className="text-[10px] bg-malbec/15 text-malbec px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
-                            title="Cosecha vieja · precio de colección, no comparable con el precio actual"
-                          >
-                            Colección
-                          </span>
-                        )}
-                        {(() => {
-                          const v = extractVintage(offer.name);
-                          return v ? (
-                            <span className="text-[10px] bg-cobalt/15 text-cobalt px-2 py-0.5 rounded-full font-semibold">
-                              Cosecha {v}
-                            </span>
-                          ) : null;
-                        })()}
-                      </div>
-                      <div
-                        className="text-xs text-graphite truncate"
-                        title={offer.name}
-                      >
-                        {prettyOfferName(offer.name, group.brand)}
-                        {offer.externalSku ? ` · SKU ${offer.externalSku}` : ""}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="md:text-center">
-                    <span className="md:hidden text-xs text-graphite">
-                      Precio:{" "}
-                    </span>
-                    <span className="display text-2xl font-semibold text-cobalt">
-                      {formatArs(offer.priceArs)}
-                    </span>
-                  </div>
-                  <div className="md:text-center">
-                    <span className="md:hidden text-xs text-graphite">
-                      Diferencia:{" "}
-                    </span>
-                    {isBest ? (
-                      <span className="text-terracota font-semibold text-sm">
-                        —
-                      </span>
-                    ) : diffPct != null ? (
-                      <span className="text-ink text-sm">+{diffPct}%</span>
-                    ) : (
-                      <span className="text-graphite text-sm">—</span>
-                    )}
-                  </div>
-                  <a
-                    href={offer.externalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className={ctaClasses}
-                  >
-                    {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
-                  </a>
-                </div>
-              );
-            })}
+            {mainOffers.map((offer) => (
+              <OfferRow
+                key={offer.externalUrl}
+                offer={offer}
+                brand={group.brand}
+                bestOffer={bestOffer}
+                highlightBest={inStockOffers.length >= 2}
+              />
+            ))}
           </div>
 
+          {hiddenOutOfStock.length > 0 && (
+            <details className="group/oos mt-3 bg-white border border-ink/10 rounded-2xl overflow-hidden">
+              <summary className="cursor-wine list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-3 px-4 md:px-5 py-3.5 min-h-11 text-sm font-semibold text-ink hover:bg-snow/60">
+                <span>
+                  {hiddenOutOfStock.length}{" "}
+                  {hiddenOutOfStock.length === 1
+                    ? "vinoteca lo tiene"
+                    : "vinotecas lo tienen"}{" "}
+                  en catálogo pero sin stock hoy
+                </span>
+                <Chevron className="shrink-0 text-graphite transition-transform group-open/oos:rotate-180" />
+              </summary>
+              <div className="border-t border-ink/10">
+                {hiddenOutOfStock.map((offer) => (
+                  <OfferRow
+                    key={offer.externalUrl}
+                    offer={offer}
+                    brand={group.brand}
+                    bestOffer={bestOffer}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
+
           {caseOffersAll.length > 0 && (
-            <div className="mt-8">
-              <h3 className="display text-xl font-semibold text-ink mb-1">
-                Otros formatos
-              </h3>
-              <p className="text-graphite text-sm mb-4">
-                Mismo vino, otro envase — no compiten con el precio por
-                botella de arriba.
-              </p>
-              <div className="bg-white border border-ink/10 rounded-2xl overflow-hidden">
+            <details className="group/fmt mt-3 bg-white border border-ink/10 rounded-2xl overflow-hidden">
+              <summary className="cursor-wine list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-3 px-4 md:px-5 py-3.5 min-h-11 hover:bg-snow/60">
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-ink">
+                    Otros formatos · {caseOffersAll.length}{" "}
+                    {caseOffersAll.length === 1 ? "oferta" : "ofertas"}
+                  </span>
+                  <span className="block text-xs text-graphite mt-0.5">
+                    {formatKinds.join(", ")}. No entran en la comparación
+                    por botella de arriba.
+                  </span>
+                </span>
+                <Chevron className="shrink-0 text-graphite transition-transform group-open/fmt:rotate-180" />
+              </summary>
+              <div className="border-t border-ink/10">
                 {caseOffersAll
                   .slice()
                   .sort((a, b) => {
                     if (!!a.inStock !== !!b.inStock) return a.inStock ? -1 : 1;
                     return (a.priceArs ?? Infinity) - (b.priceArs ?? Infinity);
                   })
-                  .map((offer) => {
-                    const sname = storeName(offer.storeSlug);
-                    const label = offerVariantLabel(offer);
-                    return (
-                      <div
-                        key={offer.externalUrl}
-                        className={`grid md:grid-cols-[2.2fr_1fr_150px] gap-4 items-center px-5 py-3.5 border-b border-ink/5 ${
-                          offer.inStock ? "" : "opacity-50 grayscale"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="store-logo"
-                            style={{ background: colorForStore(offer.storeSlug) }}
-                          >
-                            {storeInitials(sname)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-semibold text-ink flex items-center gap-2 flex-wrap">
-                              <span className="truncate">{sname}</span>
-                              {label && (
-                                <span className="text-[10px] bg-cobalt/10 text-cobalt px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                                  {label}
-                                </span>
-                              )}
-                              {!offer.inStock && (
-                                <span className="text-[10px] bg-ink/10 text-graphite px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-                                  Sin stock
-                                </span>
-                              )}
-                            </div>
-                            <div
-                              className="text-xs text-graphite truncate"
-                              title={offer.name}
-                            >
-                              {prettyOfferName(offer.name, group.brand)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="md:text-center">
-                          <span className="md:hidden text-xs text-graphite">
-                            Precio:{" "}
-                          </span>
-                          <span className="display text-xl font-semibold text-ink">
-                            {formatArs(offer.priceArs)}
-                          </span>
-                        </div>
-                        <a
-                          href={offer.externalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          className="cursor-wine border border-ink/20 hover:border-cobalt hover:text-cobalt text-ink font-medium px-5 py-2 rounded-full text-sm inline-flex items-center justify-center gap-2 transition-colors w-full"
-                        >
-                          Visitar <ExternalIcon />
-                        </a>
-                      </div>
-                    );
-                  })}
+                  .map((offer) => (
+                    <OfferRow
+                      key={offer.externalUrl}
+                      offer={offer}
+                      brand={group.brand}
+                      variant="format"
+                    />
+                  ))}
               </div>
-            </div>
+            </details>
           )}
 
           <p className="text-xs text-graphite mt-4">
@@ -1138,6 +1200,19 @@ export default async function Vino({ params }: Params) {
           )}
         </section>
 
+        {/* Price Ladder — la dispersión contada como postal. Va DESPUÉS
+            de la tabla: es contexto, no la decisión. Sólo con 2+ vinotecas
+            con stock (sino no hay dispersión que contar). */}
+        {ladderOffers.length >= 2 && (
+          <section id="ladder" className="mt-12 scroll-mt-24">
+            <PriceLadder
+              offers={ladderOffers}
+              formatArs={formatArs}
+              wineName={group.canonicalName}
+            />
+          </section>
+        )}
+
         {priceSeries.length >= 2 && (
           <section className="mt-14 pt-10 border-t border-ink/10">
             <PriceHistoryChart series={priceSeries} />
@@ -1154,12 +1229,12 @@ export default async function Vino({ params }: Params) {
                 ? `Similares en varietal${group.region ? `, región` : ""} y precio.`
                 : "Selección basada en precio y región."}
             </p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {related.map((r) => (
                 <a
                   key={r.groupSlug}
                   href={`/vino/${r.groupSlug}`}
-                  className="bg-white rounded-2xl p-5 border border-ink/10 hover:shadow-lg transition-shadow flex flex-col"
+                  className="bg-white rounded-2xl p-3 sm:p-5 border border-ink/10 hover:border-ink/25 transition-colors flex flex-col"
                 >
                   <div className="relative w-full aspect-[3/4] bg-snow rounded-lg overflow-hidden mb-3 border border-ink/10">
                     <WineImage
@@ -1171,14 +1246,19 @@ export default async function Vino({ params }: Params) {
                       className="object-contain"
                     />
                   </div>
-                  <div className="display text-base font-semibold line-clamp-2 min-h-[2.5em]">
+                  {r.brand && (
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-graphite truncate">
+                      {displayBrand(r.brand)}
+                    </div>
+                  )}
+                  <div className="display text-sm sm:text-base font-semibold text-ink leading-snug line-clamp-2 min-h-[2.5em]">
                     {displayWineName(r.canonicalName)}
                   </div>
                   <div className="text-xs text-graphite mt-0.5">
                     {r.storeCount} vinoteca{r.storeCount === 1 ? "" : "s"}
                     {r.vintage ? ` · ${r.vintage}` : ""}
                   </div>
-                  <div className="display text-xl font-semibold text-cobalt mt-3">
+                  <div className="display text-lg sm:text-xl font-semibold text-cobalt tabular-nums mt-auto pt-2">
                     {formatArs(r.minPrice)}
                   </div>
                 </a>
@@ -1205,19 +1285,13 @@ export default async function Vino({ params }: Params) {
           title={`Otros ${priceLabel} de precio parecido`}
           wines={neighbors}
         />
+      </div>
       </main>
 
-      <footer className="bg-ink text-snow/70 px-6 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>
-            © 2026 Vinndex ·{" "}
-            <Link href="/" className="hover:text-snow">
-              Inicio
-            </Link>
-          </p>
-          <p>Precios relevados una vez por día · Beber con moderación</p>
-        </div>
-      </footer>
+      <SiteFooter />
+      {/* Colchón bajo el footer para que el StickyCTA (fixed, sólo <lg)
+          no tape la última línea del footer al llegar al final. */}
+      <div aria-hidden="true" className="h-24 bg-ink lg:hidden" />
     </div>
   );
 }
