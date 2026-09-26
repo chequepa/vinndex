@@ -240,8 +240,18 @@ export const groups: ProductGroup[] = (snapshot.productGroups ?? [])
   // envase.
   .filter((g) => !isNonWineGroup(g));
 
+// Índice slug → grupo. `findGroup` corre en cada request de /vino (dos
+// veces: generateMetadata + page), en /vs, en el OG image y en los
+// redirects; un `.find()` lineal sobre ~31k grupos no hace falta.
+let groupsBySlug: Map<string, ProductGroup> | null = null;
 export function findGroup(slug: string): ProductGroup | undefined {
-  return groups.find((g) => g.groupSlug === slug);
+  if (!groupsBySlug) {
+    groupsBySlug = new Map();
+    for (const g of groups) {
+      if (!groupsBySlug.has(g.groupSlug)) groupsBySlug.set(g.groupSlug, g);
+    }
+  }
+  return groupsBySlug.get(slug);
 }
 
 // Mapa slug-absorbido → slug-superviviente, escrito por
@@ -1205,27 +1215,55 @@ export type BrandPage = {
   topGroups: ProductGroup[];
 };
 
+/**
+ * Slug de /bodega/{slug} para una marca: la MISMA normalización con la
+ * que `brandPages()` agrupa (sin acentos, sin prefijo "Bodega(s)"). Antes
+ * `bodegaUrl()` usaba `brandSlug()`, que no saca el prefijo: "Bodega
+ * Norton" daba `bodega-norton`, que no es una página, y la ficha
+ * mostraba el chip de la bodega sin link.
+ */
+export function brandPageSlug(brand: string): string {
+  return brand
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^bodega(s)?\s+/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const SPIRITS_BRAND_RE = /smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i;
+
+/** ¿Este grupo alimenta una página de bodega? (mismo filtro que brandPages). */
+export function feedsBrandPage(g: ProductGroup): boolean {
+  if (!g.brand) return false;
+  if (SPIRITS_BRAND_RE.test(g.brand)) return false;
+  // Fichas no-vino/bundle/copa no alimentan páginas de bodega — sin
+  // esto, marcas de espirituosas con 2+ tiendas ganaban /bodega/*
+  // indexable (aviso GSC 2026-07-03).
+  if (isJunkWineGroup(g)) return false;
+  return true;
+}
+
+// Las páginas de faceta (bodega, varietal, región) se derivan del
+// snapshot, que es inmutable durante la vida del proceso: se calculan
+// una sola vez. `brandPages()` costaba ~125 ms por llamada y
+// /bodega/[slug] lo llamaba dos veces por request (generateMetadata +
+// page) → TTFB de ~300 ms en cada bodega. Los callers NO deben mutar
+// los arrays devueltos (hoy todos hacen slice/filter/spread).
+let brandPagesCache: BrandPage[] | null = null;
+let brandPagesBySlug: Map<string, BrandPage> | null = null;
+
 /** All brand pages for navigation / sitemap. Brand is normalized and
  * a page is generated only if the brand has at least 3 wines and is NOT
  * in the spirits blacklist. */
 export function brandPages(): BrandPage[] {
-  const SPIRITS = /smirnoff|absolut|glen|johnnie|chivas|jack\s+daniels|ballantine|jameson|bombay|gordon|tanqueray|beefeater|bacardi|captain\s+morgan|malibu|baileys|campari|aperol|fernet|martini|cinzano|red\s+bull/i;
+  if (brandPagesCache) return brandPagesCache;
   const byKey = new Map<string, { canonicalName: string; groups: ProductGroup[] }>();
 
   for (const g of groups) {
-    if (!g.brand) continue;
-    if (SPIRITS.test(g.brand)) continue;
-    // Fichas no-vino/bundle/copa no alimentan páginas de bodega — sin
-    // esto, marcas de espirituosas con 2+ tiendas ganaban /bodega/*
-    // indexable (aviso GSC 2026-07-03).
-    if (isJunkWineGroup(g)) continue;
-    const normalized = g.brand
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/^bodega(s)?\s+/, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+    if (!g.brand || !feedsBrandPage(g)) continue;
+    const normalized = brandPageSlug(g.brand);
     if (!normalized) continue;
     const entry = byKey.get(normalized);
     const pretty = displayBrand(g.brand);
@@ -1272,11 +1310,17 @@ export function brandPages(): BrandPage[] {
     });
   }
 
-  return pages.sort((a, b) => b.storeCount - a.storeCount || b.groupCount - a.groupCount);
+  brandPagesCache = pages.sort(
+    (a, b) => b.storeCount - a.storeCount || b.groupCount - a.groupCount,
+  );
+  return brandPagesCache;
 }
 
 export function findBrandPage(slug: string): BrandPage | undefined {
-  return brandPages().find((p) => p.slug === slug);
+  if (!brandPagesBySlug) {
+    brandPagesBySlug = new Map(brandPages().map((p) => [p.slug, p]));
+  }
+  return brandPagesBySlug.get(slug);
 }
 
 export type FacetPage = {
@@ -1297,7 +1341,11 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+let varietalPagesCache: FacetPage[] | null = null;
+let regionPagesCache: FacetPage[] | null = null;
+
 export function varietalPages(): FacetPage[] {
+  if (varietalPagesCache) return varietalPagesCache;
   const byVar = new Map<string, ProductGroup[]>();
   for (const g of groups) {
     for (const v of g.varietals ?? []) {
@@ -1327,10 +1375,12 @@ export function varietalPages(): FacetPage[] {
       topGroups,
     });
   }
-  return pages.sort((a, b) => b.groupCount - a.groupCount);
+  varietalPagesCache = pages.sort((a, b) => b.groupCount - a.groupCount);
+  return varietalPagesCache;
 }
 
 export function regionPages(): FacetPage[] {
+  if (regionPagesCache) return regionPagesCache;
   const byReg = new Map<string, ProductGroup[]>();
   for (const g of groups) {
     if (!g.region) continue;
@@ -1359,7 +1409,8 @@ export function regionPages(): FacetPage[] {
       topGroups,
     });
   }
-  return pages.sort((a, b) => b.groupCount - a.groupCount);
+  regionPagesCache = pages.sort((a, b) => b.groupCount - a.groupCount);
+  return regionPagesCache;
 }
 
 export function findFacetPage(
@@ -1387,7 +1438,7 @@ const _validRegionSlugs = new Set(regionPages().map((r) => r.slug));
 
 export function bodegaUrl(brand: string | null | undefined): string | null {
   if (!brand) return null;
-  const s = brandSlug(brand);
+  const s = brandPageSlug(brand);
   return _validBrandSlugs.has(s) ? `/bodega/${s}` : null;
 }
 
