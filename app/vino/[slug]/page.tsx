@@ -31,12 +31,13 @@ import {
   bodegaUrl,
   varietalUrl,
   regionUrl,
-  snapshotStats,
+  snapshot,
 } from "@/lib/snapshot";
 import { isJunkSlug, isJunkWineGroup } from "@/lib/junkSlugs";
 import { ReportIssue } from "@/components/ReportIssue";
 import { MatchQuestion } from "@/components/MatchQuestion";
 import { questionForSlug } from "@/lib/matchQuestions";
+import { wineFullName } from "@/lib/wineNames";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -61,17 +62,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       ? Math.round(((bs.maxPrice - bs.minPrice) / bs.maxPrice) * 100)
       : null;
 
-  // Title: include brand only if not already part of the canonical name.
-  // Both brand and canonicalName get pretty-cased · many scrapers return
-  // CAPS LOCK / lowercase strings that look shouty in <title> and OG tags.
-  const prettyName = displayWineName(g.canonicalName);
-  const prettyBrand = displayBrand(g.brand);
-  const canonicalLower = g.canonicalName.toLowerCase();
-  const brandNotInName =
-    g.brand && !canonicalLower.includes(g.brand.toLowerCase());
-  const titleName = brandNotInName
-    ? `${prettyBrand} ${prettyName}`
-    : prettyName;
+  // Nombre con bodega y sin ruido de góndola ("Vino tinto … 750 ml"):
+  // ver lib/wineNames.ts. Es el mismo que usan el <h1> y el JSON-LD.
+  const titleName = wineFullName(g);
   const titleVintage = g.vintage ? ` ${g.vintage}` : "";
 
   // El PRECIO va en el <title>, no sólo en la description.
@@ -88,19 +81,25 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // caracteres que Google muestra y es la afirmación más frágil de las
   // dos (depende del máximo, que se infla con formatos raros). Sigue en
   // la description, donde hay lugar.
+  //
+  // "precio" va escrito: es la palabra que acompaña al nombre del vino en
+  // las consultas ("<vino> precio") y Google la resalta en el SERP.
   let titleTail: string;
   if (allOutOfStock) {
     titleTail = `sin stock en ${totalStores} vinoteca${totalStores === 1 ? "" : "s"}`;
   } else if (bs.minPrice != null && g.storeCount >= 2) {
-    titleTail = `desde ${fmt.format(bs.minPrice)} en ${g.storeCount} vinotecas`;
+    titleTail = `precio desde ${fmt.format(bs.minPrice)} en ${g.storeCount} vinotecas`;
   } else if (bs.minPrice != null) {
-    titleTail = `desde ${fmt.format(bs.minPrice)}`;
+    titleTail = `precio desde ${fmt.format(bs.minPrice)}`;
   } else if (g.storeCount >= 2) {
-    titleTail = `compará en ${g.storeCount} vinotecas`;
+    titleTail = `compará precios en ${g.storeCount} vinotecas`;
   } else {
     titleTail = "precio al día";
   }
-  const title = `${titleName}${titleVintage} · ${titleTail} | Vinndex`;
+  const baseTitle = `${titleName}${titleVintage} · ${titleTail}`;
+  // Google corta en ~60 caracteres: si el nombre es largo, la marca del
+  // sitio es lo primero que sobra (el dato es el precio, no "Vinndex").
+  const title = baseTitle.length > 62 ? baseTitle : `${baseTitle} | Vinndex`;
 
   let description: string;
   if (allOutOfStock) {
@@ -108,7 +107,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       totalStores === 1 ? "" : "s"
     } online de Argentina, actualmente sin stock en todas. Te mostramos dónde suele aparecer cuando vuelve.`;
   } else {
-    description = `${titleName}${titleVintage} en ${g.storeCount} vinoteca${
+    description = `Dónde comprar ${titleName}${titleVintage}: ${g.storeCount} vinoteca${
       g.storeCount === 1 ? "" : "s"
     } online de Argentina.`;
     if (bs.minPrice != null) {
@@ -131,15 +130,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title,
     description,
-    keywords: [
-      g.canonicalName,
-      g.brand ?? undefined,
-      ...(g.varietals ?? []),
-      g.region ?? undefined,
-      "comparar precios",
-      "vino argentino",
-      "vinoteca online",
-    ].filter(Boolean) as string[],
+    // Sin `images`: la imagen OG la pone ./opengraph-image.tsx (1200×630
+    // con nombre, precio y vinotecas). Antes se pisaba con la foto de la
+    // botella hotlinkeada del CDN de la tienda — tamaño arbitrario, a
+    // veces con protección anti-hotlink, y sin el precio.
     openGraph: {
       title,
       description,
@@ -147,13 +141,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       siteName: "Vinndex",
       type: "website",
       locale: "es_AR",
-      images: g.imageUrl ? [{ url: g.imageUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: g.imageUrl ? [g.imageUrl] : undefined,
     },
     alternates: {
       canonical: `https://vinndex.com.ar/vino/${g.groupSlug}`,
@@ -244,6 +236,14 @@ export default async function Vino({ params }: Params) {
     // superviviente para no perder el ranking SEO de la URL vieja.
     const dest = resolveMergedSlug(slug);
     if (dest) permanentRedirect(`/vino/${dest}`);
+    // Los slugs son siempre minúsculas; un link externo con mayúsculas
+    // (/vino/Enemigo-Malbec) no tiene por qué ser 404.
+    const lower = slug.toLowerCase();
+    if (lower !== slug) {
+      if (findGroup(lower)) permanentRedirect(`/vino/${lower}`);
+      const lowerDest = resolveMergedSlug(lower);
+      if (lowerDest) permanentRedirect(`/vino/${lowerDest}`);
+    }
     notFound();
   }
 
@@ -331,244 +331,160 @@ export default async function Vino({ params }: Params) {
   const scores = getScoresForSlug(group.groupSlug);
   const priceSeries = getPriceHistory(group.groupSlug);
 
-  // JSON-LD Product schema for rich search snippets. Usamos `bottleStats`
-  // (precios sin cajas) para evitar que Google muestre el precio de un
-  // pack x6 como si fuese el precio del vino · los rich snippets son
-  // engañosos cuando "$48.000" en realidad es la caja.
-  const bottleStatsForJsonLd = bottleStats(group);
-  // Precios válidos hasta el próximo daily-scrape (+24h del último snapshot).
-  // Google degrada el snippet sin `priceValidUntil`.
-  const snapStats = snapshotStats();
+  // ── JSON-LD ──────────────────────────────────────────────────────
+  //
+  // Product + AggregateOffer (fragmento de producto: rango de precios y
+  // cantidad de ofertas). Reglas, auditoría SEO del 26/09:
+  //
+  // · Sólo ofertas con precio. Antes 5.359 fichas publicaban un
+  //   AggregateOffer sin `lowPrice` y 6.171 tenían algún Offer sin
+  //   `price` — Search Console los marca como ítems NO VÁLIDOS ("Missing
+  //   field price"). Si no hay un solo precio, no hay Product.
+  // · Las ofertas listadas son la base de precio de la ficha (botella de
+  //   750 con stock, sin colección): `lowPrice`/`highPrice`/`offerCount`
+  //   salen de esa misma lista y coinciden con el hero. Si nada tiene
+  //   stock, se listan las de catálogo con `OutOfStock`.
+  // · Sin `aggregateRating` armado con puntajes de críticos: Google pide
+  //   no agregar reseñas de otros sitios. Las reseñas individuales (que
+  //   se ven en la ficha, con su autor) siguen.
+  // · Sin `hasMerchantReturnPolicy`: es un campo de fichas de comercio
+  //   (merchant listings) y Vinndex no vende; sólo sumaba bytes x oferta.
+  // · Sin FAQPage: desde 2023 Google sólo muestra FAQ de sitios de
+  //   gobierno/salud, y las preguntas no estaban visibles en la página
+  //   (el contenido marcado tiene que verse). Eran ~1 KB por ficha x 2
+  //   (HTML + payload RSC) sin ningún beneficio.
+  const fullName = wineFullName(group);
+  const fullNameVintage = `${fullName}${group.vintage ? ` ${group.vintage}` : ""}`;
+
+  // Precios válidos hasta el próximo daily-scrape (+24h del snapshot).
   const priceValidUntil = new Date(
-    new Date(snapStats.generatedAt).getTime() + 24 * 60 * 60 * 1000,
+    new Date(snapshot.generatedAt).getTime() + 24 * 60 * 60 * 1000,
   )
     .toISOString()
     .slice(0, 10);
-  // Category armada desde type + varietal principal · clasifica el Product
-  // en el Knowledge Graph (ej: "Vino tinto > Malbec").
+  // Misma cadena de fallback que la base de precio del grupo
+  // (lib/snapshot.ts → priceBasis): botella comparable con stock →
+  // cualquier formato con stock sin colección (fichas que sólo existen en
+  // magnum o 375) → cualquiera con stock → catálogo sin stock.
+  const priced = offers.filter(
+    (o) => o.priceArs != null && o.priceArs >= 1000 && !o.priceSuspect,
+  );
+  const ldTiers = [
+    priced.filter((o) => o.inStock && !o.isCollector && !isNonComparableOffer(o)),
+    priced.filter((o) => o.inStock && !o.isCollector),
+    priced.filter((o) => o.inStock),
+    priced.filter((o) => !o.isCollector && !isNonComparableOffer(o)),
+    priced,
+  ];
+  const ldOffers = ldTiers.find((t) => t.length > 0) ?? [];
+  const ldPrices = ldOffers.map((o) => o.priceArs as number);
+  // EAN: sólo si todas las ofertas que lo publican coinciden en uno.
+  const eans = new Set(
+    ldOffers
+      .map((o) => o.externalSku?.trim() ?? "")
+      .filter((sku) => /^\d{12,14}$/.test(sku)),
+  );
+  const gtin = eans.size === 1 ? [...eans][0] : null;
+  // Category armada desde type + varietal principal (ej: "Vino tinto > Malbec").
   const categoryParts: string[] = [];
   categoryParts.push(group.type ? `Vino ${group.type.toLowerCase()}` : "Vino");
   if (group.varietals && group.varietals.length > 0) {
     categoryParts.push(group.varietals[0]);
   }
-  const category = categoryParts.join(" > ");
-  // Vinndex no es el seller · cada Offer apunta a la tienda. La política
-  // de devolución la define cada vinoteca; no la conocemos. Usamos
-  // `MerchantReturnNotSpecified` (categoría válida del schema) para no
-  // mentir pero igual cumplir el requisito de Google que pide el campo.
-  const returnPolicyStub = {
-    "@type": "MerchantReturnPolicy",
-    returnPolicyCategory:
-      "https://schema.org/MerchantReturnNotSpecified",
-  };
-  // Si hay scores de críticos, emitir AggregateRating + Review[]. Cierra
-  // los warnings "optional" del Rich Results Test y habilita estrellas
-  // en SERP. Hoy hay 2 vinos en scores.json · para el resto los warnings
-  // siguen, no rompe nada.
-  const aggregateRating =
-    scores.length > 0
-      ? {
-          "@type": "AggregateRating",
-          ratingValue:
-            Math.round(
-              (scores.reduce(
-                (sum, s) => sum + (s.score / s.maxScore) * 100,
-                0,
-              ) /
-                scores.length) *
-                10,
-            ) / 10,
-          bestRating: 100,
-          worstRating: 0,
-          ratingCount: scores.length,
-          reviewCount: scores.length,
-        }
-      : undefined;
-  const reviewArray =
-    scores.length > 0
-      ? scores.map((s) => ({
-          "@type": "Review",
-          author: { "@type": "Person", name: s.critic },
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: Math.round((s.score / s.maxScore) * 100),
-            bestRating: 100,
-            worstRating: 0,
-          },
-          reviewBody: s.note,
-          datePublished: String(s.year),
-        }))
-      : undefined;
-  const productJsonLd = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    name: group.canonicalName,
-    image: group.imageUrl ?? undefined,
-    description: group.offers[0]?.name ?? group.canonicalName,
-    category,
-    aggregateRating,
-    review: reviewArray,
-    brand: group.brand
-      ? { "@type": "Brand", name: group.brand }
-      : undefined,
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "ARS",
-      lowPrice: bottleStatsForJsonLd.minPrice ?? undefined,
-      highPrice: bottleStatsForJsonLd.maxPrice ?? undefined,
-      offerCount: offers.length,
-      offers: offers.map((o) => ({
-        "@type": "Offer",
-        price: o.priceArs ?? undefined,
-        priceCurrency: "ARS",
-        priceValidUntil,
-        itemCondition: "https://schema.org/NewCondition",
-        availability: o.inStock
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-        url: o.externalUrl,
-        seller: { "@type": "Organization", name: storeName(o.storeSlug) },
-        hasMerchantReturnPolicy: returnPolicyStub,
-      })),
-    },
-  };
-
-  // FAQ JSON-LD · preguntas autogeneradas del snapshot. Todas las
-  // respuestas reflejan info visible en la ficha (precio, vinotecas,
-  // stock, varietal/región), requisito de Google para FAQ schema sin
-  // riesgo de "spammy structured data" flag. Skip de Q&As cuyo dato
-  // falte.
-  const wineLabel = displayWineName(group.canonicalName);
-  // Par candidato a "¿es el mismo vino?" para esta ficha, si lo hay.
-  const matchQuestion = questionForSlug(group.groupSlug);
-  const faqEntities: Array<{
-    "@type": "Question";
-    name: string;
-    acceptedAnswer: { "@type": "Answer"; text: string };
-  }> = [];
-  if (bottleStatsLocal.minPrice != null && bestOffer) {
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿Cuánto cuesta ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `Hoy se consigue desde ${formatArs(bottleStatsLocal.minPrice)} en ${storeName(bestOffer.storeSlug)}${
-          bottleStatsLocal.maxPrice && bottleStatsLocal.maxPrice > bottleStatsLocal.minPrice
-            ? `. El precio más alto entre las vinotecas que lo venden online es ${formatArs(bottleStatsLocal.maxPrice)}`
-            : ""
-        }.`,
-      },
-    });
-  }
-  if (group.storeCount >= 1) {
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿En cuántas vinotecas online se vende ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `${wineLabel} está disponible en ${group.storeCount} vinoteca${group.storeCount === 1 ? "" : "s"} online de Argentina${
-          offers.length > 1
-            ? `: ${offers
-                .slice(0, 5)
-                .map((o) => storeName(o.storeSlug))
-                .join(", ")}${offers.length > 5 ? " y más" : ""}`
-            : ""
-        }.`,
-      },
-    });
-  }
-  faqEntities.push({
-    "@type": "Question",
-    name: `¿Hay stock de ${wineLabel}?`,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: allOutOfStock
-        ? `Actualmente ${wineLabel} está sin stock en todas las vinotecas online relevadas. Vinndex actualiza el stock todas las noches, volvé a chequear pronto.`
-        : `Sí, ${wineLabel} tiene stock disponible en ${inStockOffers.length} de las ${offers.length} vinotecas relevadas.`,
-    },
-  });
-  if (group.brand) {
-    const regionPart = group.region ? `, de ${group.region}` : "";
-    const varietalPart =
-      group.varietals && group.varietals.length > 0
-        ? ` Es un ${group.varietals[0]}${group.type ? ` (${group.type.toLowerCase()})` : ""}.`
-        : "";
-    faqEntities.push({
-      "@type": "Question",
-      name: `¿Qué bodega produce ${wineLabel}?`,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: `${wineLabel} lo produce ${displayBrand(group.brand)}${regionPart}.${varietalPart}`,
-      },
-    });
-  }
-  const faqJsonLd =
-    faqEntities.length >= 2
+  const productJsonLd =
+    ldOffers.length > 0
       ? {
           "@context": "https://schema.org/",
-          "@type": "FAQPage",
-          mainEntity: faqEntities,
+          "@type": "Product",
+          name: fullNameVintage,
+          image: group.imageUrl ?? undefined,
+          description: `${fullNameVintage}: precio en ${ldOffers.length} oferta${
+            ldOffers.length === 1 ? "" : "s"
+          } de vinotecas online de Argentina, relevadas a diario.`,
+          category: categoryParts.join(" > "),
+          ...(gtin ? { [gtin.length === 13 ? "gtin13" : "gtin"]: gtin } : {}),
+          brand: group.brand
+            ? { "@type": "Brand", name: displayBrand(group.brand) }
+            : undefined,
+          review:
+            scores.length > 0
+              ? scores.map((s) => ({
+                  "@type": "Review",
+                  author: { "@type": "Person", name: s.critic },
+                  reviewRating: {
+                    "@type": "Rating",
+                    ratingValue: Math.round((s.score / s.maxScore) * 100),
+                    bestRating: 100,
+                    worstRating: 0,
+                  },
+                  reviewBody: s.note ?? undefined,
+                  datePublished: String(s.year),
+                }))
+              : undefined,
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "ARS",
+            lowPrice: Math.min(...ldPrices),
+            highPrice: Math.max(...ldPrices),
+            offerCount: ldOffers.length,
+            offers: ldOffers.map((o) => ({
+              "@type": "Offer",
+              price: o.priceArs,
+              priceCurrency: "ARS",
+              priceValidUntil,
+              itemCondition: "https://schema.org/NewCondition",
+              availability: o.inStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+              url: o.externalUrl,
+              seller: { "@type": "Organization", name: storeName(o.storeSlug) },
+            })),
+          },
         }
       : null;
 
-  // Breadcrumb JSON-LD → Google muestra breadcrumbs en SERPs
+  const wineLabel = displayWineName(group.canonicalName);
+  // Par candidato a "¿es el mismo vino?" para esta ficha, si lo hay.
+  const matchQuestion = questionForSlug(group.groupSlug);
+
+  // BreadcrumbList: Inicio › Bodega › Vino. La bodega sólo entra si su
+  // página existe — antes la URL se armaba a mano (brand.toLowerCase()
+  // con guiones) y en 3.603 fichas apuntaba a un /bodega/* que da 404.
+  const bodegaHref = bodegaUrl(group.brand);
   const breadcrumbJsonLd = {
     "@context": "https://schema.org/",
     "@type": "BreadcrumbList",
     itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Inicio",
-        item: "https://vinndex.com.ar",
-      },
-      ...(group.brand
+      { name: "Inicio", item: "https://vinndex.com.ar" },
+      ...(bodegaHref && group.brand
         ? [
             {
-              "@type": "ListItem",
-              position: 2,
-              name: group.brand,
-              item: `https://vinndex.com.ar/bodega/${encodeURIComponent(
-                group.brand.toLowerCase().replace(/\s+/g, "-"),
-              )}`,
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: group.canonicalName,
-              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+              name: displayBrand(group.brand),
+              item: `https://vinndex.com.ar${bodegaHref}`,
             },
           ]
-        : [
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: group.canonicalName,
-              item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
-            },
-          ]),
-    ],
+        : []),
+      {
+        name: fullNameVintage,
+        item: `https://vinndex.com.ar/vino/${group.groupSlug}`,
+      },
+    ].map((it, i) => ({ "@type": "ListItem", position: i + 1, ...it })),
   };
 
   return (
     <div className="bg-white min-h-[100dvh]">
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-      />
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      )}
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
       <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
           <Link
@@ -783,7 +699,7 @@ export default async function Vino({ params }: Params) {
 
               <div className="flex items-start gap-4 mb-3">
                 <h1 className="display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] flex-1">
-                  {displayWineName(group.canonicalName)}
+                  {fullName}
                 </h1>
                 <FavoriteButton
                   slug={group.groupSlug}

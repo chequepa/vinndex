@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { BottleFallback } from "@/components/BottleFallback";
-import { displayWineName } from "@/lib/displayWineName";
+import { wineFullName } from "@/lib/wineNames";
 import {
   findGroup,
   formatArs,
@@ -37,8 +37,9 @@ export async function generateMetadata({
   const b = findGroup(pair.slugB);
   if (!a || !b) return { title: "Comparación no encontrada · Vinndex" };
 
-  const an = displayWineName(a.canonicalName);
-  const bn = displayWineName(b.canonicalName);
+  // Con bodega: "El Enemigo Malbec", no "Malbec" (lib/wineNames.ts).
+  const an = wineFullName(a);
+  const bn = wineFullName(b);
   const title = `${an} vs ${bn} · comparar precios | Vinndex`;
   const description =
     `Comparamos ${an} y ${bn}: precio mínimo, cantidad de vinotecas, ` +
@@ -66,11 +67,16 @@ export async function generateMetadata({
       siteName: "Vinndex",
       type: "website",
       locale: "es_AR",
+      // Un `openGraph` propio reemplaza entero al del layout (merge
+      // superficial) y se llevaba la imagen: sin esto la página se
+      // compartía sin preview.
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/opengraph-image"],
     },
   };
 }
@@ -95,12 +101,15 @@ export default async function VsPage({ params }: Params) {
     if (idx < 0) notFound();
     slugA = slug.slice(0, idx);
     slugB = slug.slice(idx + 4);
-    // Canonicalizar orden alfabético · si el usuario llega a
-    // /vs/b-vs-a, redirigimos a /vs/a-vs-b para no duplicar.
-    if (slugA > slugB) {
-      redirect(`/vs/${slugB}-vs-${slugA}`);
-    }
+    // Si alguno no existe, 404 directo (antes redirigía primero y el
+    // 404 llegaba recién en el segundo salto).
     if (!bothExist(slugA, slugB)) notFound();
+    // Canonicalizar orden alfabético · si el usuario llega a
+    // /vs/b-vs-a, redirigimos 308 a /vs/a-vs-b para no duplicar (era un
+    // 307 temporal: Google seguía tratando las dos URLs como distintas).
+    if (slugA > slugB) {
+      permanentRedirect(`/vs/${slugB}-vs-${slugA}`);
+    }
   }
 
   const a = findGroup(slugA);
@@ -112,13 +121,13 @@ export default async function VsPage({ params }: Params) {
   const itemListJsonLd = {
     "@context": "https://schema.org/",
     "@type": "ItemList",
-    name: `${a.canonicalName} vs ${b.canonicalName}`,
+    name: `${wineFullName(a)} vs ${wineFullName(b)}`,
     numberOfItems: 2,
     itemListElement: [a, b].map((g, i) => ({
       "@type": "ListItem",
       position: i + 1,
       url: `https://vinndex.com.ar/vino/${g.groupSlug}`,
-      name: g.canonicalName,
+      name: wineFullName(g),
     })),
   };
 
@@ -145,9 +154,9 @@ export default async function VsPage({ params }: Params) {
             <span>vs</span>
           </div>
           <h1 className="display text-3xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            {displayWineName(a.canonicalName)}{" "}
+            {wineFullName(a)}{" "}
             <span className="italic font-normal text-graphite">vs</span>{" "}
-            {displayWineName(b.canonicalName)}
+            {wineFullName(b)}
           </h1>
           <p className="text-graphite text-base leading-relaxed max-w-3xl">
             Precio comparado en vinotecas online de Argentina. Ambos son del
@@ -297,7 +306,7 @@ function Card({
         {displayBrand(wine.brand)}
       </p>
       <h2 className="display text-lg md:text-xl font-semibold text-ink leading-tight line-clamp-2 min-h-[2.6rem] mb-2">
-        {displayWineName(wine.canonicalName)}
+        {wineFullName(wine)}
       </h2>
 
       <dl className="mt-2 space-y-1.5 text-sm">

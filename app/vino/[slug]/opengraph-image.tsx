@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { findGroup, formatArs, storeName } from "@/lib/snapshot";
+import { wineFullName } from "@/lib/wineNames";
 
 export const runtime = "nodejs";
 export const alt = "Vinndex · comparador de precios de vinos";
@@ -24,7 +25,7 @@ export default async function VinoOgImage({
   const allOut = g && !g.offers?.some((o) => o.inStock);
   const bestStore = g?.offers?.find((o) => o.inStock);
 
-  const titleText = g?.canonicalName ?? "Vinndex";
+  const titleText = g ? wineFullName(g) : "Vinndex";
   const brandText = g?.brand ?? "Comparador de precios";
   const priceText =
     isMissing || allOut
