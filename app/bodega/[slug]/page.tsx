@@ -13,6 +13,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
 import { BottleFallback } from "@/components/BottleFallback";
 import { isJunkSlug } from "@/lib/junkSlugs";
+import { brandCrawlTargets } from "@/lib/internalLinks";
+import { wineFullName } from "@/lib/wineNames";
+import { WineLinkList } from "@/components/WineLinkList";
 import Link from "next/link";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -63,6 +66,18 @@ export default async function BodegaPage({ params }: Params) {
 
   const multiStore = b.topGroups.filter((g) => g.storeCount >= 2);
   const singleStore = b.topGroups.filter((g) => g.storeCount === 1);
+  // Índice completo: las tarjetas de arriba muestran el top 24, pero
+  // Rutini tiene 327 vinos y Catena Zapata 454. Sin esta lista, el resto
+  // no recibía ningún link interno (ver lib/internalLinks.ts).
+  const shownInCards = new Set([
+    ...multiStore.map((g) => g.groupSlug),
+    ...singleStore.slice(0, 16).map((g) => g.groupSlug),
+  ]);
+  const restOfCatalog = brandCrawlTargets(slug)
+    .filter((g) => !shownInCards.has(g.groupSlug))
+    .map((g) => ({ g, name: wineFullName(g) }))
+    .sort((a, c) => a.name.localeCompare(c.name, "es-AR"))
+    .map(({ g }) => g);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org/",
@@ -329,6 +344,13 @@ export default async function BodegaPage({ params }: Params) {
             </div>
           </section>
         )}
+
+        <WineLinkList
+          title={`Todos los vinos de ${b.name}`}
+          intro={`${restOfCatalog.length} etiquetas más con stock hoy, por orden alfabético.`}
+          wines={restOfCatalog}
+          columns={3}
+        />
       </main>
 
       <footer className="bg-ink text-snow/70 px-6 py-10">

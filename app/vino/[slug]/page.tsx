@@ -38,6 +38,8 @@ import { ReportIssue } from "@/components/ReportIssue";
 import { MatchQuestion } from "@/components/MatchQuestion";
 import { questionForSlug } from "@/lib/matchQuestions";
 import { wineFullName } from "@/lib/wineNames";
+import { brandSiblings, priceNeighbors } from "@/lib/internalLinks";
+import { WineLinkList } from "@/components/WineLinkList";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -470,6 +472,16 @@ export default async function Vino({ params }: Params) {
       },
     ].map((it, i) => ({ "@type": "ListItem", position: i + 1, ...it })),
   };
+
+  // Enlazado interno (lib/internalLinks.ts): hermanas de bodega y vecinas
+  // de precio. Sin repetir las de "Te pueden gustar".
+  const shownSlugs = new Set(related.map((r) => r.groupSlug));
+  const siblings = brandSiblings(group, 6).filter(
+    (g) => !shownSlugs.has(g.groupSlug),
+  );
+  for (const g of siblings) shownSlugs.add(g.groupSlug);
+  const neighbors = priceNeighbors(group, 6, shownSlugs);
+  const priceLabel = group.varietals?.[0] ?? (group.type ? `vinos ${group.type.toLowerCase()}s` : "vinos");
 
   return (
     <div className="bg-white min-h-[100dvh]">
@@ -1184,6 +1196,25 @@ export default async function Vino({ params }: Params) {
             </div>
           </section>
         )}
+
+        {group.brand && (
+          <WineLinkList
+            title={`Más vinos de ${displayBrand(group.brand)}`}
+            wines={siblings}
+            more={
+              bodegaHref
+                ? {
+                    href: bodegaHref,
+                    label: `Ver todos los vinos de ${displayBrand(group.brand)} →`,
+                  }
+                : undefined
+            }
+          />
+        )}
+        <WineLinkList
+          title={`Otros ${priceLabel} de precio parecido`}
+          wines={neighbors}
+        />
       </main>
 
       <footer className="bg-ink text-snow/70 px-6 py-10">
