@@ -157,6 +157,22 @@ export function isJunkBodegaKey(key) {
   return toks.every((t) => t.length <= 2 || GENERIC_BODEGA_TOKENS.has(t));
 }
 
+/**
+ * ¿La bodega está ESCRITA en el nombre de la oferta? Alcanza con una
+ * palabra propia de la bodega (≥4 letras, no genérica): "El Enemigo" está
+ * en "Enemigo Malbec", "Catena Zapata" en "Angélica Zapata Malbec"; "Catena
+ * Zapata" NO está en "El Enemigo Malbec" aunque una tienda la cargue como
+ * marca. Es la evidencia que usa el consenso de bodega por nombre.
+ */
+export function bodegaInName(bodega, name) {
+  const key = normalizeBodegaKey(bodega);
+  if (!key) return false;
+  const toks = key.split(" ").filter((t) => t.length >= 4 && !GENERIC_BODEGA_TOKENS.has(t));
+  if (!toks.length) return false;
+  const nameToks = new Set(normalizeLoose(name).replace(/\./g, " ").split(" "));
+  return toks.some((t) => nameToks.has(t));
+}
+
 // ── La tienda no es la bodega ──
 // Algunas tiendas mandan SU nombre como marca de sus productos ("Aldo's
 // Vinoteca" en 400 fichas). Comparamos la bodega parseada contra el nombre
@@ -409,6 +425,35 @@ export function fallbackWineKey(p) {
     p.ediciones.join(" "),
   ];
   return parts.join("|");
+}
+
+/**
+ * Color efectivo: el declarado, o el que implica la uva cuando el nombre
+ * no lo dice. "Angélica Zapata Chardonnay" es blanco aunque no diga
+ * "blanco"; sin esto el catálogo tenía el mismo vino dos veces (color null
+ * y color blanco) y cada oferta caía en una según cómo la titulara la
+ * tienda (26/09: Angélica Chardonnay, Las Perdices Riesling). Un corte con
+ * uvas de los dos colores no implica nada. Nunca pisa un color declarado:
+ * un "Malbec Rosé" sigue siendo rosado.
+ */
+const WHITE_GRAPES = new Set([
+  "chardonnay", "sauvignon blanc", "torrontes", "viognier", "riesling", "semillon",
+  "chenin", "pinot grigio", "gewurztraminer", "moscatel", "albarino", "verdejo",
+  "fiano", "marsanne", "roussanne", "gruner", "malvasia", "pedro gimenez",
+]);
+const RED_GRAPES = new Set([
+  "malbec", "cabernet", "cabernet franc", "merlot", "syrah", "bonarda", "tempranillo",
+  "pinot noir", "tannat", "petit verdot", "sangiovese", "nebbiolo", "barbera",
+  "garnacha", "marselan", "ancellotta", "carmenere", "gamay", "mourvedre",
+  "aglianico", "montepulciano", "cinsault", "criolla",
+]);
+export function effectiveColor(color, varietal) {
+  if (color) return color;
+  const grapes = String(varietal ?? "").split("+").filter((v) => v && v !== "blend");
+  if (!grapes.length) return null;
+  if (grapes.every((g) => WHITE_GRAPES.has(g))) return "blanco";
+  if (grapes.every((g) => RED_GRAPES.has(g))) return "tinto";
+  return null;
 }
 
 /** Variante (dentro de la página): qué hace comparable a una oferta. */

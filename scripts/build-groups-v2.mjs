@@ -40,13 +40,17 @@ import {
   collapseContainedPhrases,
   isJunkBodegaKey,
   isStoreBrand,
+  bodegaInName,
+  effectiveColor,
+  cleanScraperBrand,
 } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
-import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet } from "./stage4-token-merge.mjs";
+import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { dropResolved } from "./lib-carryover.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
-import { toEan } from "./lib-ean.mjs";
+import { eanFromSku } from "./lib-ean.mjs";
+import { buildTypoMap, applyTypoMap } from "./lib-typos.mjs";
 import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN } from "./lib-jev.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
@@ -164,38 +168,106 @@ const LINE_TIER_RE = /\b(gran|reserva|reserve|single|vineyard|parcela|icono|cole
 function lineTierCount(linea) {
   return (norm(linea).match(LINE_TIER_RE) ?? []).length;
 }
+/**
+ * Entradas del catálogo que son el MISMO vino con un dato de menos: la
+ * línea minada una vez con varietal/color y otra sin ("Rutini Antología",
+ * "Antología Blend" y "Antología tinto" eran tres fichas del mismo Antología
+ * 38, 26/09). Misma regla que el fold de fallbacks: dentro de bodega +
+ * línea + dulzor + tiers, si hay UN solo varietal y a lo sumo UN color
+ * efectivo, todas las entradas son una; se queda la de más tiendas (su id
+ * es la ficha, así no se mueve la URL con más tráfico).
+ * @returns {Map<object, object>} vino → vino canónico
+ */
+function foldCatalogDuplicates(wines, lineKeyOf) {
+  const clusters = new Map();
+  for (const w of wines) {
+    const k = [normalizeBodegaKey(w.bodega), lineKeyOf(w), w.dulzor ?? "", [...discriminatorSet(w.linea)].sort().join(" ")].join("|");
+    if (!clusters.has(k)) clusters.set(k, []);
+    clusters.get(k).push(w);
+  }
+  const canon = new Map();
+  for (const ws of clusters.values()) {
+    if (ws.length < 2) continue;
+    // Varietal efectivo: el cargado, o el que dice el nombre de la línea
+    // ("Cabernet Sauvignon Reserva" sin varietal cargado NO es el Bonarda
+    // de la misma línea).
+    const varOf = (w) => w.varietal ?? ([...styleSet(w.linea)].sort().join("+") || null);
+    const varietals = new Set(ws.map(varOf).filter(Boolean));
+    const colorsOf = ws.map((w) => effectiveColor(w.color, varOf(w)));
+    const colors = new Set(colorsOf.filter(Boolean));
+    if (varietals.size > 1 || colors.size > 1) continue;
+    // Un color faltante sólo se asume TINTO (lo que en Argentina no dice
+    // color es tinto): "Aristides Gold" (sin color) no se pliega en "Gold
+    // Blanco"; "Antología" (sin color) sí en "Antología tinto".
+    if (colorsOf.some((c) => !c) && colors.size === 1 && !colors.has("tinto")) continue;
+    // Sin ningún varietal ni color declarado no hay dato que falte: son
+    // entradas iguales, y también se pliegan.
+    const best = ws.slice().sort((a, b) => (b.storeCount ?? 0) - (a.storeCount ?? 0) || a.id.localeCompare(b.id))[0];
+    for (const w of ws) if (w !== best) canon.set(w, best);
+    if (process.env.CATALOG_FOLD_TRACE) console.log("FOLD", best.id, "⇐", ws.filter((w) => w !== best).map((w) => w.id).join(", "));
+  }
+  return canon;
+}
+
 function buildCatalogIndex(catalog) {
-  const exact = new Map();   // bodega|linea-alias|varietal|color|dulzor → wine
+  const exact = new Map();   // bodega|linea-alias|varietal|colorEfectivo|dulzor → [wines] (mejor primero)
   const byLine = new Map();  // bodega|linea-alias → [wines]
-  for (const w of catalog.wines ?? []) {
+  const winesPerBodega = new Map(); // bodegaKey → nº de vinos del catálogo
+  // Entradas minadas con una bodega basura ("SIN MARCA", 13 el 26/09)
+  // no son conocimiento: atraían ofertas de Tapiz o Lancatay a una ficha
+  // "Sin Marca".
+  const wines = (catalog.wines ?? []).filter((w) => !isJunkBodegaKey(normalizeBodegaKey(w.bodega)));
+  const lineKeyOf = (w) => {
+    const bt = new Set(normalizeBodegaKey(w.bodega).split(" ").filter((t) => t.length > 1));
+    return [...lineTokens(w.linea)].filter((t) => !bt.has(t)).sort().join(" ");
+  };
+  const canon = foldCatalogDuplicates(wines, lineKeyOf);
+  for (const w of wines) {
     const b = normalizeBodegaKey(w.bodega);
+    const target = canon.get(w) ?? w;
+    if (target === w) winesPerBodega.set(b, (winesPerBodega.get(b) ?? 0) + 1);
     // Alias implícito: el propio nombre de la línea, tokenizado como lo
     // haría el parser con una oferta ("Colección" → "coleccion"). Los
     // aliases minados dependen del parser del día que se minaron; el
     // nombre de la línea no.
     const bodegaToks = new Set(b.split(" ").filter((t) => t.length > 1));
-    const implicit = [...lineTokens(w.linea)].filter((t) => !bodegaToks.has(t)).sort().join(" ");
-    const aliases = new Set(w.lineAliases?.length ? w.lineAliases : [""]);
-    if (implicit) aliases.add(implicit);
+    const toLineKey = (text) => [...lineTokens(text)].filter((t) => !bodegaToks.has(t)).sort().join(" ");
+    const implicit = lineKeyOf(w);
+    // Los aliases minados también se re-tokenizan con el parser de HOY: un
+    // alias "champana extra" minado antes de que "champaña" fuera ruido
+    // quedaba inalcanzable, y "Chandon Extra Brut" a secas (línea vacía)
+    // no encontraba su propia entrada (26/09). Y el implícito entra aunque
+    // sea vacío: una línea que es sólo dulzor/varietal ("Extra Brut") ES la
+    // línea vacía de esa bodega.
+    const aliases = new Set((w.lineAliases?.length ? w.lineAliases : [""]).map(toLineKey));
+    aliases.add(implicit);
     // Tiers del NOMBRE de la línea que sí distinguen ("Gran Medalla" ⇒
     // "gran"): una oferta sólo puede ser este vino si los trae. Ver assign().
     const dropped = new Set([...(w.tiersNoDistinguen ?? []), ...(w.parajesNoDistinguen ?? [])].map(norm));
     w._requiredDiscs = [...discriminatorSet(w.linea)].filter((d) => !dropped.has(norm(d)));
-    for (const alias of aliases) {
-      const lineKey = alias.split(" ").filter(Boolean).sort().join(" ");
-      const ek = `${b}|${lineKey}|${w.varietal ?? ""}|${w.color ?? ""}|${w.dulzor ?? ""}`;
-      const prev = exact.get(ek);
-      const better =
-        !prev ||
-        lineTierCount(w.linea) < lineTierCount(prev.linea) ||
-        (lineTierCount(w.linea) === lineTierCount(prev.linea) && (w.storeCount ?? 0) > (prev.storeCount ?? 0));
-      if (better) exact.set(ek, w);
+    const color = effectiveColor(w.color, w.varietal);
+    // Las claves salen de la entrada (su varietal/color), pero apuntan al
+    // vino canónico: la oferta que matchea la entrada sin varietal cae en
+    // la misma ficha que la que matchea la entrada completa.
+    for (const lineKey of aliases) {
+      const ek = `${b}|${lineKey}|${w.varietal ?? ""}|${color ?? ""}|${w.dulzor ?? ""}`;
+      if (!exact.has(ek)) exact.set(ek, []);
+      if (!exact.get(ek).includes(target)) exact.get(ek).push(target);
       const lk = `${b}|${lineKey}`;
       if (!byLine.has(lk)) byLine.set(lk, []);
-      if (!byLine.get(lk).includes(w)) byLine.get(lk).push(w);
+      if (!byLine.get(lk).includes(target)) byLine.get(lk).push(target);
     }
   }
-  return { exact, byLine };
+  // Varios vinos con la misma clave exacta: primero el de BASE (menos
+  // tiers en el nombre de la línea), después el de más tiendas. assign()
+  // toma el primero cuyos tiers requeridos trae la oferta.
+  for (const list of exact.values()) {
+    list.sort(
+      (x, y) => lineTierCount(x.linea) - lineTierCount(y.linea) || (y.storeCount ?? 0) - (x.storeCount ?? 0),
+    );
+  }
+  console.log(`  catálogo: ${canon.size} entradas duplicadas (mismo vino con/sin varietal o color) plegadas`);
+  return { exact, byLine, winesPerBodega };
 }
 
 /** Asigna una oferta parseada a un vino del catálogo, o null. */
@@ -210,8 +282,9 @@ function assign(p, idx) {
   // 13/09, la del Medalla común se titulaba "Gran Medalla Malbec").
   const discs = new Set(p.discriminadores.map(norm));
   const tiersOk = (w2) => (w2._requiredDiscs ?? []).every((d) => discs.has(norm(d)));
-  const w = idx.exact.get(`${b}|${lineKey}|${p.varietal ?? ""}|${p.color ?? ""}|${p.dulzor ?? ""}`);
-  if (w) return tiersOk(w) ? w : null;
+  const color = effectiveColor(p.color, p.varietal);
+  const hit = (idx.exact.get(`${b}|${lineKey}|${p.varietal ?? ""}|${color ?? ""}|${p.dulzor ?? ""}`) ?? []).find(tiersOk);
+  if (hit) return hit;
   // Compatibilidad de color/dulzor para HEREDAR un vino de la línea. Un
   // espumante sólo hereda un espumante con el MISMO dulzor: "Chandon
   // Extra Brut" no es "Chandon Rosé" ni "Chandon Demi Sec" aunque sean
@@ -321,6 +394,25 @@ async function main() {
       (manual.total ? ` (overlay manual: ${manual.added}+ ${manual.patched}~ ${manual.removed}-)` : ""),
   );
 
+  // ── Errores de tipeo de las tiendas (lib-typos.mjs) ──
+  // "Saint Felicen", "Ruttini", "El Estaco": la identidad se calcula sobre
+  // el nombre corregido; el título que se publica es el de la tienda
+  // (_displayName, se restaura al materializar).
+  {
+    const typoMap = buildTypoMap(offers, { isIdentityToken });
+    let fixed = 0;
+    for (const o of offers) {
+      if (!o.name) continue;
+      const f = applyTypoMap(o.name, typoMap);
+      if (f !== o.name) {
+        o._displayName = o.name;
+        o.name = f;
+        fixed++;
+      }
+    }
+    console.log(`  tipeo: ${typoMap.size} palabras mal escritas aprendidas · ${fixed} ofertas corregidas`);
+  }
+
   // ── Inferencia de marca por corpus (port del Stage 1 de v1) ──
   // Muchas tiendas no mandan brand. Sin esto el mismo vino se parte en
   // clave-con-bodega vs clave-sin-bodega según qué tienda lo liste
@@ -343,10 +435,19 @@ async function main() {
       const lower = stripAccents(b).toLowerCase();
       if (!brandCanonical.has(lower)) brandCanonical.set(lower, b);
     }
+    // Una "marca" que es sólo paraje, tier, varietal o color ("Flores",
+    // "Gualtallary", "Naranjo") no se infiere por aparecer en el nombre:
+    // "Kamala Malbec TS Vista Flores Dharma" terminaba con bodega "Flores"
+    // porque alguna tienda usa esa palabra como marca (26/09).
+    const isDescriptor = (lower) => {
+      const toks = stripAccents(lower).replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
+      return toks.length > 0 && toks.every((t) => isIdentityToken(t) || colorOf(t) !== null || isJunkBodegaKey(t));
+    };
     const entries = [...brandCanonical.entries()]
       .filter(([lower]) => {
         const words = lower.split(/\s+/).filter(Boolean);
-        return !(words.length === 1 && GENERIC_BRAND.has(words[0]));
+        if (words.length === 1 && GENERIC_BRAND.has(words[0])) return false;
+        return !isDescriptor(lower);
       })
       .sort((a, b) => b[0].length - a[0].length)
       .map(([lower, original]) => ({
@@ -356,6 +457,19 @@ async function main() {
           "i",
         ),
       }));
+    // Una marca que no dice nada ("SIN MARCA.", "Varios", el nombre de la
+    // propia vinoteca) cuenta como marca vacía: antes bloqueaba la
+    // inferencia y la oferta quedaba sin bodega aunque el nombre la dijera
+    // ("Bianchi Extra Brut" con marca "SIN MARCA" → ficha sin bodega,
+    // aparte de la de Bianchi; auditoría 26/09).
+    let blanked = 0;
+    for (const o of offers) {
+      if (!o.brand) continue;
+      if (!cleanScraperBrand(o.brand) || isStoreBrand(o.brand, o.storeSlug)) {
+        o.brand = null;
+        blanked++;
+      }
+    }
     let inferred1 = 0;
     for (const o of offers) {
       if (o.brand) continue;
@@ -395,7 +509,7 @@ async function main() {
         if (b) { o.brand = b; inferred2++; break; }
       }
     }
-    console.log(`  inferencia de marca: +${inferred1} por nombre, +${inferred2} por línea distintiva (${distinctive.size} tokens)`);
+    console.log(`  inferencia de marca: ${blanked} marcas vacías/placeholder · +${inferred1} por nombre, +${inferred2} por línea distintiva (${distinctive.size} tokens)`);
   }
 
   // Snapshot vigente: fuente de (a) el mapping URL→slug v1 para preservar
@@ -512,6 +626,189 @@ async function main() {
     bodegaStores.get(k).add(offers[i].storeSlug);
   }
 
+  // ── Consenso de bodega por nombre ──
+  // El MISMO nombre de vino tiene que dar la MISMA bodega, publique quien
+  // lo publique. La auditoría del 26/09 midió 1.781 casos de ofertas con
+  // nombre idéntico en fichas distintas, y 1.730 eran esto: una tienda
+  // carga "El Enemigo" como marca, otra "Catena Zapata" y otra nada, y como
+  // la bodega es parte de la clave del vino, "Enemigo Malbec" terminaba en
+  // tres fichas. Y la variante de lo mismo: la tienda carga la ETIQUETA
+  // como marca ("Lindaflor", "Saurus", "Fincas Notables") y la oferta se
+  // escapa de la ficha de catálogo de la bodega madre.
+  //
+  // Dos pasadas:
+  //   1. Etiqueta → bodega madre (por oferta que el catálogo no reconoce):
+  //      su "bodega" es parte del nombre de una línea del catálogo de una
+  //      casa más grande, y con esa bodega el catálogo la asigna
+  //      (Lindaflor → Monteviejo · Lindaflor).
+  //   2. Una bodega por FIRMA de nombre (tokens + color + dulzor +
+  //      ediciones + parajes): ver el rango de candidatas más abajo.
+  // Nunca se decide entre dos bodegas que sólo vienen del campo marca
+  // ("Clásico Malbec" de dos bodegas distintas): ahí el nombre no alcanza.
+  {
+    const sigOf = (i) => {
+      const p = parsed[i];
+      return [
+        [...new Set(contentTokens(offers[i].name))].sort().join(" "),
+        p.color ?? "", p.dulzor ?? "", p.ediciones.join(" "), p.discriminadores.join(" "),
+      ].join("|");
+    };
+    const sigs = new Array(parsed.length);
+    const lineBodegas = new Map(); // línea (sin bodega) → Map(bodegaKey → Set(store))
+    for (let i = 0; i < parsed.length; i++) {
+      const p = parsed[i];
+      if (!p) continue;
+      sigs[i] = sigOf(i);
+      if (!p.bodega || p.excluded) continue;
+      const bk = normalizeBodegaKey(p.bodega);
+      if (p.lineTokens.length) {
+        const lk = p.lineTokens.join(" ");
+        if (!lineBodegas.has(lk)) lineBodegas.set(lk, new Map());
+        const m = lineBodegas.get(lk);
+        if (!m.has(bk)) m.set(bk, new Set());
+        m.get(bk).add(offers[i].storeSlug);
+      }
+    }
+    // Líneas del catálogo por token, para (1).
+    const catByLineToken = new Map(); // token → Set(bodega display)
+    for (const w of catalog.wines) {
+      if (isJunkBodegaKey(normalizeBodegaKey(w.bodega))) continue;
+      for (const t of norm(w.linea).replace(/[^a-z0-9\s]/g, " ").split(/\s+/)) {
+        if (t.length < 3) continue;
+        if (!catByLineToken.has(t)) catByLineToken.set(t, new Set());
+        catByLineToken.get(t).add(w.bodega);
+      }
+    }
+    const parentsOf = (bodega) => {
+      const toks = normalizeBodegaKey(bodega).split(" ").filter((t) => t.length >= 3);
+      if (!toks.length) return [];
+      let acc = null;
+      for (const t of toks) {
+        const set = catByLineToken.get(t) ?? new Set();
+        acc = acc === null ? new Set(set) : new Set([...acc].filter((x) => set.has(x)));
+      }
+      // La bodega madre tiene que ser una casa MÁS grande en el catálogo
+      // que la "bodega" actual: "Lindaflor" (0 vinos propios) es una
+      // etiqueta de Monteviejo, pero "Bianchi" (48) no es una etiqueta de
+      // "Finca 878" aunque el catálogo tenga una línea "Famiglia Bianchi"
+      // mal atribuida a esa bodega.
+      const own = normalizeBodegaKey(bodega);
+      const ownN = idx.winesPerBodega.get(own) ?? 0;
+      return [...(acc ?? [])].filter((b) => {
+        const k = normalizeBodegaKey(b);
+        return k !== own && (idx.winesPerBodega.get(k) ?? 0) > ownN;
+      });
+    };
+    const stats = { etiqueta: 0, firma: 0 };
+    const trace = process.env.CONSENSUS_TRACE ? [] : null;
+    const note = (kind, i, from, q) => trace?.push([kind, offers[i].name, from ?? "∅", q.bodega, assign(q, idx)?.id ?? "-"]);
+    const reparse = (i, bodega) => parseOffer(offers[i].name, offers[i].brand, { bodega });
+    // ── (1) etiqueta → bodega madre (por oferta) ──
+    for (let i = 0; i < parsed.length; i++) {
+      const p = parsed[i];
+      if (!p?.bodega || p.excluded || assign(p, idx)) continue;
+      const hits = [];
+      for (const parent of parentsOf(p.bodega)) {
+        const q = reparse(i, parent);
+        const w = assign(q, idx);
+        if (w) hits.push({ q, w });
+      }
+      if (hits.length && new Set(hits.map((h) => h.w.id)).size === 1) {
+        note("etiqueta", i, p.bodega, hits[0].q);
+        parsed[i] = hits[0].q;
+        stats.etiqueta++;
+      }
+    }
+    // ── (2) una bodega por firma de nombre ──
+    // Rango de una bodega candidata para una oferta: 3 = escrita en el
+    // nombre y el catálogo la reconoce · 2 = sólo catálogo · 1 = sólo
+    // escrita · 0 = ninguna (viene del campo marca). Una oferta se mueve a
+    // la candidata de mejor rango (desempate: más tiendas) sólo si:
+    //   · no tiene bodega → a una escrita, o a una de catálogo cuya línea
+    //     sea exclusiva de esa bodega en el corpus;
+    //   · su bodega NO está escrita → a una escrita;
+    //   · su bodega está escrita → a otra también escrita de rango mayor,
+    //     o del mismo rango con más tiendas ("Punta Corral" / "Fernando
+    //     Dupont" en el mismo título).
+    // Nunca entre dos bodegas que sólo vienen del campo marca.
+    // Misma casa: las palabras propias de una clave están todas en la otra.
+    const ownToks = (k) => k.split(" ").filter((t) => t.length >= 3 && !isJunkBodegaKey(t));
+    const sameHouse = (a, b) => {
+      const ta = ownToks(a), tb = new Set(ownToks(b));
+      if (!ta.length || !tb.size) return false;
+      const [small, big] = ta.length <= tb.size ? [ta, tb] : [[...tb], new Set(ta)];
+      return small.every((t) => big.has(t));
+    };
+    const sigMembers = new Map(); // firma → [índices]
+    for (let i = 0; i < parsed.length; i++) {
+      if (!sigs[i]) continue;
+      if (!sigMembers.has(sigs[i])) sigMembers.set(sigs[i], []);
+      sigMembers.get(sigs[i]).push(i);
+    }
+    for (const members of sigMembers.values()) {
+      if (members.length < 2) continue;
+      const cand = new Map(); // bodegaKey → { display, stores }
+      for (const i of members) {
+        const b = parsed[i].bodega;
+        if (!b) continue;
+        const k = normalizeBodegaKey(b);
+        if (!cand.has(k)) cand.set(k, { display: bodegaDisplay.get(k) ?? b, stores: new Set() });
+        cand.get(k).stores.add(offers[i].storeSlug);
+      }
+      const keys = new Set(members.map((i) => (parsed[i].bodega ? normalizeBodegaKey(parsed[i].bodega) : null)));
+      if (cand.size === 0 || keys.size < 2) continue;
+      for (const i of members) {
+        const p = parsed[i];
+        const name = offers[i].name;
+        const curKey = p.bodega ? normalizeBodegaKey(p.bodega) : null;
+        const rankOf = (display, q) => (bodegaInName(display, name) ? 1 : 0) + (assign(q, idx) ? 2 : 0);
+        const curRank = p.bodega ? rankOf(p.bodega, p) : -1;
+        const curStores = curKey ? cand.get(curKey)?.stores.size ?? 0 : 0;
+        const curWritten = !!p.bodega && bodegaInName(p.bodega, name);
+        let best = null;
+        for (const [k, c] of cand) {
+          if (k === curKey) continue;
+          const q = reparse(i, c.display);
+          const rank = rankOf(c.display, q);
+          const written = rank === 1 || rank === 3;
+          let ok;
+          // Mejor que la actual: más rango, o mismo rango y más tiendas, o
+          // empate total resuelto por la clave (determinístico: las dos
+          // ofertas de un empate eligen la MISMA bodega, no se cruzan).
+          const beats = rank > curRank || (rank === curRank && (c.stores.size > curStores || (c.stores.size === curStores && k > curKey)));
+          if (!p.bodega) {
+            ok = written;
+            if (!ok && q.lineTokens.length) {
+              // Sin bodega: la de una línea exclusiva de esa bodega en el
+              // corpus (≥2 tiendas, o 1 si además el catálogo la reconoce).
+              const owners = lineBodegas.get(q.lineTokens.join(" "));
+              ok = !!owners && owners.size === 1 && owners.has(k) && owners.get(k).size >= (rank >= 2 ? 1 : 2);
+            }
+          } else if (sameHouse(curKey, k)) {
+            // "Michelini" y "Michelini i Mufatto": la misma casa escrita
+            // más corta o más larga. Gana la que el catálogo reconoce.
+            ok = beats;
+          } else if (!curWritten) {
+            ok = written;
+          } else {
+            ok = written && beats;
+          }
+          if (!ok) continue;
+          if (!best || rank > best.rank || (rank === best.rank && c.stores.size > best.stores)) {
+            best = { q, rank, stores: c.stores.size };
+          }
+        }
+        if (best) {
+          note("firma", i, p.bodega, best.q);
+          parsed[i] = best.q;
+          stats.firma++;
+        }
+      }
+    }
+    if (trace) writeFileSync(process.env.CONSENSUS_TRACE, JSON.stringify(trace));
+    console.log(`  consenso de bodega: ${stats.etiqueta} etiqueta→bodega madre · ${stats.firma} unificadas por nombre`);
+  }
+
   // ── Asignación ──
   const groups = new Map(); // wineKey → { wine|null, offers: [] }
   let assigned = 0;
@@ -532,6 +829,7 @@ async function main() {
       externalUrl: o.externalUrl,
       externalSku: o.externalSku,
       name: o.name,
+      _displayName: o._displayName,
       priceArs: o.priceArs,
       inStock: o.inStock,
       imageUrl: o.imageUrl,
@@ -624,7 +922,7 @@ async function main() {
     const eanStores = new Map(); // ean → Set(store)
     for (const [key, g] of groups) {
       for (const o of g.offers) {
-        const ean = toEan(o.externalSku);
+        const ean = eanFromSku(o.externalSku);
         if (!ean) continue;
         if (!eanToKeys.has(ean)) eanToKeys.set(ean, new Set());
         eanToKeys.get(ean).add(key);
@@ -662,28 +960,35 @@ async function main() {
     // ── Jev: juez de los pares que sólo veta la relación de LÍNEA ──
     // Nunca pasa por encima de un gate duro ni del catálogo (lib-jev.mjs).
     const jevAsk = [];
+    const catalogConflictOf = (a, b) => !!(a.wine && b.wine && a.wine.id !== b.wine.id);
     for (const { live } of eanPlan) {
       const target = groups.get(live[0]);
       for (const k of live.slice(1)) {
         const src = groups.get(k);
-        if (target.wine && src.wine && target.wine.id !== src.wine.id) continue;
         const an = repName(target), bn = repName(src);
         const gate = hardConflict({ canonicalName: an }, { canonicalName: bn });
         if (gate === "pack" || gate === "volumen") continue; // obvio, no se pregunta
+        const conflict = catalogConflictOf(target, src);
+        // Dos vinos del catálogo con gate: no hay veredicto que los junte.
+        if (conflict && gate) continue;
         const rel = lineRelation(an, bn);
-        if (!gate && (rel === "equal" || rel === "subset")) continue; // ya fusiona solo
+        if (!conflict && !gate && (rel === "equal" || rel === "subset")) continue; // ya fusiona solo
         jevAsk.push([an, bn]);
       }
     }
     const { verdicts: jev, stats: jevStats } = await adjudicatePairs(jevAsk, {
       apiKey: process.env.TYPESAFE_API_KEY,
-      cachePath: PUBLISH ? JEV_CACHE_PATH : null,
+      cachePath: JEV_CACHE_PATH,
+      persist: PUBLISH,
     });
+    // Circuit breaker: fusiones que Jev habilitaría en esta corrida (cota
+    // superior, sin distinguir catálogo; alcanza para detectar un cambio
+    // de comportamiento del modelo).
     let jevEligible = 0;
     for (const [an, bn] of jevAsk) {
       const v = jev.get(pairKey(an, bn));
       const gate = hardConflict({ canonicalName: an }, { canonicalName: bn });
-      if (v && jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: false }) === "merge") jevEligible++;
+      if (v && jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: false, eanStores: 2 }) === "merge") jevEligible++;
     }
     const jevEnabled = jevEligible <= JEV_MAX_MERGES_PER_RUN;
     console.log(
@@ -693,7 +998,7 @@ async function main() {
         (jevEnabled ? "" : ` · CIRCUIT BREAKER: > ${JEV_MAX_MERGES_PER_RUN}, Jev no fusiona en esta corrida`),
     );
 
-    let eanMerges = 0, eanBlocked = 0, jevMerges = 0;
+    let eanMerges = 0, eanBlocked = 0, jevMerges = 0, jevGateOverrides = 0, jevCatalogMerges = 0;
     const gateSuspects = [];
     for (const { ean, live } of eanPlan) {
       const target = groups.get(live[0]);
@@ -701,26 +1006,33 @@ async function main() {
       for (const k of live.slice(1)) {
         const src = groups.get(k);
         if (!src) continue;
-        // catálogo vs catálogo distinto → jamás (Serie A ≠ Concreto aunque
-        // una tienda repita el barcode por error de carga)
-        if (target.wine && src.wine && target.wine.id !== src.wine.id) { eanBlocked++; continue; }
+        // Catálogo vs catálogo distinto: el texto solo NUNCA alcanza (Serie A
+        // ≠ Concreto aunque una tienda repita el barcode por error de
+        // carga); sólo Jev, con vara alta y sin gate (lib-jev.mjs).
+        const conflict = catalogConflictOf(target, src);
         const a = { canonicalName: repName(target) };
         const b = { canonicalName: repName(src) };
         const gate = hardConflict(a, b);
         const rel = lineRelation(a.canonicalName, b.canonicalName);
-        if (!gate && (rel === "equal" || rel === "subset")) {
+        if (!conflict && !gate && (rel === "equal" || rel === "subset")) {
           target.offers.push(...src.offers);
           groups.delete(k);
           eanMerges++;
           continue;
         }
         const v = jev.get(pairKey(a.canonicalName, b.canonicalName));
-        const decision = v ? jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: false }) : "no";
+        const eanStoreCount = eanStores.get(ean)?.size ?? 0;
+        const decision = v
+          ? jevPolicy({ pMismo: v.pMismo, gate, catalogConflict: conflict, eanStores: eanStoreCount })
+          : "no";
         if (decision === "merge" && jevEnabled) {
           target.offers.push(...src.offers);
           groups.delete(k);
           eanMerges++;
           jevMerges++;
+          if (gate) jevGateOverrides++;
+          if (gate && process.env.JEV_TRACE) console.log("JEV-OVERRIDE", gate, v.pMismo, "|", a.canonicalName, "⟂", b.canonicalName);
+          if (conflict) jevCatalogMerges++;
           continue;
         }
         if (decision === "gate-sospechoso") {
@@ -729,14 +1041,17 @@ async function main() {
         eanBlocked++;
       }
     }
-    console.log(`  evidencia EAN: ${eanMerges} merges (${jevMerges} por Jev) · ${eanBlocked} bloqueados por gates/catálogo · ${gateSuspects.length} gates sospechosos`);
+    console.log(
+      `  evidencia EAN: ${eanMerges} merges (${jevMerges} por Jev: ${jevGateOverrides} levantando un gate, ${jevCatalogMerges} entre entradas del catálogo) · ` +
+        `${eanBlocked} bloqueados por gates/catálogo · ${gateSuspects.length} gates sospechosos`,
+    );
     if (PUBLISH) {
       gateSuspects.sort((x, y) => y.pMismo - x.pMismo);
       writeFileSync(
         JEV_SUSPECTS_PATH,
         JSON.stringify(
           {
-            _doc: "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta. NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
+            _doc: "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta sin llegar a la vara para levantarlo (lib-jev.mjs: ≥0,97 y gate de nivel/paraje, edición o color). NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
             generatedAt: new Date().toISOString(),
             count: gateSuspects.length,
             pairs: gateSuspects,
@@ -798,8 +1113,16 @@ async function main() {
     // cayó en una clave cuyo registro decía "estuche-catena-dv-malbec-2010-
     // x3" (2 ofertas), la ficha flagship heredaba el slug del estuche. La
     // página grande conserva su URL y el slug chico redirige a ella.
+    // Un slug del registro cuyas ofertas de ayer hoy están MAYORMENTE en
+    // otra ficha no se queda acá: la URL sigue a su contenido. Caso del
+    // 26/09: /vino/la-flor-sauvignon-blanc mezclaba La Flor (Pulenta) con
+    // Flor del Valle; al separarlas, el registro le dejaba la URL a Flor del
+    // Valle (2 ofertas) y La Flor (4) estrenaba otra. Así el slug queda
+    // libre y el loop de redirects de abajo lo manda a la ficha dominante.
+    const regOwner = reg ? dominantOf.get(reg) : undefined;
+    const regMoved = regOwner !== undefined && regOwner !== key;
     let chosen = null;
-    if (reg && !claimed.has(reg)) {
+    if (reg && !claimed.has(reg) && !regMoved) {
       const overruled = top && !claimed.has(top[0]) && top[0] !== reg && top[1] >= 2 * Math.max(regCount, 1);
       if (overruled) {
         chosen = top[0];
@@ -904,7 +1227,9 @@ async function main() {
   // ── Materializar grupos ──
   const outGroups = [];
   for (const [key, g] of groups) {
-    const offersOut = g.offers.map(({ _v1Slug, _bodega, ...rest }) => rest);
+    const offersOut = g.offers.map(({ _v1Slug, _bodega, _displayName, ...rest }) =>
+      _displayName ? { ...rest, name: _displayName } : rest,
+    );
     const brand = pickBrand(g);
     if (!g.wine && brand) brandFilled++;
 

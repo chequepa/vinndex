@@ -141,7 +141,7 @@ const COLOR_RE = {
   blanco: /\b(blanco|white|blanc)\b/,
   // "e/b" / "e.b" = extra brut abreviado (caso real Chandon E/B). Sin esto el
   // color quedaba null y un E/B blanco mergeaba con un Rosé.
-  espumante: /\b(espumante|extra\s*brut|brut|nature|demi[\s-]*sec|demisec|champagne|champ|cava|prosecco|frizz)\b|\be[\/.]b\b/,
+  espumante: /\b(espumante|espumoso|extra\s*brut|brut|nature|demi[\s-]*sec|demisec|champagne|champana|champan|champ|cava|prosecco|frizz)\b|\be[\/.]b\b/,
   tinto: /\b(tinto|red|malbec|cabernet|bonarda|syrah|shiraz|merlot|tempranillo|pinot\s*noir|tannat|petit\s*verdot)\b/,
 };
 function colorOf(name) {

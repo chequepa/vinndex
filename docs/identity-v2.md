@@ -107,3 +107,37 @@ curado a mano salvo dos entradas del LLM que estaban mal):
 Medido sobre el corpus publicado del 13/09 (ofertas reconstruidas desde el
 snapshot): 39.485 → 36.050 fichas, 5.030 → 5.256 comparables multi-tienda,
 fichas sin bodega 35.713 → 5.272. Harness: 85 casos (30 del parser v2).
+
+## Reglas agregadas el 2026-09-26 (auditoría de duplicados)
+
+Medición nueva, independiente del pipeline: **ofertas con el nombre
+idéntico** (normalizado sólo por añada, volumen y ruido de retail) que
+terminan en fichas distintas. Es el duplicado que no admite discusión.
+En el sitio publicado del 26/09 eran **1.781**; el 97 % por la misma causa:
+el mismo nombre terminaba con bodegas distintas según qué cargara cada
+tienda en el campo marca ("El Enemigo", "Catena Zapata" o nada), y la
+bodega es parte de la clave del vino.
+
+| Regla | Dónde | Qué arregla |
+|---|---|---|
+| Consenso de bodega por nombre: una bodega por firma de nombre; gana la escrita en el nombre y reconocida por el catálogo; nunca decide entre dos bodegas que sólo vienen del campo marca | `build-groups-v2.mjs` (`bodegaInName`) | "Enemigo Malbec" en 3 fichas; "Michelini" vs "Michelini i Mufatto" |
+| Etiqueta → bodega madre aprendida del catálogo (la "bodega" es parte del nombre de una línea de una casa más grande del catálogo) | `build-groups-v2.mjs` (`parentsOf`) | Lindaflor, Saurus, Fincas Notables, Mariflor, Alambrado… fuera de la ficha de su bodega |
+| Marca placeholder o nombre de la tienda = marca vacía (habilita la inferencia por nombre); una "marca" que es paraje/color/varietal no se infiere | inferencia de marca | "Bianchi" con marca "SIN MARCA"; bodega "Flores" por "Vista Flores" |
+| Catálogo: aliases re-tokenizados con el parser actual, el alias implícito entra aunque sea vacío, color efectivo por uva, entradas "SIN MARCA" fuera | `buildCatalogIndex` | "Chandon Extra Brut" no encontraba su entrada; Angélica Chardonnay con color null y blanco |
+| Catálogo: entradas del mismo vino con y sin varietal/color se pliegan (un solo varietal y color en la línea; color faltante sólo se asume tinto) | `foldCatalogDuplicates` | Rutini Antología en 3 fichas por edición |
+| Errores de tipeo aprendidos del corpus (palabra rara ≤2 tiendas → frecuente, distancia 1-2, con contexto) | `lib-typos.mjs` | "Saint Felicen", "Ruttini", "El Estaco", "Guatallary", "Yacuchaya" |
+| Ruido de formato: código de tienda "(77590)", "750mlx1", "Bot-0.75-lt.", "Extra-Brut", "Champaña" como línea | `lib-identity.mjs` | ediciones y líneas fantasma |
+| EAN con la añada pegada ("7794450090096-2023") cuenta como evidencia | `lib-ean.mjs` (`eanFromSku`) | 59 fichas fuera de la evidencia de código de barras |
+| Jev también juzga dos entradas distintas del catálogo (≥0,95, sin gate) y levanta gates de nivel/paraje, edición o color (≥0,97); siempre con EAN en 2+ tiendas | `lib-jev.mjs` | catálogo con el mismo vino dos veces; "Perdenal", "Cap I", "Norton Ct" |
+| Un slug del registro sigue a su contenido: si sus ofertas de ayer hoy están mayormente en otra ficha, la URL queda libre y redirige | registro de slugs | al separar una quimera, la URL quedaba en la mitad chica |
+| Las corridas en shadow leen la caché de Jev (sin escribirla) | `lib-jev.mjs` (`persist`) | medir en local lo mismo que producción |
+
+Medido sobre el corpus del 26/09 (ofertas reconstruidas desde el snapshot,
+misma corrida con y sin los cambios): nombres idénticos partidos **1.362 →
+134**; fichas 35.683 → 34.127; comparables multi-tienda 5.484 → 5.536;
+ofertas reconocidas por el catálogo 29 % → 35 %; 3.062 URLs de producción
+pasan a 308 hacia su ficha consolidada, **0 quedan en 404**. Muestras de 90
+fusiones nuevas revisadas a mano: sin quimeras. Lo que queda (134) son casos
+genuinamente ambiguos (dos bodegas que sólo vienen del campo marca) o
+líneas sin bodega en ninguna tienda. `CONSENSUS_TRACE=<archivo>` vuelca cada
+movimiento del consenso para auditarlo.
