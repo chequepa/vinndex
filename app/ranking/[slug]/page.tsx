@@ -74,11 +74,16 @@ export async function generateMetadata({
       siteName: "Vinndex",
       type: "website",
       locale: "es_AR",
+      // Un `openGraph` propio reemplaza entero al del layout (merge
+      // superficial) y se llevaba la imagen: sin esto la página se
+      // compartía sin preview.
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/opengraph-image"],
     },
   };
 }

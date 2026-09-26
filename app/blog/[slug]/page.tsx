@@ -36,6 +36,7 @@ export async function generateMetadata({
       modifiedTime: meta.updatedAt ?? meta.publishedAt,
       authors: [meta.author],
       tags: meta.tags,
+      images: ["/opengraph-image"],
     },
     alternates: { canonical: `/blog/${slug}` },
   };
