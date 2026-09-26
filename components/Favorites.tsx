@@ -113,7 +113,7 @@ export function FavoritesNavLink({ className = "" }: { className?: string }) {
       href="/favoritos"
       aria-label={`Mis vinos (${count})`}
       title={`Mis vinos (${count})`}
-      className={`cursor-wine relative inline-flex items-center justify-center w-9 h-9 rounded-full border border-current/15 hover:bg-current/10 transition text-current ${className}`}
+      className={`cursor-wine relative inline-flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-current/15 hover:bg-current/10 transition text-current ${className}`}
     >
       <StarIcon filled={count > 0} size={16} />
       {count > 0 && (

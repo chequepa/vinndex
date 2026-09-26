@@ -432,8 +432,12 @@ export default async function Home() {
             </svg>
             <span>Precios en CABA</span>
           </a>
-          <FavoritesNavLink className="text-snow shrink-0" />
-          <ThemeToggle className="text-snow shrink-0" />
+          {/* Agrupados: con justify-between sueltos, en mobile la
+              estrella quedaba flotando en el medio del nav. */}
+          <div className="flex items-center gap-2 shrink-0">
+            <FavoritesNavLink className="text-snow" />
+            <ThemeToggle className="text-snow" />
+          </div>
         </div>
       </nav>
 
@@ -442,7 +446,7 @@ export default async function Home() {
       <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
         {/* Sun — on mobile sits as a corner ornament (no collision with the
             headline); on desktop expands behind the bottle illustration. */}
-        <div className="absolute top-[5%] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
+        <div className="absolute top-[84px] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
           <div
             className="w-24 h-24 lg:w-48 lg:h-48 rounded-full opacity-80 lg:opacity-100"
             style={{
@@ -511,7 +515,7 @@ export default async function Home() {
         </svg>
 
         <div className="relative z-20 max-w-7xl w-full mx-auto px-6 lg:px-12 pt-28 lg:pt-16 pb-20">
-          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
             {/* COPY + SEARCH */}
             <div className="text-center lg:text-left hero-text">
               <p className="text-snow/90 text-sm md:text-base tracking-[0.25em] uppercase mb-5 font-medium">
@@ -616,7 +620,7 @@ export default async function Home() {
             </div>
           </div>
           <div>
-            <div className="display text-5xl md:text-6xl font-semibold text-mustard leading-none">
+            <div className="display text-5xl md:text-6xl font-semibold text-gold leading-none">
               $0
             </div>
             <div className="text-graphite text-sm mt-2">gratis para vos</div>
