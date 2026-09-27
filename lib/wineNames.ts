@@ -70,6 +70,49 @@ export function stripShelfNoise(name: string): string {
   return cleaned.length >= 3 ? cleaned : name.trim();
 }
 
+/**
+ * Varietales mal escritos por la tienda, corregidos SÓLO para mostrar.
+ *
+ * "La Vieja Chiflada Malec" rankea en posición 7 con 327 impresiones y
+ * CTR 0,9%: el título que Google muestra dice "Malec". Diccionario curado
+ * de typos indiscutibles, no distancia de edición abierta: medido el
+ * 20/09, una regla ciega contra varietales confunde `perro`/`pedro`,
+ * `blancs`, `petite`, `rosato`. Quedan afuera a propósito `ancellota`
+ * (grafía usada en etiquetas argentinas), `sirah` (Petite Sirah) y
+ * `noire` (marcas como "Lujuria Noire").
+ *
+ * No toca identidad ni slugs: el agrupamiento tiene su propio corrector
+ * (scripts/lib-typos.mjs) y las URLs no cambian jamás.
+ */
+const VARIETAL_TYPOS: Record<string, string> = {
+  malec: "malbec",
+  mabec: "malbec",
+  chardonay: "chardonnay",
+  chardonnnay: "chardonnay",
+  suavignon: "sauvignon",
+  savignon: "sauvignon",
+  sauvigon: "sauvignon",
+  sauvingon: "sauvignon",
+  viogner: "viognier",
+  sangiovesse: "sangiovese",
+  caberent: "cabernet",
+};
+
+function matchCase(src: string, fixed: string): string {
+  if (src === src.toUpperCase()) return fixed.toUpperCase();
+  if (src[0] === src[0].toUpperCase()) return fixed[0].toUpperCase() + fixed.slice(1);
+  return fixed;
+}
+
+export function fixVarietalTypos(name: string): string {
+  return name.replace(/(?<![\p{L}\p{N}])(don\s+)?([a-z]+)(?![\p{L}\p{N}])/giu, (m, don: string | undefined, w: string) => {
+    const fixed = VARIETAL_TYPOS[w.toLowerCase()];
+    // "Don Malec" puede ser nombre propio: no se toca.
+    if (!fixed || don) return m;
+    return matchCase(w, fixed);
+  });
+}
+
 /** ¿El nombre ya menciona la bodega? Alcanza con una palabra fuerte. */
 function nameHasBrand(name: string, brand: string): boolean {
   const n = ` ${fold(name).replace(/[^a-z0-9]+/g, " ")} `;
@@ -98,7 +141,7 @@ function nameHasBrand(name: string, brand: string): boolean {
 export function wineFullName(
   g: Pick<ProductGroup, "canonicalName" | "brand">,
 ): string {
-  const name = stripShelfNoise(displayWineName(g.canonicalName));
+  const name = fixVarietalTypos(stripShelfNoise(displayWineName(g.canonicalName)));
   if (!g.brand) return name;
   const brand = displayBrand(g.brand);
   if (!brand || nameHasBrand(name, g.brand)) return name;
