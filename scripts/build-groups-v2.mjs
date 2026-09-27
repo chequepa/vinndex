@@ -45,7 +45,7 @@ import {
   cleanScraperBrand,
 } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
-import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet } from "./stage4-token-merge.mjs";
+import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet, isExcluded } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { dropResolved } from "./lib-carryover.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
@@ -1090,6 +1090,9 @@ async function main() {
       for (let i = 0; i < keys.length; i++) {
         for (let j = i + 1; j < keys.length; j++) {
           const an = canon(groups.get(keys[i])), bn = canon(groups.get(keys[j]));
+          // Destilados, bundles y gift cards no son vino: "Trivento Gin White
+          // Malbec" no es "Trivento White Malbec" (27/09, Jev dijo 0,99).
+          if (isExcluded(an) || isExcluded(bn)) continue;
           if (lineRelation(an, bn) !== "subset") continue;
           if (hardConflict({ canonicalName: an }, { canonicalName: bn })) continue;
           cands.push({ a: keys[i], b: keys[j], an, bn });
