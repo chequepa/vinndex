@@ -1,141 +1,8 @@
 {
- "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta. NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-09-26T07:30:18.598Z",
- "count": 34,
+ "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta sin llegar a la vara para levantarlo (lib-jev.mjs: ≥0,97 y gate de nivel/paraje, edición o color). NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
+ "generatedAt": "2026-09-27T07:38:38.533Z",
+ "count": 15,
  "pairs": [
-  {
-   "ean": "5010327000176",
-   "gate": "tier/parcela",
-   "pMismo": 1,
-   "a": "GLENFIDDICH 12 YO",
-   "b": "SINGLE MALT GLENFIDDICH 12 AÑOS 750cc"
-  },
-  {
-   "ean": "7798108834636",
-   "gate": "tier/parcela",
-   "pMismo": 1,
-   "a": "Vino Pyros Valle De Pedernal Sauvignon Blanc 750 Ml",
-   "b": "Vino blanco Sauvignon Blanc Pyros Valle de Perdenal 750 ml"
-  },
-  {
-   "ean": "7794450004215",
-   "gate": "tier/parcela",
-   "pMismo": 0.99,
-   "a": "Gran Enemigo Gualtallary Cabernet Franc",
-   "b": "Vino tinto Cabernet Franc Gran Enemigo Guatallary 750 ml"
-  },
-  {
-   "ean": "7792319970411",
-   "gate": "color",
-   "pMismo": 0.99,
-   "a": "NORTON COSECHA TARDIA TINTO",
-   "b": "Vino Norton Ct Tinto 750cc"
-  },
-  {
-   "ean": "7798130463521",
-   "gate": "tier/parcela",
-   "pMismo": 0.99,
-   "a": "Argento Single Block 1 Malbec Orgánico",
-   "b": "Vino Malbec Orgánico Argento Sigle Block"
-  },
-  {
-   "ean": "5010327325125",
-   "gate": "tier/parcela",
-   "pMismo": 0.99,
-   "a": "Glenfiddich 15 Años",
-   "b": "Glenfiddich - Single Malt 15 Años"
-  },
-  {
-   "ean": "5010314309862",
-   "gate": "tier/parcela",
-   "pMismo": 0.99,
-   "a": "Whisky The Macallan 18 Double Cask Single Malt 700 ml",
-   "b": "The Macallan - Double Cask 18 Años X 700 cc"
-  },
-  {
-   "ean": "7790945006863",
-   "gate": "color",
-   "pMismo": 0.99,
-   "a": "Vino San Huberto Blanco Dulce Natural",
-   "b": "Vino blanco dule San Huberto natural 750 ml"
-  },
-  {
-   "ean": "7790717152019",
-   "gate": "edicion",
-   "pMismo": 0.99,
-   "a": "Vino Novecento Cabernet Sauvignon Botella 750mlx1",
-   "b": "Vino tinto Cabernet Sauvignon Novecento 750 ml"
-  },
-  {
-   "ean": "7791670003738",
-   "gate": "edicion",
-   "pMismo": 0.98,
-   "a": "Pascual Toso Reserva Cabernet Sauvignon",
-   "b": "Vino Pascual Toso Reserva Cabernet Sauvignon 750cc - Bot-0.75-lt. - Sin Atributo"
-  },
-  {
-   "ean": "7798121941861",
-   "gate": "tier/parcela",
-   "pMismo": 0.98,
-   "a": "Gran Tomero Single Vineyard Pinot Noir - Vistalba",
-   "b": "Vino Gran Tomero Single Vineyard Pinot Noir 750 Ml"
-  },
-  {
-   "ean": "7798078237116",
-   "gate": "tier/parcela",
-   "pMismo": 0.98,
-   "a": "SEPTIMA TIERRA AGRELO MALBEC",
-   "b": "Vino Septima Tierra Malbec 750 Ml"
-  },
-  {
-   "ean": "7790070651068",
-   "gate": "edicion",
-   "pMismo": 0.98,
-   "a": "RUCA MALEN CAP 1 MALBEC",
-   "b": "Vino tinto Malbec Ruca Malen Cap I 750 ml"
-  },
-  {
-   "ean": "7798124010236",
-   "gate": "tier/parcela",
-   "pMismo": 0.98,
-   "a": "PIATTELLI GRAND RVA MALBEC SALTA",
-   "b": "Piattelli Grand Reserve Malbec Salta"
-  },
-  {
-   "ean": "7791540050251",
-   "gate": "color",
-   "pMismo": 0.98,
-   "a": "Vino Blanco Dulce Sabor Miel 750 Cc Dada",
-   "b": "Vino blanco Honey Dadá 750 ml"
-  },
-  {
-   "ean": "7796138000021",
-   "gate": "tier/parcela",
-   "pMismo": 0.97,
-   "a": "San Pedro Yacochuya torrontes",
-   "b": "Vino San Pedro De Yacuchaya Torrontes 750 Ml"
-  },
-  {
-   "ean": "040232855030",
-   "gate": "tier/parcela",
-   "pMismo": 0.97,
-   "a": "Piattelli - Reserva Malbec - Tannat (Salta)",
-   "b": "PIATTELLI RESERVA MALBEC TANNAT CAFAYATE"
-  },
-  {
-   "ean": "7503000677966",
-   "gate": "edicion",
-   "pMismo": 0.97,
-   "a": "TEQUILA CORRALEJO REPOSADO",
-   "b": "Tequila Corralejo Reposado 100% De Agave 750 Ml"
-  },
-  {
-   "ean": "7798039598140",
-   "gate": "tier/parcela",
-   "pMismo": 0.96,
-   "a": "TRIVENTO GOLDEN RESERVE CABERNET FRANC",
-   "b": "Vino tinto Trivento cabernet franc golden 7500 cc."
-  },
   {
    "ean": "7797942007978",
    "gate": "tier/parcela",
@@ -147,8 +14,8 @@
    "ean": "7798109156348",
    "gate": "varietal",
    "pMismo": 0.96,
-   "a": "Fuego Negro Petit Verdot - Malbec",
-   "b": "Vino Fuego Negro Blend Petit Verdotmalbec"
+   "a": "Vino Fuego Negro Blend Petit Verdotmalbec",
+   "b": "Fuego Negro Petit Verdot - Malbec"
   },
   {
    "ean": "7790975198750",
@@ -156,13 +23,6 @@
    "pMismo": 0.95,
    "a": "Chandon Cuvée Réserve Blanc de Blancs",
    "b": "Espumante Chandon Cuveeres Bdblancs Chard 750 Ml"
-  },
-  {
-   "ean": "7790975196770",
-   "gate": "tier/parcela",
-   "pMismo": 0.94,
-   "a": "TERRAZAS DE LOS ANDES MALBEC ROSÉ",
-   "b": "Terrazas de los Andes - Reserva Malbec Rose"
   },
   {
    "ean": "7790577009935",
@@ -186,13 +46,6 @@
    "b": "Piattelli Reserve Cabernet Sauvignon De Salta Cafayate 750ml"
   },
   {
-   "ean": "7798124010267",
-   "gate": "tier/parcela",
-   "pMismo": 0.93,
-   "a": "PIATTELLI RVA TORRONTES SALTA",
-   "b": "Piattelli Reserva Torrontes Cafayate"
-  },
-  {
    "ean": "3012993059320",
    "gate": "edicion",
    "pMismo": 0.93,
@@ -200,11 +53,11 @@
    "b": "Whisky Sir Edwards Smoky 700"
   },
   {
-   "ean": "7798123972511",
-   "gate": "color",
+   "ean": "7790070651068",
+   "gate": "edicion",
    "pMismo": 0.93,
-   "a": "LAS PERDICES ICE MALBEC X 375",
-   "b": "Las Perdices Ice Malbec Rosé 375ml"
+   "a": "RUCA MALEN CAP 1 MALBEC",
+   "b": "Vino Malbec Ruca Malen X750 Ml"
   },
   {
    "ean": "7798074862343",
@@ -212,6 +65,20 @@
    "pMismo": 0.93,
    "a": "Salentein Single Vineyard La Pampa Malbec",
    "b": "Salentein - Single Vineyard La Pampa Malbec IG San Pablo"
+  },
+  {
+   "ean": "040232855030",
+   "gate": "tier/parcela",
+   "pMismo": 0.92,
+   "a": "PIATTELLI RESERVA MALBEC - TANNAT",
+   "b": "PIATTELLI RESERVA MALBEC TANNAT CAFAYATE"
+  },
+  {
+   "ean": "7798124010267",
+   "gate": "tier/parcela",
+   "pMismo": 0.91,
+   "a": "PIATTELLI TORRONTÉS",
+   "b": "Vino Piattelli Torrontes De Cafayate Salta 750 Ml"
   },
   {
    "ean": "8006063002632",
@@ -228,18 +95,18 @@
    "b": "Vino tinto Pinot Noir Salentein 750 ml"
   },
   {
-   "ean": "7798074865290",
-   "gate": "tier/parcela",
-   "pMismo": 0.91,
-   "a": "SALENTEIN RVA CORTE DE TINTAS",
-   "b": "Vino Tinto Corte De Tintas Salentein 750 ml"
-  },
-  {
    "ean": "7798074865450",
    "gate": "tier/parcela",
    "pMismo": 0.9,
    "a": "SALENTEIN RVA SAUVIGNON BLANC",
    "b": "Vino blanco Sauvignon Blanc Salentein 750 ml"
+  },
+  {
+   "ean": "7791540054525",
+   "gate": "edicion",
+   "pMismo": 0.9,
+   "a": "Espumante Dada Art 7 Orange Bitter 750cc",
+   "b": "Finca las Moras Dadá Espumante Orange Bitter"
   }
  ]
 }
