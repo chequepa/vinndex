@@ -55,9 +55,71 @@
       "fecha": "2026-09-20",
       "veredicto": "duplicada",
       "motivo": "slug ocupado por biendevinos"
+    },
+    "varietalvinoteca.com.ar": {
+      "fecha": "2026-09-27",
+      "veredicto": "duplicada",
+      "motivo": "ya está como varietal"
+    },
+    "vendimiaseleccionada.com": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "no cotiza en pesos (EUR)",
+      "platform": "woocommerce",
+      "productos": 50
+    },
+    "canaimasabores.com.ar": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "backend no scrapeable: Store API v1 404",
+      "platform": "woocommerce"
+    },
+    "barrilca.com": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "vinotecacampos.com.ar": {
+      "fecha": "2026-09-27",
+      "veredicto": "duplicada",
+      "motivo": "ya está como vinoteca-campos"
+    },
+    "cavasdelpozo.com.ar": {
+      "fecha": "2026-09-27",
+      "veredicto": "duplicada",
+      "motivo": "ya está como cavas-del-pozo"
+    },
+    "muniz-vinoteca.com": {
+      "fecha": "2026-09-27",
+      "veredicto": "duplicada",
+      "motivo": "ya está como muniz"
+    },
+    "lamasiavinoteca.com": {
+      "fecha": "2026-09-27",
+      "veredicto": "duplicada",
+      "motivo": "ya está como la-masia"
+    },
+    "primerajunta.com": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "vinoatupuerta.org": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
+    },
+    "espaciovino.com.ar": {
+      "fecha": "2026-09-27",
+      "veredicto": "descartada",
+      "motivo": "plataforma no soportada o sitio caído",
+      "platform": "unknown"
     }
   },
   "_doc": "Vinotecas candidatas ya evaluadas por scripts/vet-store-candidates.mjs, con su veredicto y por qué. Existe para que la corrida semanal no gaste tiempo en las mismas rechazadas todas las semanas. Un descarte se puede reevaluar con --recheck <días>: una tienda puede prender el carrito más adelante.",
-  "actualizado": "2026-09-20",
-  "total": 10
+  "actualizado": "2026-09-27",
+  "total": 21
 }
