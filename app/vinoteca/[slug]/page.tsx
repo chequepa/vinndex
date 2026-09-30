@@ -38,7 +38,15 @@ function plural(n: number, one: string, many: string): string {
 }
 
 /** Frase corta del índice para title/description/hero. */
+function fechaLarga(iso: string | null): string {
+  if (!iso) return "hace más de dos meses";
+  return new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(`${iso}T12:00:00-03:00`));
+}
+
 function indexPhrase(s: StoreIndex): string {
+  if (s.stale) {
+    return `precios sin actualizar desde el ${fechaLarga(s.lastPriceChange)}`;
+  }
   if (s.index === null) {
     return `muestra chica: ${nf.format(s.comparableCount)} ${plural(s.comparableCount, "vino comparable", "vinos comparables")}`;
   }
@@ -151,6 +159,16 @@ export default async function VinotecaPage({ params }: Params) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <SiteHeader />
+      {s.stale && (
+        <div className="bg-mustard/20 border-b border-ink/10 text-ink text-sm px-4 lg:px-8 py-3">
+          <div className="max-w-5xl mx-auto">
+            <strong>Precios sin actualizar.</strong> Esta vinoteca no cambió ningún
+            precio desde el {fechaLarga(s.lastPriceChange)}. Los mostramos, pero no
+            compiten en el &ldquo;mejor precio&rdquo; de las fichas ni entran al
+            ranking: confirmá en la tienda antes de comprar.
+          </div>
+        </div>
+      )}
 
       <section className="bg-snow border-b border-ink/10">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-10 lg:py-14">

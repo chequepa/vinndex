@@ -28,6 +28,7 @@
  * se calcula una vez y se cachea a nivel módulo, como `brandPages()`.
  */
 import storesConfig from "@/data/stores.json";
+import storeActivityJson from "@/data/store-activity.json";
 import type { ProductGroup } from "./matching";
 import { groups, isPriceBasisOffer, storeName, displayBrand } from "./snapshot";
 import { wineFullName } from "./wineNames";
@@ -83,7 +84,35 @@ export type StoreIndex = {
   totalWines: number;
   bestDeals: StoreBestDeal[];
   cheapestShareByBand: PriceBand[];
+  /** La vinoteca no cambió ningún precio en 60+ días (data/store-activity.json):
+   * sus precios no compiten y queda fuera del ranking. */
+  stale: boolean;
+  /** Última fecha (YYYY-MM-DD) en que mostró un precio distinto, si se sabe. */
+  lastPriceChange: string | null;
 };
+
+/** Días sin movimiento de precios a partir de los cuales una vinoteca se considera abandonada. */
+export const STALE_DAYS = 60;
+
+type ActivityEntry = { firstSeen?: string; lastPriceChange?: string | null };
+type Activity = { updatedAt?: string | null; stores?: Record<string, ActivityEntry> };
+const ACTIVITY = storeActivityJson as unknown as Activity;
+
+function daysBetween(a: string, b: string): number {
+  return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+}
+
+/** slug → última fecha de cambio, para las vinotecas sin movimiento en STALE_DAYS. */
+export function staleStoreMap(): Map<string, string | null> {
+  const today = ACTIVITY.updatedAt ?? new Date().toISOString().slice(0, 10);
+  const out = new Map<string, string | null>();
+  for (const [slug, e] of Object.entries(ACTIVITY.stores ?? {})) {
+    if (!e.firstSeen || daysBetween(e.firstSeen, today) < STALE_DAYS) continue;
+    const last = e.lastPriceChange ?? e.firstSeen;
+    if (daysBetween(last, today) >= STALE_DAYS) out.set(slug, e.lastPriceChange ?? null);
+  }
+  return out;
+}
 
 type StoreConfig = { slug: string; name: string; baseUrl: string };
 
@@ -230,12 +259,18 @@ function build(): StoreIndex[] {
         sharePct: b.competed > 0 ? Math.round((b.best / b.competed) * 100) : null,
       };
     });
+    const staleMap = staleStoreMap();
+    const stale = staleMap.has(s.slug);
     rows.push({
       slug: s.slug,
       name: s.name || storeName(s.slug),
       baseUrl: s.baseUrl,
-      index,
+      // Sin movimiento de precios no hay índice publicable: sus precios
+      // son de otro momento del mercado.
+      index: stale ? null : index,
       rank: null,
+      stale,
+      lastPriceChange: stale ? (staleMap.get(s.slug) ?? null) : null,
       comparableCount: a.comparableCount,
       bestPriceCount: a.bestPriceCount,
       totalWines: a.wines.size,
@@ -253,6 +288,8 @@ function build(): StoreIndex[] {
     }
     if (x.index !== null) return -1;
     if (y.index !== null) return 1;
+    // muestra chica antes que las abandonadas
+    if (x.stale !== y.stale) return x.stale ? 1 : -1;
     return (
       y.comparableCount - x.comparableCount ||
       y.totalWines - x.totalWines ||

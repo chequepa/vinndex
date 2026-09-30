@@ -8,6 +8,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { priceMapByStore, snapshotItems, updateActivity, staleStores } from "./lib-store-activity.mjs";
 import { planCarryover } from "./lib-carryover.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -161,6 +162,30 @@ function main() {
     console.log(
       `Fichas arrastradas (no vistas hoy): ${stats.arrastradas} · ${stats.vencidas} vencidas por ventana · ${stats.vivas} siguen vivas`,
     );
+  }
+
+  // ── Actividad de precios por vinoteca (lib-store-activity.mjs) ──
+  // Comparamos el snapshot que vamos a pisar con el nuevo: si una tienda
+  // no cambió ni un precio ni sumó un producto, su lastPriceChange no se
+  // mueve. build-groups-v2.mjs marca `stale` a las que llevan 60 días
+  // así (catálogos abandonados que el scraper sigue leyendo).
+  {
+    const activityPath = resolve(REPO_ROOT, "data/store-activity.json");
+    let activity = { stores: {} };
+    if (existsSync(activityPath)) {
+      try { activity = JSON.parse(readFileSync(activityPath, "utf8")); } catch { /* se reconstruye */ }
+    }
+    const today = snapshot.generatedAt.slice(0, 10);
+    const prevMap = priceMapByStore(prevGroups.flatMap((g) => g.offers ?? []));
+    const curMap = priceMapByStore(snapshotItems(snapshot));
+    if (prevMap.size > 0) {
+      updateActivity(activity, prevMap, curMap, today);
+      writeFileSync(activityPath, JSON.stringify(activity, null, 1) + "\n");
+      const stale = staleStores(activity, today);
+      console.log(`Actividad de precios: ${curMap.size} vinotecas · ${stale.size} sin movimiento en 60 días${stale.size ? ` (${[...stale.keys()].slice(0, 8).join(", ")}${stale.size > 8 ? "…" : ""})` : ""}`);
+    } else {
+      console.log("Actividad de precios: sin snapshot anterior, no se actualiza");
+    }
   }
 
   writeFileSync(outPath, JSON.stringify(snapshot, null, 2));

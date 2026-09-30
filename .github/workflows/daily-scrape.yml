@@ -229,7 +229,7 @@ jobs:
           # data/carryover.json es estado PERSISTENTE: la ventana de días de
           # una ficha arrastrada se cuenta contra lo que quedó committeado.
           # Si no viaja entre corridas, el arrastre dura un solo día.
-          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json data/jev-cache.json data/jev-gate-suspects.json data/carryover.json; do
+          for f in data/wine-catalog.json data/catalog-llm-cache.json data/identity-v2-report.json data/wine-slugs.json data/match-questions.json data/jev-cache.json data/jev-gate-suspects.json data/carryover.json data/store-activity.json; do
             [ -f "$f" ] && git add "$f" || true
           done
           if git diff --staged --quiet; then

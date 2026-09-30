@@ -202,6 +202,9 @@ export type ProductOffer = {
    * Set por build-groups.mjs en base a COLLECTOR_CUTOFF_YEAR.
    */
   isCollector?: boolean;
+  /** Identidad v2: la vinoteca no cambió ningún precio en 60+ días; el
+   * precio se muestra pero no compite (build-groups-v2 / store-activity). */
+  stale?: boolean;
   // ── Identidad v2: la VARIANTE de la oferta (set por build-groups-v2) ──
   /** Volumen inferido del nombre; 750 = default. */
   volumeMl?: number;
