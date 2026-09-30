@@ -26,6 +26,7 @@ import { readVsPairs } from "@/lib/vsPairs";
 import { isJunkSlug } from "@/lib/junkSlugs";
 import { isCrawlTargetWine } from "@/lib/internalLinks";
 import { getPriceHistory } from "@/lib/priceHistory";
+import { storeIndexAll, MIN_INDEXABLE_WINES } from "@/lib/storeIndex";
 
 export const SITE = "https://vinndex.com.ar";
 
@@ -81,6 +82,7 @@ export function listBuckets(): string[] {
     "varietals",
     "regions",
     "bodegas",
+    "vinotecas",
     "vs",
     "blog",
     ...Array.from({ length: wines }, (_, i) => `vinos-${i + 1}`),
@@ -215,6 +217,28 @@ export async function entriesForBucket(
           changeFrequency: "daily",
           priority: bodegaPriority(b.storeCount),
         }));
+
+    case "vinotecas":
+      // Hub del índice + una página por vinoteca. Las tiendas con menos
+      // de MIN_INDEXABLE_WINES vinos relevados llevan noindex en su
+      // generateMetadata (misma lógica que las bodegas thin): no se
+      // mandan al sitemap.
+      return [
+        {
+          url: `${SITE}/vinotecas`,
+          lastModified: generatedAt,
+          changeFrequency: "daily",
+          priority: 0.8,
+        },
+        ...storeIndexAll()
+          .filter((s) => s.totalWines >= MIN_INDEXABLE_WINES)
+          .map((s) => ({
+            url: `${SITE}/vinoteca/${s.slug}`,
+            lastModified: generatedAt,
+            changeFrequency: "daily" as const,
+            priority: s.index !== null ? 0.7 : 0.5,
+          })),
+      ];
 
     case "vs": {
       // Las 400 páginas /vs/<a>-vs-<b> son SSG con ~208w cada una —

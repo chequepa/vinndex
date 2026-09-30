@@ -14,8 +14,20 @@ import { useEffect, useRef, useState } from "react";
  *     las muestra/esconde. 250 KB de HTML es mucho pero aceptable.
  *
  * El input mismo es accesible (aria-label, role="searchbox").
+ *
+ * Los textos son props con default "bodegas" para que /vinotecas (misma
+ * tabla, mismo `data-search`) reuse el componente sin tocar /bodegas.
  */
-export function BodegasFilter({ totalCount }: { totalCount: number }) {
+export function BodegasFilter({
+  totalCount,
+  noun = "bodegas",
+  placeholder = "Filtrar por nombre… (ej: Catena, Zuccardi)",
+}: {
+  totalCount: number;
+  /** Plural del ítem filtrado ("bodegas", "vinotecas"). */
+  noun?: string;
+  placeholder?: string;
+}) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(totalCount);
 
@@ -45,12 +57,12 @@ export function BodegasFilter({ totalCount }: { totalCount: number }) {
   return (
     <div className="mb-4">
       <label className="block">
-        <span className="sr-only">Filtrar bodegas</span>
+        <span className="sr-only">Filtrar {noun}</span>
         <input
           ref={inputRef}
           type="search"
-          placeholder="Filtrar por nombre… (ej: Catena, Zuccardi)"
-          aria-label="Filtrar bodegas por nombre"
+          placeholder={placeholder}
+          aria-label={`Filtrar ${noun} por nombre`}
           autoComplete="off"
           className="w-full bg-snow border border-ink/15 focus:border-cobalt rounded-full px-5 py-2.5 text-sm outline-none transition-colors"
         />
@@ -60,7 +72,7 @@ export function BodegasFilter({ totalCount }: { totalCount: number }) {
         <span className="font-semibold text-ink tabular-nums">
           {visibleCount.toLocaleString("es-AR")}
         </span>{" "}
-        de {totalCount.toLocaleString("es-AR")} bodegas
+        de {totalCount.toLocaleString("es-AR")} {noun}
       </p>
     </div>
   );

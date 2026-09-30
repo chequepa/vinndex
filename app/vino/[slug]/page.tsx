@@ -38,6 +38,7 @@ import { MatchQuestion } from "@/components/MatchQuestion";
 import { questionForSlug } from "@/lib/matchQuestions";
 import { wineFullName } from "@/lib/wineNames";
 import { brandSiblings, priceNeighbors } from "@/lib/internalLinks";
+import { storeInitials, colorForStore } from "@/lib/storeVisual";
 import { WineLinkList } from "@/components/WineLinkList";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -181,35 +182,6 @@ function ExternalIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-function storeInitials(name: string): string {
-  const words = name.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "?";
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
-}
-
-// Color determinístico por slug · cada tienda tiene su badge color.
-// Todos los tonos están oscurecidos lo suficiente para pasar contraste
-// WCAG AA (≥4.5) con el texto cream `#f5ede0`. Antes había mustard
-// (#E8B547), verde (#2FB344), terracota (#D97449), azul claro
-// (#7C8FD9) que daban ratios ≤4.5 · Lighthouse a11y los flaggeaba.
-const STORE_COLORS = [
-  "#6B1E2E", // malbec oscuro
-  "#1E3FBF", // cobalt
-  "#A4441C", // terracota oscuro (era #D97449)
-  "#9C7517", // mustard oscuro (era #E8B547)
-  "#2B4FA8", // azul medio (era #4D79E8)
-  "#A02356", // rosa oscuro (era #D63A7A)
-  "#4D5FA3", // azul claro oscurecido (era #7C8FD9)
-  "#1C6929", // verde oscuro (era #2FB344)
-  "#5C3D87", // violeta oscuro (era #7F54B3)
-];
-function colorForStore(slug: string): string {
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
-  return STORE_COLORS[h % STORE_COLORS.length];
-}
-
 // Vintage extraction se reusa de lib/matching.ts (mismo regex). Si la
 // canonicalización cambia, queremos que la ficha cambie con ella.
 
@@ -324,14 +296,14 @@ function OfferRow({
     .filter(Boolean)
     .join(" · ");
 
+  // La fila entera sigue llevando a la vinoteca (el <a> del precio se
+  // estira con `after:inset-0` sobre toda la fila), pero el NOMBRE es un
+  // link interno a /vinoteca/[slug]: un <a> adentro de otro <a> es HTML
+  // inválido, por eso el contenedor es un <div>.
   return (
-    <a
-      href={offer.externalUrl}
-      target="_blank"
-      rel="noopener noreferrer nofollow"
-      aria-label={ariaLabel}
+    <div
       title={offer.name}
-      className={`price-row group cursor-wine grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-x-3 md:gap-4 items-center px-4 md:px-5 py-3 md:py-4 border-b border-ink/5 last:border-b-0 ${
+      className={`price-row group relative grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,2.2fr)_1fr_1.1fr_150px] gap-x-3 md:gap-4 items-center px-4 md:px-5 py-3 md:py-4 border-b border-ink/5 last:border-b-0 ${
         isBest ? "best" : ""
       }`}
     >
@@ -344,13 +316,15 @@ function OfferRow({
           {storeInitials(sname)}
         </div>
         <div className="min-w-0">
-          <div
-            className={`font-semibold leading-snug truncate ${
+          <Link
+            href={`/vinoteca/${offer.storeSlug}`}
+            title={`Precios de ${sname} en Vinndex`}
+            className={`relative z-10 block w-fit max-w-full font-semibold leading-snug truncate hover:text-cobalt hover:underline ${
               outOfStock ? "text-graphite" : "text-ink"
             }`}
           >
             {sname}
-          </div>
+          </Link>
           {(isBest || outOfStock || offer.isCollector || vintage || formatLabel) && (
             <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
               {isBest && (
@@ -396,7 +370,13 @@ function OfferRow({
         </div>
       </div>
 
-      <div className="text-right md:text-center">
+      <a
+        href={offer.externalUrl}
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+        aria-label={ariaLabel}
+        className="cursor-wine text-right md:text-center after:absolute after:inset-0 after:content-['']"
+      >
         <div
           className={`display text-xl md:text-2xl font-semibold tabular-nums leading-tight whitespace-nowrap ${priceText}`}
         >
@@ -413,7 +393,7 @@ function OfferRow({
             <ExternalIcon size={11} />
           </div>
         )}
-      </div>
+      </a>
 
       {variant === "bottle" ? (
         <div className="hidden md:block text-center text-sm tabular-nums">
@@ -441,7 +421,7 @@ function OfferRow({
       >
         {outOfStock ? "Ver tienda" : "Visitar"} <ExternalIcon />
       </span>
-    </a>
+    </div>
   );
 }
 

@@ -56,6 +56,12 @@ const ENDPOINTS: Endpoint[] = [
   },
   {
     method: "GET",
+    path: "/api/badge/{slug}.svg",
+    desc: "Badge SVG embebible de una vinoteca (\"Mejor precio en N vinos\" según el índice de /vinotecas). Cache 1 h; el slug es el mismo que en /api/v1/stores.",
+    example: "/api/badge/jumbo.svg",
+  },
+  {
+    method: "GET",
     path: "/api/price-drops",
     desc: "Lista de price drops del día. Mismo data que la sección 'Bajaron de precio' de la home.",
     example: "/api/price-drops",

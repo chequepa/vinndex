@@ -80,9 +80,10 @@ export function snapshotStats() {
  * (`comparable`, o la heurística por volumen/nombre si el snapshot no trae
  * el campo), no de colección y sin precio sospechoso. Es la misma regla
  * que `bottleStats()` y que el pipeline (scripts/build-groups-v2.mjs,
- * buscar "let basis = inStock.filter").
+ * buscar "let basis = inStock.filter"). Exportada porque el índice de
+ * vinotecas (lib/storeIndex.ts) compara precios sobre esta misma base.
  */
-function isPriceBasisOffer(o: ProductOffer): boolean {
+export function isPriceBasisOffer(o: ProductOffer): boolean {
   if (o.priceSuspect || o.isCollector) return false;
   if (typeof o.comparable === "boolean") return o.comparable;
   return !isNonComparableOffer(o);
