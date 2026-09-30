@@ -403,6 +403,9 @@ export default async function Home() {
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-2">
+            <Link href="/ofertas" className="chip">
+              Ofertas
+            </Link>
             <Link href="/explorar" className="chip">
               Explorar
             </Link>
@@ -655,11 +658,18 @@ export default async function Home() {
                   <span className="italic font-normal">vs la semana pasada.</span>
                 </h2>
                 <p className="text-graphite mt-4 text-base leading-relaxed">
-                  Drops ≥15% sobre la mediana de los últimos 7 días.
-                  Comparado entre vinotecas online. El precio bajó realmente,
-                  no es un cambio de SKU.
+                  Bajas de 15% o más contra la mediana de los últimos 7 días
+                  en la misma vinoteca. El precio bajó de verdad, no es un
+                  cambio de formato.
                 </p>
               </div>
+              <Link
+                href="/ofertas"
+                className="cursor-wine inline-flex items-center gap-2 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt transition-colors"
+              >
+                Ver las {dropsReport?.drops.length ?? 0} bajas de hoy
+                <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {topDrops.map((d) => (
