@@ -300,6 +300,12 @@ body {
   background: rgba(31, 38, 56, 0.1);
   color: #1f2638;
 }
+/* Índice de vinotecas por encima del mercado ("+12%"): terracota-ink
+ * sobre cream/blanco (el #d97449 no pasa AA en texto chico). */
+.tag-terracota {
+  background: rgba(176, 74, 32, 0.1);
+  color: #b04a20;
+}
 
 .filter-chip {
   display: inline-flex;
@@ -699,6 +705,10 @@ tr.row-no {
 .dark .tag-neutral {
   background: rgba(236, 228, 210, 0.1);
   color: var(--color-ink);
+}
+.dark .tag-terracota {
+  background: rgba(217, 116, 73, 0.16);
+  color: #f0a07e;
 }
 
 .dark .st-alive { background: rgba(27, 122, 79, 0.2); color: #5bc48e; }
