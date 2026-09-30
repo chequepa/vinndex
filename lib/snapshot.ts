@@ -1036,8 +1036,10 @@ export function isNonComparableOffer(o: {
   estuche?: boolean;
   copa?: boolean;
   priceSuspect?: boolean;
+  stale?: boolean;
 }): boolean {
   if (o.priceSuspect) return true;
+  if (o.stale) return true;
   if (typeof o.comparable === "boolean") return !o.comparable;
   if (typeof o.volumeMl === "number") {
     return (
@@ -1060,8 +1062,10 @@ export function offerVariantLabel(o: {
   copa?: boolean;
   comparable?: boolean;
   priceSuspect?: boolean;
+  stale?: boolean;
 }): string | null {
   if (o.priceSuspect) return "Precio a verificar";
+  if (o.stale) return "Precio sin actualizar";
   if (o.copa) return "Copa";
   if (o.estuche) return "Estuche";
   if ((o.pack ?? 0) > 0) return `Caja x${o.pack}`;

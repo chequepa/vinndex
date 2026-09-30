@@ -9,6 +9,7 @@ import {
   formatIndexPct,
   indexTone,
   MIN_SAMPLE,
+  STALE_DAYS,
   MIN_STORES_PER_WINE,
   type StoreIndex,
 } from "@/lib/storeIndex";
@@ -90,7 +91,12 @@ function StoreLink({ s }: { s: StoreIndex }) {
 export default function VinotecasIndex() {
   const all = storeIndexAll();
   const ranked = all.filter((s) => s.index !== null);
-  const small = all.filter((s) => s.index === null);
+  const small = all.filter((s) => s.index === null && !s.stale);
+  const stale = all.filter((s) => s.stale);
+  const fechaCorta = (iso: string | null) =>
+    iso
+      ? new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(`${iso}T12:00:00-03:00`))
+      : "hace más de dos meses";
   const nf = new Intl.NumberFormat("es-AR");
   const updated = new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
@@ -329,6 +335,33 @@ export default function VinotecasIndex() {
                 </tbody>
               </table>
             </div>
+          </section>
+        )}
+
+        {stale.length > 0 && (
+          <section className="mt-14">
+            <h2 className="display text-2xl font-semibold text-ink">
+              Sin movimiento de precios
+            </h2>
+            <p className="text-graphite text-sm mt-1 mb-4 max-w-3xl">
+              {nf.format(stale.length)} vinotecas que no cambiaron ni un precio en
+              los últimos {STALE_DAYS} días. Con la inflación que hay, eso no es
+              estabilidad: es un catálogo que quedó sin actualizar. Sus precios
+              se muestran en las fichas como &ldquo;sin actualizar&rdquo; y no
+              entran al ranking hasta que vuelvan a moverse.
+            </p>
+            <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+              {stale.map((s) => (
+                <li key={s.slug} className="flex items-baseline justify-between gap-3 min-h-10 border-b border-ink/5 py-2">
+                  <Link href={`/vinoteca/${s.slug}`} className="text-ink hover:text-cobalt font-medium truncate">
+                    {s.name}
+                  </Link>
+                  <span className="text-xs text-graphite shrink-0">
+                    último cambio {fechaCorta(s.lastPriceChange)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

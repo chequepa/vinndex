@@ -45,6 +45,7 @@ import {
   cleanScraperBrand,
 } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
+import { staleStores } from "./lib-store-activity.mjs";
 import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet, isExcluded } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { dropResolved } from "./lib-carryover.mjs";
@@ -809,6 +810,24 @@ async function main() {
     console.log(`  consenso de bodega: ${stats.etiqueta} etiqueta→bodega madre · ${stats.firma} unificadas por nombre`);
   }
 
+  // ── Vinotecas sin movimiento de precios (data/store-activity.json) ──
+  // Sus ofertas se publican pero marcadas `stale`: salen de la base de
+  // precio (como los sospechosos) y la ficha las etiqueta "Precio sin
+  // actualizar". Medido el 30/09: 22 tiendas con el 100 % de sus precios
+  // congelados desde julio figuraban como "mejor precio".
+  let STALE_STORES = new Map();
+  {
+    const p = resolve(ROOT, "data/store-activity.json");
+    if (existsSync(p)) {
+      try {
+        const act = JSON.parse(readFileSync(p, "utf8"));
+        const today = (raw.generatedAt ?? new Date().toISOString()).slice(0, 10);
+        STALE_STORES = staleStores(act, today);
+      } catch { /* sin registro no se marca nada */ }
+    }
+    console.log(`  vinotecas con precios sin actualizar (≥60 días): ${STALE_STORES.size}`);
+  }
+
   // ── Asignación ──
   const groups = new Map(); // wineKey → { wine|null, offers: [] }
   let assigned = 0;
@@ -838,7 +857,8 @@ async function main() {
       pack: p.pack,
       estuche: p.estuche || undefined,
       copa: p.copa || undefined,
-      comparable: isComparable(p) || undefined,
+      comparable: (!STALE_STORES.has(o.storeSlug) && isComparable(p)) || undefined,
+      stale: STALE_STORES.has(o.storeSlug) || undefined,
       isCollector:
         p.vintage !== null && p.vintage <= COLLECTOR_CUTOFF ? true : undefined,
       _v1Slug: o.v1Slug, // sólo para el mapping de slugs; se borra al final
