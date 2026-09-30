@@ -217,7 +217,7 @@ function editionNums(name) {
 // vacío en casos como "FELINO RED BLEND"). "blend"/"corte" se tratan como
 // un "varietal" más: un blend NO es lo mismo que el monovarietal.
 const VARIETAL_RE = [
-  ["cabernet franc", /\bcabernet\s+franc\b/], ["cabernet", /\bcabernet\b/],
+  ["cabernet franc", /\bcabernet\s+franc\b/], ["cabernet", /\bcabernet(?:\s+sauvignon)?\b/],
   ["malbec", /\bmalbec\b/], ["bonarda", /\bbonarda\b/], ["syrah", /\b(syrah|shiraz)\b/],
   ["merlot", /\bmerlot\b/], ["tempranillo", /\btempranillo\b/], ["pinot noir", /\bpinot\s+noir\b/],
   ["chardonnay", /\bchardonnay\b/], ["sauvignon blanc", /\bsauvignon\s+blanc\b/],
@@ -282,8 +282,36 @@ export function isIdentityToken(t) {
  * distintas de la misma bodega.
  */
 const KEEP_SINGLE_LETTER = new Set(["q", "b", "k", "v", "z", "j", "w"]);
+
+/**
+ * Tokens de identidad PRESENTES en un nombre: los de las frases de varietal
+ * y de paraje/tier que efectivamente matchean, más los marcadores sueltos
+ * de dulzor/estilo. Antes se descartaban TODOS los tokens del léxico por
+ * separado, y "petit" (de "petit verdot") o "alta" (de "alta gama") se
+ * borraban de cualquier nombre: "Petit Caro" quedaba con la misma línea
+ * que "Caro" (el gran vino, 4× el precio) y "Alta Vista" perdía el "alta".
+ * 30/09: quimera Caro ⊂ Petit Caro publicada en producción.
+ */
+export function identityPhraseTokens(name) {
+  const s = stripAccents(canonicalizeName(name)).toLowerCase();
+  const out = new Set();
+  for (const [, re] of VARIETAL_RE) {
+    const g = new RegExp(re.source, "g");
+    let m;
+    while ((m = g.exec(s))) for (const t of m[0].split(/\s+/)) if (t) out.add(t);
+  }
+  const padded = " " + s.replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ") + " ";
+  for (const d of DISCRIMINATORS) {
+    if (padded.includes(" " + d + " ")) for (const t of d.split(" ")) out.add(t);
+  }
+  for (const k of PARCEL_ALIAS_KEYS) if (padded.includes(" " + k + " ")) out.add(k);
+  for (const t of EXTRA_IDENTITY_TOKENS) if (padded.includes(" " + t + " ")) out.add(t);
+  return out;
+}
+
 export function lineTokens(name) {
-  const base = contentTokens(name).filter((t) => !isIdentityToken(t));
+  const present = identityPhraseTokens(name);
+  const base = contentTokens(name).filter((t) => !present.has(t));
   // contentTokens tira tokens de 1 letra (casi siempre ruido: "x", "a" de
   // "Serie A"). Pero algunas consonantes sueltas SÍ son la línea entera
   // ("Zuccardi Q", "Baron B") — sin ellas "Zuccardi Q Malbec" quedaría
@@ -378,7 +406,7 @@ export function lineRelation(aName, bName) {
 // "6 x 750" → SKU distinto de la botella suelta. Devolvemos una "firma" de
 // pack: 0 = botella suelta, N = N unidades, -1 = pack sin nº claro. Dos
 // firmas distintas (incluida 0 vs N) → SKU distinto.
-const PACK_WORD_RE = /\b(caja|cajas|estuche|estuches|pack|combo|kit|cofre|sixpack|six\s*pack)\b|\bcon\s+copa|\bc\/\s*copa/i;
+const PACK_WORD_RE = /\b(caja|cajas|box|estuche|estuches|pack|combo|kit|cofre|sixpack|six\s*pack)\b|\bcon\s+copa|\bc\/\s*copa/i;
 function packSig(name) {
   const s = stripAccents(name).toLowerCase();
   // nº de unidades explícito: "x6", "x 6", "6x750", "6 x 750", "6u", "6 un"
@@ -403,8 +431,15 @@ function volMl(name) {
   if (m) return Math.round(parseFloat(m[1].replace(",", ".")) * 1000);
   m = s.match(/\b(\d+(?:[.,]\d+)?)\s*cl\b/); // centilitros: 300cl = 3000ml
   if (m) return Math.round(parseFloat(m[1].replace(",", ".")) * 10);
-  m = s.match(/\b(187|250|375|500|1000|1500|3000|5000)\s*(?:ml|cc|cm3|cm³)\b/);
-  if (m) return Number(m[1]);
+  // Cualquier volumen explícito con unidad: "269 Ml" (Santa Julia Dulce
+  // Natural, la botellita de los súper) o "700ML" no son la botella de 750
+  // y no pueden competir en su precio. Antes sólo se reconocía una lista
+  // fija y el resto caía en 750.
+  m = s.match(/\b(\d{3,4})\s*(?:ml|cc|cm3|cm³)\b/);
+  if (m) {
+    const n = Number(m[1]);
+    if (n >= 100 && n <= 5000) return n;
+  }
   m = s.match(/\b(187|375|500|1500|3000|5000)\b/); // bare whitelist (no 750/1000 → ambiguo)
   if (m) return Number(m[1]);
   return 750; // default

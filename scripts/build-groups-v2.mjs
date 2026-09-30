@@ -847,6 +847,31 @@ async function main() {
   }
   console.log(`  asignadas a catálogo: ${assigned} (${((100 * assigned) / offers.length).toFixed(1)}%) · grupos: ${groups.size}`);
 
+  // ── Compatibilidad de PRECIO entre dos grupos ──
+  // El precio es evidencia de identidad en vino: dos grupos cuya mediana
+  // de botella comparable difiere más de 1,6× no son el mismo vino, diga
+  // lo que diga el texto, el barcode o Jev. 30/09: "Caro" ($190.000)
+  // fusionado con "Petit Caro" ($47.000), "Pulenta Estate Gran Merlot"
+  // ($90.000) con "Estate Merlot" ($35.000), "Saint Felicien Tributo"
+  // ($40.000) con "Saint Felicien Malbec" ($9.000). Sólo opina cuando los
+  // dos lados tienen ≥3 precios comparables; si no, no bloquea.
+  const PRICE_RATIO_MAX = 1.6;
+  function compMedian(g) {
+    const p = (g.offers ?? [])
+      .filter((o) => o.inStock && o.comparable && !o.isCollector && !o.priceSuspect && typeof o.priceArs === "number" && o.priceArs >= 1000)
+      .map((o) => o.priceArs)
+      .sort((a, b) => a - b);
+    if (p.length < 3) return null;
+    return p.length % 2 ? p[(p.length - 1) / 2] : (p[p.length / 2 - 1] + p[p.length / 2]) / 2;
+  }
+  function pricesCompatible(a, b) {
+    const ma = compMedian(a), mb = compMedian(b);
+    if (ma === null || mb === null) return true;
+    const r = ma / mb;
+    return r <= PRICE_RATIO_MAX && r >= 1 / PRICE_RATIO_MAX;
+  }
+  let priceBlocked = 0;
+
   // ── Fold de fallbacks: varietal/color nulo → hermano único ──
   // Misma regla que el catálogo aplica a sus entradas (fold varietal-null),
   // pero para las claves de fallback: "Rutini Antología 38" (sin varietal)
@@ -868,6 +893,7 @@ async function main() {
     const mergeInto = (src, dst) => {
       const g = groups.get(src);
       const t = groups.get(dst);
+      if (!pricesCompatible(g, t)) { priceBlocked++; return; }
       t.offers.push(...g.offers);
       groups.delete(src);
       folded++;
@@ -1014,6 +1040,7 @@ async function main() {
         const b = { canonicalName: repName(src) };
         const gate = hardConflict(a, b);
         const rel = lineRelation(a.canonicalName, b.canonicalName);
+        if (!pricesCompatible(target, src)) { priceBlocked++; eanBlocked++; continue; }
         if (!conflict && !gate && (rel === "equal" || rel === "subset")) {
           target.offers.push(...src.offers);
           groups.delete(k);
@@ -1043,7 +1070,7 @@ async function main() {
     }
     console.log(
       `  evidencia EAN: ${eanMerges} merges (${jevMerges} por Jev: ${jevGateOverrides} levantando un gate, ${jevCatalogMerges} entre entradas del catálogo) · ` +
-        `${eanBlocked} bloqueados por gates/catálogo · ${gateSuspects.length} gates sospechosos`,
+        `${eanBlocked} bloqueados por gates/catálogo/precio · ${gateSuspects.length} gates sospechosos`,
     );
     if (PUBLISH) {
       gateSuspects.sort((x, y) => y.pMismo - x.pMismo);
@@ -1124,6 +1151,7 @@ async function main() {
         for (const x of ma) for (const y of mb) if (distinct.has(`${x}\u0000${y}`)) bad = true;
         const [ta, tb] = [groups.get(ra), groups.get(rb)];
         if (bad || hardConflict({ canonicalName: canon(ta) }, { canonicalName: canon(tb) })) { vetoed++; continue; }
+        if (!pricesCompatible(ta, tb)) { priceBlocked++; vetoed++; continue; }
         const [dst, src] = ta.offers.length >= tb.offers.length ? [ra, rb] : [rb, ra];
         groups.get(dst).offers.push(...groups.get(src).offers);
         groups.delete(src);
@@ -1140,6 +1168,65 @@ async function main() {
         (stats.sinClave ? " · SIN TYPESAFE_API_KEY (sólo caché)" : "") +
         (tripped ? ` · CIRCUIT BREAKER: > ${Math.round(JEV_NAME_MAX_SHARE * 100)}% "mismo", no fusiona` : ""),
     );
+  }
+
+  // ── Partidor por precio incoherente ──
+  // Lo que ninguna guarda de fusión puede ver: un grupo que YA nació
+  // mezclado (un alias del catálogo que junta "Saint Felicien" con "Saint
+  // Felicien Tributo a Fernando Maza", un EAN reusado). Dentro de cada
+  // grupo, las ofertas se agrupan por su firma de línea (tokens de línea
+  // sin la bodega); una firma minoritaria con ≥2 ofertas cuya mediana
+  // comparable está a ≥1,6× (o ≤1/1,6) de la del resto es otro vino y se
+  // va a un grupo propio, con todas las ofertas de esa firma (también las
+  // cajas y magnums). Determinístico: la clave lleva la firma, así que la
+  // URL del vino partido es estable de una corrida a la otra.
+  {
+    let splits = 0;
+    const examples = [];
+    const medianOf = (offs) => {
+      const p = offs.map((o) => o.priceArs).sort((a, b) => a - b);
+      return p.length % 2 ? p[(p.length - 1) / 2] : (p[p.length / 2 - 1] + p[p.length / 2]) / 2;
+    };
+    for (const [key, g] of [...groups.entries()]) {
+      const priced = g.offers.filter((o) => o.inStock && o.comparable && !o.isCollector && !o.priceSuspect && typeof o.priceArs === "number" && o.priceArs >= 1000);
+      if (priced.length < 6) continue;
+      const bodegaRaw = g.wine?.bodega ?? g.offers.find((o) => o._bodega)?._bodega ?? "";
+      const bodegaToks = new Set(normalizeBodegaKey(bodegaRaw).split(" ").filter((t) => t.length > 1));
+      const sigCache = new Map();
+      const sigOf = (o) => {
+        let s = sigCache.get(o);
+        if (s === undefined) {
+          s = [...lineTokens(o.name)].filter((t) => !bodegaToks.has(t)).sort().join(" ");
+          sigCache.set(o, s);
+        }
+        return s;
+      };
+      const bySig = new Map();
+      for (const o of priced) {
+        const s = sigOf(o);
+        if (!bySig.has(s)) bySig.set(s, []);
+        bySig.get(s).push(o);
+      }
+      if (bySig.size < 2) continue;
+      const [baseSig] = [...bySig.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+      for (const [sig, offs] of bySig) {
+        if (sig === baseSig || offs.length < 2) continue;
+        const rest = priced.filter((o) => sigOf(o) !== sig);
+        if (rest.length < 3) continue;
+        const ratio = medianOf(offs) / medianOf(rest);
+        if (ratio < PRICE_RATIO_MAX && ratio > 1 / PRICE_RATIO_MAX) continue;
+        const moving = g.offers.filter((o) => sigOf(o) === sig);
+        if (moving.length === 0 || moving.length === g.offers.length) continue;
+        const newKey = `${key}::sub-${slugify(sig) || "base"}`;
+        if (groups.has(newKey)) { groups.get(newKey).offers.push(...moving); }
+        else groups.set(newKey, { wine: null, expr: null, offers: moving });
+        g.offers = g.offers.filter((o) => sigOf(o) !== sig);
+        splits++;
+        if (examples.length < 10) examples.push(`"${sig || "(sin línea)"}" ×${ratio.toFixed(1)} (${moving.length} ofertas) fuera de "${pickCanonicalName(g.offers).slice(0, 40)}"`);
+      }
+    }
+    console.log(`  partidos por precio incoherente (sub-línea a ≥${PRICE_RATIO_MAX}× de la mediana): ${splits} · fusiones bloqueadas por precio: ${priceBlocked}`);
+    for (const e of examples) console.log(`    · ${e}`);
   }
 
   // ── Slugs: preservar el slug v1 dominante ──
