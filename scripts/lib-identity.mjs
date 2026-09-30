@@ -394,6 +394,9 @@ export const CONTENT_STOPWORDS = new Set([
   // "Nicasia Vineyard(s) Malbec" = "Nicasia Malbec"; "Viñedo Elena" idem.
   // El viñedo que SÍ distingue vive en parcels.json (Tilcara, Gualtallary…).
   "vineyard", "vineyards", "vinedo", "vinedos",
+  // "Viña Cobos Malbec" y "Cobos Malbec" son el mismo vino: "viña" es
+  // tratamiento de bodega, no línea (30/09: partía al Cobos en dos).
+  "vina", "vinas",
   // "Champaña" (sin la ñ, "champana") y "espumoso" son la categoría, no la
   // línea: "Champaña Alamos Brut Rosé" abría la línea "champana" y quedaba
   // en otra ficha que "Alamos Brut Rosé" (26/09: 5 fichas de catálogo
@@ -420,7 +423,7 @@ export function contentTokens(name) {
     .replace(/\bx?\s*\d{1,2}\s*(u|un|unid|unidades|bot|botellas)\b/g, " ")
     // Volúmenes con cualquier unidad, con o sin espacio y con decimales:
     // "750 Cc", "1.500 lts", "1,5 L", "300cl", "X750CC".
-    .replace(/\bx?\d+(?:[.,]\d+)?\s*(ml|cc|cm3|cm³|l|lt|lts|litros?|cl)\b/g, " ")
+    .replace(/\bx?\d+(?:[.,]\d+)?\s*(ml|cc|cm3|cm³|l|lt|lts|litros?|cl|c)\b/g, " ")
     .replace(/\bx\s*\d+\b/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)

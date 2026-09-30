@@ -10,7 +10,7 @@
  *
  * Uso: node scripts/test-matching.mjs   (exit 1 si algún caso falla)
  */
-import { hardConflict, lineRelation } from "./stage4-token-merge.mjs";
+import { hardConflict, lineRelation, lineTokens } from "./stage4-token-merge.mjs";
 import { secondaryKey } from "./remerge-groups.mjs";
 import { NAME_PREFIX_TO_BRAND, canonicalizeName } from "./lib-identity.mjs";
 import { isValidEan, eanFromSku } from "./lib-ean.mjs";
@@ -236,6 +236,12 @@ const PARSE_CASES = [
   ["'Extra' de Extra Brut no es línea", "Trumpeter Extra Brut", null, "Rutini Trumpeter Extra Brut", null, true, true],
   ["marca de scraper con cola de producto", "Nampe Malbec 750cc", "Nampe Malbec 750 cc", "Nampe Malbec", "Nampe", true, true],
   ["Reserve = Reserva (Trumpeter)", "Trumpeter Reserve Malbec", null, "Rutini Trumpeter Reserva Malbec", null, true, true],
+  // 30/09: tokens de frases multi-palabra ya no se borran sueltos
+  ["Petit Caro ≠ Caro (\"petit\" no es Petit Verdot)", "Petit Caro", "Caro", "Caro", "Caro", false, true],
+  ["Pequeñas Producciones ≠ la base", "Pequeñas Producciones Cabernet Sauvignon", null, "Cabernet Sauvignon", "Escorihuela", false, true],
+  ["Cabernet Sauvignon = Cabernet (misma línea)", "Rutini Cabernet Sauvignon", null, "Rutini Cabernet", null, true, true],
+  ["269 ml es otro formato, no la botella", "Vino Tinto Dulce Natural 269 Ml Santa Julia", null, "Santa Julia Dulce Natural", null, true, false],
+  ["Box es pack", "Box Trapiche Gran Medalla Malbec", null, "Trapiche Gran Medalla Malbec", null, true, false],
   ["Reserva sigue distinguiendo de la base", "Trumpeter Reserve Malbec", null, "Trumpeter Malbec", null, false, true],
   // ── Auditoría 26/09: el mismo vino partido por ruido de formato ──
   ["código de tienda (77315) no es edición", "NIETO SENETINER PATRIMONIAL MALBEC DOC(77315)", "Nieto Senetiner", "Nieto Senetiner Patrimonial Malbec Doc 750 ml", "Nieto Senetiner", true, true],
@@ -312,6 +318,25 @@ console.log("\n=== DATOS (atribuciones de bodega) ===");
     console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  marca de scraper "${raw}" → ${JSON.stringify(got)}${ok2 ? "" : ` (esperaba ${JSON.stringify(want)})`}`);
   }
   const junk = [["san", true], ["the", true], ["san telmo", false], ["catena zapata", false], ["casa de vinos", true], ["luca", false]];
+  {
+    // Tokens de línea: sólo se descartan los de las frases de identidad
+    // presentes. "Alta Vista" conserva "alta" (no es "alta gama").
+    const lt = (n) => [...lineTokens(n)].sort().join(" ");
+    const cases2 = [
+      ["Alta Vista Malbec", "alta vista"],
+      ["Alta Gama Malbec", ""],
+      ["Petit Caro", "caro petit"],
+      ["Petit Verdot Reserva", ""],
+      ["Rutini Cabernet Sauvignon", "rutini"],
+      ["Gran Enemigo Cepillo", "enemigo"],
+    ];
+    for (const [n, want] of cases2) {
+      const got = lt(n);
+      const ok2 = got === want;
+      if (!ok2) failed++;
+      console.log(`  ${ok2 ? "✅" : "❌ FALLA"}  línea de "${n}" → "${got}"${ok2 ? "" : ` (esperaba "${want}")`}`);
+    }
+  }
   for (const [k, want] of junk) {
     const ok2 = isJunkBodegaKey(k) === want;
     if (!ok2) failed++;

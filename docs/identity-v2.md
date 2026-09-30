@@ -142,3 +142,26 @@ fusiones nuevas revisadas a mano: sin quimeras. Lo que queda (134) son casos
 genuinamente ambiguos (dos bodegas que sólo vienen del campo marca) o
 líneas sin bodega en ninguna tienda. `CONSENSUS_TRACE=<archivo>` vuelca cada
 movimiento del consenso para auditarlo.
+
+## Reglas agregadas el 2026-09-30 (precio como evidencia de identidad)
+
+Auditando las dispersiones de precio del snapshot publicado aparecieron
+quimeras nuevas que ninguna regla de texto podía ver: "Caro" ($190.000)
+adentro de "Petit Caro" ($47.000), "Saint Felicien Tributo a Fernando
+Maza" adentro de "Saint Felicien Malbec", "Pulenta Estate Gran Merlot"
+adentro de "Estate Merlot", "Cobos Malbec" ($500.000) adentro de "Felino
+Malbec", "Santa Julia Dulce Natural 269 ml" compitiendo como botella de
+750 (y publicada como "baja del 52%" en /ofertas).
+
+| Regla | Dónde | Qué arregla |
+|---|---|---|
+| Tokens de identidad sólo de las FRASES presentes (`identityPhraseTokens`): "petit" se descarta si aparece "petit verdot", no siempre; "alta" sólo con "alta gama"; "cabernet sauvignon" es una frase | `stage4-token-merge.mjs` (`lineTokens`) | Petit Caro ≠ Caro; Alta Vista conserva "alta" |
+| Volumen explícito en ml/cc de cualquier tamaño (269, 700, 620) es formato, no botella de 750 | `volMl` | la botellita de 269 ml deja de ser "oferta" |
+| "box" es pack; "viña" no es línea; "750c" es volumen | `PACK_WORD_RE`, `CONTENT_STOPWORDS`, `contentTokens` | Box Gran Medalla no compite; Viña Cobos = Cobos |
+| Guarda de precio en TODA fusión (EAN, Jev por barcode, Jev por nombre, fold): medianas comparables a >1,6× no se juntan, aunque el texto o Jev digan que sí | `build-groups-v2.mjs` (`pricesCompatible`) | Gran Merlot no entra en Estate Merlot por un EAN reusado |
+| Partidor por precio incoherente: dentro de un grupo, una firma de línea minoritaria (≥2 ofertas) con mediana a ≥1,6× (o ≤1/1,6) del resto se va a su propio grupo, con clave estable `::sub-<firma>` | `build-groups-v2.mjs` | Tributo sale de Saint Felicien; Cobos sale de Felino; Don Nicanor de Nieto Senetiner; Alamos Selección de Alamos |
+
+Medido sobre el corpus del 30/09: 14 grupos partidos, 18 fusiones
+bloqueadas por precio, fichas con dispersión ≥3× entre vinotecas 106 → 71.
+La guarda sólo opina con ≥3 precios comparables de cada lado; con menos,
+no bloquea (no inventa evidencia).
