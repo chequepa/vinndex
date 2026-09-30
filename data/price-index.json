@@ -1,0 +1,1749 @@
+{
+  "generatedAt": "2026-09-30T07:37:52.215Z",
+  "name": "Índice Vinndex de precios del vino",
+  "url": "https://vinndex.com.ar/indice",
+  "api": "https://vinndex.com.ar/api/v1/indice",
+  "base": {
+    "date": "2026-07-12",
+    "index": 100
+  },
+  "latest": {
+    "date": "2026-09-30",
+    "index": 102.8,
+    "fichas": 2589,
+    "links": 2573
+  },
+  "coverage": {
+    "stores": 109,
+    "minStoresPerWine": 3,
+    "frequency": "semanal (último snapshot de cada semana ISO)",
+    "currency": "ARS"
+  },
+  "headline": {
+    "d30": {
+      "pct": 1.13,
+      "from": "2026-08-30",
+      "to": "2026-09-30",
+      "days": 31
+    },
+    "d90": {
+      "pct": 2.8,
+      "from": "2026-07-12",
+      "to": "2026-09-30",
+      "days": 80
+    },
+    "sinceStart": {
+      "pct": 2.8,
+      "from": "2026-07-12",
+      "to": "2026-09-30",
+      "days": 80
+    }
+  },
+  "method": {
+    "resumen": "Mediana del precio online de cada vino entre las vinotecas que lo venden; el índice encadena semana a semana el promedio recortado de las variaciones de los vinos presentes en ambas semanas. Base 100 = 2026-07-12.",
+    "pasos": [
+      "Precio de un vino en una fecha: mediana entre vinotecas de la botella suelta de 750 ml con stock (precio ≥ $1.000, sin precios sospechosos ni ediciones de colección). Sólo entran vinos vendidos por al menos 3 vinotecas ese día; destilados, vermú y licores quedan afuera.",
+      "Índice encadenado: entre dos semanas consecutivas, la variación es el promedio recortado (sacando el 5% más extremo de cada lado) de las variaciones de los vinos presentes en ambas semanas, y cada semana multiplica a la anterior desde una base 100. Así no pesan los vinos que entran o salen del catálogo ni las fichas que el pipeline fusiona o parte. No usamos la mediana porque más de la mitad de los vinos no cambia de precio en una semana y daría siempre cero.",
+      "Segmentos: cada varietal, banda de precio y el top 100 tienen su propia serie encadenada sobre su subconjunto de vinos. La banda se fija con el primer precio visto de cada vino, así un vino no cambia de banda porque subió.",
+      "Sanidad: un eslabón con menos de 200 vinos comunes (30 en un segmento) o con una variación mayor a ±15% semanal se publica igual, marcado como muestra baja.",
+      "Son precios de lista publicados online, sin envío ni descuentos por medio de pago. No mide consumo ni canasta: mide cuánto cambió el precio publicado del mismo vino."
+    ]
+  },
+  "notes": [],
+  "points": [
+    {
+      "date": "2026-07-12",
+      "week": "2026-W28",
+      "index": 100,
+      "change": null,
+      "links": null,
+      "fichas": 2381
+    },
+    {
+      "date": "2026-07-19",
+      "week": "2026-W29",
+      "index": 100.46,
+      "change": 0.46,
+      "links": 2054,
+      "fichas": 2106,
+      "up": 569,
+      "down": 337,
+      "flat": 1148
+    },
+    {
+      "date": "2026-07-26",
+      "week": "2026-W30",
+      "index": 100.54,
+      "change": 0.08,
+      "links": 2071,
+      "fichas": 2359,
+      "up": 421,
+      "down": 399,
+      "flat": 1251
+    },
+    {
+      "date": "2026-08-02",
+      "week": "2026-W31",
+      "index": 100.72,
+      "change": 0.17,
+      "links": 2294,
+      "fichas": 2372,
+      "up": 363,
+      "down": 234,
+      "flat": 1697
+    },
+    {
+      "date": "2026-08-09",
+      "week": "2026-W32",
+      "index": 100.33,
+      "change": -0.38,
+      "links": 2217,
+      "fichas": 2270,
+      "up": 345,
+      "down": 511,
+      "flat": 1361
+    },
+    {
+      "date": "2026-08-16",
+      "week": "2026-W33",
+      "index": 101.07,
+      "change": 0.74,
+      "links": 2173,
+      "fichas": 2300,
+      "up": 621,
+      "down": 302,
+      "flat": 1250
+    },
+    {
+      "date": "2026-08-23",
+      "week": "2026-W34",
+      "index": 101.16,
+      "change": 0.09,
+      "links": 2249,
+      "fichas": 2335,
+      "up": 407,
+      "down": 348,
+      "flat": 1494
+    },
+    {
+      "date": "2026-08-30",
+      "week": "2026-W35",
+      "index": 101.65,
+      "change": 0.49,
+      "links": 2227,
+      "fichas": 2440,
+      "up": 631,
+      "down": 411,
+      "flat": 1185
+    },
+    {
+      "date": "2026-09-06",
+      "week": "2026-W36",
+      "index": 102.21,
+      "change": 0.55,
+      "links": 2377,
+      "fichas": 2583,
+      "up": 612,
+      "down": 358,
+      "flat": 1407
+    },
+    {
+      "date": "2026-09-13",
+      "week": "2026-W37",
+      "index": 102.39,
+      "change": 0.17,
+      "links": 2424,
+      "fichas": 2553,
+      "up": 504,
+      "down": 381,
+      "flat": 1539
+    },
+    {
+      "date": "2026-09-20",
+      "week": "2026-W38",
+      "index": 103.18,
+      "change": 0.77,
+      "links": 2440,
+      "fichas": 2574,
+      "up": 720,
+      "down": 398,
+      "flat": 1322
+    },
+    {
+      "date": "2026-09-27",
+      "week": "2026-W39",
+      "index": 102.68,
+      "change": -0.48,
+      "links": 2461,
+      "fichas": 2641,
+      "up": 481,
+      "down": 643,
+      "flat": 1337
+    },
+    {
+      "date": "2026-09-30",
+      "week": "2026-W40",
+      "index": 102.8,
+      "change": 0.11,
+      "links": 2573,
+      "fichas": 2589,
+      "up": 275,
+      "down": 144,
+      "flat": 2154
+    }
+  ],
+  "segments": {
+    "malbec": {
+      "label": "Malbec",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 707
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.51,
+          "change": 0.51,
+          "links": 613,
+          "fichas": 634,
+          "up": 177,
+          "down": 108,
+          "flat": 328
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.55,
+          "change": 0.04,
+          "links": 623,
+          "fichas": 701,
+          "up": 130,
+          "down": 124,
+          "flat": 369
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.66,
+          "change": 0.11,
+          "links": 687,
+          "fichas": 711,
+          "up": 109,
+          "down": 81,
+          "flat": 497
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.13,
+          "change": -0.53,
+          "links": 670,
+          "fichas": 681,
+          "up": 106,
+          "down": 170,
+          "flat": 394
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.23,
+          "change": 1.1,
+          "links": 651,
+          "fichas": 690,
+          "up": 218,
+          "down": 95,
+          "flat": 338
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.33,
+          "change": 0.1,
+          "links": 673,
+          "fichas": 697,
+          "up": 126,
+          "down": 108,
+          "flat": 439
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.9,
+          "change": 0.56,
+          "links": 665,
+          "fichas": 712,
+          "up": 194,
+          "down": 114,
+          "flat": 357
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.49,
+          "change": 0.57,
+          "links": 695,
+          "fichas": 758,
+          "up": 192,
+          "down": 108,
+          "flat": 395
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.64,
+          "change": 0.15,
+          "links": 715,
+          "fichas": 745,
+          "up": 148,
+          "down": 119,
+          "flat": 448
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.32,
+          "change": 0.66,
+          "links": 713,
+          "fichas": 741,
+          "up": 198,
+          "down": 118,
+          "flat": 397
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.75,
+          "change": -0.55,
+          "links": 710,
+          "fichas": 755,
+          "up": 129,
+          "down": 188,
+          "flat": 393
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.88,
+          "change": 0.13,
+          "links": 744,
+          "fichas": 751,
+          "up": 90,
+          "down": 41,
+          "flat": 613
+        }
+      ]
+    },
+    "cabernet-sauvignon": {
+      "label": "Cabernet Sauvignon",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 246
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.17,
+          "change": 0.17,
+          "links": 219,
+          "fichas": 221,
+          "up": 63,
+          "down": 46,
+          "flat": 110
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.53,
+          "change": 0.36,
+          "links": 220,
+          "fichas": 241,
+          "up": 57,
+          "down": 44,
+          "flat": 119
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.53,
+          "change": 0,
+          "links": 236,
+          "fichas": 239,
+          "up": 40,
+          "down": 36,
+          "flat": 160
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.16,
+          "change": -0.36,
+          "links": 232,
+          "fichas": 238,
+          "up": 42,
+          "down": 49,
+          "flat": 141
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 100.84,
+          "change": 0.68,
+          "links": 224,
+          "fichas": 229,
+          "up": 56,
+          "down": 29,
+          "flat": 139
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 100.78,
+          "change": -0.06,
+          "links": 225,
+          "fichas": 237,
+          "up": 50,
+          "down": 43,
+          "flat": 132
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.52,
+          "change": 0.73,
+          "links": 226,
+          "fichas": 244,
+          "up": 79,
+          "down": 51,
+          "flat": 96
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.29,
+          "change": 0.75,
+          "links": 241,
+          "fichas": 260,
+          "up": 72,
+          "down": 45,
+          "flat": 124
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.33,
+          "change": 0.04,
+          "links": 245,
+          "fichas": 250,
+          "up": 62,
+          "down": 50,
+          "flat": 133
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.87,
+          "change": 1.5,
+          "links": 242,
+          "fichas": 256,
+          "up": 87,
+          "down": 45,
+          "flat": 110
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 103.11,
+          "change": -0.74,
+          "links": 247,
+          "fichas": 257,
+          "up": 51,
+          "down": 74,
+          "flat": 122
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 103.22,
+          "change": 0.11,
+          "links": 252,
+          "fichas": 256,
+          "up": 29,
+          "down": 22,
+          "flat": 201
+        }
+      ]
+    },
+    "blend": {
+      "label": "Blend / corte (tintos)",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 236
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.24,
+          "change": 0.24,
+          "links": 204,
+          "fichas": 207,
+          "up": 57,
+          "down": 33,
+          "flat": 114
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.4,
+          "change": 0.16,
+          "links": 202,
+          "fichas": 234,
+          "up": 41,
+          "down": 40,
+          "flat": 121
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.46,
+          "change": 0.06,
+          "links": 230,
+          "fichas": 235,
+          "up": 30,
+          "down": 18,
+          "flat": 182
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.06,
+          "change": -0.39,
+          "links": 214,
+          "fichas": 220,
+          "up": 30,
+          "down": 53,
+          "flat": 131
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 100.93,
+          "change": 0.86,
+          "links": 211,
+          "fichas": 225,
+          "up": 61,
+          "down": 23,
+          "flat": 127
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 100.69,
+          "change": -0.24,
+          "links": 221,
+          "fichas": 232,
+          "up": 24,
+          "down": 37,
+          "flat": 160
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.39,
+          "change": 0.69,
+          "links": 224,
+          "fichas": 244,
+          "up": 65,
+          "down": 40,
+          "flat": 119
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 101.74,
+          "change": 0.35,
+          "links": 240,
+          "fichas": 266,
+          "up": 56,
+          "down": 42,
+          "flat": 142
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 101.97,
+          "change": 0.23,
+          "links": 243,
+          "fichas": 261,
+          "up": 49,
+          "down": 35,
+          "flat": 159
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 102.86,
+          "change": 0.87,
+          "links": 253,
+          "fichas": 272,
+          "up": 74,
+          "down": 29,
+          "flat": 150
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.41,
+          "change": -0.43,
+          "links": 258,
+          "fichas": 284,
+          "up": 38,
+          "down": 62,
+          "flat": 158
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.54,
+          "change": 0.13,
+          "links": 274,
+          "fichas": 275,
+          "up": 30,
+          "down": 12,
+          "flat": 232
+        }
+      ]
+    },
+    "chardonnay": {
+      "label": "Chardonnay",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 154
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.11,
+          "change": 0.11,
+          "links": 141,
+          "fichas": 144,
+          "up": 28,
+          "down": 22,
+          "flat": 91
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.09,
+          "change": -0.02,
+          "links": 144,
+          "fichas": 154,
+          "up": 22,
+          "down": 20,
+          "flat": 102
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.56,
+          "change": 0.47,
+          "links": 148,
+          "fichas": 154,
+          "up": 30,
+          "down": 14,
+          "flat": 104
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.74,
+          "change": 0.18,
+          "links": 144,
+          "fichas": 148,
+          "up": 30,
+          "down": 31,
+          "flat": 83
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.41,
+          "change": 0.66,
+          "links": 146,
+          "fichas": 156,
+          "up": 41,
+          "down": 16,
+          "flat": 89
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.12,
+          "change": -0.28,
+          "links": 152,
+          "fichas": 156,
+          "up": 22,
+          "down": 29,
+          "flat": 101
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.16,
+          "change": 0.04,
+          "links": 144,
+          "fichas": 160,
+          "up": 38,
+          "down": 29,
+          "flat": 77
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 101.69,
+          "change": 0.53,
+          "links": 156,
+          "fichas": 176,
+          "up": 36,
+          "down": 28,
+          "flat": 92
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.09,
+          "change": 0.39,
+          "links": 162,
+          "fichas": 167,
+          "up": 42,
+          "down": 23,
+          "flat": 97
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.17,
+          "change": 1.06,
+          "links": 160,
+          "fichas": 165,
+          "up": 55,
+          "down": 27,
+          "flat": 78
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.01,
+          "change": -1.13,
+          "links": 157,
+          "fichas": 169,
+          "up": 30,
+          "down": 53,
+          "flat": 74
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.11,
+          "change": 0.09,
+          "links": 166,
+          "fichas": 166,
+          "up": 17,
+          "down": 6,
+          "flat": 143
+        }
+      ]
+    },
+    "torrontes": {
+      "label": "Torrontés",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 45
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.87,
+          "change": 0.87,
+          "links": 40,
+          "fichas": 43,
+          "up": 11,
+          "down": 5,
+          "flat": 24
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.23,
+          "change": -0.63,
+          "links": 43,
+          "fichas": 50,
+          "up": 8,
+          "down": 9,
+          "flat": 26
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 101.1,
+          "change": 0.87,
+          "links": 48,
+          "fichas": 49,
+          "up": 15,
+          "down": 4,
+          "flat": 29
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 101.04,
+          "change": -0.06,
+          "links": 44,
+          "fichas": 45,
+          "up": 13,
+          "down": 15,
+          "flat": 16
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.83,
+          "change": 0.78,
+          "links": 44,
+          "fichas": 48,
+          "up": 13,
+          "down": 9,
+          "flat": 22
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.7,
+          "change": -0.13,
+          "links": 47,
+          "fichas": 49,
+          "up": 13,
+          "down": 7,
+          "flat": 27
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 102.17,
+          "change": 0.46,
+          "links": 47,
+          "fichas": 54,
+          "up": 16,
+          "down": 10,
+          "flat": 21
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.24,
+          "change": 0.06,
+          "links": 53,
+          "fichas": 55,
+          "up": 10,
+          "down": 14,
+          "flat": 29
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 103.09,
+          "change": 0.83,
+          "links": 53,
+          "fichas": 56,
+          "up": 14,
+          "down": 6,
+          "flat": 33
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.04,
+          "change": -0.05,
+          "links": 53,
+          "fichas": 55,
+          "up": 15,
+          "down": 13,
+          "flat": 25
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 104.18,
+          "change": 1.11,
+          "links": 53,
+          "fichas": 57,
+          "up": 17,
+          "down": 8,
+          "flat": 28
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 104.01,
+          "change": -0.16,
+          "links": 57,
+          "fichas": 57,
+          "up": 5,
+          "down": 7,
+          "flat": 45
+        }
+      ]
+    },
+    "espumantes": {
+      "label": "Espumantes",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 106
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.59,
+          "change": 0.59,
+          "links": 86,
+          "fichas": 89,
+          "up": 20,
+          "down": 6,
+          "flat": 60
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.68,
+          "change": 0.09,
+          "links": 88,
+          "fichas": 107,
+          "up": 15,
+          "down": 12,
+          "flat": 61
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.79,
+          "change": 0.11,
+          "links": 104,
+          "fichas": 105,
+          "up": 16,
+          "down": 10,
+          "flat": 78
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.34,
+          "change": -0.45,
+          "links": 93,
+          "fichas": 95,
+          "up": 16,
+          "down": 21,
+          "flat": 56
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.49,
+          "change": 1.14,
+          "links": 92,
+          "fichas": 102,
+          "up": 32,
+          "down": 7,
+          "flat": 53
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.53,
+          "change": 0.04,
+          "links": 101,
+          "fichas": 104,
+          "up": 16,
+          "down": 14,
+          "flat": 71
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.26,
+          "change": -0.27,
+          "links": 101,
+          "fichas": 116,
+          "up": 26,
+          "down": 26,
+          "flat": 49
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.09,
+          "change": 0.81,
+          "links": 115,
+          "fichas": 119,
+          "up": 25,
+          "down": 6,
+          "flat": 84
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.47,
+          "change": 0.37,
+          "links": 107,
+          "fichas": 112,
+          "up": 22,
+          "down": 15,
+          "flat": 70
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 102.97,
+          "change": 0.48,
+          "links": 111,
+          "fichas": 117,
+          "up": 26,
+          "down": 13,
+          "flat": 72
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.77,
+          "change": -0.2,
+          "links": 109,
+          "fichas": 114,
+          "up": 24,
+          "down": 23,
+          "flat": 62
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.77,
+          "change": 0,
+          "links": 113,
+          "fichas": 113,
+          "up": 0,
+          "down": 3,
+          "flat": 110
+        }
+      ]
+    },
+    "banda-hasta-10k": {
+      "label": "Hasta $10.000",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 405
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.05,
+          "change": 0.05,
+          "links": 355,
+          "fichas": 382,
+          "up": 97,
+          "down": 94,
+          "flat": 164
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 99.99,
+          "change": -0.06,
+          "links": 369,
+          "fichas": 403,
+          "up": 90,
+          "down": 88,
+          "flat": 191
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.2,
+          "change": 0.21,
+          "links": 387,
+          "fichas": 400,
+          "up": 84,
+          "down": 66,
+          "flat": 237
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.22,
+          "change": 0.02,
+          "links": 383,
+          "fichas": 397,
+          "up": 90,
+          "down": 81,
+          "flat": 212
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 100.87,
+          "change": 0.65,
+          "links": 383,
+          "fichas": 395,
+          "up": 99,
+          "down": 48,
+          "flat": 236
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 100.81,
+          "change": -0.06,
+          "links": 378,
+          "fichas": 392,
+          "up": 77,
+          "down": 79,
+          "flat": 222
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 100.59,
+          "change": -0.22,
+          "links": 375,
+          "fichas": 421,
+          "up": 118,
+          "down": 114,
+          "flat": 143
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 101.59,
+          "change": 0.99,
+          "links": 406,
+          "fichas": 440,
+          "up": 130,
+          "down": 69,
+          "flat": 207
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 101.46,
+          "change": -0.13,
+          "links": 406,
+          "fichas": 432,
+          "up": 89,
+          "down": 91,
+          "flat": 226
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 101.82,
+          "change": 0.36,
+          "links": 417,
+          "fichas": 440,
+          "up": 114,
+          "down": 84,
+          "flat": 219
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 101.88,
+          "change": 0.06,
+          "links": 418,
+          "fichas": 439,
+          "up": 108,
+          "down": 83,
+          "flat": 227
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.18,
+          "change": 0.3,
+          "links": 427,
+          "fichas": 434,
+          "up": 78,
+          "down": 54,
+          "flat": 295
+        }
+      ]
+    },
+    "banda-10k-25k": {
+      "label": "$10.000 a $25.000",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 1031
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.3,
+          "change": 0.3,
+          "links": 887,
+          "fichas": 904,
+          "up": 250,
+          "down": 163,
+          "flat": 474
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.54,
+          "change": 0.23,
+          "links": 890,
+          "fichas": 1024,
+          "up": 200,
+          "down": 176,
+          "flat": 514
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.71,
+          "change": 0.17,
+          "links": 992,
+          "fichas": 1020,
+          "up": 157,
+          "down": 100,
+          "flat": 735
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.26,
+          "change": -0.45,
+          "links": 953,
+          "fichas": 972,
+          "up": 154,
+          "down": 244,
+          "flat": 555
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.19,
+          "change": 0.93,
+          "links": 926,
+          "fichas": 981,
+          "up": 284,
+          "down": 123,
+          "flat": 519
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.18,
+          "change": -0.01,
+          "links": 970,
+          "fichas": 1012,
+          "up": 179,
+          "down": 154,
+          "flat": 637
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.74,
+          "change": 0.55,
+          "links": 957,
+          "fichas": 1054,
+          "up": 293,
+          "down": 196,
+          "flat": 468
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.38,
+          "change": 0.63,
+          "links": 1027,
+          "fichas": 1134,
+          "up": 294,
+          "down": 170,
+          "flat": 563
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.52,
+          "change": 0.13,
+          "links": 1066,
+          "fichas": 1114,
+          "up": 231,
+          "down": 179,
+          "flat": 656
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.71,
+          "change": 1.16,
+          "links": 1068,
+          "fichas": 1130,
+          "up": 359,
+          "down": 164,
+          "flat": 545
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.89,
+          "change": -0.79,
+          "links": 1083,
+          "fichas": 1154,
+          "up": 198,
+          "down": 328,
+          "flat": 557
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 103.01,
+          "change": 0.12,
+          "links": 1131,
+          "fichas": 1137,
+          "up": 122,
+          "down": 46,
+          "flat": 963
+        }
+      ]
+    },
+    "banda-mas-25k": {
+      "label": "Más de $25.000",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 945
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.73,
+          "change": 0.73,
+          "links": 812,
+          "fichas": 820,
+          "up": 222,
+          "down": 80,
+          "flat": 510
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.74,
+          "change": 0.01,
+          "links": 812,
+          "fichas": 932,
+          "up": 131,
+          "down": 135,
+          "flat": 546
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 100.89,
+          "change": 0.15,
+          "links": 915,
+          "fichas": 952,
+          "up": 122,
+          "down": 68,
+          "flat": 725
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.43,
+          "change": -0.45,
+          "links": 881,
+          "fichas": 901,
+          "up": 101,
+          "down": 186,
+          "flat": 594
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 100.94,
+          "change": 0.51,
+          "links": 864,
+          "fichas": 924,
+          "up": 238,
+          "down": 131,
+          "flat": 495
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.19,
+          "change": 0.25,
+          "links": 901,
+          "fichas": 931,
+          "up": 151,
+          "down": 115,
+          "flat": 635
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 101.83,
+          "change": 0.64,
+          "links": 895,
+          "fichas": 965,
+          "up": 220,
+          "down": 101,
+          "flat": 574
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.14,
+          "change": 0.31,
+          "links": 944,
+          "fichas": 1009,
+          "up": 188,
+          "down": 119,
+          "flat": 637
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 102.46,
+          "change": 0.31,
+          "links": 952,
+          "fichas": 1007,
+          "up": 184,
+          "down": 111,
+          "flat": 657
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103,
+          "change": 0.53,
+          "links": 955,
+          "fichas": 1004,
+          "up": 247,
+          "down": 150,
+          "flat": 558
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 102.6,
+          "change": -0.39,
+          "links": 960,
+          "fichas": 1048,
+          "up": 175,
+          "down": 232,
+          "flat": 553
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 102.63,
+          "change": 0.03,
+          "links": 1015,
+          "fichas": 1018,
+          "up": 75,
+          "down": 44,
+          "flat": 896
+        }
+      ]
+    },
+    "top-100": {
+      "label": "Top 100 (los de más vinotecas)",
+      "points": [
+        {
+          "date": "2026-07-12",
+          "week": "2026-W28",
+          "index": 100,
+          "change": null,
+          "links": null,
+          "fichas": 100
+        },
+        {
+          "date": "2026-07-19",
+          "week": "2026-W29",
+          "index": 100.76,
+          "change": 0.76,
+          "links": 100,
+          "fichas": 100,
+          "up": 46,
+          "down": 16,
+          "flat": 38
+        },
+        {
+          "date": "2026-07-26",
+          "week": "2026-W30",
+          "index": 100.95,
+          "change": 0.19,
+          "links": 100,
+          "fichas": 100,
+          "up": 32,
+          "down": 30,
+          "flat": 38
+        },
+        {
+          "date": "2026-08-02",
+          "week": "2026-W31",
+          "index": 101.01,
+          "change": 0.06,
+          "links": 100,
+          "fichas": 100,
+          "up": 26,
+          "down": 19,
+          "flat": 55
+        },
+        {
+          "date": "2026-08-09",
+          "week": "2026-W32",
+          "index": 100.68,
+          "change": -0.33,
+          "links": 100,
+          "fichas": 100,
+          "up": 24,
+          "down": 40,
+          "flat": 36
+        },
+        {
+          "date": "2026-08-16",
+          "week": "2026-W33",
+          "index": 101.66,
+          "change": 0.97,
+          "links": 100,
+          "fichas": 100,
+          "up": 52,
+          "down": 16,
+          "flat": 32
+        },
+        {
+          "date": "2026-08-23",
+          "week": "2026-W34",
+          "index": 101.97,
+          "change": 0.3,
+          "links": 100,
+          "fichas": 100,
+          "up": 37,
+          "down": 18,
+          "flat": 45
+        },
+        {
+          "date": "2026-08-30",
+          "week": "2026-W35",
+          "index": 102.28,
+          "change": 0.3,
+          "links": 100,
+          "fichas": 100,
+          "up": 40,
+          "down": 21,
+          "flat": 39
+        },
+        {
+          "date": "2026-09-06",
+          "week": "2026-W36",
+          "index": 102.58,
+          "change": 0.3,
+          "links": 100,
+          "fichas": 100,
+          "up": 35,
+          "down": 22,
+          "flat": 43
+        },
+        {
+          "date": "2026-09-13",
+          "week": "2026-W37",
+          "index": 103.08,
+          "change": 0.48,
+          "links": 100,
+          "fichas": 100,
+          "up": 42,
+          "down": 27,
+          "flat": 31
+        },
+        {
+          "date": "2026-09-20",
+          "week": "2026-W38",
+          "index": 103.94,
+          "change": 0.83,
+          "links": 100,
+          "fichas": 100,
+          "up": 49,
+          "down": 20,
+          "flat": 31
+        },
+        {
+          "date": "2026-09-27",
+          "week": "2026-W39",
+          "index": 103.01,
+          "change": -0.9,
+          "links": 100,
+          "fichas": 100,
+          "up": 22,
+          "down": 54,
+          "flat": 24
+        },
+        {
+          "date": "2026-09-30",
+          "week": "2026-W40",
+          "index": 103.08,
+          "change": 0.06,
+          "links": 100,
+          "fichas": 100,
+          "up": 16,
+          "down": 11,
+          "flat": 73
+        }
+      ],
+      "basket": [
+        "catena-malbec-malbec",
+        "enemigo-malbec",
+        "felicien-malbec-saint",
+        "angelica-blanco-chardonnay-zapata",
+        "argentino-catena-malbec",
+        "cabernet-catena-malbec",
+        "bonarda-enemigo",
+        "cabernet-enemigo-franc",
+        "est-malbec-reserva-trumpeter",
+        "blanco-catena-chardonnay",
+        "blend-catena-malbec-nicasia",
+        "angelica-catena-malbec-zapata",
+        "concreto-malbec-zuccardi",
+        "blanco-chardonnay-rutini",
+        "luigibosca-luigibosca-malbec",
+        "angelica-cabernet-catena-franc-zapata",
+        "baron-baronb-brut-espumante-extra",
+        "cabernet-cabernet-catena-d-v",
+        "cabernet-felicien-franc-saint",
+        "cabernet-malbec-rutini",
+        "chardonnay-enemigo",
+        "malbec-reserve-salentein",
+        "escorihuela-gascon-malbec",
+        "felino-malbec",
+        "alamos-malbec-seleccion",
+        "angelica-cabernet-catena-sauvignon-zapata",
+        "bodega-con-escorihuela-malbec-pequenas-producciones",
+        "cabernet-felino-sauvignon",
+        "cabernet-sauvignon-trumpeter",
+        "chardonnay-luca",
+        "de-sangre-cabernet-luigi-bosca",
+        "malbec-rutini",
+        "piel-negra-pinot-noir-bodega-bressia",
+        "baron-baronb-brut-nature",
+        "bonarda-emma-zuccardi",
+        "brut-chandon-espumante-extra",
+        "cobos-cocodrilo-corte-vina",
+        "malbec-medalla-trapiche",
+        "pedro-san-torrontes-yacochuya",
+        "angelica-catena-merlot-zapata",
+        "blanco-chardonnay-felicien-saint",
+        "brut-espumante-nature-salentein",
+        "catena-dv-noir-noir-pinot-pinot",
+        "con-malbec-serie-zuccardi",
+        "lagrima-canela",
+        "luca-malbec",
+        "tintas-blend-mosquita-muerta",
+        "aceite-clasico-extra-oliva-virgen-zuccardi-zuelo",
+        "blanco-chardonnay-trumpeter",
+        "cabernet-felicien-saint-sauvignon",
+        "chandon-delice-espumante",
+        "coleccion-cabernet-franc-rutini",
+        "gascon-malbec-escorihuela-2",
+        "malbec-numina-salentein",
+        "reserva-malbec-bodega-las-perdices-2",
+        "brut-cuvee-espumante-extra-salentein-speciale",
+        "cabernet-escorihuela-gascon-sauvignon",
+        "cordero-con-piel-de-lobo-malbec-mosquita-muerta-3",
+        "malbec-malbec-trumpeter",
+        "profundo-bressia",
+        "alma-blanc-blanc-espumante-negra",
+        "aruma-malbec",
+        "blanc-blanco-rutini-sauvignon",
+        "boher-bot-brut-casa-champana-extra",
+        "bonarda-catena-nicola",
+        "botellas-cabernet-cabernet-cabernet-malbec-merlot-por-rutini-syrah",
+        "cabernet-rutini-sauvignon",
+        "luca-noir-pinot",
+        "malbec-reserva-terrazas",
+        "nicasia-blanc-de-blancs-catena-zapata",
+        "primus-malbec-salentein",
+        "75-doc-malbec-nieto-patrimonial-senetiner",
+        "birth-cabernet-catena-of",
+        "bramare-cobos-cuyo-lujan-malbec-vina",
+        "catena-syrah-syrah",
+        "conjuro-bressia",
+        "malamado-malbec",
+        "vino-blanco-chardonnay-750-cc-luigi-bosca",
+        "ala-cabernet-colorada-franc-perdices",
+        "ala-colorada-petit-verdot-las-perdices",
+        "araucana-malbec",
+        "araucana-malbec-2",
+        "blanc-blanco-sauvignon-trumpeter",
+        "brut-espumante-luigibosca-luigibosca-nature",
+        "chardonnay-felino",
+        "coquena-tannat",
+        "exploracion-albarino-las-perdices",
+        "judas-malbec-sottano",
+        "linda-malbec",
+        "luigi-bosca-de-sangre-cabernet-franc",
+        "malbec-pedro-san-yacochuya",
+        "apartado-gran-malbec-rutini",
+        "baron-baronb-brut-rose",
+        "blend-luigibosca-luigibosca-sangre",
+        "blend-mosquita-muerta-otro-pozo-sapo-tintas",
+        "bonarda-felicien-saint",
+        "brut-champagne-extra-luigibosca-luigibosca",
+        "dulce-espumante-julia-natural-santa",
+        "encuentro-malbec-rutini",
+        "familia-gascon-malbec"
+      ]
+    }
+  }
+}

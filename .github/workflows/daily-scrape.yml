@@ -127,6 +127,15 @@ jobs:
       - name: Invariantes de redirects (bloqueante)
         run: node scripts/test-redirects.mjs
 
+      # Índice Vinndex de precios del vino (/indice, /api/v1/indice): agrega
+      # o reemplaza el punto de la semana en curso con el snapshot recién
+      # publicado. Lee data/price-index-state.json (mediana por ficha del
+      # punto ancla) porque el checkout es shallow y no puede mirar
+      # snapshots viejos en git. Metodología en scripts/build-price-index.mjs.
+      - name: Índice de precios (punto semanal)
+        run: node scripts/build-price-index.mjs
+        continue-on-error: true
+
       # Las preguntas "¿es el mismo vino?" salen de los pares que
       # comparten EAN pero los gates separaron, y ESO cambia con cada
       # snapshot: fichas que se fusionan, se parten o desaparecen. Sin
@@ -214,7 +223,7 @@ jobs:
       - name: Check for changes
         id: diff
         run: |
-          git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json
+          git add data/snapshot.json data/price-history.json data/duplicates-report.json data/price-drops.json data/vs-pairs.json data/group-merges.json data/price-index.json data/price-index-state.json
           # Artefactos de identidad v2 — el registro de slugs y el catálogo
           # son estado persistente del sistema; agregamos sólo los presentes.
           # data/carryover.json es estado PERSISTENTE: la ventana de días de
