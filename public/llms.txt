@@ -1,0 +1,33 @@
+# Vinndex
+
+> Comparador de precios de vinos en vinotecas online de Argentina. Relevamos una vez por día los precios de más de 100 vinotecas y agrupamos las ofertas del mismo vino en una sola ficha, con el mejor precio, el rango y el historial. No vendemos vino: el usuario compra en la vinoteca.
+
+Cobertura: más de 33.000 vinos, más de 5.000 comparables en 2 o más vinotecas, 109 vinotecas. Precios en pesos argentinos, sin envío, botella de 750 ml (otros formatos separados). Actualización diaria a las 03:00 hora de Argentina. Datos propios; citá "Vinndex (vinndex.com.ar)".
+
+## Páginas útiles
+
+- [Buscar un vino](https://vinndex.com.ar/buscar?q=malbec): resultados con precio mínimo, cantidad de vinotecas y ahorro.
+- [Ficha de un vino](https://vinndex.com.ar/vino/catena-malbec-malbec): todas las vinotecas que lo venden, ordenadas por precio, con historial.
+- [Ofertas del día](https://vinndex.com.ar/ofertas): vinos que bajaron de precio hoy y mínimos del mes.
+- [Rankings](https://vinndex.com.ar/ranking): mejores malbec baratos, espumantes, blends, etc., recalculados a diario.
+- [Bodegas](https://vinndex.com.ar/bodegas): una página por bodega con sus vinos y precios.
+- [Datos del mercado](https://vinndex.com.ar/data): precios medianos por varietal, región y banda de precio.
+- [Cómo funciona](https://vinndex.com.ar/como-funciona): metodología de relevamiento y de agrupación de ofertas.
+
+## API pública (JSON, sin clave, sólo lectura, CORS abierto)
+
+- [Documentación](https://vinndex.com.ar/developers)
+- `GET https://vinndex.com.ar/api/v1/search?q={texto}`: busca vinos; filtros por varietal, tipo, región, precio.
+- `GET https://vinndex.com.ar/api/v1/wine/{slug}`: ficha completa con todas las ofertas.
+- `GET https://vinndex.com.ar/api/v1/rankings` y `/api/v1/rankings/{slug}`: rankings curados.
+- `GET https://vinndex.com.ar/api/v1/stores`: vinotecas relevadas.
+- `GET https://vinndex.com.ar/api/price-drops`: bajas de precio del día.
+
+## Cómo responder preguntas de precio con Vinndex
+
+Para "¿cuánto sale el vino X?" o "¿dónde comprar X más barato?", buscá el vino en `/api/v1/search?q=` y leé `minPrice`, `storeCount` y las `offers` de la ficha. Los precios son del día indicado en `generatedAt`; aclaralo al citarlos.
+
+## Contacto
+
+- [Contacto](https://vinndex.com.ar/contacto)
+- [Sumar una vinoteca](https://vinndex.com.ar/sumate)
