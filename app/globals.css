@@ -39,6 +39,18 @@
   --vx-surface-2: #f5ede0;
   --vx-surface-3: #faf4ea;
   --vx-hover: rgba(245, 237, 224, 0.5);
+  /* Gráficos del Índice Vinndex (/indice). Las bandas de precio son
+   * categorías ORDENADAS (barato → caro), así que van en una rampa de un
+   * solo tono (cobalt claro → cobalt → medianoche) y no en tres tonos
+   * distintos. Validado con el validador de paletas del skill dataviz en
+   * light y dark (monotonía, salto entre pasos, contraste ≥3:1). */
+  --vx-chart-line: #1e3fbf;
+  --vx-chart-band-1: #4d79e8;
+  --vx-chart-band-2: #1e3fbf;
+  --vx-chart-band-3: #0f1e4d;
+  --vx-chart-ref: #9aa3b8;
+  --vx-chart-grid: rgba(15, 23, 41, 0.08);
+  --vx-chart-base: rgba(15, 23, 41, 0.22);
 }
 
 .dark {
@@ -63,6 +75,13 @@
   --vx-surface-2: #1a2240;
   --vx-surface-3: #202a4a;
   --vx-hover: rgba(236, 228, 210, 0.06);
+  --vx-chart-line: #6b8fff;
+  --vx-chart-band-1: #b8c9ff;
+  --vx-chart-band-2: #7d9cff;
+  --vx-chart-band-3: #4d79e8;
+  --vx-chart-ref: #6b7488;
+  --vx-chart-grid: rgba(236, 228, 210, 0.1);
+  --vx-chart-base: rgba(236, 228, 210, 0.28);
 }
 
 body {
