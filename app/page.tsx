@@ -19,6 +19,8 @@ import {
   regionPages,
 } from "@/lib/snapshot";
 import { readPriceDrops } from "@/lib/priceDrops";
+import { priceIndex, formatPct, windowLabel } from "@/lib/priceIndex";
+import { storeIndexAll, rankedStoreCount, formatIndexPct } from "@/lib/storeIndex";
 import { RANKINGS } from "@/lib/rankings";
 
 // La home heredaba metadata del layout sin canonical propio → quedaba
@@ -327,6 +329,11 @@ export default async function Home() {
   const regionPatagonia = findRegion("Patagonia");
   const dropsReport = await readPriceDrops();
   const topDrops = dropsReport?.drops.slice(0, 4) ?? [];
+  // Índice Vinndex: el número del hero de /indice, acá como stat.
+  const indexChange = priceIndex.headline.d90 ?? priceIndex.headline.sinceStart ?? null;
+  // Ranking de vinotecas: las 5 más baratas con índice publicado.
+  const cheapestStores = storeIndexAll().filter((s) => s.index !== null).slice(0, 5);
+  const rankedStores = rankedStoreCount();
 
   const orgJsonLd = {
     "@context": "https://schema.org",
@@ -628,12 +635,24 @@ export default async function Home() {
               vinotecas sincronizando
             </div>
           </div>
-          <div>
-            <div className="display text-5xl md:text-6xl font-semibold text-gold leading-none">
-              $0
+          {indexChange ? (
+            <Link href="/indice" className="cursor-wine group block rounded-2xl -m-2 p-2 hover:bg-white/60 transition-colors">
+              <div className="display text-5xl md:text-6xl font-semibold text-gold leading-none tabular-nums">
+                {formatPct(indexChange.pct)}
+              </div>
+              <div className="text-graphite text-sm mt-2">
+                el precio del vino en {windowLabel(indexChange, 90)} ·{" "}
+                <span className="text-cobalt group-hover:underline">Índice Vinndex</span>
+              </div>
+            </Link>
+          ) : (
+            <div>
+              <div className="display text-5xl md:text-6xl font-semibold text-gold leading-none">
+                $0
+              </div>
+              <div className="text-graphite text-sm mt-2">gratis para vos</div>
             </div>
-            <div className="text-graphite text-sm mt-2">gratis para vos</div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -1299,6 +1318,63 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {/* VINOTECAS · ¿cuál es la más barata? */}
+      {cheapestStores.length > 0 && (
+        <section id="vinotecas" className="py-24 lg:py-32 px-6 bg-snow/50 border-y border-ink/10">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-20 items-start">
+            <div>
+              <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-3">
+                Índice Vinndex de vinotecas
+              </p>
+              <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
+                ¿Cuál es la vinoteca
+                <br />
+                <span className="italic font-normal">más barata?</span>
+              </h2>
+              <p className="text-graphite mt-5 text-base leading-relaxed max-w-md">
+                Comparamos los mismos vinos en las mismas vinotecas: cada precio
+                contra la mediana de su ficha. Hoy {cheapestStores[0].name} vende
+                un {formatIndexPct(cheapestStores[0].index as number).replace("-", "")}{" "}
+                más barato que el mercado. {rankedStores} vinotecas con índice,
+                actualizado todos los días.
+              </p>
+              <Link
+                href="/vinotecas"
+                className="cursor-wine inline-flex items-center gap-2 mt-7 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt transition-colors"
+              >
+                Ver el ranking completo
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <ol className="bg-white rounded-2xl border border-ink/10 divide-y divide-ink/10">
+              {cheapestStores.map((s, i) => (
+                <li key={s.slug}>
+                  <Link
+                    href={`/vinoteca/${s.slug}`}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-snow/60 transition-colors"
+                  >
+                    <span className="display text-2xl font-semibold text-cobalt/60 tabular-nums w-8 shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="display text-lg font-semibold text-ink block truncate">
+                        {s.name}
+                      </span>
+                      <span className="text-xs text-graphite block">
+                        mejor precio en {s.bestPriceCount} de {s.comparableCount} vinos comparables
+                      </span>
+                    </span>
+                    <span className="display text-2xl font-semibold text-green2 tabular-nums shrink-0">
+                      {formatIndexPct(s.index as number)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )}
 
       {/* DESCUBRÍ · varietals + regiones */}
       <section className="py-16 lg:py-24 px-6 bg-snow/50 border-y border-ink/10">

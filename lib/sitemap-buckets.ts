@@ -173,6 +173,7 @@ export async function entriesForBucket(
         { url: `${SITE}/blog`, lastModified: generatedAt, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE}/ranking`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.8 },
         { url: `${SITE}/ofertas`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.8 },
+        { url: `${SITE}/indice`, lastModified: generatedAt, changeFrequency: "weekly", priority: 0.8 },
         { url: `${SITE}/bodegas`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/explorar`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE}/data`, lastModified: generatedAt, changeFrequency: "daily", priority: 0.7 },
