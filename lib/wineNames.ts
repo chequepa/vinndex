@@ -49,10 +49,34 @@ function fold(s: string): string {
 }
 
 /** Saca el ruido de góndola del nombre ("Vino tinto", "750 ml", "x 750 cc"). */
-export function stripShelfNoise(name: string): string {
-  const cleaned = name
-    // "Vino tinto Malbec…", "Vino blanco…", "Vinos rosado…"
-    .replace(/^\s*vinos?\s+(tinto|blanco|rosado|ros[eé]|dulce|naranja)\s+/i, "")
+// Palabras que no identifican un vino por sí solas: si después de sacar
+// "Vino tinto" sólo quedan éstas (más la bodega), el color ERA la identidad.
+const GENERIC_NAME_TOKENS = new Set([
+  "dulce", "seco", "suave", "natural", "fino", "comun", "tardio", "tardia", "cosecha",
+  "x", "botella", "bot", "en", "de", "del", "la", "el", "los", "las", "ml", "cc", "lt",
+  "vino", "tinto", "blanco", "rosado", "rose", "espumante", "champana",
+]);
+
+/**
+ * `brand`, si se pasa, cuenta como no-identidad: "Vino Tinto Dulce Santa
+ * Julia" se queda con "Tinto" porque sin él sólo quedan "Dulce" y la bodega.
+ */
+export function stripShelfNoise(name: string, brand?: string | null): string {
+  // "Vino tinto Malbec…", "Vino blanco…", "Vinos rosado…": el color se saca
+  // porque la ficha ya lo muestra como tipo — SALVO que sea lo único que
+  // distingue al vino (01/10: al separar "Vino Tinto Dulce Colón" de "Vino
+  // Blanco Dulce Colón", las dos fichas se titulaban "Dulce Colon").
+  let base = name;
+  const colorPrefix = base.match(/^\s*vinos?\s+(tinto|blanco|rosado|ros[eé]|dulce|naranja)\s+(.*)$/i);
+  if (colorPrefix) {
+    const brandTokens = new Set(fold(brand ?? "").split(/[^a-z0-9]+/).filter(Boolean));
+    const identity = fold(colorPrefix[2])
+      .replace(/\b\d{3,4}\s*(ml|cc)\b/g, " ")
+      .split(/[^a-z0-9]+/)
+      .filter((t) => t && !/^\d+$/.test(t) && !GENERIC_NAME_TOKENS.has(t) && !brandTokens.has(t));
+    base = identity.length >= 1 ? colorPrefix[2] : `${colorPrefix[1]} ${colorPrefix[2]}`;
+  }
+  const cleaned = base
     // "Vino Cabernet Sauvignon…" — pero no "Vino de la Cruz".
     .replace(/^\s*vinos?\s+(?!(de|del|la|el|los|las)\b)/i, "")
     // "750 ml", "x 750 cc", "750cc", "750 Ml.", "Botella 700 Cc", "Bot 750 Cc"
@@ -141,7 +165,7 @@ function nameHasBrand(name: string, brand: string): boolean {
 export function wineFullName(
   g: Pick<ProductGroup, "canonicalName" | "brand">,
 ): string {
-  const name = fixVarietalTypos(stripShelfNoise(displayWineName(g.canonicalName)));
+  const name = fixVarietalTypos(stripShelfNoise(displayWineName(g.canonicalName), g.brand));
   if (!g.brand) return name;
   const brand = displayBrand(g.brand);
   if (!brand || nameHasBrand(name, g.brand)) return name;

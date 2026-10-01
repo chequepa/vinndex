@@ -208,6 +208,16 @@ const SPIRIT_STYLE_RE =
 
 /** Sidra: fermentado de manzana o pera, no es vino. */
 const SIDRA_RE = /\b(sidra|cider)\b/i;
+// Cerveza (01/10): una Heineken en lata de 473 ml apareció en /ofertas como
+// "baja". NON_WINE_RE sólo tenía la palabra "cerveza"; los supers y las
+// vinotecas la escriben por marca, estilo o envase. Marcas que también son
+// vino o región (Corona, Imperial, Patagonia, Sol) sólo cuentan con
+// contexto de cerveza.
+const BEER_RE =
+  /\b(heineken|quilmes|stella\s*artois|brahma|budweiser|schneider|isenbeck|miller|amstel|grolsch|warsteiner|guinness|peroni|blue\s*moon|rabieta|(?<!de\s+los\s+)andes\s+origen|kunstmann|salta\s+(rubia|negra)|imperial\s+(lager|ipa|golden|cream|stout|scotch|amber|roja|rubia|negra|apa)|patagonia\s+(amber|bohemian|weisse|kune|hoppy|ipa|lager)|corona(?=.*\b(330|porron|lata|cero)\b)|lager|ipa|apa|stout|porter|pilsen|pilsner|porron|chopp|birra|beer)\b/i;
+// Envases de cerveza (473/710/354 ml). Sólo si el nombre no dice "vino":
+// "Vino Samt Rojo Pomelo Lata 473cc" es vino con soda, y se queda.
+const BEER_SIZE_RE = /\b(473|710|354)\s*(ml|cc)\b/i;
 
 /**
  * Tercera tanda (auditoría 26/09/2026): 7.442 fichas publicadas sin una
@@ -256,6 +266,8 @@ export function isNonWineGroup(g: { canonicalName: string }): boolean {
   if (SPIRIT_BRAND_RE.test(n)) return true;
   if (SPIRIT_STYLE_RE.test(n)) return true;
   if (SIDRA_RE.test(n)) return true;
+  if (BEER_RE.test(n)) return true;
+  if (BEER_SIZE_RE.test(n) && !/\bvino\b/.test(n)) return true;
   if (OBJETOS_HEAD_RE.test(n.trim()) || BEBIDA_HEAD_RE.test(n.trim()) || SPIRIT_PREFIX_RE.test(n.trim()) || SPIRIT_BRAND2_RE.test(n)) return true;
   if ((ALMACEN3_RE.test(n) || OBJETOS_RE.test(n)) && !WINE_PRODUCT_RE.test(n)) return true;
   if (ALMACEN_RE.test(n)) return true;

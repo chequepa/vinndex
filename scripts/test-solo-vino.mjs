@@ -43,6 +43,11 @@ for (const [n, por] of [
   ["Copa Riedel Winewings Pinot Noir", "cristalería"],
   ["FERNETOMETRO BRANCA", "merch"],
   ["Sidra la Farruca 710ml", "sidra no es vino"],
+  ["Heineken Lata x 473ml", "cerveza por marca"],
+  ["Imperial Lager 473ml", "cerveza por estilo (Imperial también es Moët)"],
+  ["Corona Porron 330 Ml", "cerveza por envase"],
+  ["Andes Origen Roja Lata 473 Ml", "cerveza por marca"],
+  ["Quilmes Clasica 1 Litro", "cerveza por marca"],
   ["Gin Hilbing Malbec 750ml", "gin aunque diga Malbec"],
   ["GRAPPA ANIAPA CABERNET SAUVIGNON", "grappa aunque diga Cabernet"],
   ["Copon Wine Malbec Liso 800cc", "copón encabezando = cristalería"],
@@ -64,6 +69,13 @@ for (const [n, por] of [
 
 console.log("\n=== SÍ ES VINO (no se puede borrar) ===");
 for (const [n, por] of [
+  ["MOET & CHANDON IMPERIAL BRUT", "Imperial sin estilo de cerveza es champagne"],
+  ["Patagonia Select Chardonnay", "Patagonia es región"],
+  ["Riccitelli Old Vines From Patagonia Malbec", "Patagonia es región"],
+  ["Corazon Del Sol Semillon", "Sol no es la cerveza"],
+  ["TERRAZAS DE LOS ANDES ORIGEN ALTAMIRA BLEND", "Andes Origen con 'de los' adelante es Terrazas"],
+  ["Vino Samt Rojo Pomelo Lata 473cc", "lata de 473 pero dice vino"],
+  ["Vino Tinto Corte Real 710 Ml", "710 ml pero dice vino"],
   ["Zuccardi Concreto Malbec", "caso dorado"],
   ["El Enemigo Malbec", "caso dorado"],
   ["Colección Cabernet franc", "línea Colección de Rutini, 16 tiendas"],
