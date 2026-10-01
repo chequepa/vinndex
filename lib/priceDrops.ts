@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { findGroup } from "./snapshot";
 
 const PATH = resolve(process.cwd(), "data/price-drops.json");
 
@@ -34,7 +35,11 @@ export type PriceDropsReport = {
 export async function readPriceDrops(): Promise<PriceDropsReport | null> {
   try {
     const raw = await readFile(PATH, "utf8");
-    return JSON.parse(raw) as PriceDropsReport;
+    const report = JSON.parse(raw) as PriceDropsReport;
+    // Sólo bajas de fichas que el sitio publica: `findGroup` ya excluye
+    // no-vinos y junk (01/10: una Heineken en lata llegó a /ofertas porque
+    // el script de drops tiene su propia copia, más vieja, del filtro).
+    return { ...report, drops: (report.drops ?? []).filter((d) => findGroup(d.slug)) };
   } catch {
     return null;
   }
