@@ -37,6 +37,12 @@ const GROUPS: Group[] = [
       r.slug.startsWith("vinos-bajo-") || r.slug.startsWith("top-malbecs-"),
   },
   {
+    title: "Por varietal y presupuesto",
+    description:
+      "Los mejores de cada uva por debajo de un precio · sólo combinaciones con inventario real.",
+    predicate: (r) => /-hasta-\d+$/.test(r.slug),
+  },
+  {
     title: "Por momento u ocasión",
     description: "Selecciones por uso · asado, regalo, mariscos, orgánicos.",
     predicate: (r) =>

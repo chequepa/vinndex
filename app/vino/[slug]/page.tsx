@@ -43,6 +43,23 @@ import { WineLinkList } from "@/components/WineLinkList";
 
 type Params = { params: Promise<{ slug: string }> };
 
+/**
+ * Código de barras del vino cuando todas las ofertas que lo publican
+ * coinciden en uno. Search Console (30/09): 7 de las 30 consultas en
+ * posición 8–20 con más impresiones eran EANs pelados ("7798162670713")
+ * con 0 % de clics — la ficha rankeaba pero el número no aparecía en el
+ * snippet. Va en la meta description y visible en la página; el JSON-LD
+ * ya lo lleva como gtin13.
+ */
+function groupGtin(g: { offers?: { externalSku?: string | null }[] }): string | null {
+  const eans = new Set(
+    (g.offers ?? [])
+      .map((o) => o.externalSku?.trim() ?? "")
+      .filter((sku) => /^\d{12,14}$/.test(sku)),
+  );
+  return eans.size === 1 ? [...eans][0] : null;
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const g = findGroup(slug);
@@ -128,6 +145,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description += ". Precios actualizados a diario.";
     }
   }
+
+  const gtinMeta = groupGtin(g);
+  if (gtinMeta) description += ` EAN ${gtinMeta}.`;
 
   return {
     title,
@@ -1059,6 +1079,11 @@ export default async function Vino({ params }: Params) {
             <h2 className="display text-2xl sm:text-3xl font-semibold text-ink">
               Comparación de precios
             </h2>
+            {gtin && (
+              <p className="text-xs text-graphite mt-1">
+                Código de barras (EAN): <span className="tabular-nums">{gtin}</span>
+              </p>
+            )}
             <p className="text-graphite text-sm mt-1">
               Botella de 750&nbsp;ml, de menor a mayor precio ·{" "}
               {allOutOfStock
