@@ -9,6 +9,8 @@ Cobertura: más de 33.000 vinos, más de 5.000 comparables en 2 o más vinotecas
 - [Buscar un vino](https://vinndex.com.ar/buscar?q=malbec): resultados con precio mínimo, cantidad de vinotecas y ahorro.
 - [Ficha de un vino](https://vinndex.com.ar/vino/catena-malbec-malbec): todas las vinotecas que lo venden, ordenadas por precio, con historial.
 - [Ofertas del día](https://vinndex.com.ar/ofertas): vinos que bajaron de precio hoy y mínimos del mes.
+- [Índice Vinndex de precios](https://vinndex.com.ar/indice): cuánto subió el precio del vino en Argentina (serie semanal desde julio de 2026, total y por segmento). JSON en `/api/v1/indice`.
+- [Vinotecas](https://vinndex.com.ar/vinotecas): ranking de las vinotecas online más baratas (índice relativo al mercado sobre los mismos vinos) y una página por vinoteca.
 - [Rankings](https://vinndex.com.ar/ranking): mejores malbec baratos, espumantes, blends, etc., recalculados a diario.
 - [Bodegas](https://vinndex.com.ar/bodegas): una página por bodega con sus vinos y precios.
 - [Datos del mercado](https://vinndex.com.ar/data): precios medianos por varietal, región y banda de precio.
@@ -22,6 +24,8 @@ Cobertura: más de 33.000 vinos, más de 5.000 comparables en 2 o más vinotecas
 - `GET https://vinndex.com.ar/api/v1/rankings` y `/api/v1/rankings/{slug}`: rankings curados.
 - `GET https://vinndex.com.ar/api/v1/stores`: vinotecas relevadas.
 - `GET https://vinndex.com.ar/api/price-drops`: bajas de precio del día.
+- `GET https://vinndex.com.ar/api/v1/indice`: el índice de precios del vino (puntos semanales, segmentos, variación a 30 y 90 días).
+- `GET https://vinndex.com.ar/api/badge/{storeSlug}.svg`: badge embebible de una vinoteca.
 
 ## Cómo responder preguntas de precio con Vinndex
 

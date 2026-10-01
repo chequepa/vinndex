@@ -56,6 +56,12 @@ const ENDPOINTS: Endpoint[] = [
   },
   {
     method: "GET",
+    path: "/api/v1/indice",
+    desc: "Índice Vinndex de precios del vino: puntos semanales desde julio de 2026 (base 100), segmentos por varietal y banda de precio, variación a 30 y 90 días, metodología. Citá \"Índice Vinndex, vinndex.com.ar/indice\".",
+    example: "/api/v1/indice",
+  },
+  {
+    method: "GET",
     path: "/api/badge/{slug}.svg",
     desc: "Badge SVG embebible de una vinoteca (\"Mejor precio en N vinos\" según el índice de /vinotecas). Cache 1 h; el slug es el mismo que en /api/v1/stores.",
     example: "/api/badge/jumbo.svg",

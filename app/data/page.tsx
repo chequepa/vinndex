@@ -132,7 +132,16 @@ export default function DataPage() {
           <p className="text-graphite text-base md:text-lg leading-relaxed max-w-3xl">
             Datos agregados del vino argentino online · distribución por
             varietal, región, precio. Actualizado a diario con el snapshot de
-            las {stats.totals.storeCount} vinotecas relevadas.
+            las {stats.totals.storeCount} vinotecas relevadas. Para ver cómo
+            se mueven los precios en el tiempo, el{" "}
+            <Link href="/indice" className="text-cobalt underline hover:no-underline">
+              Índice Vinndex
+            </Link>
+            ; para saber qué vinoteca es la más barata, el{" "}
+            <Link href="/vinotecas" className="text-cobalt underline hover:no-underline">
+              ranking de vinotecas
+            </Link>
+            .
           </p>
           <p className="text-xs text-graphite mt-3">
             Última actualización: {formatDateRelative(stats.snapshotGeneratedAt)}{" "}

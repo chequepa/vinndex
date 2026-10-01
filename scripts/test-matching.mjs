@@ -14,6 +14,7 @@ import { hardConflict, lineRelation, lineTokens } from "./stage4-token-merge.mjs
 import { secondaryKey } from "./remerge-groups.mjs";
 import { NAME_PREFIX_TO_BRAND, canonicalizeName } from "./lib-identity.mjs";
 import { isValidEan, eanFromSku } from "./lib-ean.mjs";
+import { staleStores, updateActivity } from "./lib-store-activity.mjs";
 
 const g = (canonicalName, extra = {}) => ({ canonicalName, type: null, varietals: [], brand: null, ...extra });
 
@@ -417,6 +418,28 @@ for (const [desc, raw, expected] of SHORTHAND_CASES) {
   const ok = got === expected;
   if (!ok) failed++;
   console.log(`  ${ok ? "✅" : "❌ FALLA"}  ${desc}  →  "${got}"${ok ? "" : ` (esperaba "${expected}")`}`);
+}
+
+console.log("\n=== ACTIVIDAD DE PRECIOS (vinotecas abandonadas) ===");
+{
+  const act = { stores: {
+    muerta: { firstSeen: "2026-07-01", lastPriceChange: "2026-07-10" },
+    viva: { firstSeen: "2026-07-01", lastPriceChange: "2026-09-28" },
+    nueva: { firstSeen: "2026-09-20", lastPriceChange: null },
+  } };
+  const st = staleStores(act, "2026-09-30");
+  const ok = st.has("muerta") && !st.has("viva") && !st.has("nueva");
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  60 días sin cambios = abandonada; la nueva no se juzga todavía  →  ${[...st.keys()].join(",") || "ninguna"}`);
+  const prev = new Map([["t", new Map([["u1", 100], ["u2", 200]])]]);
+  const cur = new Map([["t", new Map([["u1", 100], ["u2", 200]])]]);
+  const a = updateActivity({ stores: { t: { firstSeen: "2026-07-01", lastPriceChange: "2026-07-01" } } }, prev, cur, "2026-09-30");
+  const ok2 = a.stores.t.lastPriceChange === "2026-07-01";
+  cur.get("t").set("u2", 210);
+  const b = updateActivity({ stores: { t: { firstSeen: "2026-07-01", lastPriceChange: "2026-07-01" } } }, prev, cur, "2026-09-30");
+  const ok3 = b.stores.t.lastPriceChange === "2026-09-30";
+  if (!ok2 || !ok3) failed++;
+  console.log(`  ${ok2 && ok3 ? "✅" : "❌ FALLA"}  precios iguales no mueven la fecha; un precio distinto sí`);
 }
 
 console.log("\n=== EAN (evidencia de identidad) ===");

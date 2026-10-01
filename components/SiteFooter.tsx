@@ -163,6 +163,16 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/indice" className="hover:text-snow">
+                  Índice de precios
+                </Link>
+              </li>
+              <li>
+                <Link href="/ofertas" className="hover:text-snow">
+                  Ofertas del día
+                </Link>
+              </li>
+              <li>
                 <Link href="/data" className="hover:text-snow">
                   Datos del mercado
                 </Link>
