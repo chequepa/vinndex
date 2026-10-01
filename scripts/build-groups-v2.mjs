@@ -1556,6 +1556,47 @@ async function main() {
       canonicalName = pickCanonicalName(offersOut);
     }
 
+    // Distinguidores que faltaban en el título (01/10): fichas de la misma
+    // línea que sólo difieren en color o dulzor ("Callia Tardío" tinto,
+    // blanco y espumante; "Trumpeter" extra brut, nature y doux; "Dilema"
+    // en cuatro colores) salían con el MISMO título — 56 pares de títulos
+    // duplicados dentro de una bodega en el snapshot del 01/10, páginas
+    // indistinguibles para Google y para el usuario. El color se agrega
+    // cuando no es tinto y el varietal no lo implica (un Chardonnay ya es
+    // blanco); el dulzor, siempre que el nombre no lo diga (en espumantes
+    // ES la identidad: "Baron B" a secas no existe, es Extra Brut o Nature).
+    {
+      const fbParts = key.startsWith("fb|") ? key.slice(3).split("|") : null;
+      const gColor = w?.color ?? (fbParts ? fbParts[3] || null : null) ?? colorOf(canonicalName);
+      const gDulzor = w ? (w.dulzor ?? null) : fbParts ? fbParts[4] || null : null;
+      const n = norm(canonicalName);
+      const impliedByVarietal = effectiveColor(null, w?.varietal ?? (fbParts ? fbParts[2] || null : null));
+      const COLOR_WORDS = {
+        blanco: /\b(blanco|blanc|white|bianco)\b/,
+        rosado: /\b(rose|rosado|rosada|rosato|blush|pink)\b/,
+        espumante: /\b(espumante|espumoso|champagne|champana|sparkling|brut|nature|demi|sec|doux|cava|prosecco|frizzante)\b/,
+        naranjo: /\b(naranjo|naranja|orange)\b/,
+      };
+      const COLOR_DISPLAY = { blanco: "Blanco", rosado: "Rosé", espumante: "Espumante", naranjo: "Naranjo" };
+      const DULZOR_WORDS = {
+        dulce: /\b(dulce|tardio|tardia|late harvest|cosecha tardia|doux|sweet|moscato)\b/,
+        brut: /\bbrut\b/,
+        extrabrut: /\bextra\s*brut\b|\be\/b\b/,
+        nature: /\bnature\b/,
+        demisec: /\bdemi\s*sec\b/,
+      };
+      const DULZOR_DISPLAY = { dulce: "Dulce", brut: "Brut", extrabrut: "Extra Brut", nature: "Brut Nature", demisec: "Demi Sec" };
+      const dulzorSuffix =
+        gDulzor && DULZOR_DISPLAY[gDulzor] && !DULZOR_WORDS[gDulzor].test(n) ? DULZOR_DISPLAY[gDulzor] : "";
+      // Un dulzor de espumante ya dice que es espumante: "Trumpeter Extra
+      // Brut", no "Trumpeter Espumante Extra Brut".
+      const sparklingSuffix = dulzorSuffix && gDulzor !== "dulce";
+      if (gColor && COLOR_DISPLAY[gColor] && !COLOR_WORDS[gColor].test(n) && impliedByVarietal !== gColor && !(gColor === "espumante" && sparklingSuffix)) {
+        canonicalName = `${canonicalName} ${COLOR_DISPLAY[gColor]}`;
+      }
+      if (dulzorSuffix) canonicalName = `${canonicalName} ${dulzorSuffix}`;
+    }
+
     // Facets del contrato v1 (lib/matching.ts ProductGroup): varietals y
     // región con los MISMOS nombres display que v1 — /varietal/* y
     // /region/* filtran por string exacto. vintage/format son null por
