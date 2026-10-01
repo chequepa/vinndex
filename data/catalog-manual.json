@@ -3,12 +3,12 @@
   "wines": [
     {
       "id": "colon-select-frutos-rojos-rosado",
-      "nota": "Colón Frutos Rojos (rosado dulce) — la página #1 de tráfico del sitio, partida en dos fichas desde siempre. Las 4 ofertas comparten el EAN 7790168904663, y un usuario votó 'sí, es el mismo vino' en el issue #147. Se partía por tres razones acumuladas: (1) la bodega no resolvía y todo caía en claves fb| de fallback — arreglado en lib-identity.mjs; (2) las tiendas lo nombran 'Selecto' o 'Select' indistintamente, así que hacen falta los dos alias; (3) unas tiendas nombran el color (rosado) y otras el dulzor (dulce), y colorOf() mete 'dulce' en la tabla de COLORES. El punto 3 NO se arregla tocando el gate de color: se midió el 29/07 que de 51 pares que ese gate bloquea, tiene razón casi siempre (Cordero Rosé vs Cordero blanco dulce, Norton Tardía Blanco vs rosado). Acá se resuelve declarando el vino en el catálogo con varietal null: la herencia por línea de assign() lo asigna igual aunque el color no coincida. `edicionesNoDistinguen: 7` mata el sufijo del nombre de producto de Jumbo ('...Frutos Rojos 7'), que abría una tercera ficha.",
+      "nota": "Colón Frutos Rojos (rosado dulce) — la página #1 de tráfico del sitio, partida en dos fichas desde siempre. Las 4 ofertas comparten el EAN 7790168904663, y un usuario votó 'sí, es el mismo vino' en el issue #147. Se partía por tres razones acumuladas: (1) la bodega no resolvía y todo caía en claves fb| de fallback — arreglado en lib-identity.mjs; (2) las tiendas lo nombran 'Selecto' o 'Select' indistintamente, así que hacen falta los dos alias; (3) unas tiendas nombran el color (rosado) y otras el dulzor (dulce), y colorOf() mete 'dulce' en la tabla de COLORES. El punto 3 NO se arregla tocando el gate de color: se midió el 29/07 que de 51 pares que ese gate bloquea, tiene razón casi siempre (Cordero Rosé vs Cordero blanco dulce, Norton Tardía Blanco vs rosado). Acá se resuelve declarando el vino en el catálogo con varietal null: la herencia por línea de assign() lo asigna igual aunque el color no coincida. `edicionesNoDistinguen: 7` mata el sufijo del nombre de producto de Jumbo ('...Frutos Rojos 7'), que abría una tercera ficha. 30/09: 'dulce' pasó a ser dulzor (no color), así que la entrada lo declara: con dulzor 'dulce' matchean tanto las ofertas que dicen 'rosado dulce' (exacto) como las que dicen sólo 'dulce' (herencia por línea, color nulo compatible).",
       "bodega": "Colón",
       "linea": "Select Frutos Rojos",
       "varietal": null,
       "color": "rosado",
-      "dulzor": null,
+      "dulzor": "dulce",
       "lineAliases": [
         "fresco frutos rojos selecto",
         "en frutos rojos select",

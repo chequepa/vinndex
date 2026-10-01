@@ -33,6 +33,7 @@ import {
   discriminatorSet,
   isExcluded,
   lineTokens,
+  SWEET_STILL_RE,
 } from "./stage4-token-merge.mjs";
 import {
   stripAccents,
@@ -227,6 +228,12 @@ const ESTUCHE_RE = /\b(estuche|estuches|cofre|gift\s*box|con\s+copa|c\/\s*copa|\
 // "copa" suelta al final ("Serie A Malbec copa") = venta por copa o promo
 // con copa — nunca comparable con la botella.
 const COPA_RE = /\bcopa\b/i;
+// Lata (30/09): 506 ofertas del corpus dicen "lata" y 183 sin volumen
+// explícito ("Santa Julia Dulce Tinto, Lata", "Mumm Leger Spritz en
+// lata"). Caían en 750 por default y competían en el mejor precio de la
+// botella. Una lata nunca es la botella de 750: formato no comparable,
+// aunque no sepamos los ml.
+const LATA_RE = /\b(lata|latas|latita|latitas)\b/i;
 
 /**
  * parseOffer(name, brand) → identidad estructurada de la oferta.
@@ -262,10 +269,14 @@ export function parseOffer(rawName, rawBrand, opts = {}) {
   // "Extra Brut Rosé" (13/09). Se lee el dulzor también cuando el nombre
   // trae un marcador inequívoco de espumante.
   const SPARKLING_MARK_RE = /\b(brut|nature|demi\s*sec|extra\s*brut)\b/i;
+  // En tranquilos, "dulce"/"cosecha tardía" es dulzor (30/09): antes era
+  // un color y mezclaba tinto dulce, blanco dulce y champaña dulce.
   const dulzor =
     color === "espumante" || SPARKLING_MARK_RE.test(stripAccents(name))
       ? sweetnessOf(name)
-      : null;
+      : SWEET_STILL_RE.test(stripAccents(name).toLowerCase())
+        ? "dulce"
+        : null;
 
   // Tokens de línea: contenido sin varietal/paraje/tier, y sin los tokens
   // de la bodega resuelta (para que "Zuccardi Concreto" y "Concreto"
@@ -290,6 +301,7 @@ export function parseOffer(rawName, rawBrand, opts = {}) {
     pack: packSig(name),
     estuche: ESTUCHE_RE.test(stripAccents(name)),
     copa: COPA_RE.test(stripAccents(name)),
+    lata: LATA_RE.test(stripAccents(name)),
     excluded: isExcluded(name),
   };
 }
@@ -461,6 +473,7 @@ export function variantKey(p) {
   const flags = [];
   if (p.estuche) flags.push("estuche");
   if (p.copa) flags.push("copa");
+  if (p.lata) flags.push("lata");
   return `${p.volumeMl}|${p.pack}|${flags.join("+")}`;
 }
 
@@ -472,7 +485,8 @@ export function isComparable(p) {
     p.volumeMl === 750 &&
     p.pack === 0 &&
     !p.estuche &&
-    !p.copa
+    !p.copa &&
+    !p.lata
   );
 }
 

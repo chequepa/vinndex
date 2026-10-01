@@ -513,6 +513,16 @@ async function main() {
   if (existsSync(CATALOG_PATH)) {
     try {
       const prev = JSON.parse(readFileSync(CATALOG_PATH, "utf8"));
+      // Migración 30/09: "dulce" dejó de ser un color y pasó a ser dulzor
+      // (un tinto dulce, un blanco dulce y una champaña dulce son tres
+      // vinos). Las entradas minadas antes traen color "dulce" y dulzor
+      // null; se reinterpretan sin tocar el id (el id es la clave del
+      // registro de slugs y del overlay manual).
+      let migrated = 0;
+      for (const w of prev.wines ?? []) {
+        if (w.color === "dulce") { w.color = null; w.dulzor = w.dulzor ?? "dulce"; migrated++; }
+      }
+      if (migrated > 0) console.log(`  migración dulce→dulzor: ${migrated} entradas previas`);
       const prevById = new Map((prev.wines ?? []).map((w) => [w.id, w]));
       // La entrada previa gana (curaciones humanas sobreviven), pero los
       // ALIASES se unen: cuando el parser cambia (13/09: iniciales,
