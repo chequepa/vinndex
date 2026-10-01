@@ -137,13 +137,19 @@ export { colorOf, sweetnessOf, styleSet, packSig, volMl, editionNums, discrimina
 const COLOR_RE = {
   rosado: /\b(rosado|rosados|rose|rosa|blush)\b/,
   naranjo: /\b(naranjo|naranja|orange\s*wine)\b/,
-  dulce: /\b(dulce|tardia|tardio|late\s*harvest|cosecha\s*tardia)\b/,
   blanco: /\b(blanco|white|blanc)\b/,
   // "e/b" / "e.b" = extra brut abreviado (caso real Chandon E/B). Sin esto el
   // color quedaba null y un E/B blanco mergeaba con un Rosé.
   espumante: /\b(espumante|espumoso|extra\s*brut|brut|nature|demi[\s-]*sec|demisec|champagne|champana|champan|champ|cava|prosecco|frizz)\b|\be[\/.]b\b/,
   tinto: /\b(tinto|red|malbec|cabernet|bonarda|syrah|shiraz|merlot|tempranillo|pinot\s*noir|tannat|petit\s*verdot)\b/,
 };
+// "Dulce" es DULZOR, no color (30/09). Como color le ganaba a tinto/blanco/
+// espumante y "Vino Tinto Dulce Colón", "Vino Blanco Dulce Colón" y
+// "Champaña Colón Dulce" caían en la misma ficha (961 ofertas, 368 fichas
+// con "dulce" + color explícito). Ahora el color es el color y el dulzor
+// se lee aparte (parseOffer, identityConflict); el tipo "Dulce" del sitio
+// sale del dulzor.
+export const SWEET_STILL_RE = /\b(dulce|tardia|tardio|late\s*harvest|cosecha\s*tardia)\b/;
 function colorOf(name) {
   const s = stripAccents(name).toLowerCase();
   for (const [k, re] of Object.entries(COLOR_RE)) if (re.test(s)) return k;
@@ -534,6 +540,14 @@ export function identityConflict(a, b) {
   if (ca === "espumante" && cb === "espumante") {
     const sa = sweetnessOf(an), sb = sweetnessOf(bn);
     if (sa && sb && sa !== sb) return "dulzor";
+  }
+  // Vinos tranquilos: "X Blanco Dulce" / "X Cosecha Tardía" no es "X
+  // Blanco". Antes esto lo frenaba el gate de color porque "dulce" era un
+  // color; ahora que es dulzor, se frena acá con el mismo resultado.
+  if (ca !== "espumante" && cb !== "espumante") {
+    const da = SWEET_STILL_RE.test(stripAccents(an).toLowerCase());
+    const db = SWEET_STILL_RE.test(stripAccents(bn).toLowerCase());
+    if (da !== db) return "dulzor";
   }
   const sa = styleSet(a), sb = styleSet(b);
   if (sa.size && sb.size) {

@@ -856,6 +856,7 @@ async function main() {
       volumeMl: p.volumeMl,
       pack: p.pack,
       estuche: p.estuche || undefined,
+      lata: p.lata || undefined,
       copa: p.copa || undefined,
       comparable: (!STALE_STORES.has(o.storeSlug) && isComparable(p)) || undefined,
       stale: STALE_STORES.has(o.storeSlug) || undefined,
@@ -1484,13 +1485,14 @@ async function main() {
     // variantes por formato (para la sección "otros formatos" de la ficha)
     const variants = new Map();
     for (const o of offersOut) {
-      const vk = `${o.volumeMl}|${o.pack}|${o.estuche ? "estuche" : ""}${o.copa ? "copa" : ""}`;
+      const vk = `${o.volumeMl}|${o.pack}|${o.estuche ? "estuche" : ""}${o.copa ? "copa" : ""}${o.lata ? "lata" : ""}`;
       if (!variants.has(vk)) {
         variants.set(vk, {
           volumeMl: o.volumeMl,
           pack: o.pack,
           estuche: !!o.estuche,
           copa: !!o.copa,
+          lata: !!o.lata,
           offerCount: 0,
           minPrice: null,
         });
@@ -1573,9 +1575,14 @@ async function main() {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([v]) => v);
-    const TYPE_BY_COLOR = { tinto: "Tinto", blanco: "Blanco", rosado: "Rosado", espumante: "Espumante", dulce: "Dulce" };
+    const TYPE_BY_COLOR = { tinto: "Tinto", blanco: "Blanco", rosado: "Rosado", espumante: "Espumante" };
     const wineColor = w?.color ?? colorOf(canonicalName);
-    const type = wineColor ? TYPE_BY_COLOR[wineColor] ?? null : null;
+    // El tipo "Dulce" (facet del sitio) sale del DULZOR, no del color:
+    // un tinto dulce es Dulce para quien busca vinos dulces.
+    const groupDulzor = w
+      ? (w.dulzor ?? null)
+      : key.startsWith("fb|") ? (key.slice(3).split("|")[4] || null) : null;
+    const type = groupDulzor === "dulce" ? "Dulce" : wineColor ? TYPE_BY_COLOR[wineColor] ?? null : null;
 
     // Región: regex sobre nombres de ofertas, fallback por bodega.
     let region = null;

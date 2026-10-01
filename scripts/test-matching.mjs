@@ -46,6 +46,12 @@ const MUST_CONFLICT = [
   ["taquigrafía: Gran R. vs Reserva", g("Fabre Montmayou Gran R. Malbec"), g("Fabre Montmayou Reserva Malbec")],
   ["taquigrafía: 12 YO vs 18 Years", g("Glenfiddich 12 YO"), g("Glenfiddich 18 Years")],
   ["taquigrafía: Grand Cabernet vs Cabernet (línea gran)", g("Terrazas Grand Cabernet"), g("Terrazas Cabernet")],
+  // 30/09: "dulce" es dulzor, no color. El gate que antes daba el color
+  // (porque "dulce" pisaba a blanco/tinto) ahora lo da el dulzor.
+  ["dulzor tranquilo: cosecha tardía vs seco", g("Norton Cosecha Tardía Blanco"), g("Norton Blanco")],
+  ["color: rosé vs blanco dulce", g("Cordero con Piel de Lobo Rosé"), g("Cordero con Piel de Lobo Blanco Dulce")],
+  ["color: tinto dulce vs blanco dulce", g("Vino Tinto Dulce 750 Cc Colon"), g("Vino Blanco Dulce 750 Ml Colon")],
+  ["color: champaña dulce vs tinto dulce", g("Champaña Colón Dulce 750 Cc"), g("Vino Tinto Dulce 750 Cc Colon")],
 ];
 
 // POSITIVOS: hardConflict DEBE devolver null (compatibles). Mismo vino con
@@ -68,6 +74,7 @@ const MUST_PASS = [
   ["taquigrafía: 0% = sin alcohol", g("Vino Blanco Chardonnay 0% 750 Ml Nieto Senetiner"), g("Vino blanco sin alcohol Nieto Senetiner Chardonnay 750 ml")],
   ["taquigrafía: 20Y Old = 20 Year Old", g("Oporto Taylors 20 Year Old Tawny Port"), g("Taylor´S Vino De Oporto 20Y Old Tawny Port")],
   ["taquigrafía: graduación no es edición", g("Alma Mora Malbec 13,5% vol"), g("Alma Mora Malbec")],
+  ["dulce con y sin color explícito (mismo vino)", g("Dilema Dulce"), g("Vino Blanco Dilema Dulce")],
 ];
 
 // ── lineRelation: la política de auto-merge del pipeline ──
@@ -241,8 +248,15 @@ const PARSE_CASES = [
   ["Petit Caro ≠ Caro (\"petit\" no es Petit Verdot)", "Petit Caro", "Caro", "Caro", "Caro", false, true],
   ["Pequeñas Producciones ≠ la base", "Pequeñas Producciones Cabernet Sauvignon", null, "Cabernet Sauvignon", "Escorihuela", false, true],
   ["Cabernet Sauvignon = Cabernet (misma línea)", "Rutini Cabernet Sauvignon", null, "Rutini Cabernet", null, true, true],
-  ["269 ml es otro formato, no la botella", "Vino Tinto Dulce Natural 269 Ml Santa Julia", null, "Santa Julia Dulce Natural", null, true, false],
+  ["269 ml es otro formato, no la botella", "Vino Tinto Dulce Natural 269 Ml Santa Julia", null, "Santa Julia Tinto Dulce Natural", null, true, false],
   ["Box es pack", "Box Trapiche Gran Medalla Malbec", null, "Trapiche Gran Medalla Malbec", null, true, false],
+  // 30/09: "dulce" es dulzor, no color (la quimera colon-dulce: tinto + blanco + champaña en una ficha)
+  ["dulce es dulzor: tinto dulce ≠ blanco dulce", "Vino Tinto Dulce 750 Cc Colon", null, "Vino Blanco Dulce 750 Ml Colon", null, false, true],
+  ["champaña dulce ≠ tinto dulce", "Champaña Colón Dulce 750 Cc", null, "Vino Tinto Dulce 750 Cc Colon", null, false, true],
+  ["tinto dulce = tinto dulce (misma clave)", "Vino Tinto Dulce 750 Cc Colon", null, "Colon Tinto Dulce 750 ml", "Colón", true, true],
+  // 30/09: la lata es formato, no línea ni botella (506 ofertas, 183 sin ml)
+  ["lata sin ml NO comparable, misma clave", "Santa Julia Dulce Tinto, Lata", null, "Vino Tinto Dulce Santa Julia 750 Ml.", null, true, false],
+  ["en lata x 6 unidades NO comparable, misma clave", "Vino en Lata Santa Julia Tinto Dulce x 6 unidades", null, "Santa Julia Tinto Dulce", null, true, false],
   ["Reserva sigue distinguiendo de la base", "Trumpeter Reserve Malbec", null, "Trumpeter Malbec", null, false, true],
   // ── Auditoría 26/09: el mismo vino partido por ruido de formato ──
   ["código de tienda (77315) no es edición", "NIETO SENETINER PATRIMONIAL MALBEC DOC(77315)", "Nieto Senetiner", "Nieto Senetiner Patrimonial Malbec Doc 750 ml", "Nieto Senetiner", true, true],

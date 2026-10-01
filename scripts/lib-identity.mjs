@@ -389,6 +389,8 @@ export const CONTENT_STOPWORDS = new Set([
   // 6 unidades" dejaba "unidades", "1.500 lts" dejaba "lts", "estuche x 2
   // botellas" dejaba "botellas", y cada uno abría una ficha aparte.
   "unidades", "unidad", "unid", "und", "botellas", "botellon", "botellones",
+  // "lata" es formato (ver parseOffer.lata), no línea: "Santa Julia Tinto Dulce Lata"
+  "lata", "latas", "latita", "latitas",
   "lts", "lt", "litro", "litros", "cm3", "cajas", "estuches", "cofre",
   "en", "por", "para", "c", "u", "cl",
   // "Nicasia Vineyard(s) Malbec" = "Nicasia Malbec"; "Viñedo Elena" idem.

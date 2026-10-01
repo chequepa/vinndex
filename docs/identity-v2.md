@@ -165,3 +165,33 @@ Medido sobre el corpus del 30/09: 14 grupos partidos, 18 fusiones
 bloqueadas por precio, fichas con dispersión ≥3× entre vinotecas 106 → 71.
 La guarda sólo opina con ≥3 precios comparables de cada lado; con menos,
 no bloquea (no inventa evidencia).
+
+## Reglas agregadas el 2026-10-01 ("dulce" es dulzor, no color)
+
+La ficha `colon-dulce` tenía adentro "Vino Tinto Dulce Colón", "Vino Blanco
+Dulce Colón" y "Champaña Colón Dulce": tres vinos, una página, un solo
+min/max. La causa no era Colón: `colorOf()` trataba "dulce" (y "tardío",
+"cosecha tardía", "late harvest") como un COLOR más, con prioridad sobre
+tinto/blanco/espumante. Toda oferta que dijera "dulce" perdía su color
+real y caía con las demás "dulces" de la bodega (961 ofertas con "dulce" +
+color explícito, 368 fichas afectadas; lo mismo con Dilema, Santa Julia
+Dulce Natural, Federico de Alvear, Callia, Estancia Mendoza).
+
+| Regla | Dónde | Qué arregla |
+|---|---|---|
+| "dulce"/"tardío"/"cosecha tardía"/"late harvest" salen de `COLOR_RE`; el color es tinto/blanco/rosado/naranjo/espumante o nulo | `stage4-token-merge.mjs` (`SWEET_STILL_RE`) | un tinto dulce es TINTO |
+| El dulzor de un vino tranquilo es `"dulce"` o nulo (los espumantes siguen con brut/extrabrut/demisec/nature/dulce) | `lib-offer-identity.mjs` (`parseOffer`) | la clave de fallback separa tinto dulce, blanco dulce y champaña dulce |
+| Gate de dulzor en tranquilos: un lado dulce y el otro no → conflicto (antes lo frenaba el color de casualidad) | `identityConflict` | Norton Cosecha Tardía ≠ Norton Blanco; Cordero Rosé ≠ Cordero Blanco Dulce |
+| El tipo "Dulce" del sitio (facet) sale del DULZOR del grupo, no del color | `build-groups-v2.mjs` (`type`) | un tinto dulce sigue apareciendo en "Dulces" |
+| "lata"/"latas" es FORMATO (`parseOffer.lata`), no línea ni botella: no comparable aunque no diga los ml, badge "Lata" en la ficha | `lib-offer-identity.mjs` (`LATA_RE`, `isComparable`, `variantKey`), `lib-identity.mjs` (stopword), `build-groups-v2.mjs`, `lib/snapshot.ts` | 506 ofertas en lata (183 sin volumen) dejan de competir como botella de 750; "Tinto Dulce Lata" deja de ser una línea |
+| Migración del catálogo: entradas minadas con `color: "dulce"` pasan a `color: null, dulzor: "dulce"` sin tocar el id | `build-wine-catalog.mjs` (merge incremental) | 90 entradas (Santa Julia Dulce Natural, El Esteco Tardío, Rutini Encabezado...) siguen matcheando |
+
+Medido sobre el corpus del 30/09 (catálogo reconstruido con la regla
+nueva): fichas dulces que mezclaban ≥2 colores explícitos 27 → 5;
+fichas tipo Dulce 724 → 895 (los tintos y rosados dulces que antes
+quedaban como Tinto/Rosado). El caso dorado Colón Select Frutos Rojos
+(overlay manual) pasa a declarar `dulzor: "dulce"` y junta sus 4 ofertas en
+una ficha (antes 3 + 1). Harness: +9 casos (tinto dulce ≠ blanco dulce,
+champaña dulce ≠ tinto dulce, tardía ≠ seco, rosé ≠ blanco dulce, y
+"Dilema Dulce" = "Vino Blanco Dilema Dulce" sigue compatible; lata = misma
+clave, no comparable).

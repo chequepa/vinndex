@@ -180,6 +180,8 @@ export type ProductGroup = {
     pack: number;
     estuche: boolean;
     copa: boolean;
+    /** Lata (269/355 ml o sin volumen declarado): nunca es la botella. */
+    lata?: boolean;
     offerCount: number;
     minPrice: number | null;
   }[];
@@ -214,6 +216,9 @@ export type ProductOffer = {
   estuche?: boolean;
   /** Venta por copa. */
   copa?: boolean;
+  /** Lata ("Santa Julia Tinto Dulce, Lata"): formato no comparable aunque
+   * no diga los ml. */
+  lata?: boolean;
   /** Botella suelta 750ml sin estuche/copa — entra al min/max de la ficha. */
   comparable?: boolean;
   /** Cosecha explícita en el nombre de la oferta. */

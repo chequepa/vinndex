@@ -1035,6 +1035,7 @@ export function isNonComparableOffer(o: {
   pack?: number;
   estuche?: boolean;
   copa?: boolean;
+  lata?: boolean;
   priceSuspect?: boolean;
   stale?: boolean;
 }): boolean {
@@ -1046,7 +1047,8 @@ export function isNonComparableOffer(o: {
       o.volumeMl !== 750 ||
       (o.pack ?? 0) !== 0 ||
       o.estuche === true ||
-      o.copa === true
+      o.copa === true ||
+      o.lata === true
     );
   }
   return isCaseOffer(o.name);
@@ -1060,6 +1062,7 @@ export function offerVariantLabel(o: {
   pack?: number;
   estuche?: boolean;
   copa?: boolean;
+  lata?: boolean;
   comparable?: boolean;
   priceSuspect?: boolean;
   stale?: boolean;
@@ -1068,6 +1071,7 @@ export function offerVariantLabel(o: {
   if (o.stale) return "Precio sin actualizar";
   if (o.copa) return "Copa";
   if (o.estuche) return "Estuche";
+  if (o.lata) return typeof o.volumeMl === "number" && o.volumeMl !== 750 ? `Lata ${o.volumeMl} ml` : "Lata";
   if ((o.pack ?? 0) > 0) return `Caja x${o.pack}`;
   if ((o.pack ?? 0) === -1) return "Pack";
   if (typeof o.volumeMl === "number" && o.volumeMl !== 750) {
@@ -1099,6 +1103,7 @@ function isCommercialBottle(
     pack?: number;
     estuche?: boolean;
     copa?: boolean;
+    lata?: boolean;
   },
 ): boolean {
   if (isNonComparableOffer(o)) return false;
