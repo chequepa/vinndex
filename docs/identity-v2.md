@@ -195,3 +195,26 @@ una ficha (antes 3 + 1). Harness: +9 casos (tinto dulce ≠ blanco dulce,
 champaña dulce ≠ tinto dulce, tardía ≠ seco, rosé ≠ blanco dulce, y
 "Dilema Dulce" = "Vino Blanco Dilema Dulce" sigue compatible; lata = misma
 clave, no comparable).
+
+### Títulos: el color y el dulzor que faltaban (2026-10-01, PRs #195 y siguiente)
+
+Al separar las fichas dulces por color apareció el síntoma siguiente: dos
+páginas de la misma bodega con el MISMO título. Medido sobre el snapshot
+del 01/10 (fichas con ≥2 vinotecas): 72 pares de títulos repetidos dentro
+de una bodega. Dos causas, dos reglas:
+
+| Regla | Dónde | Qué arregla |
+|---|---|---|
+| El frontend sacaba el prefijo "Vino tinto/blanco" siempre; ahora lo conserva si lo que queda son sólo palabras genéricas (dulce, seco, natural, tardío…) y la bodega | `lib/wineNames.ts` (`stripShelfNoise(name, brand)`) | "Tinto Dulce Colon" ≠ "Blanco Dulce Colon" (antes las dos eran "Dulce Colon") |
+| El título de una ficha del catálogo era línea + expresión + varietal; si el color no es tinto y el varietal no lo implica, se agrega ("Killka Malbec Blanco", "Dilema Rosé"); si hay dulzor y el nombre no lo dice, se agrega ("Trumpeter Extra Brut", "Callia Tardío Dulce" no, porque "tardío" ya lo dice) | `build-groups-v2.mjs` (bloque "Distinguidores que faltaban") | Trumpeter ×3, Codorníu María ×3, Santa Isabel Champaña ×3, Alaris blanco/tinto dulce, Quimera tinto/blanco |
+
+Resultado: títulos repetidos 72 → 68 con la regla del frontend (snapshot
+publicado del 01/10). La del pipeline, medida sobre el corpus reconstruido
+del 30/09 con el mismo catálogo: 61 → 35, con 327 títulos
+que cambian (sufijos "Blanco", "Rosé", "Espumante", "Extra Brut", "Brut
+Nature", "Demi Sec", "Dulce"). Los repetidos que quedan son casi todos dos
+fichas del MISMO vino que el pipeline todavía no une (Colomé 1831, Felino
+Blend, Piattelli Gran Reserva), no dos vinos con el mismo nombre. Al lado, la cerveza salió del sitio
+(`BEER_RE` en `lib/junkSlugs.ts`: 105 fichas, 0 vinos afectados) y
+`/ofertas` filtra sus bajas por `findGroup`, así ningún no-vino vuelve a
+aparecer como "baja del día".
