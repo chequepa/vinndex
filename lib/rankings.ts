@@ -187,12 +187,14 @@ export const RANKINGS: Ranking[] = [
   },
   {
     slug: "top-espumantes",
-    title: "Top espumantes argentinos",
+    title: "Mejores espumantes argentinos",
     subtitle:
-      "Espumantes argentinos comparados en múltiples vinotecas online. Brut, Extra Brut, Nature, Rosé y dulces.",
+      "Espumantes argentinos comparados en múltiples vinotecas online. Brut, Extra Brut, Nature, Rosé y dulces. Lo que muchos llaman champagne argentino, comparado vinoteca por vinoteca.",
     description:
       "Ranking de espumantes argentinos relevados en vinotecas online. Comparamos precios para que veas dónde conseguir cada uno al mejor valor.",
     keywords: [
+      "champagne argentino",
+      "mejores champagne argentina",
       "espumante argentino",
       "champagne argentino",
       "extra brut argentino",
@@ -553,4 +555,56 @@ export function rankingStats(ranking: Ranking): RankingStats {
   }
 
   return { total: matched.length, minPrice, storeCount: stores.size };
+}
+
+// ── Varietal × presupuesto: "Mejores Malbec por menos de $10.000" ──
+//
+// Una página por combinación con demanda real, construida con el
+// inventario (≥10 vinos comparables en ≥2 vinotecas). Es el patrón "una
+// página por servicio por ciudad" del SEO local, traducido al vino: Google
+// rankea páginas, no sitios, y "malbec por menos de 10000" no lo responde
+// ni la ficha ni el ranking general. Las combinaciones sin inventario no
+// existen (nada de páginas vacías).
+const MATRIX_CAPS = [5_000, 10_000, 15_000, 25_000] as const;
+const MATRIX_VARIETALS: { slug: string; label: string; filter: (g: ProductGroup) => boolean }[] = [
+  { slug: "malbec", label: "Malbec", filter: hasVarietal("Malbec") },
+  { slug: "cabernet-sauvignon", label: "Cabernet Sauvignon", filter: hasVarietal("Cabernet Sauvignon") },
+  { slug: "cabernet-franc", label: "Cabernet Franc", filter: hasVarietal("Cabernet Franc") },
+  { slug: "bonarda", label: "Bonarda", filter: hasVarietal("Bonarda") },
+  { slug: "syrah", label: "Syrah", filter: hasVarietal("Syrah") },
+  { slug: "merlot", label: "Merlot", filter: hasVarietal("Merlot") },
+  { slug: "pinot-noir", label: "Pinot Noir", filter: hasVarietal("Pinot Noir") },
+  { slug: "chardonnay", label: "Chardonnay", filter: hasVarietal("Chardonnay") },
+  { slug: "sauvignon-blanc", label: "Sauvignon Blanc", filter: hasVarietal("Sauvignon Blanc") },
+  { slug: "torrontes", label: "Torrontés", filter: hasVarietal("Torrontés") },
+  { slug: "espumantes", label: "espumantes", filter: isType("Espumante") },
+  { slug: "blends", label: "blends", filter: (g) => (g.varietals?.length ?? 0) >= 2 || /\bblend\b|\bcorte\b/i.test(g.canonicalName ?? "") },
+];
+const MATRIX_MIN_ITEMS = 10;
+const fmtCap = (cap: number) => `$${cap.toLocaleString("es-AR")}`;
+for (const v of MATRIX_VARIETALS) {
+  for (const cap of MATRIX_CAPS) {
+    const filter = (g: ProductGroup) =>
+      isCleanProduct(g) && isMultiStore(g) && v.filter(g) && priceBelow(cap)(g);
+    const n = groups.filter(filter).length;
+    if (n < MATRIX_MIN_ITEMS) continue;
+    const capStr = fmtCap(cap);
+    const lower = v.label === v.label.toLowerCase() ? v.label : v.label;
+    RANKINGS.push({
+      slug: `${v.slug}-hasta-${cap}`,
+      title: `Mejores ${lower} por menos de ${capStr}`,
+      subtitle: `${n} ${lower} argentinos en stock por menos de ${capStr} la botella, comparados en al menos 2 vinotecas online. Primero los que más vinotecas venden, con el mejor precio de hoy.`,
+      description: `Los mejores ${lower} argentinos por menos de ${capStr}: precios reales de hoy en vinotecas online, ordenados por disponibilidad, con el mejor precio de cada uno. Actualizado a diario.`,
+      keywords: [
+        `${lower} baratos`,
+        `${lower} por menos de ${cap}`,
+        `mejor ${lower} precio calidad`,
+        `${lower} hasta ${cap} pesos`,
+      ],
+      filter,
+      sort: byStoresDesc,
+      limit: 30,
+      priceCapHint: capStr,
+    });
+  }
 }
