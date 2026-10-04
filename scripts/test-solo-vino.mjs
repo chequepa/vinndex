@@ -65,6 +65,20 @@ for (const [n, por] of [
   ["Cafe Molido Segafredo Espresso Casa 250g Tostado", "café"],
   ["Pack 3 Agua De Coco Pura Natural Sin Azucares 500ml Goya", "agua de coco"],
   ["SAL MARINA GRUESA LIBERATO X 500 GR", "sal gourmet"],
+  ["Pack X6 Cervezas Lester Free Rice 330 Ml", "cerveza en plural (04/10)"],
+  ["Corona 330ml", "Corona con envase pegado a ml"],
+  ["Corona 0.0 330ml", "Corona sin alcohol"],
+  ["Aceitunas Negras Familia Gullo", "aceitunas en plural"],
+  ["GLENMORANGIE 18 YO", "single malt por marca"],
+  ["Coñac HENNESSY V.S.O.P 700cc", "coñac"],
+  ["CYNAR", "aperitivo por marca"],
+  ["Vermú Tripulante al Malbec", "vermú aunque diga Malbec"],
+  ["Anteojos De Sol Polarizados Ray-ban Erika Classic", "anteojos"],
+  ["Toallon Corona", "merch encabezando"],
+  ["NUTELLA X 140G", "almacén"],
+  ["Dulce De Frutilla Beepure Balde 5kg", "dulce de fruta, no vino dulce"],
+  ["Asta Negra Pasta De Trucha Al Chardonnay Lata 80g", "pasta de trucha aunque diga Chardonnay"],
+  ["ACEITE DON DOMINGO V. CATENA Blend Suave x 250cc", "aceite aunque diga Blend y Catena"],
 ]) check(n, fuera(n) === true, por);
 
 console.log("\n=== SÍ ES VINO (no se puede borrar) ===");
@@ -92,7 +106,19 @@ for (const [n, por] of [
   ["Dadá Malbec", "misma bodega"],
   ["Angélica Zapata Cabernet Sauvignon - notas de tabaco y cuero", "tabaco al final es nota de cata"],
   ["Salentein Numina Gran Corte", "control, nada que ver"],
+  ["Tapiz Clásico Malbec", "Tapiz es bodega, no tapicería (04/10)"],
+  ["Vino Tinto TRES CORONAS Cabernet Sauvignon 750", "Coronas no es la cerveza"],
+  ["Expresión Dulce de Altura 2022 by Domingo Molina", "dulce de + no-fruta es vino"],
+  ["Trumpeter Reserva Dulce de Malbec 750 cc", "dulce de Malbec es vino"],
+  ["Kit Regalo Día de la Madre Box N°1: Vino + Choco + Aceitunas", "dice vino: kit con regalo"],
+  ["Gut Oggau Theodora (Weiss) 2023", "Weiss no es cerveza acá"],
+  ["Stella Crinita Omaggio Cabernet Franc", "Stella no es Artois"],
 ]) check(n, fuera(n) === false, por);
+
+console.log("\n=== SEÑAL POR OFERTAS (04/10) ===");
+check("CYNAR con ofertas 'Aperitivo Cynar'", isNonWineGroup({ canonicalName: "Producto X", offers: [{ name: "Aperitivo Producto X 750 ml" }, { name: "Producto X" }] }) === true, "mitad de las ofertas dicen aperitivo");
+check("vino del catálogo no cae por una oferta rara", isNonWineGroup({ canonicalName: "Producto X", catalogId: "x", offers: [{ name: "Aperitivo Producto X" }] }) === false, "catálogo manda");
+check("ficha con tipo no cae por ofertas", isNonWineGroup({ canonicalName: "Champ. Obsession", type: "Espumante", offers: [{ name: "Champ. Obsession c/ pulpa de limon" }] }) === false, "tipo manda");
 
 console.log();
 if (fail === 0) console.log(`✅ Todos los casos dorados de solo-vino pasan (${pass}).`);
