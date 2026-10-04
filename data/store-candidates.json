@@ -117,9 +117,15 @@
       "veredicto": "descartada",
       "motivo": "plataforma no soportada o sitio caído",
       "platform": "unknown"
+    },
+    "vinumplaycordoba.com": {
+      "fecha": "2026-10-04",
+      "veredicto": "descartada",
+      "motivo": "backend no scrapeable: Store API v1 404",
+      "platform": "woocommerce"
     }
   },
   "_doc": "Vinotecas candidatas ya evaluadas por scripts/vet-store-candidates.mjs, con su veredicto y por qué. Existe para que la corrida semanal no gaste tiempo en las mismas rechazadas todas las semanas. Un descarte se puede reevaluar con --recheck <días>: una tienda puede prender el carrito más adelante.",
-  "actualizado": "2026-09-27",
-  "total": 21
+  "actualizado": "2026-10-04",
+  "total": 22
 }

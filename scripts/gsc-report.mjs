@@ -35,9 +35,16 @@
  *   node scripts/gsc-report.mjs --json          # salida estructurada
  *   node scripts/gsc-report.mjs --days 90       # ventana (default 28)
  *   node scripts/gsc-report.mjs --ctr-floor 2   # umbral de oportunidad
+ *
+ * Sección "PÁGINAS CON IMPRESIONES QUE DAN 404" (04/10/2026): cruza cada
+ * /vino/ que Google mostró en la ventana contra las fichas del snapshot
+ * local y los redirects (group-merges + redirects-manual). Reemplaza al
+ * "Not found (404)" de la UI de Search Console, que el cron no puede leer.
+ * Corre contra data/ del repo: hacé `git pull` antes para que refleje prod.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
+import { isNonWineGroup } from "../lib/junkSlugs.ts";
 import { createSign } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -228,6 +235,16 @@ async function main() {
     query(token, { startDate: ymd(start), endDate: ymd(end), dimensions: ["page"], rowLimit: 1000 }),
   ]);
 
+  // Todas las /vino/ con impresiones (no sólo las top 1000 de arriba).
+  const vinoPages = await query(token, {
+    startDate: ymd(start),
+    endDate: ymd(end),
+    dimensions: ["page"],
+    dimensionFilterGroups: [{ filters: [{ dimension: "page", operator: "contains", expression: "/vino/" }] }],
+    rowLimit: 25000,
+  });
+  const dead = deadPages(vinoPages);
+
   const now = totals(cur);
   const before = totals(prev);
 
@@ -276,6 +293,7 @@ async function main() {
       .sort((a, b) => b.clicks - a.clicks)
       .slice(0, 25),
     ctrOpportunities: opportunities,
+    deadPages: dead,
   };
 
   if (JSON_MODE) {
@@ -313,7 +331,59 @@ async function main() {
       `  ${String(p.impressions).padStart(6)} impr · CTR ${p.ctr.toFixed(1).padStart(5)}% · pos ${p.position.toFixed(1).padStart(4)}  ${p.page.replace(SITE_URL.replace(/\/$/, ""), "")}`,
     );
   }
+
+  if (dead) {
+    const sum = (xs, k) => xs.reduce((a, x) => a + x[k], 0);
+    console.log(`\n--- PÁGINAS CON IMPRESIONES QUE DAN 404 (${n(dead.checked)} /vino/ con impresiones) ---`);
+    console.log(
+      `  vino perdido     ${n(dead.lost.length)} páginas · ${n(sum(dead.lost, "impressions"))} impr · ${n(sum(dead.lost, "clicks"))} clics`,
+    );
+    console.log(
+      `  no-vino (a propósito) ${n(dead.nonWine.length)} páginas · ${n(sum(dead.nonWine, "impressions"))} impr · ${n(sum(dead.nonWine, "clicks"))} clics`,
+    );
+    console.log(`    top vino perdido por impresiones (candidatas a redirect manual):`);
+    for (const p of dead.lost.slice(0, 12)) {
+      console.log(`  ${String(p.impressions).padStart(6)} impr · ${String(p.clicks).padStart(3)} clics  /vino/${p.slug}`);
+    }
+  }
   console.log("");
+}
+
+/**
+ * Clasifica las /vino/ con impresiones: viva, redirigida, no-vino (el sitio
+ * la saca a propósito) o vino perdido (404 que habría que recuperar). Una
+ * ficha que no está en el snapshot actual ni en ningún redirect es 404.
+ */
+function deadPages(rows) {
+  const read = (f) => {
+    const p = resolve(ROOT, "data", f);
+    return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : null;
+  };
+  const snap = read("snapshot.json");
+  if (!snap?.productGroups) return null;
+  const live = new Map();
+  for (const g of snap.productGroups) {
+    if (g.offers?.length) live.set(g.groupSlug, isNonWineGroup(g) ? "nonWine" : "live");
+  }
+  const redirects = { ...(read("group-merges.json") ?? {}), ...(read("redirects-manual.json") ?? {}) };
+  const resolveSlug = (slug) => {
+    for (let i = 0; i < 10 && !live.has(slug) && typeof redirects[slug] === "string"; i++) slug = redirects[slug];
+    return live.get(slug);
+  };
+  const lost = [];
+  const nonWine = [];
+  for (const r of rows) {
+    const m = /\/vino\/([^/?#]+)/.exec(r.keys[0]);
+    if (!m) continue;
+    const slug = decodeURIComponent(m[1]);
+    const status = resolveSlug(slug);
+    if (status === "live") continue;
+    const row = { slug, clicks: r.clicks ?? 0, impressions: r.impressions ?? 0 };
+    (status === "nonWine" ? nonWine : lost).push(row);
+  }
+  lost.sort((a, b) => b.impressions - a.impressions);
+  nonWine.sort((a, b) => b.impressions - a.impressions);
+  return { checked: rows.length, lost, nonWine };
 }
 
 main().catch((e) => {
