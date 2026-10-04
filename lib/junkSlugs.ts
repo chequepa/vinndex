@@ -214,7 +214,7 @@ const SIDRA_RE = /\b(sidra|cider)\b/i;
 // vino o región (Corona, Imperial, Patagonia, Sol) sólo cuentan con
 // contexto de cerveza.
 const BEER_RE =
-  /\b(heineken|quilmes|stella\s*artois|brahma|budweiser|schneider|isenbeck|miller|amstel|grolsch|warsteiner|guinness|peroni|blue\s*moon|rabieta|(?<!de\s+los\s+)andes\s+origen|kunstmann|salta\s+(rubia|negra)|imperial\s+(lager|ipa|golden|cream|stout|scotch|amber|roja|rubia|negra|apa)|patagonia\s+(amber|bohemian|weisse|kune|hoppy|ipa|lager)|corona(?=.*\b(330|porron|lata|cero)\b)|lager|ipa|apa|stout|porter|pilsen|pilsner|porron|chopp|birra|beer)\b/i;
+  /\b(heineken|quilmes|stella\s*artois|brahma|budweiser|schneider|isenbeck|miller|amstel|grolsch|warsteiner|guinness|peroni|blue\s*moon|rabieta|(?<!de\s+los\s+)andes\s+origen|kunstmann|salta\s+(rubia|negra)|imperial\s+(lager|ipa|golden|cream|stout|scotch|amber|roja|rubia|negra|apa)|patagonia\s+(amber|bohemian|weisse|kune|hoppy|ipa|lager)|corona(?=.*\b(330|355|410|710|porron|latas?|cero|0\.0)(?!\d))|lager|ipa|apa|stout|porter|pilsen|pilsner|porron|chopp|birra|beer)\b/i;
 // Envases de cerveza (473/710/354 ml). Sólo si el nombre no dice "vino":
 // "Vino Samt Rojo Pomelo Lata 473cc" es vino con soda, y se queda.
 const BEER_SIZE_RE = /\b(473|710|354)\s*(ml|cc)\b/i;
@@ -259,8 +259,62 @@ const SPIRIT_PREFIX_RE = /^(min\.\s+)?w\.\s/i;
 const SPIRIT_BRAND2_RE =
   /\b(canadian club|yamazakura|glenrothes|arran|liqueur|poire williams|cachaca|limoncello|anis|ouzo|amargo|bitter angostura|angostura)\b/i;
 
-export function isNonWineGroup(g: { canonicalName: string }): boolean {
+/**
+ * Cuarta tanda (corrida semanal 04/10/2026). Tres agujeros del filtro, todos
+ * de vocabulario y no de producto:
+ *
+ *   · PLURALES. Las regex de arriba piden la palabra en singular con `\b`,
+ *     así que "Pack x6 Cervezas", "Aceitunas Negras" y "Habanos" pasaban.
+ *   · MARCAS de destilado y cerveza que no traen la categoría: Glenmorangie,
+ *     Hennessy, Cynar, Amarula, J&B, Kaiserdom, Schofferhofer.
+ *   · MERCADERÍA que la vinoteca vende al lado: anteojos Ray-Ban, merch de
+ *     Corona (toallón, bolso térmico, parlante), exhibidores, almacén
+ *     (nutella, ramen, especias, dulces de fruta, aceitunas, aceite).
+ *
+ * Medido sobre el snapshot del 04/10/2026: ~640 fichas publicadas e
+ * indexables. Falsos positivos revisados a mano uno por uno: "Tapiz" quedó
+ * afuera (es una bodega), "dulce de" sólo cuenta seguido de una fruta
+ * ("Expresión Dulce de Altura" y "Trumpeter Reserva Dulce de Malbec" son
+ * vino) y las reglas de almacén no corren si el nombre dice "vino" (un kit
+ * "Vino + Choco + Aceitunas" es vino con regalo, no aceitunas).
+ */
+const PLURAL_NONWINE_RE = /\b(cervezas|aceitunas|habanos|licores|whiskies|whiskys)\b/i;
+const BRAND_NONWINE_RE =
+  /\b(glenmorangie|glendronach|glen\s*scotia|glend?\s*moray|glen\s*grant|glenkinchie|glenallachie|bruichladdich|tomatin|ardbeg|bowmore|aberlour|balvenie|dalmore|j\s*&\s*b|hennessy|conac|remy\s+martin|courvoisier|zacapa|absente|label\s*5|cynar|amarula|karamel\s+cream|vermu|citadelle|goyeneche|kaiserdom|schofferhofer|ray[\s-]?ban)\b|\b(anteojos?|gafas|lentes)\s+de\s+sol\b/i;
+const MERCH_HEAD_RE =
+  /^(llavero|toallon|bolso\s+termico|parlante|organizador|cooler|hielo|cubetera|escarbadientes|beermat|chop|exhibidor)\b/i;
+const ALMACEN4_RE =
+  /\b(nutella|ramen|nescafe|granola|nuez\s+moscada|paprika|curcuma|chimichurri|jengibre|ajos?\s+(picado|enteros?)|especias|morron|berenjenas|alcauciles|tomates\s+secos|peperoni|pasta\s+de\s+(sesamo|tomates?|trucha|salmon|aceitunas?)|castanas\s+de\s+caju|avellanas|confitura|conf\.|dulce\s+de\s+(frutillas?|durazno|arandanos|frambuesas?|frutos\s+del\s+bosque|mosqueta|cayote|membrillo|batata|higo|naranja)|te\s+en\s+hebras|dilmah|crema\s+(facial|hidratante)|^aceite\b|aceite\s+(de\s+)?(oliva|maiz|girasol))/i;
+
+/**
+ * Señal por OFERTAS: la ficha "CYNAR" no dice aperitivo, pero sus ofertas
+ * dicen "Aperitivo Cynar 750 ml". Si al menos la mitad de los nombres de
+ * oferta distintos son no-vino y la ficha no tiene ni catálogo ni tipo, la
+ * ficha es no-vino. Medido 04/10: 13 fichas (Cynar en 7 vinotecas, Amarula,
+ * aceites, Corona, Dr. Lemon), cero vinos.
+ */
+function offersSayNonWine(g: {
+  catalogId?: string | null;
+  type?: string | null;
+  offers?: { name?: string }[];
+}): boolean {
+  if (g.catalogId || g.type || !g.offers?.length) return false;
+  const names = [...new Set(g.offers.map((o) => o.name).filter(Boolean) as string[])];
+  if (!names.length) return false;
+  const flagged = names.filter((x) => isNonWineGroup({ canonicalName: x })).length;
+  return flagged > 0 && flagged * 2 >= names.length;
+}
+
+export function isNonWineGroup(g: {
+  canonicalName: string;
+  catalogId?: string | null;
+  type?: string | null;
+  offers?: { name?: string }[];
+}): boolean {
   const n = stripAccentsLower(g.canonicalName ?? "");
+  if (BRAND_NONWINE_RE.test(n) || MERCH_HEAD_RE.test(n.trim())) return true;
+  if ((PLURAL_NONWINE_RE.test(n) || ALMACEN4_RE.test(n)) && !/\bvino\b/.test(n)) return true;
+  if (offersSayNonWine(g)) return true;
   if (GIFTCARD_RE.test(n)) return true;
   if (NON_WINE_RE.test(n.replace(BOURBON_MATURATION_RE, " "))) return true;
   if (SPIRIT_BRAND_RE.test(n)) return true;
