@@ -53,6 +53,7 @@ import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { eanFromSku } from "./lib-ean.mjs";
 import { buildTypoMap, applyTypoMap } from "./lib-typos.mjs";
 import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN, JEV_NAME_MIN, JEV_NAME_MAX_SHARE } from "./lib-jev.mjs";
+import { loadVerdicts as loadSommelierVerdicts, buildIndex as buildSommelierIndex, applySommelier } from "./lib-sommelier.mjs";
 
 // ── Compat v1: facets de región y varietal con los MISMOS nombres display
 // que usaba build-groups.mjs — /region/* y /varietal/* filtran por estos
@@ -147,6 +148,8 @@ const MANUAL_REDIRECTS_PATH = resolve(ROOT, "data/redirects-manual.json");
 const JEV_CACHE_PATH = resolve(ROOT, "data/jev-cache.json");
 const JEV_SUSPECTS_PATH = resolve(ROOT, "data/jev-gate-suspects.json");
 const CARRYOVER_PATH = resolve(ROOT, "data/carryover.json");
+const SOMMELIER_VERDICTS_PATH = resolve(ROOT, "data/sommelier/verdicts.json");
+const SOMMELIER_REPORT_PATH = resolve(ROOT, "data/sommelier/apply-report.json");
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -1189,6 +1192,56 @@ async function main() {
         (stats.sinClave ? " · SIN TYPESAFE_API_KEY (sólo caché)" : "") +
         (tripped ? ` · CIRCUIT BREAKER: > ${Math.round(JEV_NAME_MAX_SHARE * 100)}% "mismo", no fusiona` : ""),
     );
+  }
+
+  // ── Sommelier (Claude): qué vino es cada ficha ──
+  // Veredictos de scripts/sommelier.mjs: cada bodega revisada entera, dos
+  // veces, por Claude; sólo se aplica lo que coincide en las dos pasadas
+  // (lib-sommelier.mjs). Fusiona las fichas que son el mismo vino escrito
+  // distinto y muda las ofertas que están en la ficha equivocada. No levanta
+  // los gates de tipo/color/dulzor/varietal ni la guarda de precio, y corre
+  // ANTES del partidor por precio, que sigue como red de seguridad.
+  // SOMMELIER_APPLY=0 mide sin tocar nada. Sin veredictos, no hace nada.
+  {
+    const verdicts = loadSommelierVerdicts(SOMMELIER_VERDICTS_PATH);
+    if (verdicts) {
+      const idx = buildSommelierIndex(verdicts);
+      const dryRun = process.env.SOMMELIER_APPLY === "0";
+      const before = groups.size;
+      const st = applySommelier(groups, idx, {
+        rawName: (o) => o._displayName ?? o.name,
+        canonOf: (g) => pickCanonicalName(g.offers),
+        pricesCompatible: (a, b) => {
+          const ok = pricesCompatible(a, b);
+          if (!ok) priceBlocked++;
+          return ok;
+        },
+        dryRun,
+      });
+      const lowAgreement = idx.units.filter((u) => !u.applied);
+      console.log(
+        `  sommelier${dryRun ? " (SÓLO MEDICIÓN)" : ""}: ${idx.units.length} bodegas con consenso · ${idx.index.size} nombres decididos · ` +
+          `${st.gruposConCasa} fichas con vino · ${st.fusiones} fusiones · ${st.mudadas} ofertas mudadas · ${st.fuera} fuera de su ficha · ` +
+          `bloqueadas: ${st.bloqueadasGate} por gate, ${st.bloqueadasPrecio} por precio · grupos ${before} → ${groups.size}` +
+          (lowAgreement.length ? ` · ${lowAgreement.length} bodegas sin aplicar por bajo acuerdo` : ""),
+      );
+      if (PUBLISH) {
+        writeFileSync(
+          SOMMELIER_REPORT_PATH,
+          JSON.stringify(
+            {
+              _doc: "Qué hizo el sommelier en el último publish (build-groups-v2.mjs). `ejemplos` muestra fusiones, mudanzas y bloqueos para auditar a ojo.",
+              generatedAt: new Date().toISOString(),
+              dryRun,
+              ...st,
+              unidades: idx.units,
+            },
+            null,
+            1,
+          ) + "\n",
+        );
+      }
+    }
   }
 
   // ── Partidor por precio incoherente ──
