@@ -2,6 +2,8 @@ import Link from "next/link";
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { FavoritesNavLink } from "./Favorites";
+import { HeaderShell } from "./HeaderShell";
+import { NavLinks, type NavItem } from "./NavLinks";
 
 type Props = {
   /** Valor inicial del buscador (en /buscar, la consulta actual). */
@@ -9,13 +11,24 @@ type Props = {
   placeholder?: string;
   /** Muestra el aviso "Precios en CABA" (sólo tiene sentido en /buscar). */
   showZoneNote?: boolean;
+  /** Home: el header queda escondido mientras el hero (este id) está en
+   * pantalla y baja cuando sale. Ver HeaderShell. */
+  revealAfter?: string;
 };
 
-const NAV = [
+const NAV: NavItem[] = [
   { href: "/ofertas", label: "Ofertas" },
   { href: "/explorar", label: "Explorar" },
-  { href: "/ranking", label: "Rankings" },
-  { href: "/bodegas", label: "Bodegas" },
+  { href: "/ranking", label: "Rankings", match: ["/vs"] },
+  { href: "/bodegas", label: "Bodegas", match: ["/bodega"] },
+];
+
+/** La tira de mobile tiene lugar para más: se scrollea de costado. */
+const NAV_MOBILE: NavItem[] = [
+  ...NAV,
+  { href: "/vinotecas", label: "Vinotecas", match: ["/vinoteca"] },
+  { href: "/indice", label: "Índice de precios" },
+  { href: "/blog", label: "Blog" },
 ];
 
 /**
@@ -25,17 +38,23 @@ const NAV = [
  * ~70px ("Busca") y en el 404 el toggle de tema se salía de la pantalla.
  *
  * Mobile: sin ícono decorativo y con el submit como botón-lupa de 40px,
- * así el input se lleva todo el ancho que queda. Desktop (lg+): suma la
- * navegación a Explorar / Rankings / Bodegas, que antes sólo existía en
- * el footer.
+ * así el input se lleva todo el ancho que queda. Abajo, una tira de
+ * secciones scrolleable; para que esos ~50px extra no se coman la
+ * pantalla, el header se esconde al bajar y vuelve al subir (headroom,
+ * en HeaderShell). Desktop (lg+): la navegación va en la misma fila, con
+ * la sección actual subrayada.
  */
 export function SiteHeader({
   defaultQuery,
   placeholder = "Buscá un vino o bodega",
   showZoneNote = false,
+  revealAfter,
 }: Props = {}) {
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-ink/10 shadow-sm">
+    <HeaderShell
+      revealAfter={revealAfter}
+      className="bg-white border-b border-ink/10"
+    >
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-4">
         <Link
           href="/"
@@ -112,15 +131,7 @@ export function SiteHeader({
           aria-label="Secciones"
           className="hidden lg:flex lg:ml-auto items-center gap-1 text-sm font-medium text-ink"
         >
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="cursor-wine px-3 py-2 rounded-full hover:bg-snow hover:text-cobalt transition-colors"
-            >
-              {n.label}
-            </Link>
-          ))}
+          <NavLinks items={NAV} variant="bar" />
         </nav>
         {showZoneNote && (
           <Link
@@ -155,6 +166,9 @@ export function SiteHeader({
           </span>
         </div>
       </div>
-    </header>
+      <nav aria-label="Secciones" className="lg:hidden max-w-7xl mx-auto px-4">
+        <NavLinks items={NAV_MOBILE} variant="strip" />
+      </nav>
+    </HeaderShell>
   );
 }

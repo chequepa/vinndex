@@ -746,3 +746,347 @@ tr.row-no {
   background: linear-gradient(180deg, #1a2240 0%, #342b1b 100%);
   border-color: rgba(236, 228, 210, 0.08);
 }
+
+/* ───── Microinteracciones (2026-10) ─────
+ * Todo lo que se mueve acá anima sólo `transform` y `opacity` (compositor,
+ * 60fps aunque el main thread esté ocupado hidratando). Nada de animar
+ * width/height/top. Todo se apaga con prefers-reduced-motion al final. */
+
+/* Header: headroom en mobile (se esconde al bajar, vuelve al subir) y
+ * reveal en la home (aparece cuando el hero sale de pantalla). El estado
+ * lo escribe HeaderShell como data-attributes, sin re-render de React. */
+.site-header {
+  transition:
+    transform 0.32s cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 0.2s;
+  /* Sin will-change: transform a propósito. Convertiría al header en
+   * containing block de sus hijos `fixed` (el backdrop del autocomplete
+   * en mobile) y los encerraría en la caja del header. */
+}
+.site-header[data-hidden="true"] {
+  transform: translateY(-100%);
+}
+.site-header[data-scrolled="true"]:not([data-hidden="true"]) {
+  box-shadow: 0 8px 24px -16px rgba(15, 23, 41, 0.35);
+}
+
+/* Nav del header: subrayado mustard que crece desde el centro (el mismo
+ * subrayado editorial del hero). El activo queda subrayado fijo. */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-mustard);
+  transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.nav-link:hover::after,
+.nav-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+/* Tira de secciones en mobile: scroll horizontal sin barra visible. */
+.nav-strip {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.nav-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* Feedback de presión: los pills se hunden un poco al tocarlos. En mobile
+ * es la única confirmación de que el tap se registró antes de navegar. */
+.press {
+  /* globals.css no está en un @layer, así que esta regla le gana a las
+   * utilities de Tailwind (`transition-colors`): por eso repetimos acá
+   * las transiciones de color además del transform. */
+  transition:
+    transform 0.12s ease-out,
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* Flecha que empuja hacia adelante en hover (CTAs con "→"). */
+.arrow-nudge [data-arrow] {
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.arrow-nudge:hover [data-arrow],
+.arrow-nudge:focus-visible [data-arrow] {
+  transform: translateX(4px);
+}
+
+/* Tarjetas de región: las montañas crecen en hover, como si la postal
+ * se acercara, y aparece la flecha junto al nombre. */
+.region-card .region-ridge {
+  transform-origin: bottom center;
+  transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+/* Sólo scaleY desde la base: con translateY quedaba una franja del
+ * gradient a la vista debajo de las montañas. */
+.region-card:hover .region-ridge {
+  transform: scaleY(1.12);
+}
+.region-card .region-arrow {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.25s,
+    transform 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.region-card:hover .region-arrow,
+.region-card:focus-visible .region-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Placas de bodega: el monograma sube un poco, como etiqueta que se
+ * levanta de la botella. Ojo: el centrado vertical es la utility
+ * `-translate-y-[58%]`, que en Tailwind v4 escribe la propiedad
+ * `translate` (no `transform`); el `transform` de acá se suma encima. */
+.bodega-placa .bodega-mono {
+  transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.bodega-placa:hover .bodega-mono {
+  transform: translateY(-6px);
+}
+
+/* Reveal al scrollear. CSS puro (scroll-driven animations): sin JS, sin
+ * IntersectionObserver, corre en el compositor. Donde no hay soporte
+ * (Firefox hoy) el contenido simplemente está, sin animación. */
+@supports (animation-timeline: view()) {
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .reveal {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    /* Rango en px y no en %: con `entry 60%` un grid alto quedaba medio
+     * transparente durante casi una pantalla de scroll. Así cualquier
+     * bloque está opaco después de asomar 160px. */
+    animation-range: entry 0% entry 160px;
+  }
+}
+
+/* Bento de la home ("Elegí por dónde arrancar"). */
+.bento-tile {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 41, 0.1);
+}
+.dark .bento-tile {
+  border-color: rgba(236, 228, 210, 0.1);
+}
+/* Índice tipo "tabla de contenidos" de revista: nombre ····· número. */
+.toc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.toc-row .toc-leader {
+  flex: 1;
+  border-bottom: 1px dotted currentColor;
+  opacity: 0.35;
+  transform: translateY(-4px);
+}
+.toc-row .toc-arrow {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.toc-row:hover .toc-arrow,
+.toc-row:focus-visible .toc-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* Escalones del tile de presupuesto: cada escalón sube en hover. */
+.budget-step {
+  transition: transform 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.budget-step:hover,
+.budget-step:focus-visible {
+  transform: translateY(-4px);
+}
+/* Swatches de tipo de vino: la copa se llena (scale desde abajo). */
+.type-swatch .type-fill {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  transform: scaleY(0.62);
+}
+.type-swatch:hover .type-fill,
+.type-swatch:focus-visible .type-fill {
+  transform: scaleY(1);
+}
+
+/* Footer "noche": el atardecer del hero termina acá. Fondo propio
+ * (en light ink, en dark el medianoche del bg) para que la cresta de
+ * montañas que asoma arriba del footer use exactamente el mismo color. */
+:root {
+  --vx-footer: #0f1729;
+}
+.dark {
+  --vx-footer: #070b17;
+}
+.footer-night {
+  background: var(--vx-footer);
+}
+.footer-ridge {
+  fill: var(--vx-footer);
+}
+/* Links del footer: subrayado que crece de izquierda a derecha. */
+.footer-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition:
+    background-size 0.3s cubic-bezier(0.65, 0, 0.35, 1),
+    color 0.2s;
+}
+.footer-link:hover,
+.footer-link:focus-visible {
+  background-size: 100% 1px;
+  color: #f5ede0;
+}
+
+/* Punto "en vivo" de la última actualización de precios. */
+@keyframes live-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-mustard);
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: live-pulse 2.4s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+}
+
+/* 404: la botella vacía se mece sobre la mesa y cae la última gota. */
+@keyframes bottle-rock {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+}
+@keyframes last-drop {
+  0%,
+  55% {
+    transform: translateY(0) scale(0.4);
+    opacity: 0;
+  }
+  62% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(19px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(22px) scale(1.6, 0.3);
+    opacity: 0;
+  }
+}
+.bottle-rock {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: bottle-rock 5s ease-in-out infinite;
+}
+.last-drop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: last-drop 3.2s cubic-bezier(0.5, 0, 0.75, 0) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .nav-link::after,
+  .press,
+  .arrow-nudge [data-arrow],
+  .region-card .region-ridge,
+  .bodega-placa .bodega-mono,
+  .budget-step,
+  .type-swatch .type-fill,
+  .footer-link {
+    transition: none;
+  }
+  .press:active,
+  .arrow-nudge:hover [data-arrow],
+  .region-card:hover .region-ridge,
+  .bodega-placa:hover .bodega-mono,
+  .budget-step:hover {
+    transform: none;
+  }
+  .reveal,
+  .live-dot::after,
+  .bottle-rock,
+  .last-drop {
+    animation: none;
+  }
+  .last-drop {
+    opacity: 0;
+  }
+}
+
+/* CTA final de la home: el ticket de "ejemplo de hoy" descansa torcido,
+ * como un papel apoyado, y se endereza en hover. */
+.cta-ticket {
+  transform: rotate(-2.5deg);
+  transition:
+    transform 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 0.35s;
+}
+.cta-ticket:hover,
+.cta-ticket:focus-visible {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 0 24px 48px -24px rgba(15, 23, 41, 0.55);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-ticket {
+    transition: none;
+  }
+}

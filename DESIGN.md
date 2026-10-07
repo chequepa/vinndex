@@ -205,6 +205,7 @@ Sistema mayormente flat con shadows como respuesta a hover (no como decoración 
 - **Hero bottle** (`drop-shadow(0 36px 60px rgba(15, 30, 77, 0.5))`): la única shadow grande del sistema, reservada exclusivamente para la ilustración del hero. Es shadow narrativa, no de componente: sostiene la botella visualmente sobre las montañas.
 - **Postcard hover** (`box-shadow: 0 20px 40px -20px rgba(15, 23, 41, 0.2)`): aparece SOLO en hover, transición 0.3s con `cubic-bezier(0.65, 0, 0.35, 1)`. Acompaña `transform: translateY(-4px)`.
 - **Bodega placa hover** (`box-shadow: 0 18px 36px -18px rgba(15, 23, 41, 0.45)`): variante más fuerte para las placas de bodega con bg coloreado pleno.
+- **Header scrolleado** (`0 8px 24px -16px rgba(15,23,41,0.35)`): aparece sólo cuando la página está scrolleada (`data-scrolled`), nunca arriba de todo.
 - **Search hero** (`shadow-2xl`): el único shadow de "always-on" del sistema, sobre el buscador del hero (justifica la separación visual del input contra el gradient).
 - **Sun glow** (`box-shadow: 0 0 120px 30px rgba(232, 181, 71, 0.45)`): glow del sol del hero. Aporte atmosférico, no componente.
 
@@ -248,8 +249,10 @@ Sistema mayormente flat con shadows como respuesta a hover (no como decoración 
 ### Navigation
 
 - **Hero nav** (sobre gradient): `position: absolute`, sin bg propio, links como chips glass, padding `20–24px`. ThemeToggle + FavoritesNavLink siempre a la derecha. Logo Vinndex con el ícono SVG montaña + estrella mustard.
-- **Sticky header** (`components/SiteHeader.tsx`, todas las páginas menos la home): `sticky top-0 z-30`, bg white, border-bottom `ink/10`, `shadow-sm`. Logo a la izquierda + form de búsqueda (flex-1) + nav Explorar / Rankings / Bodegas (lg+) + favoritos + theme toggle (sm+; en mobile el toggle vive en el footer). En mobile el submit es un botón-lupa de 40px y no hay ícono decorativo, para que el input tenga ancho real. No copiar el header inline en una página nueva: usar `<SiteHeader />`.
-- **Footer** (`components/SiteFooter.tsx`): el mismo en todas las páginas, incluida la ficha de vino. Links en 2 columnas en mobile, 4 en desktop.
+- **Sticky header** (`components/SiteHeader.tsx`, todas las páginas menos la home): bg white, border-bottom `ink/10`. La cáscara es `HeaderShell` (client): sombra sólo después de scrollear (`data-scrolled`), y debajo de lg se esconde al bajar y vuelve al subir (headroom, `data-hidden`). El estado se escribe como data-attributes en un rAF, sin re-render, y la transición es `transform` en CSS. Fila: logo + form de búsqueda (flex-1) + nav (lg+) + favoritos + theme toggle (sm+). La nav (`NavLinks`, client por `usePathname`) marca la sección actual con `aria-current="page"` y un subrayado mustard que en hover crece desde el centro. En mobile va una segunda fila: tira horizontal scrolleable de `.filter-chip` (Ofertas, Explorar, Rankings, Bodegas, Vinotecas, Índice, Blog), con el activo en estado `active`. No copiar el header inline en una página nueva: usar `<SiteHeader />`.
+- **Header de la home** (`<SiteHeader revealAfter="inicio" />`): `fixed`, escondido e `inert` mientras el hero está en pantalla; baja cuando el hero sale (IntersectionObserver). Nunca `will-change: transform` en el header: lo vuelve containing block del backdrop `fixed` del autocomplete.
+- **Footer** (`components/SiteFooter.tsx`): "la noche después del atardecer". Fondo `--vx-footer` (ink en light, `#070b17` en dark) y una cresta de montañas que asoma por arriba con el mismo fill (`.footer-ridge`), más un par de estrellas. Bloque de marca con la última actualización real del snapshot (`.live-dot` pulsante) + CTA "¿Tenés una vinoteca? Sumate". Cuatro columnas por intención (Catálogo, Regiones, Precios, Vinndex), links con subrayado que crece (`.footer-link`), "volver arriba" de 44px y el wordmark gigante recortado al pie (SVG con `textLength`, `aria-hidden`).
+- **404** (`components/NotFoundView.tsx`): lo usan el 404 global (`app/not-found.tsx`) y el de ficha. Buscador con autocomplete primero, después bodegas / varietales / regiones. Ilustración `EmptyBottle`: botella vacía tumbada con etiqueta "Reserva 404" sobre postal `ficha-hero`, que se mece y suelta la última gota.
 - **Tap targets**: favoritos y theme toggle miden 44px en mobile (40px desde sm).
 - **Skip-to-content**: `position: absolute, left: -9999px`. En `:focus` se materializa: bg ink, texto snow, padding `12px 20px`, border-radius `0 0 12px 0`.
 
@@ -265,6 +268,17 @@ Sistema mayormente flat con shadows como respuesta a hover (no como decoración 
 - **Grain texture** (`.grain::before`): SVG `feTurbulence` con `mix-blend-mode: multiply`, opacity 0.18. Encima de todo bg con gradient. Es lo que le da grano de papel impreso al sistema.
 - **Wine cursor** (`.cursor-wine`): cursor custom SVG con forma de gota vinosa (`#6B1E2E`), aplicado a todo link/botón. Es la firma interactiva del sitio.
 - **Store logo**: cuadrado 44×44, radius 10px, fondo color determinístico por slug (9 colores oscurecidos para pasar AA con texto cream), iniciales 2 letras Fraunces 14, text-shadow `0 1px 2px rgba(15,23,41,0.55)` para legibilidad sobre los bg más claros.
+
+## 5b. Motion
+
+Microinteracciones chicas, con rol, y siempre sobre `transform` / `opacity` (compositor, 60fps). Todas viven en `globals.css` y todas se apagan con `prefers-reduced-motion: reduce`.
+
+- **`.reveal`**: entrada al scrollear con scroll-driven animations (`animation-timeline: view()`, rango `entry 0% entry 160px`). CSS puro, sin JS; donde no hay soporte el contenido simplemente está. Va en contenedores (grids, cajas), nunca en una card que ya usa `transform` en hover: la animación con `fill: both` le pisaría el hover.
+- **`.press`**: `scale(0.97)` en `:active` para pills y botones; en mobile es la confirmación del tap.
+- **`.arrow-nudge`** + `<span data-arrow>→</span>`: la flecha de los CTAs avanza 4px en hover.
+- **Región**: las montañas crecen (`scaleY` desde la base) y aparece la flecha. **Placa de bodega**: el monograma sube 6px. **Ticket del CTA final**: torcido en reposo, se endereza en hover.
+- **Bento de la home** (`HomeBento`): índice de varietales tipo revista (`.toc-row`, nombre ····· cantidad), escalera de presupuesto (`.budget-step`), copas que se llenan (`.type-swatch`).
+- `globals.css` no está en un `@layer`: sus reglas le ganan a las utilities de Tailwind. Si una clase propia define `transition`, tiene que incluir también las de color que el elemento necesite.
 
 ## 6. Do's and Don'ts
 
