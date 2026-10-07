@@ -6,6 +6,8 @@ import { FavoritesNavLink } from "@/components/Favorites";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
 import { HomeFavoriteDrops } from "@/components/HomeFavoriteDrops";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { HomeBento } from "@/components/HomeBento";
 import Link from "next/link";
 import {
   snapshotStats,
@@ -301,6 +303,20 @@ export default async function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
   const deals = topDeals(6);
+  // Prueba del CTA final: el top deal real del snapshot (mismo vino, la
+  // vinoteca más barata vs la más cara hoy).
+  const proofDeal = deals.find(
+    (g) => g.minPrice != null && g.maxPrice != null && g.maxPrice > g.minPrice,
+  );
+  const ctaProof = proofDeal
+    ? {
+        slug: proofDeal.groupSlug,
+        name: displayWineName(proofDeal.canonicalName),
+        min: proofDeal.minPrice as number,
+        max: proofDeal.maxPrice as number,
+        stores: proofDeal.storeCount,
+      }
+    : null;
   const varietals = varietalPages().slice(0, 8);
   const allRegions = regionPages();
   const regions = allRegions.slice(0, 6);
@@ -410,19 +426,19 @@ export default async function Home() {
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-2">
-            <Link href="/ofertas" className="chip">
+            <Link href="/ofertas" className="chip press">
               Ofertas
             </Link>
-            <Link href="/explorar" className="chip">
+            <Link href="/explorar" className="chip press">
               Explorar
             </Link>
-            <a href="#regiones" className="chip">
+            <a href="#regiones" className="chip press">
               Regiones
             </a>
-            <a href="#bodegas" className="chip">
+            <a href="#bodegas" className="chip press">
               Bodegas
             </a>
-            <a href="#como-funciona" className="chip">
+            <a href="#como-funciona" className="chip press">
               Cómo funciona
             </a>
           </div>
@@ -457,9 +473,17 @@ export default async function Home() {
         </div>
       </nav>
 
+      {/* Header que baja cuando el hero sale de pantalla: en la home el
+          nav vive sobre el gradient (absolute) y, sin esto, a partir del
+          segundo scroll no quedaba buscador ni navegación a mano. */}
+      <SiteHeader revealAfter="inicio" />
+
       {/* HERO */}
       <main id="contenido">
-      <section className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain">
+      <section
+        id="inicio"
+        className="relative nagai-sky min-h-[100dvh] flex items-center overflow-hidden grain"
+      >
         {/* Sun — on mobile sits as a corner ornament (no collision with the
             headline); on desktop expands behind the bottle illustration. */}
         <div className="absolute top-[84px] -right-10 lg:top-[18%] lg:right-[15%] float pointer-events-none">
@@ -684,13 +708,13 @@ export default async function Home() {
               </div>
               <Link
                 href="/ofertas"
-                className="cursor-wine inline-flex items-center gap-2 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt transition-colors"
+                className="arrow-nudge press cursor-wine inline-flex items-center gap-2 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt"
               >
                 Ver las {dropsReport?.drops.length ?? 0} bajas de hoy
-                <span aria-hidden="true">→</span>
+                <span data-arrow aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="reveal grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {topDrops.map((d) => (
                 <Link
                   key={d.slug}
@@ -755,20 +779,20 @@ export default async function Home() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/buscar?multi=1"
-                  className="chip !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
+                  className="chip press arrow-nudge !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
                 >
-                  Ver todos los comparables →
+                  Ver todos los comparables <span data-arrow aria-hidden="true">→</span>
                 </Link>
                 <Link
                   href="/ranking"
-                  className="chip !bg-snow !text-ink !border-ink/15 hover:!bg-mustard"
+                  className="chip press !bg-snow !text-ink !border-ink/15 hover:!bg-mustard"
                 >
                   Rankings curados
                 </Link>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="reveal grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {deals.map((g) => {
                 const savingsPct =
                   g.minPrice != null && g.maxPrice != null && g.maxPrice > 0
@@ -841,7 +865,7 @@ export default async function Home() {
             </h2>
           </div>
 
-          <div className="relative grid md:grid-cols-3 gap-12 md:gap-8 lg:gap-14">
+          <div className="reveal relative grid md:grid-cols-3 gap-12 md:gap-8 lg:gap-14">
             {/* Connector — wavy dotted line tying the three steps together on
                 desktop. Anchored above the illustrations so it visually links
                 the focal points, not the headings. */}
@@ -1057,16 +1081,16 @@ export default async function Home() {
             </div>
             <Link
               href="/buscar"
-              className="chip !bg-[rgba(245,237,224,0.12)] !border-[rgba(245,237,224,0.3)] hover:!bg-[rgba(245,237,224,0.22)]"
+              className="chip press arrow-nudge !bg-[rgba(245,237,224,0.12)] !border-[rgba(245,237,224,0.3)] hover:!bg-[rgba(245,237,224,0.22)]"
             >
-              Ver todas las regiones →
+              Ver todas las regiones <span data-arrow aria-hidden="true">→</span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="reveal grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href={regionUco ? `/region/${regionUco.slug}` : "/buscar?region=Valle+de+Uco"}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
+              className="region-card cursor-wine group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
                 className="absolute inset-0"
@@ -1076,9 +1100,10 @@ export default async function Home() {
                 }}
               />
               <svg
-                className="absolute bottom-0 w-full"
+                className="region-ridge absolute bottom-0 w-full"
                 viewBox="0 0 200 100"
                 preserveAspectRatio="none"
+                aria-hidden="true"
               >
                 <path
                   d="M0 70 L40 40 L70 55 L110 30 L140 50 L180 35 L200 55 L200 100 L0 100 Z"
@@ -1092,7 +1117,7 @@ export default async function Home() {
                 </span>
                 <div>
                   <div className="display text-2xl font-semibold">
-                    Valle de Uco
+                    Valle de Uco <span className="region-arrow" aria-hidden="true">→</span>
                   </div>
                   <div className="text-snow/70 text-sm mt-1">
                     {regionUco
@@ -1105,7 +1130,7 @@ export default async function Home() {
 
             <Link
               href={regionLujan ? `/region/${regionLujan.slug}` : "/buscar?region=Luj%C3%A1n+de+Cuyo"}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
+              className="region-card cursor-wine group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
                 className="absolute inset-0"
@@ -1115,9 +1140,10 @@ export default async function Home() {
                 }}
               />
               <svg
-                className="absolute bottom-0 w-full"
+                className="region-ridge absolute bottom-0 w-full"
                 viewBox="0 0 200 100"
                 preserveAspectRatio="none"
+                aria-hidden="true"
               >
                 <path
                   d="M0 75 L50 50 L90 65 L130 45 L170 60 L200 50 L200 100 L0 100 Z"
@@ -1131,7 +1157,7 @@ export default async function Home() {
                 </span>
                 <div>
                   <div className="display text-2xl font-semibold">
-                    Luján de Cuyo
+                    Luján de Cuyo <span className="region-arrow" aria-hidden="true">→</span>
                   </div>
                   <div className="text-snow/70 text-sm mt-1">
                     {regionLujan
@@ -1144,7 +1170,7 @@ export default async function Home() {
 
             <Link
               href={regionSalta ? `/region/${regionSalta.slug}` : "/buscar?region=Salta"}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
+              className="region-card cursor-wine group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
                 className="absolute inset-0"
@@ -1154,9 +1180,10 @@ export default async function Home() {
                 }}
               />
               <svg
-                className="absolute bottom-0 w-full"
+                className="region-ridge absolute bottom-0 w-full"
                 viewBox="0 0 200 100"
                 preserveAspectRatio="none"
+                aria-hidden="true"
               >
                 <path
                   d="M0 60 L30 30 L70 50 L110 25 L150 45 L180 30 L200 50 L200 100 L0 100 Z"
@@ -1170,7 +1197,7 @@ export default async function Home() {
                 </span>
                 <div>
                   <div className="display text-2xl font-semibold text-ink">
-                    Salta y Cafayate
+                    Salta y Cafayate <span className="region-arrow" aria-hidden="true">→</span>
                   </div>
                   <div className="text-ink/70 text-sm mt-1">
                     {regionSalta
@@ -1183,7 +1210,7 @@ export default async function Home() {
 
             <Link
               href={regionPatagonia ? `/region/${regionPatagonia.slug}` : "/buscar?region=Patagonia"}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
+              className="region-card cursor-wine group relative aspect-[3/4] rounded-2xl overflow-hidden border border-snow/10"
             >
               <div
                 className="absolute inset-0"
@@ -1193,9 +1220,10 @@ export default async function Home() {
                 }}
               />
               <svg
-                className="absolute bottom-0 w-full"
+                className="region-ridge absolute bottom-0 w-full"
                 viewBox="0 0 200 100"
                 preserveAspectRatio="none"
+                aria-hidden="true"
               >
                 <path
                   d="M0 58 L40 32 L80 44 L130 22 L170 38 L200 42 L200 100 L0 100 Z"
@@ -1214,7 +1242,7 @@ export default async function Home() {
                 </span>
                 <div>
                   <div className="display text-2xl font-semibold">
-                    Patagonia
+                    Patagonia <span className="region-arrow" aria-hidden="true">→</span>
                   </div>
                   <div className="text-snow/70 text-sm mt-1">
                     {regionPatagonia
@@ -1241,7 +1269,7 @@ export default async function Home() {
           </div>
 
           {brands.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="reveal grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {brands.map((b) => {
                 // Paleta de etiquetas — cada bodega cae siempre en el mismo
                 // color por hash del nombre (estable entre snapshots). Las
@@ -1288,12 +1316,12 @@ export default async function Home() {
                   <a
                     key={b.name}
                     href={`/bodega/${brandSlug(b.name)}`}
-                    className="cursor-wine group relative aspect-[5/6] rounded-2xl overflow-hidden border border-ink/10 p-4 flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(15,23,41,0.45)]"
+                    className="bodega-placa cursor-wine group relative aspect-[5/6] rounded-2xl overflow-hidden border border-ink/10 p-4 flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(15,23,41,0.45)]"
                     style={{ backgroundColor: bg, color: fg }}
                   >
                     <span
                       aria-hidden="true"
-                      className="display absolute inset-x-0 top-1/2 -translate-y-[58%] text-center font-semibold tracking-tight leading-none opacity-90"
+                      className="bodega-mono display absolute inset-x-0 top-1/2 -translate-y-[58%] text-center font-semibold tracking-tight leading-none opacity-90"
                       style={{ fontSize: "5rem" }}
                     >
                       {monogram}
@@ -1341,13 +1369,13 @@ export default async function Home() {
               </p>
               <Link
                 href="/vinotecas"
-                className="cursor-wine inline-flex items-center gap-2 mt-7 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt transition-colors"
+                className="arrow-nudge press cursor-wine inline-flex items-center gap-2 mt-7 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt"
               >
                 Ver el ranking completo
-                <span aria-hidden="true">→</span>
+                <span data-arrow aria-hidden="true">→</span>
               </Link>
             </div>
-            <ol className="bg-white rounded-2xl border border-ink/10 divide-y divide-ink/10">
+            <ol className="reveal bg-white rounded-2xl border border-ink/10 divide-y divide-ink/10">
               {cheapestStores.map((s, i) => (
                 <li key={s.slug}>
                   <Link
@@ -1376,100 +1404,43 @@ export default async function Home() {
         </section>
       )}
 
-      {/* DESCUBRÍ · varietals + regiones */}
-      <section className="py-16 lg:py-24 px-6 bg-snow/50 border-y border-ink/10">
+      {/* DESCUBRÍ · bento: cada entrada con su propia forma (ver HomeBento) */}
+      <section className="py-20 lg:py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-2xl mb-10">
             <p className="text-cobalt text-sm tracking-[0.2em] uppercase font-semibold mb-3">
               Descubrí
             </p>
             <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
-              Elegí por dónde arrancar.
+              Elegí por dónde <span className="italic font-normal">arrancar.</span>
             </h2>
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-10">
-            {varietals.length > 0 && (
-              <div>
-                <h3 className="display text-xl font-semibold text-ink mb-5">
-                  Por varietal
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {varietals.map((v) => (
-                    <a
-                      key={v.slug}
-                      href={`/varietal/${v.slug}`}
-                      className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-cobalt rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
-                    >
-                      {v.name}
-                      <span className="text-xs text-graphite">
-                        {v.groupCount}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {regions.length > 0 && (
-              <div>
-                <h3 className="display text-xl font-semibold text-ink mb-5">
-                  Por región
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {regions.map((r) => (
-                    <a
-                      key={r.slug}
-                      href={`/region/${r.slug}`}
-                      className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-malbec rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
-                    >
-                      {r.name}
-                      <span className="text-xs text-graphite">
-                        {r.groupCount}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {featuredRankings.length > 0 && (
-            <div className="mt-12 pt-10 border-t border-ink/10">
-              <h3 className="display text-xl font-semibold text-ink mb-5">
-                Por ranking
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {featuredRankings.map((r) => (
-                  <a
-                    key={r.slug}
-                    href={`/ranking/${r.slug}`}
-                    className="inline-flex items-center gap-2 bg-white border border-ink/10 hover:border-cobalt rounded-full px-4 py-2 text-sm font-medium text-ink transition-colors"
-                  >
-                    {r.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+          <HomeBento
+            varietals={varietals}
+            regions={regions}
+            rankings={featuredRankings.map((r) => ({ slug: r.slug, title: r.title }))}
+          />
         </div>
       </section>
 
-      {/* CTA FINAL */}
+      {/* CTA FINAL · el pedido (buscá) al lado de la prueba (un caso real
+          de hoy, el mismo vino en la vinoteca más barata y en la más cara).
+          Antes era sólo el form con un racimo decorativo. */}
       <section className="px-6 pb-24">
         <div
-          className="max-w-5xl mx-auto relative rounded-3xl overflow-hidden grain"
+          className="reveal max-w-6xl mx-auto relative rounded-3xl overflow-hidden grain"
           style={{
             background:
               "linear-gradient(135deg, #6B1E2E 0%, #D63A7A 55%, #D97449 100%)",
           }}
         >
-          <div className="relative z-10 p-10 md:p-16 text-snow">
-            <div className="max-w-2xl">
+          <div className="relative z-10 p-8 md:p-14 text-snow grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 lg:gap-14 items-center">
+            <div>
               <h2 className="display text-4xl md:text-5xl font-semibold leading-[1.05] mb-5">
-                ¿Un vino específico en mente?
+                ¿Un vino específico{" "}
+                <span className="italic font-normal">en mente?</span>
               </h2>
-              <p className="text-snow/90 text-lg mb-8">
+              <p className="text-snow/90 text-lg mb-8 max-w-xl">
                 Escribilo y en segundos tenés todos los lugares donde
                 conseguirlo, del más barato al más caro.
               </p>
@@ -1477,37 +1448,73 @@ export default async function Home() {
                 action="/buscar"
                 className="flex flex-col sm:flex-row gap-3 max-w-xl"
               >
+                {/* Sin autocomplete: la caja tiene overflow-hidden (por el
+                    grain y las esquinas) y el dropdown quedaría cortado. */}
                 <SearchInput
                   placeholder="Ej: Luigi Bosca Reserva Malbec"
-                  className="flex-1 bg-snow/15 backdrop-blur border border-snow/25 rounded-full px-6 py-3.5 text-snow placeholder:text-snow/60 outline-none focus:border-snow/60"
+                  aria-label="Buscar un vino"
+                  className="flex-1 bg-snow/15 backdrop-blur border border-snow/25 rounded-full px-6 py-3.5 text-snow placeholder:text-snow/70 outline-none focus:border-snow/60"
                 />
-                <button className="cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard transition-colors">
+                <button className="press cursor-wine bg-snow text-malbec font-semibold px-8 py-3.5 rounded-full hover:bg-mustard">
                   Buscar
                 </button>
               </form>
+              {brands.length > 0 && (
+                <div className="mt-6 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-snow/80">Las más buscadas:</span>
+                  {brands.slice(0, 4).map((b) => (
+                    <Link
+                      key={b.name}
+                      href={`/bodega/${brandSlug(b.name)}`}
+                      className="chip press text-xs !py-1.5"
+                    >
+                      {b.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {ctaProof && (
+              <Link
+                href={`/vino/${ctaProof.slug}`}
+                className="cta-ticket cursor-wine block rounded-2xl p-6 md:p-7"
+                style={{ background: "#F5EDE0", color: "#0F1729" }}
+              >
+                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold mb-3" style={{ color: "#B04A20" }}>
+                  Ejemplo de hoy
+                </p>
+                <p className="display text-xl font-semibold leading-tight line-clamp-2 mb-5">
+                  {ctaProof.name}
+                </p>
+                <dl className="space-y-2 text-sm">
+                  <div
+                    className="flex items-baseline justify-between gap-3 rounded-lg px-3 py-2"
+                    style={{ background: "rgba(232,181,71,0.35)" }}
+                  >
+                    <dt>En la más barata</dt>
+                    <dd className="display text-xl font-semibold tabular-nums">
+                      {formatArs(ctaProof.min)}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3 px-3 py-1">
+                    <dt>En la más cara</dt>
+                    <dd className="display text-lg tabular-nums">
+                      {formatArs(ctaProof.max)}
+                    </dd>
+                  </div>
+                </dl>
+                <div className="mt-5 pt-4 border-t text-sm" style={{ borderColor: "rgba(15,23,41,0.12)" }}>
+                  <p className="font-semibold tabular-nums" style={{ color: "#6B1E2E" }}>
+                    {formatArs(ctaProof.max - ctaProof.min)} de diferencia
+                  </p>
+                  <p className="mt-0.5 opacity-80">
+                    por la misma botella, entre {ctaProof.stores} vinotecas
+                  </p>
+                </div>
+              </Link>
+            )}
           </div>
-          <svg
-            className="absolute right-0 bottom-0 opacity-25"
-            width="260"
-            height="260"
-            viewBox="0 0 200 200"
-          >
-            <circle cx="60" cy="60" r="10" fill="#0F1729" />
-            <circle cx="80" cy="70" r="10" fill="#0F1729" />
-            <circle cx="100" cy="60" r="10" fill="#0F1729" />
-            <circle cx="70" cy="90" r="10" fill="#0F1729" />
-            <circle cx="90" cy="95" r="10" fill="#0F1729" />
-            <circle cx="110" cy="85" r="10" fill="#0F1729" />
-            <circle cx="80" cy="115" r="10" fill="#0F1729" />
-            <circle cx="100" cy="120" r="10" fill="#0F1729" />
-            <path
-              d="M90 30 Q 110 50 95 70"
-              stroke="#0F1729"
-              strokeWidth="3"
-              fill="none"
-            />
-          </svg>
         </div>
       </section>
 
