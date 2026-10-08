@@ -218,3 +218,75 @@ Blend, Piattelli Gran Reserva), no dos vinos con el mismo nombre. Al lado, la ce
 (`BEER_RE` en `lib/junkSlugs.ts`: 105 fichas, 0 vinos afectados) y
 `/ofertas` filtra sus bajas por `findGroup`, así ningún no-vino vuelve a
 aparecer como "baja del día".
+
+## Sommelier: Claude revisa el catálogo bodega por bodega (2026-10-07)
+
+Medición del 07/10 sobre el snapshot publicado: de 16 vinos conocidos
+elegidos al azar, **los 16** tenían fichas duplicadas al lado de la principal.
+De Sangre Malbec estaba en ~12 fichas (una de 20 tiendas y otra de 12:
+"LUIGI BOSCA SANGRE MALBEC DOC"), El Gran Enemigo Cepillo en 3, Colonia Las
+Liebres en 4, Ala Colorada Ancellotta en 4 ("LAS PERDICES A COLORADA
+ANCELL"). Catena Zapata tenía 503 fichas; Rutini 383; Las Perdices 338. Cada
+regla de texto cierra una forma de escribir el nombre y cada tienda inventa
+otra: la cola no se termina con reglas. Lo que falta es saber de vinos.
+
+**Qué hace.** `scripts/sommelier.mjs` le muestra a Claude cada bodega con
+TODAS sus fichas a la vez —los nombres tal como los escribe cada tienda, con
+cuántas ofertas y su precio— y Claude devuelve la lista de vinos reales y qué
+vino es cada ficha (o si es de otra bodega, si no es vino, si es un pack
+mixto, o qué ofertas están en la ficha equivocada). Antes, dos pasos
+baratos: agrupar los nombres de bodega que son la misma (familias:
+"Escorihuela" / "Escorihuela Gascón", "DV Catena" → Catena Zapata) y
+atribuir bodega a las ~5.900 fichas que no tienen.
+
+**Por qué no fabrica quimeras** (`scripts/lib-sommelier.mjs`):
+
+| Freno | Qué evita |
+|---|---|
+| Cada bodega se juzga **dos veces**, con las fichas en otro orden y otras etiquetas; sólo se aplica lo que coincide en las dos | un error aislado del modelo |
+| Una bodega cuyas dos pasadas coinciden en < 80 % no se aplica (queda en `status` y en el report) | bodegas donde el modelo adivina |
+| Nunca contra un gate de **tipo, color, dulzor o varietal** (lo que el nombre dice explícito) | Medalla Malbec ⊕ Medalla Cabernet |
+| Nunca contra la **guarda de precio** (medianas a > 1,6×) | Caro ⊕ Petit Caro |
+| Corre **antes** del partidor por precio incoherente | lo que se escape, se vuelve a partir |
+| Un grupo se fusiona entero sólo si ≥ 50 % de sus ofertas tiene veredicto | fusionar por una oferta suelta |
+| `disabled` en `verdicts.json` apaga una bodega a mano; `SOMMELIER_APPLY=0` mide sin tocar | — |
+
+Sí levanta los gates de nivel/paraje y edición: ahí es donde las tiendas
+escriben distinto ("Exploración Casa Blanca Sauvignon Blanc" = "Exploración
+Sauvignon Blanc") y donde hace falta conocimiento (Serie A ≠ Concreto).
+
+**Veredictos por nombre, no por ficha.** Se guardan por `nameKey` (nombre de
+la tienda sin acentos, puntuación ni añada; congelada a propósito, no usa
+`canonicalizeName`). Sobreviven a los cambios diarios del agrupador, y una
+oferta nueva con un nombre ya visto cae sola en su vino. Una bodega vuelve a
+la cola cuando junta ≥ 5 nombres nuevos (o el 10 %).
+
+**Costo y ritmo.** Message Batches API (mitad de precio) con los créditos
+mensuales del plan de Claude (Max 5x: $100/mes; Max 20x: $200/mes; vencen
+al cerrar el ciclo, así que conviene gastarlos). Vuelta completa estimada:
+~$160 para 2.034 bodegas × 2 pasadas (el costo real se registra por pedido
+en `data/sommelier/state.json`). El workflow corre cada 3 horas, junta el
+batch anterior y manda el siguiente hasta el tope del ciclo
+(`SOMMELIER_BUDGET_USD`, default 90); empieza por las bodegas que más
+ofertas mueven.
+
+**Prueba con datos reales** (offers reconstruidas del snapshot del 07/10,
+veredicto armado a mano con los casos de arriba): De Sangre Malbec pasa de
+20 a **25 tiendas en una ficha** (Altamira, Los Miradores y los estuches
+mixtos quedan aparte); Ala Colorada Ancellotta de 16 a 19; los veredictos
+trampa "Caro = Petit Caro" y "Medalla Malbec = Medalla Cabernet" quedan
+bloqueados por precio y por varietal. Casos dorados en
+`scripts/test-sommelier.mjs` (bloqueante en los dos workflows).
+
+**Operación:**
+
+```bash
+node scripts/sommelier.mjs status                 # avance, gasto del ciclo, batch en vuelo
+node scripts/sommelier.mjs run --dry-run          # qué mandaría y cuánto costaría
+node scripts/sommelier.mjs probe "Las Perdices"   # una bodega en vivo (sin batch, sin guardar)
+```
+
+Archivos: `data/sommelier/verdicts.json` (veredictos, familias,
+atribuciones), `state.json` (batch en vuelo, gasto por ciclo, log),
+`apply-report.json` (qué fusionó/mudó/bloqueó el último publish, con
+ejemplos para auditar).
