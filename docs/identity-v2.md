@@ -265,7 +265,7 @@ la cola cuando junta ≥ 5 nombres nuevos (o el 10 %).
 mensuales del plan de Claude (Max 5x: $100/mes; Max 20x: $200/mes; vencen
 al cerrar el ciclo, así que conviene gastarlos). Vuelta completa estimada:
 ~$160 para 2.034 bodegas × 2 pasadas (el costo real se registra por pedido
-en `data/sommelier/state.json`). El workflow corre cada hora, junta el
+en `data/sommelier/state.json`). El workflow corre cada 3 horas, junta el
 batch anterior y manda el siguiente hasta el tope del ciclo
 (`SOMMELIER_BUDGET_USD`, default 90); empieza por las bodegas que más
 ofertas mueven.
