@@ -14,9 +14,12 @@ name: Sommelier (Claude)
 
 on:
   schedule:
-    # Cada 3 horas, en el minuto 23 (fuera del pico de las :00). Un batch
-    # tarda de minutos a 24 h; cada corrida sólo junta y manda.
-    - cron: "23 */3 * * *"
+    # Cada hora, en el minuto 23 (fuera del pico de las :00). Un batch
+    # tarda de minutos a 24 h; cada corrida sólo junta y manda (si el batch
+    # anterior sigue procesando, sale en segundos). Los créditos del plan
+    # vencen al cerrar el ciclo: la vuelta completa (~4.100 pedidos) tiene
+    # que entrar en días, no en semanas.
+    - cron: "23 * * * *"
   workflow_dispatch:
 
 permissions:

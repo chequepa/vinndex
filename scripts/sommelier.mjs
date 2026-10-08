@@ -20,7 +20,7 @@
  *
  * Uso:
  *   node scripts/sommelier.mjs status
- *   node scripts/sommelier.mjs run [--dry-run] [--max-requests 200]
+ *   node scripts/sommelier.mjs run [--dry-run] [--max-requests 400]
  *   node scripts/sommelier.mjs probe "Las Perdices"   # una bodega en vivo, sin guardar
  *
  * Variables:
@@ -74,7 +74,8 @@ const argVal = (f, d) => {
 
 const BUDGET_USD = Number(process.env.SOMMELIER_BUDGET_USD || 90);
 const CYCLE_DAY = Math.min(28, Math.max(1, Number(process.env.SOMMELIER_CYCLE_DAY || 1)));
-const MAX_REQUESTS = Number(argVal("--max-requests", process.env.SOMMELIER_MAX_REQUESTS || 200));
+// Pedidos por batch: ~4.100 en la vuelta completa → unas 10 tandas.
+const MAX_REQUESTS = Number(argVal("--max-requests", process.env.SOMMELIER_MAX_REQUESTS || 400));
 // Una bodega con más fichas que esto se parte en tandas (por título). Partir
 // es malo (un duplicado puede quedar en tandas distintas), pero la salida
 // (una línea por ficha + el razonamiento) tiene que caber holgada en el
