@@ -179,6 +179,19 @@ const helpers = {
   check("Serie A sale de Concreto y va a su ficha", groups.get("concreto").offers.length === 3 && groups.get("seriea").offers.length === 3 && st.mudadas === 1);
 }
 {
+  // Quimera previa cuya mudanza frena un gate: la oferta sale igual, a una
+  // ficha propia (Yacochuya Blend $89.000 dentro de San Pedro $30.000).
+  const groups = new Map([
+    ["spy", { wine: null, offers: [offer("San Pedro de Yacochuya Tinto", 30000), offer("San Pedro de Yacochuya Tinto", 31000), offer("Vino Tinto Yacochuya Blend 750ml", 89000)] }],
+    ["yaco", { wine: null, offers: [offer("Yacochuya Malbec", 90000), offer("Yacochuya Malbec", 91000)] }],
+  ]);
+  applySommelier(groups, mkIdx([
+    ["San Pedro de Yacochuya Tinto", "SPY"], ["Vino Tinto Yacochuya Blend 750ml", "YAC"], ["Yacochuya Malbec", "YAC"],
+  ]), helpers);
+  const sale = [...groups].find(([k, g]) => k.startsWith("spy::som-") && g.offers.some((o) => o.priceArs === 89000));
+  check("gate frena la mudanza → la oferta sale igual a una ficha propia", !!sale && groups.get("spy").offers.length === 2 && groups.get("yaco").offers.length === 2);
+}
+{
   // Vino sin ficha propia: las ofertas de dos grupos van a UNA ficha nueva.
   const groups = new Map([
     ["g1", { wine: null, offers: [offer("Norton Reserva Malbec"), offer("Norton Reserva Malbec"), offer("Norton Lote La Colonia Malbec")] }],

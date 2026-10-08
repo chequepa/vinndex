@@ -522,8 +522,16 @@ export function applySommelier(groups, idx, h) {
       if (c && c !== home) {
         const target = homeGroup.get(c);
         if (target && target !== key && groups.has(target)) {
-          if (gate(h.canonOf(groups.get(target)), h.rawName(o))) { blocked++; continue; }
-          dest = target;
+          // Si un gate frena la mudanza a la ficha de su vino, la oferta igual
+          // sale de ésta (las dos pasadas dicen que no es este vino): va a una
+          // ficha propia. Separar nunca fabrica una quimera. (08/10: "Vino
+          // Tinto Yacochuya Blend" a $89.000 quedaba dentro de San Pedro de
+          // Yacochuya a $30.000 porque la ficha de Yacochuya Malbec dice
+          // "Malbec" y la tienda "Blend".)
+          if (gate(h.canonOf(groups.get(target)), h.rawName(o))) {
+            blocked++;
+            dest = `${key}::som-${slugify(wineByCls.get(c)?.nombre ?? "vino")}-${shortHash(c, 6)}`;
+          } else dest = target;
         } else if (!target) {
           dest = `som|${slugify(wineByCls.get(c)?.nombre ?? "vino")}|${shortHash(c, 8)}`;
         }
