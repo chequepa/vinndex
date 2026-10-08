@@ -18,6 +18,11 @@ on:
     # tarda de minutos a 24 h; cada corrida sólo junta y manda.
     - cron: "23 */3 * * *"
   workflow_dispatch:
+    inputs:
+      max_requests:
+        description: "Pedidos máximos en el batch de esta corrida (vacío = 200). Un batch acepta hasta 100.000 y termina en < 24 h: para mandar toda la vuelta de una, 5000."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -51,6 +56,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SOMMELIER_BUDGET_USD: ${{ vars.SOMMELIER_BUDGET_USD }}
           SOMMELIER_CYCLE_DAY: ${{ vars.SOMMELIER_CYCLE_DAY }}
+          SOMMELIER_MAX_REQUESTS: ${{ inputs.max_requests }}
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "Sin ANTHROPIC_API_KEY: el sommelier no corre."
