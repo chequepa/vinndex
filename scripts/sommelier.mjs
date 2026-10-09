@@ -88,6 +88,10 @@ const ATRIB_CHUNK = 300;
 // supera esto (o el 10 % de sus nombres).
 const RECHECK_MIN_NEW = 5;
 const MAX_FAILURES = 3;
+// SOMMELIER_RETRY_LOW=1: las bodegas que no se aplican por bajo acuerdo
+// entre pasadas vuelven a la cola UNA vez, con esfuerzo xhigh. Si siguen
+// sin coincidir, quedan como están (no se aplican).
+const RETRY_LOW = process.env.SOMMELIER_RETRY_LOW === "1" || process.env.SOMMELIER_RETRY_LOW === "true";
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 
@@ -216,16 +220,17 @@ function planBodegaUnits(fichas, verdicts) {
   return units;
 }
 
-function bodegaNeedsWork(unit, verdicts, state) {
+function bodegaNeedsWork(unit, verdicts, state, lowAgreement) {
   if ((state.failures[unit.unitKey] ?? 0) >= MAX_FAILURES) return false;
   const v = verdicts.units[unit.unitKey];
   if (!v?.passes?.A || !v?.passes?.B) return true;
+  if (lowAgreement?.has(unit.unitKey) && !v.retried) return true;
   const covered = new Set(v.names);
   const fresh = unit.names.filter((k) => !covered.has(k)).length;
   return fresh >= Math.max(RECHECK_MIN_NEW, 0.1 * unit.names.length);
 }
 
-function bodegaRequests(unit, verdicts) {
+function bodegaRequests(unit, verdicts, { retry = false } = {}) {
   const reqs = [];
   const idx = unit.fichas.map((_, i) => i);
   // Si una pasada ya llegó para estos mismos nombres y la otra falló, sólo
@@ -243,7 +248,7 @@ function bodegaRequests(unit, verdicts) {
     const small = unit.fichas.length <= 15;
     reqs.push({
       custom_id: `b-${shortHash(unit.unitKey, 16)}-${pass}`,
-      meta: { kind: "bodega", unitKey: unit.unitKey, family: unit.family, pass, inputHash: unit.inputHash, names: unit.names, labeled },
+      meta: { kind: "bodega", unitKey: unit.unitKey, family: unit.family, pass, inputHash: unit.inputHash, names: unit.names, labeled, retry: retry || undefined },
       estUsd: estimateCost(SYSTEM_BODEGA.length + text.length, (small ? 1_500 : 3_000) + unit.fichas.length * 130),
       params: {
         model: SOMMELIER_MODEL,
@@ -252,7 +257,7 @@ function bodegaRequests(unit, verdicts) {
         messages: [{ role: "user", content: text }],
         // Bodegas chicas (≤15 fichas): medium alcanza; las grandes, donde
         // están las líneas parecidas, piensan más.
-        output_config: { effort: small ? "medium" : "high", format: { type: "json_schema", schema: SCHEMA_BODEGA } },
+        output_config: { effort: retry ? "xhigh" : small ? "medium" : "high", format: { type: "json_schema", schema: SCHEMA_BODEGA } },
       },
     });
   }
@@ -335,8 +340,10 @@ function plan(fichas, verdicts, state) {
   if (familiesNeeded(fichas, verdicts)) prep.push(familiesRequest(fichas));
   prep.push(...attributionRequests(fichas, verdicts));
   const units = planBodegaUnits(fichas, verdicts);
+  const lowAgreement = RETRY_LOW ? new Set(buildIndex(verdicts).units.filter((u) => !u.applied).map((u) => u.unitKey)) : null;
+  for (const u of units) u.retry = !!(lowAgreement?.has(u.unitKey) && verdicts.units[u.unitKey]?.passes?.B && !verdicts.units[u.unitKey].retried);
   const pending = units
-    .filter((u) => bodegaNeedsWork(u, verdicts, state))
+    .filter((u) => bodegaNeedsWork(u, verdicts, state, lowAgreement))
     // Primero lo que no tiene veredicto completo (nunca revisado o con una
     // pasada colgada); dentro de eso, lo que más ofertas mueve.
     .sort((a, b) => (verdicts.units[a.unitKey]?.passes?.B ? 1 : 0) - (verdicts.units[b.unitKey]?.passes?.B ? 1 : 0) || b.offers - a.offers);
@@ -400,6 +407,7 @@ function handleResult(meta, out, usd, verdicts, state) {
       u.at = at;
       delete u.pending;
       delete state.failures[meta.unitKey];
+      if (meta.retry) u.retried = true;
       // Bodega real de las fichas mal atribuidas: sólo si las dos pasadas
       // dicen la misma (si no, la ficha se queda donde está).
       const A = u.passes.A.otra ?? {}, B = u.passes.B.otra ?? {};
@@ -421,7 +429,9 @@ async function collect(client, verdicts, state) {
   const batch = await client.messages.batches.retrieve(inf.batchId);
   if (batch.processing_status !== "ended") {
     const c = batch.request_counts;
-    log(state, `batch ${inf.batchId} en proceso: ${c.processing} procesando · ${c.succeeded} listos · ${c.errored} con error`);
+    // Sólo consola: cada línea nueva en state.json es un commit a main, y
+    // cada commit a main es un deploy en Railway (09/10).
+    console.log(`batch ${inf.batchId} en proceso: ${c.processing} procesando · ${c.succeeded} listos · ${c.errored} con error`);
     return false;
   }
   const metas = readJson(INFLIGHT_PATH, { requests: {} }).requests;
@@ -511,7 +521,7 @@ async function run() {
     }
   } else {
     for (const u of pending) {
-      const rs = bodegaRequests(u, verdicts);
+      const rs = bodegaRequests(u, verdicts, { retry: u.retry });
       const c = rs.reduce((s, r) => s + r.estUsd, 0);
       if (requests.length + rs.length > MAX_REQUESTS) break;
       if (est + c > remaining) continue; // una unidad grande no frena a las chicas
@@ -520,7 +530,7 @@ async function run() {
     }
   }
   if (!requests.length) {
-    log(state, pending.length || prep.length ? `nada entra en el presupuesto que queda ($${remaining.toFixed(2)})` : "todo revisado: no hay nada pendiente");
+    console.log(pending.length || prep.length ? `nada entra en el presupuesto que queda ($${remaining.toFixed(2)})` : "todo revisado: no hay nada pendiente");
     if (!dry) save(verdicts, state);
     return;
   }
@@ -532,7 +542,7 @@ async function run() {
     writeFileSync(out, JSON.stringify(requests.slice(0, 4).map((r) => ({ custom_id: r.custom_id, estUsd: r.estUsd, system: r.params.system.map((s) => s.text.slice(0, 400)), user: r.params.messages[0].content.slice(0, 6000) })), null, 1));
     console.log(`(dry-run) ejemplo de pedidos en ${out}`);
     for (const u of pending.slice(0, 15)) console.log(`  · ${u.unitKey} — ${u.fichas.length} fichas, ${u.names.length} nombres, ${u.offers} ofertas`);
-    const all = pending.flatMap((u) => bodegaRequests(u, verdicts));
+    const all = pending.flatMap((u) => bodegaRequests(u, verdicts, { retry: u.retry }));
     const allUsd = all.reduce((s, r) => s + r.estUsd, 0);
     console.log(`(dry-run) vuelta completa de bodegas pendientes: ${all.length} pedidos (2 pasadas × ${pending.length} bodegas) · estimado $${allUsd.toFixed(2)} con Batches API`);
     return;
