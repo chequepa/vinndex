@@ -414,13 +414,22 @@ export function lineRelation(aName, bName) {
 // firmas distintas (incluida 0 vs N) → SKU distinto.
 const PACK_WORD_RE = /\b(caja|cajas|box|estuche|estuches|pack|combo|kit|cofre|sixpack|six\s*pack)\b|\bcon\s+copa|\bc\/\s*copa/i;
 function packSig(name) {
-  const s = stripAccents(name).toLowerCase();
+  // "Cajax4", "Estuchex2": la cantidad pegada a la palabra no tiene límite
+  // de palabra y ni "caja" ni "x4" matcheaban (09/10: "Apuntes Malbec
+  // Cajax4" a $200.000 competía como botella en la ficha de Los Apuntes).
+  const s = stripAccents(name).toLowerCase().replace(/\b(caja|cajas|estuche|estuches|pack|box|cofre)x(?=\s*\d)/g, "$1 x");
   // nº de unidades explícito: "x6", "x 6", "6x750", "6 x 750", "6u", "6 un"
   let m = s.match(/\bx\s*([2-9]|1[0-9]|2[0-4])\b/) ||
           s.match(/\b([2-9]|1[0-9]|2[0-4])\s*x\s*\d{2,4}\b/) ||
           s.match(/\b([2-9]|1[0-9]|2[0-4])\s*(?:un|u|unid|unidades|bot|botellas)\b/);
   if (m) return Number(m[1]);
   if (PACK_WORD_RE.test(s)) return -1; // pack sin nº → distinto de botella
+  // Vertical: tres o más añadas distintas en el nombre ("Las Bases 2021 –
+  // 2022 – 2023"), o dos con la palabra "vertical", es un pack de una
+  // botella por añada. Con dos sueltas no: "Cosecha 2020/2021" es una
+  // botella con la añada ambigua.
+  const years = new Set(s.match(/\b(?:19[5-9]\d|20[0-4]\d)\b/g) ?? []);
+  if (years.size >= 3 || (years.size === 2 && /\bvertical\b/.test(s))) return years.size;
   return 0;
 }
 
@@ -448,6 +457,12 @@ function volMl(name) {
   }
   m = s.match(/\b(187|375|500|1500|3000|5000)\b/); // bare whitelist (no 750/1000 → ambiguo)
   if (m) return Number(m[1]);
+  // "Mini" sin volumen explícito: la botellita de espumante (187–200 ml).
+  // 09/10: "Mionetto Prosecco Mini" a $12.000 era el "mejor precio" de la
+  // ficha de Mionetto Prosecco ($37.000) una vez que el sommelier juntó las
+  // dos fichas.
+  // Salvo cuando es parte de una línea: "Decero Mini Ediciones", "Mini Block".
+  if (/\bmini\b(?!\s*(?:ed\b|ediciones|block))/.test(s)) return 187;
   return 750; // default
 }
 
