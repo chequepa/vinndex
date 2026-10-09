@@ -258,6 +258,12 @@ const PARSE_CASES = [
   ["lata sin ml NO comparable, misma clave", "Santa Julia Dulce Tinto, Lata", null, "Vino Tinto Dulce Santa Julia 750 Ml.", null, true, false],
   ["en lata x 6 unidades NO comparable, misma clave", "Vino en Lata Santa Julia Tinto Dulce x 6 unidades", null, "Santa Julia Tinto Dulce", null, true, false],
   ["Reserva sigue distinguiendo de la base", "Trumpeter Reserve Malbec", null, "Trumpeter Malbec", null, false, true],
+  // 09/10: el sommelier juntó minis, cajas pegadas y verticales con su vino; el parser los tomaba como botella
+  ["'Mini' sin ml es la botellita, NO comparable", "Mionetto Prosecco Mini", null, "Mionetto Prosecco", null, true, false],
+  ["'Cajax4' (pegado) es pack", "Luigi Bosca Apuntes Malbec Organico Cajax4", null, "Luigi Bosca Apuntes Malbec Organico", null, true, false],
+  ["vertical de 3 añadas es pack", "Colección Raquis Las Bases 2021 – 2022 – 2023", null, "Colección Raquis Las Bases 2022", null, true, false],
+  ["'Mini Ediciones' es línea de Decero, no botellita", "Finca Decero Mini Ediciones Petit Verdot", null, "Finca Decero Petit Verdot", null, false, true],
+  ["dos añadas sueltas siguen siendo botella", "Saint Felicien Malbec Cosecha 2020/2021", null, "Saint Felicien Malbec", null, true, true],
   // ── Auditoría 26/09: el mismo vino partido por ruido de formato ──
   ["código de tienda (77315) no es edición", "NIETO SENETINER PATRIMONIAL MALBEC DOC(77315)", "Nieto Senetiner", "Nieto Senetiner Patrimonial Malbec Doc 750 ml", "Nieto Senetiner", true, true],
   ["750mlx1 no es edición", "Vino Novecento Cabernet Sauvignon Botella 750mlx1", null, "Vino tinto Cabernet Sauvignon Novecento 750 ml", null, true, true],

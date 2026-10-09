@@ -96,7 +96,10 @@ export function romanToArabic(s) {
  * y el ruido tipográfico que las tiendas meten en el título.
  */
 export function canonicalizeName(raw) {
-  return normalizeShorthand(romanToArabic(stripElision(joinInitials(decodeEntities(String(raw ?? ""))))));
+  return normalizeShorthand(romanToArabic(stripElision(joinInitials(decodeEntities(String(raw ?? ""))))))
+    // "Cajax4", "Estuchex2": la cantidad pegada al envase. Sin separarla, la
+    // edición leía un "4" y el pack no se veía (09/10).
+    .replace(/(?<![\p{L}\d])(caja|cajas|estuche|estuches|pack|box|cofre)x(?=\s*\d)/giu, "$1 x");
 }
 
 /**
@@ -418,6 +421,10 @@ export function contentTokens(name) {
     // vintage se va CON el vintage (sola no — "Año Cero" es una etiqueta).
     .replace(/\b(ano|anada|cosecha)\s+(?=(19\d{2}|20[0-2]\d)\b)/g, " ")
     .replace(/\b(19\d{2}|20[0-2]\d)\b/g, " ")
+    // "mini" es formato (la botellita de 187-200 ml, ver volMl), no línea:
+    // "Mionetto Prosecco Mini" es Mionetto Prosecco en otro formato. Salvo
+    // en las líneas que lo llevan: "Decero Mini Ediciones", "Mini Block".
+    .replace(/\bmini\b(?!\s*(?:ed\b|ediciones|block))/g, " ")
     // "caja de madera x6" es envase, no línea ("Madera" sí es una línea de
     // Rutini — por eso se saca la frase entera y no la palabra).
     .replace(/\b(caja|estuche)\s+(?:de\s+)?madera\b/g, " ")
