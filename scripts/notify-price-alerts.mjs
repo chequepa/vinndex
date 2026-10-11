@@ -20,7 +20,8 @@
  * en stock, de una vinoteca vigente, sin precio sospechoso ni colección.
  * Si la ficha se fusionó con otra, se sigue el redirect (group-merges).
  *
- * Env: UPSTASH_REDIS_REST_URL/TOKEN (o KV_REST_API_URL/TOKEN),
+ * Env: ALERTS_ENABLED=1 (encendido explícito, mismo flag que el sitio),
+ *      UPSTASH_REDIS_REST_URL/TOKEN (o KV_REST_API_URL/TOKEN),
  *      ALERTS_SECRET, RESEND_API_KEY, ALERTS_FROM_EMAIL (opcional).
  * Sin alguna de las obligatorias, sale con 0 y no hace nada.
  *
@@ -208,6 +209,10 @@ async function send(email, mail, firstAlertId) {
 }
 
 async function main() {
+  if (process.env.ALERTS_ENABLED !== "1") {
+    console.log("alertas: apagadas (ALERTS_ENABLED != 1) — nada que hacer.");
+    return;
+  }
   if (!REDIS_URL || !REDIS_TOKEN || SECRET.length < 16 || !RESEND_KEY) {
     console.log("alertas: faltan UPSTASH_REDIS_REST_URL/TOKEN, ALERTS_SECRET o RESEND_API_KEY — nada que hacer.");
     return;

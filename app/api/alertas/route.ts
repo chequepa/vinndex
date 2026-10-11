@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { findGroup, resolveMergedSlug } from "@/lib/snapshot";
 import { brandedName } from "@/lib/brandedName";
-import { alertsConfigured, createAlert } from "@/lib/alerts";
+import { alertsEnabled, createAlert } from "@/lib/alerts";
 import { sendConfirmationMail } from "@/lib/alertMail";
 
 /**
@@ -44,7 +44,7 @@ function isRateLimited(ip: string): boolean {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function POST(req: Request) {
-  if (!alertsConfigured() || !process.env.RESEND_API_KEY) {
+  if (!alertsEnabled()) {
     return NextResponse.json(
       { error: "Las alertas por mail todavía no están habilitadas." },
       { status: 503 },

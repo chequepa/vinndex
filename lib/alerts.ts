@@ -11,9 +11,9 @@
  *   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
  *   (o KV_REST_API_URL / KV_REST_API_TOKEN)
  *
- * Sin esas variables, o sin ALERTS_SECRET, la feature se apaga sola: el
- * endpoint responde 503 y el formulario lo dice (mismo patrón que
- * /api/contact sin RESEND_API_KEY).
+ * Sin esas variables, sin ALERTS_SECRET o sin ALERTS_ENABLED=1, la feature
+ * está apagada: la ficha no muestra el botón, el copy no la menciona y el
+ * endpoint responde 503 (ver alertsEnabled()).
  *
  * MODELO (las mismas claves las lee scripts/notify-price-alerts.mjs):
  *   alert:{id}              JSON de la alerta (AlertRecord)
@@ -58,6 +58,22 @@ function redisEnv(): { url: string; token: string } | null {
 
 export function alertsConfigured(): boolean {
   return redisEnv() !== null && (process.env.ALERTS_SECRET ?? "").length >= 16;
+}
+
+/**
+ * ¿Se muestran las alertas en el sitio? Además de la configuración, exige
+ * un encendido explícito (ALERTS_ENABLED=1): el mailing lo arma el dueño
+ * antes de que aparezca en público, y tener RESEND_API_KEY cargada (que
+ * ya existe para el formulario de contacto) no debe prenderlo solo.
+ * Apagado: no hay botón en la ficha, ni copy que lo mencione, y la API
+ * responde 503.
+ */
+export function alertsEnabled(): boolean {
+  return (
+    process.env.ALERTS_ENABLED === "1" &&
+    alertsConfigured() &&
+    Boolean(process.env.RESEND_API_KEY)
+  );
 }
 
 type RedisCmd = (string | number)[];

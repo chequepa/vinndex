@@ -42,6 +42,7 @@ import { storeInitials, colorForStore } from "@/lib/storeVisual";
 import { WineLinkList } from "@/components/WineLinkList";
 import { gemFor, storeContext } from "@/lib/gems";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
+import { alertsEnabled } from "@/lib/alerts";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -1073,9 +1074,11 @@ export default async function Vino({ params }: Params) {
                 />
               </div>
 
-              <div className="mt-4">
-                <PriceAlertForm slug={group.groupSlug} currentPrice={heroMinPrice ?? null} />
-              </div>
+              {alertsEnabled() && (
+                <div className="mt-4">
+                  <PriceAlertForm slug={group.groupSlug} currentPrice={heroMinPrice ?? null} />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -8,51 +8,31 @@
 # sitios. Nada de esto entra a stores.json sin pasar los 6 gates del vet
 # (backend scrapeable, pesos, carrito, catálogo de vino).
 #
+# Sólo tiendas que pueden venderle a alguien de AMBA: de AMBA, con envío
+# a todo el país, o bodegas con tienda propia. Las regionales que entregan
+# sólo en su ciudad esperan en data/store-candidates-regional.txt hasta
+# que el sitio sepa a dónde envía cada tienda (docs/cobertura-nacional.md):
+# si no, salen "más baratas" para gente a la que no le pueden vender.
+#
 # Posibles duplicados a mirar antes de aprobar: ligier.com.ar (¿=
 # vinotecaligier.com?), casadionisio.com.ar (= dionisioonline.com.ar).
 
-# ── Córdoba ──
+# ── Córdoba (envía a todo el país por Andreani) ──
 rogeralmacendebebidas.mitiendanube.com
-clinvinoteca.com
-losfenicios.com.ar
-mostobebidas.com.ar
 
-# ── Rosario / Santa Fe ──
-rosariovinos.mitiendanube.com
-lavinotecarosario.mitiendanube.com
-vinosnotables.com.ar
-grado14.com.ar
-rosariovinosexclusivos.com.ar
-alvinovino.com
-bebidasros.com.ar
-jmvinoteca.com.ar
-rodosalondevinosybarberia.mitiendanube.com
-
-# ── Mendoza (tiendas) ──
-storedevinos.com
+# ── Mendoza (tiendas que dicen enviar a todo el país) ──
 losandes2.mitiendanube.com
 tradicionvinos.com.ar
 megawine.com.ar
 donvino.com.ar
 
-# ── NOA / San Juan ──
+# ── NOA (envío nacional) ──
 altamiravinos.com
-saltavinos.com
-tienda.criollawine.com.ar
 vinosdelchango.com.ar
-american-bar.com.ar
-bacovinodivino.com.ar
 
-# ── Mar del Plata / La Plata / Bahía Blanca ──
-mitosvinoteca.com.ar
-boncic.com
+# ── Mar del Plata / La Plata (entregan también en AMBA o a todo el país) ──
 elmercadodebebidas.com.ar
-billybebidas.com
-wineboxlaplata.com.ar
 llegoelvino.mitiendanube.com
-vinosenlaplata.com
-laplatabebidas2.mitiendanube.com
-distribebidaslp.com.ar
 aromasdeltonel.mitiendanube.com
 
 # ── CABA / GBA ──

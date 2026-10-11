@@ -6,6 +6,7 @@ import { WineImage } from "@/components/WineImage";
 import { displayWineName } from "@/lib/displayWineName";
 import { displayBrand, formatArs, snapshot, storeName } from "@/lib/snapshot";
 import { brandedName } from "@/lib/brandedName";
+import { alertsEnabled } from "@/lib/alerts";
 import {
   gems,
   storeContext,
@@ -235,12 +236,17 @@ export default function JoyitasPage() {
           </div>
           <div>
             <h2 className="display text-xl font-semibold text-ink mb-3">
-              ¿Y si baja algo que estoy siguiendo?
+              ¿Y lo que bajó esta semana?
             </h2>
             <p className="text-graphite leading-relaxed text-sm">
-              En cada ficha podés pedir que te avisemos por mail cuando el
-              vino baje de precio. Y si lo que buscás es lo que bajó respecto
-              de la semana pasada, está en{" "}
+              {alertsEnabled() && (
+                <>
+                  En cada ficha podés pedir que te avisemos por mail cuando el
+                  vino baje de precio.{" "}
+                </>
+              )}
+              Lo que bajó respecto de la semana pasada en la misma vinoteca
+              está en{" "}
               <Link href="/ofertas" className="text-cobalt underline hover:no-underline">
                 ofertas
               </Link>
