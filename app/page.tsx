@@ -19,11 +19,13 @@ import {
   brandSlug,
   varietalPages,
   regionPages,
+  storeName,
 } from "@/lib/snapshot";
 import { readPriceDrops } from "@/lib/priceDrops";
 import { priceIndex, formatPct, windowLabel } from "@/lib/priceIndex";
 import { storeIndexAll, rankedStoreCount, formatIndexPct } from "@/lib/storeIndex";
 import { RANKINGS } from "@/lib/rankings";
+import { featuredGems, gems } from "@/lib/gems";
 
 // La home heredaba metadata del layout sin canonical propio → quedaba
 // expuesta a duplicación por params de tracking (?utm=, ?fbclid=). Solo
@@ -303,6 +305,8 @@ export default async function Home() {
   const stats = snapshotStats();
   const brands = topBrands(12);
   const deals = topDeals(6);
+  const joyitas = featuredGems(6);
+  const joyitasTotal = gems().length;
   // Prueba del CTA final: el top deal real del snapshot (mismo vino, la
   // vinoteca más barata vs la más cara hoy).
   const proofDeal = deals.find(
@@ -428,6 +432,12 @@ export default async function Home() {
           <div className="hidden md:flex items-center gap-2">
             <Link href="/ofertas" className="chip press">
               Ofertas
+            </Link>
+            <Link href="/joyitas" className="chip press">
+              Joyitas
+            </Link>
+            <Link href="/vinotecas" className="chip press">
+              Vinotecas
             </Link>
             <Link href="/explorar" className="chip press">
               Explorar
@@ -686,6 +696,81 @@ export default async function Home() {
       {/* VISTOS RECIENTEMENTE (client-side, hidden for zero-state) */}
       <RecentlyViewedSection />
 
+      {/* JOYITAS · alta gama mucho más barata en UNA vinoteca (lib/gems.ts).
+          Reemplaza a "Top ofertas" (máximo vs mínimo de la ficha), que
+          comparaba contra la vinoteca más cara — un "ahorro" que nadie
+          iba a pagar. Acá la referencia es la mediana del resto. */}
+      {joyitas.length > 0 && (
+        <section id="joyitas" className="py-24 lg:py-32 px-6 bg-snow/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
+              <div className="max-w-2xl">
+                <p className="text-malbec text-sm tracking-[0.2em] uppercase font-semibold mb-4">
+                  Joyitas de hoy
+                </p>
+                <h2 className="display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05]">
+                  Alta gama,
+                  <br />
+                  <span className="italic font-normal">a precio de oportunidad.</span>
+                </h2>
+                <p className="text-graphite mt-5 text-lg leading-relaxed">
+                  Vinos que el resto del mercado cobra más de $25.000 y que una
+                  vinoteca tiene hoy 30% o más abajo. Comparamos contra la
+                  mediana de las demás, no contra la más cara.
+                </p>
+              </div>
+              <Link
+                href="/joyitas"
+                className="arrow-nudge press cursor-wine inline-flex items-center gap-2 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt"
+              >
+                Ver las {joyitasTotal} joyitas
+                <span data-arrow aria-hidden="true">→</span>
+              </Link>
+            </div>
+
+            <div className="reveal grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {joyitas.map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/vino/${g.slug}`}
+                  className="postcard p-6 flex gap-5 items-start"
+                >
+                  <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
+                    <WineImage
+                      src={g.imageUrl}
+                      name={g.canonicalName}
+                      brand={g.brand}
+                      fill
+                      sizes="96px"
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="inline-flex items-center gap-1.5 bg-malbec text-snow text-xs font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wide">
+                      −{Math.round(g.discount * 100)}% vs. el resto
+                    </div>
+                    <h3 className="display text-lg font-semibold text-ink leading-tight line-clamp-2 mb-1">
+                      {displayWineName(g.canonicalName)}
+                    </h3>
+                    <p className="text-xs text-graphite mb-3 truncate">
+                      {g.brand ? `${displayBrand(g.brand)} · ` : ""}en {storeName(g.storeSlug)}
+                    </p>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className="display text-2xl font-semibold text-cobalt tabular-nums">
+                        {formatArs(g.price)}
+                      </div>
+                      <div className="text-xs text-graphite tabular-nums">
+                        el resto ~{formatArs(g.reference)}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* PRICE DROPS · only show when there's signal */}
       {topDrops.length > 0 && (
         <section id="bajaron" className="py-20 lg:py-28 px-6">
@@ -757,93 +842,59 @@ export default async function Home() {
         </section>
       )}
 
-      {/* TOP OFERTAS */}
-      {deals.length > 0 && (
-        <section id="ofertas" className="py-24 lg:py-32 px-6 bg-snow/50">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
-              <div className="max-w-2xl">
-                <p className="text-malbec text-sm tracking-[0.2em] uppercase font-semibold mb-4">
-                  Top ofertas del snapshot
-                </p>
-                <h2 className="display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05]">
-                  El mismo vino,
-                  <br />
-                  <span className="italic font-normal">precios muy distintos.</span>
-                </h2>
-                <p className="text-graphite mt-5 text-lg leading-relaxed">
-                  Vinos que aparecen en 2+ vinotecas con diferencias de precio que
-                  importan. Elegí la más barata, o la que te llega más rápido.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/buscar?multi=1"
-                  className="chip press arrow-nudge !bg-cobalt !text-snow !border-cobalt hover:!bg-malbec hover:!border-malbec"
-                >
-                  Ver todos los comparables <span data-arrow aria-hidden="true">→</span>
-                </Link>
-                <Link
-                  href="/ranking"
-                  className="chip press !bg-snow !text-ink !border-ink/15 hover:!bg-mustard"
-                >
-                  Rankings curados
-                </Link>
-              </div>
+      {/* VINOTECAS · ¿cuál es la más barata? */}
+      {cheapestStores.length > 0 && (
+        <section id="vinotecas" className="py-24 lg:py-32 px-6 bg-snow/50 border-y border-ink/10">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-20 items-start">
+            <div>
+              <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-3">
+                Índice Vinndex de vinotecas
+              </p>
+              <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
+                ¿Cuál es la vinoteca
+                <br />
+                <span className="italic font-normal">más barata?</span>
+              </h2>
+              <p className="text-graphite mt-5 text-base leading-relaxed max-w-md">
+                Comparamos los mismos vinos en las mismas vinotecas: cada precio
+                contra la mediana de su ficha. Hoy {cheapestStores[0].name} vende
+                un {formatIndexPct(cheapestStores[0].index as number).replace("-", "")}{" "}
+                más barato que el mercado. {rankedStores} vinotecas con índice,
+                actualizado todos los días.
+              </p>
+              <Link
+                href="/vinotecas"
+                className="arrow-nudge press cursor-wine inline-flex items-center gap-2 mt-7 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt"
+              >
+                Ver el ranking completo
+                <span data-arrow aria-hidden="true">→</span>
+              </Link>
             </div>
-
-            <div className="reveal grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {deals.map((g) => {
-                const savingsPct =
-                  g.minPrice != null && g.maxPrice != null && g.maxPrice > 0
-                    ? Math.round(
-                        ((g.maxPrice - g.minPrice) / g.maxPrice) * 100,
-                      )
-                    : 0;
-                return (
-                  <a
-                    key={g.groupSlug}
-                    href={`/vino/${g.groupSlug}`}
-                    className="postcard p-6 flex gap-5 items-start"
+            <ol className="reveal bg-white rounded-2xl border border-ink/10 divide-y divide-ink/10">
+              {cheapestStores.map((s, i) => (
+                <li key={s.slug}>
+                  <Link
+                    href={`/vinoteca/${s.slug}`}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-snow/60 transition-colors"
                   >
-                    <div className="relative w-24 h-32 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
-                      <WineImage
-                        src={g.imageUrl}
-                        name={g.canonicalName}
-                        brand={g.brand}
-                        fill
-                        sizes="96px"
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="inline-flex items-center gap-1.5 bg-malbec text-snow text-xs font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wide">
-                        Ahorrá {savingsPct}%
-                      </div>
-                      <h3 className="display text-lg font-semibold text-ink leading-tight line-clamp-2 mb-1">
-                        {displayWineName(g.canonicalName)}
-                      </h3>
-                      <p className="text-xs text-graphite mb-3 truncate">
-                        {g.brand ? `${displayBrand(g.brand)} · ` : ""}
-                        {g.storeCount} vinoteca{g.storeCount === 1 ? "" : "s"}
-                        {g.vintage ? ` · ${g.vintage}` : ""}
-                      </p>
-                      {/* Sin tachado: el máximo no es un "precio anterior"
-                          sino lo que cobra la vinoteca más cara hoy. El
-                          tachado sugería una rebaja que no existe. */}
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <div className="display text-2xl font-semibold text-cobalt tabular-nums">
-                          {formatArs(g.minPrice)}
-                        </div>
-                        <div className="text-xs text-graphite tabular-nums">
-                          vs {formatArs(g.maxPrice)} en la más cara
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
+                    <span className="display text-2xl font-semibold text-cobalt/60 tabular-nums w-8 shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="display text-lg font-semibold text-ink block truncate">
+                        {s.name}
+                      </span>
+                      <span className="text-xs text-graphite block">
+                        mejor precio en {s.bestPriceCount} de {s.comparableCount} vinos comparables
+                      </span>
+                    </span>
+                    <span className="display text-2xl font-semibold text-green2 tabular-nums shrink-0">
+                      {formatIndexPct(s.index as number)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
       )}
@@ -1346,63 +1397,6 @@ export default async function Home() {
           )}
         </div>
       </section>
-
-      {/* VINOTECAS · ¿cuál es la más barata? */}
-      {cheapestStores.length > 0 && (
-        <section id="vinotecas" className="py-24 lg:py-32 px-6 bg-snow/50 border-y border-ink/10">
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-20 items-start">
-            <div>
-              <p className="text-terracota text-sm tracking-[0.2em] uppercase font-semibold mb-3">
-                Índice Vinndex de vinotecas
-              </p>
-              <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05]">
-                ¿Cuál es la vinoteca
-                <br />
-                <span className="italic font-normal">más barata?</span>
-              </h2>
-              <p className="text-graphite mt-5 text-base leading-relaxed max-w-md">
-                Comparamos los mismos vinos en las mismas vinotecas: cada precio
-                contra la mediana de su ficha. Hoy {cheapestStores[0].name} vende
-                un {formatIndexPct(cheapestStores[0].index as number).replace("-", "")}{" "}
-                más barato que el mercado. {rankedStores} vinotecas con índice,
-                actualizado todos los días.
-              </p>
-              <Link
-                href="/vinotecas"
-                className="arrow-nudge press cursor-wine inline-flex items-center gap-2 mt-7 min-h-11 bg-ink text-snow font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-cobalt"
-              >
-                Ver el ranking completo
-                <span data-arrow aria-hidden="true">→</span>
-              </Link>
-            </div>
-            <ol className="reveal bg-white rounded-2xl border border-ink/10 divide-y divide-ink/10">
-              {cheapestStores.map((s, i) => (
-                <li key={s.slug}>
-                  <Link
-                    href={`/vinoteca/${s.slug}`}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-snow/60 transition-colors"
-                  >
-                    <span className="display text-2xl font-semibold text-cobalt/60 tabular-nums w-8 shrink-0">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="display text-lg font-semibold text-ink block truncate">
-                        {s.name}
-                      </span>
-                      <span className="text-xs text-graphite block">
-                        mejor precio en {s.bestPriceCount} de {s.comparableCount} vinos comparables
-                      </span>
-                    </span>
-                    <span className="display text-2xl font-semibold text-green2 tabular-nums shrink-0">
-                      {formatIndexPct(s.index as number)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-      )}
 
       {/* DESCUBRÍ · bento: cada entrada con su propia forma (ver HomeBento) */}
       <section className="py-20 lg:py-28 px-6">

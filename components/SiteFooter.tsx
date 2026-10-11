@@ -36,6 +36,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: "Precios",
     links: [
       { href: "/ofertas", label: "Ofertas del día" },
+      { href: "/joyitas", label: "Joyitas de alta gama" },
       { href: "/ranking", label: "Rankings" },
       { href: "/vinotecas", label: "Vinotecas más baratas" },
       { href: "/indice", label: "Índice de precios" },
