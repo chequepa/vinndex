@@ -81,6 +81,8 @@ jobs:
             echo
             echo "**${ADDED} vinotecas pasan los 6 gates** y quedan agregadas a \`data/stores.json\` en este PR. Revisá el \`name\` de cada una antes de mergear; el ledger (\`data/store-candidates.json\`) registra el veredicto de todas."
             echo
+            echo "⚠️ **Tiendas regionales:** si alguna entrega sólo en su ciudad (Rosario, Córdoba, La Plata…), cargale el campo \`envios\` antes de mergear. Si no, va a salir como \"la más barata\" para gente a la que no le puede vender. Ver \`docs/cobertura-nacional.md\`."
+            echo
             echo '```'
             cat /tmp/vet.txt | tail -120
             echo '```'
