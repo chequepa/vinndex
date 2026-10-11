@@ -8,7 +8,7 @@ import { buildCompassDataset } from "@/lib/compass";
 export const metadata: Metadata = {
   title: "Explorar vinos · Vinndex",
   description:
-    "Mapa interactivo de vinos argentinos por cosecha y precio. Joven o de guarda, asequible o premium, todo en un plano. Movés el cursor y aparece la constelación de los vinos cerca tuyo.",
+    "Mapa interactivo de vinos argentinos por cosecha y precio. Joven o de guarda, accesible o premium, todo en un plano y en lista.",
   alternates: { canonical: "https://vinndex.com.ar/explorar" },
   openGraph: {
     title: "Explorar vinos · Vinndex",
@@ -48,9 +48,10 @@ export default function ExplorarPage() {
           </h1>
           <p className="text-graphite text-lg leading-relaxed max-w-2xl">
             Cada punto es un vino del catálogo. Los más jóvenes a la
-            izquierda, los de guarda a la derecha. Los más caros arriba,
-            los asequibles abajo. Movés el cursor por el plano y se arma
-            una constelación con los tres vinos más cercanos.
+            izquierda, los de guarda a la derecha; los más caros arriba,
+            los accesibles abajo. Tocá una zona del plano y te mostramos
+            el vino más cercano y los que tiene al lado. Abajo, la misma
+            selección en lista.
           </p>
         </div>
       </section>
@@ -88,7 +89,7 @@ export default function ExplorarPage() {
               >
                 el buscador
               </Link>{" "}
-              o filtrá por varietal y región acá arriba.
+              o filtrá por zona, varietal y región acá arriba.
             </p>
           </div>
         </section>
