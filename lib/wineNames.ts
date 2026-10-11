@@ -88,6 +88,11 @@ export function stripShelfNoise(name: string, brand?: string | null): string {
     .replace(/\s+x\s*(375|500|750|1500)\b/gi, " ")
     // "en botella" (Carrefour/Día: "Vino … en botella 750 ml")
     .replace(/\s+en\s+botella\b/gi, " ")
+    // "Champagne San Huberto Extra Brut Sin Atributo Sin Atributo…" (relleno
+    // de atributos vacíos de VTEX, 289 fichas) y "TAITA (UNIDAD)" (la
+    // botella suelta frente a la caja, que ahora es variante de la ficha).
+    .replace(/(\s+sin\s+atributo)+/gi, " ")
+    .replace(/\s*\(\s*unidad\s*\)/gi, " ")
     .replace(/\s+/g, " ")
     .replace(/[\s.,·-]+$/g, "")
     .trim();
