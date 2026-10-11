@@ -168,6 +168,9 @@ function slugify(s) {
 // las dos caían en "Gran Medalla" y la ficha del Medalla común se
 // titulaba "Gran Medalla Malbec" (el mismo mecanismo que puso "Apartado
 // Gran Malbec" de título al Colección Malbec de Rutini, auditoría 13/09).
+// Palabras de formato que no pueden ser toda la línea de un vino.
+const LINEA_FORMATO_RE = /\b(doble magnum|magnum|jeroboam|lata|caja|estuche|pack)\b/g;
+const LINEA_FORMATO_TEST_RE = /\b(magnum|jeroboam|lata|caja|estuche|pack)\b/;
 const LINE_TIER_RE = /\b(gran|reserva|reserve|single|vineyard|parcela|icono|coleccion|edicion limitada)\b/g;
 function lineTierCount(linea) {
   return (norm(linea).match(LINE_TIER_RE) ?? []).length;
@@ -1422,19 +1425,27 @@ async function main() {
   // "el nombre más corto", que podía ser "MALBEC" a secas o el título de
   // una tienda cualquiera (auditoría 13/09: "botellas-cabernet-cabernet-
   // cabernet-malbec-merlot-por-rutini-syrah").
+  // Entre las variantes de un mismo nombre, el título lo pone una botella
+  // comparable (750 suelta) cuando la hay. Desde el sommelier (#200) las
+  // cajas, magnums y estuches viven dentro de la ficha del vino, y
+  // contentTokens les saca el formato: la caja y la botella cuentan como
+  // el mismo nombre y ganaba el más corto, que solía ser el de la caja
+  // ("Perro Callejero Sauvignon Blanc X6" con el precio de la botella).
   function pickCanonicalName(offersOut) {
     const cnt = new Map();
     for (const o of offersOut) {
       const k = contentTokens(o.name).join(" ");
       if (!k) continue;
-      const e = cnt.get(k) ?? { n: 0, best: o.name };
+      const e = cnt.get(k) ?? { n: 0, best: o.name, bestComparable: null };
       e.n++;
       if (o.name.length < e.best.length) e.best = o.name;
+      if (o.comparable && (!e.bestComparable || o.name.length < e.bestComparable.length)) e.bestComparable = o.name;
       cnt.set(k, e);
     }
     const ranked = [...cnt.values()].sort((a, b) => b.n - a.n || a.best.length - b.best.length);
+    const top = ranked[0];
     return (
-      ranked[0]?.best ??
+      (top && (top.bestComparable ?? top.best)) ??
       offersOut.slice().sort((a, b) => a.name.length - b.name.length)[0].name
     );
   }
@@ -1569,7 +1580,19 @@ async function main() {
     let canonicalName;
     const bodegaToksW = w ? new Set(normalizeBodegaKey(w.bodega).split(" ").filter((t) => t.length > 1)) : null;
     const lineaHasBodega = w && norm(w.linea).split(" ").some((t) => bodegaToksW.has(t));
-    if (w && lineaHasBodega) {
+    // Una línea de catálogo que es sólo un formato ("Magnum" de Salentein,
+    // "Malbec (Lata)" de Malamado) no sirve de título: la ficha junta la
+    // botella de 750 y el título decía "Salentein Magnum Reserva Malbec"
+    // con el precio de la 750. Se titula por las ofertas.
+    const lineaSoloFormato =
+      w &&
+      LINEA_FORMATO_TEST_RE.test(norm(w.linea)) &&
+      norm(w.linea)
+        .replace(LINEA_FORMATO_RE, " ")
+        .replace(/[()]/g, " ")
+        .split(" ")
+        .filter((t) => t && !norm(w.varietal ?? "").includes(t)).length === 0;
+    if (w && (lineaHasBodega || lineaSoloFormato)) {
       // "Catena D.V. Cabernet" como línea es el LLM confundiendo la bodega
       // con la etiqueta; el nombre más frecuente entre las tiendas ("DV
       // Catena Cabernet-Cabernet") es mejor título.
