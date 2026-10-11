@@ -268,3 +268,19 @@ jobs:
           done
           echo "all push attempts failed"
           exit 1
+
+      # Alertas de precio por mail (lib/alerts.ts). Va al FINAL, después del
+      # push: el aviso linkea a la ficha y conviene que el deploy con el
+      # snapshot nuevo ya esté saliendo. Sin los secrets el script sale en
+      # 0 sin hacer nada. No bloquea: un mail que no sale hoy, sale mañana
+      # (la referencia sólo avanza cuando el envío fue OK).
+      - name: Alertas de precio por mail
+        if: always()
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          ALERTS_SECRET: ${{ secrets.ALERTS_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERTS_FROM_EMAIL: ${{ secrets.ALERTS_FROM_EMAIL }}
+        run: node scripts/notify-price-alerts.mjs
+        continue-on-error: true

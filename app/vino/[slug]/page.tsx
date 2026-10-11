@@ -41,6 +41,7 @@ import { brandSiblings, priceNeighbors } from "@/lib/internalLinks";
 import { storeInitials, colorForStore } from "@/lib/storeVisual";
 import { WineLinkList } from "@/components/WineLinkList";
 import { gemFor, storeContext } from "@/lib/gems";
+import { PriceAlertForm } from "@/components/PriceAlertForm";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -1070,6 +1071,10 @@ export default async function Vino({ params }: Params) {
                       : undefined
                   }
                 />
+              </div>
+
+              <div className="mt-4">
+                <PriceAlertForm slug={group.groupSlug} currentPrice={heroMinPrice ?? null} />
               </div>
             </div>
           </div>
