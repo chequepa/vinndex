@@ -47,6 +47,9 @@
  *   node scripts/vet-store-candidates.mjs --file candidatas.txt
  *   node scripts/vet-store-candidates.mjs --file c.txt --write   # graba el ledger
  *   node scripts/vet-store-candidates.mjs --recheck 90           # reevalúa descartes viejos
+ *   node scripts/vet-store-candidates.mjs --file q.txt --altas-out altas.json
+ *       # además escribe las líneas aprobadas en un JSON (lo usa
+ *       # .github/workflows/store-discovery.yml para abrir el PR)
  *
  * Sin `--write` es dry-run: imprime el veredicto y no toca nada. NUNCA
  * agrega solo a stores.json — eso queda para el PR, con la línea a la
@@ -294,8 +297,14 @@ async function main() {
   const recheckIdx = args.indexOf("--recheck");
   const recheckDias = recheckIdx >= 0 ? Number(args[recheckIdx + 1]) || 90 : null;
   const fileIdx = args.indexOf("--file");
-  // Ojo: los valores de --file y --recheck no son candidatas.
-  const valores = new Set([fileIdx >= 0 ? fileIdx + 1 : -1, recheckIdx >= 0 ? recheckIdx + 1 : -1]);
+  const altasOutIdx = args.indexOf("--altas-out");
+  const altasOut = altasOutIdx >= 0 ? args[altasOutIdx + 1] : null;
+  // Ojo: los valores de --file, --recheck y --altas-out no son candidatas.
+  const valores = new Set([
+    fileIdx >= 0 ? fileIdx + 1 : -1,
+    recheckIdx >= 0 ? recheckIdx + 1 : -1,
+    altasOutIdx >= 0 ? altasOutIdx + 1 : -1,
+  ]);
   let inputs = args.filter((a, i) => !a.startsWith("--") && !valores.has(i));
   if (fileIdx >= 0) {
     const f = args[fileIdx + 1];
@@ -336,6 +345,7 @@ async function main() {
   }
   if (!nuevas.length) {
     console.log(`Nada para evaluar (${saltadas} ya estaban en el ledger).`);
+    if (altasOut) writeFileSync(resolve(process.cwd(), altasOut), "[]\n");
     return;
   }
   console.log(`Evaluando ${nuevas.length} candidatas (${saltadas} salteadas por ledger)…\n`);
@@ -360,6 +370,9 @@ async function main() {
   if (altas.length) {
     console.log("\nLíneas para data/stores.json (revisar el `name` antes de pegar):");
     console.log(JSON.stringify(altas.map((a) => a.linea), null, 2));
+  }
+  if (altasOut) {
+    writeFileSync(resolve(process.cwd(), altasOut), JSON.stringify(altas.map((a) => a.linea), null, 2) + "\n");
   }
   if (manuales.length) {
     console.log(`\nManuales (hay que cargar los IDs de categoría): ${manuales.map((m) => `${m.host} (${m.platform})`).join(", ")}`);

@@ -1,0 +1,88 @@
+name: Vinotecas nuevas (semanal)
+
+# Amplía la cobertura sin intervención diaria: todos los lunes vetea la
+# cola de candidatas (data/store-candidates-queue.txt) y re-prueba los
+# descartes de hace 60+ días (una tienda puede prender el carrito o la
+# Store API más adelante). Lo que pasa los 6 gates de
+# scripts/vet-store-candidates.mjs se agrega a data/stores.json EN UN PR,
+# nunca directo a main: un humano mira el `name` y aprieta merge. El
+# scrape diario las toma desde la corrida siguiente al merge.
+#
+# Corre en GitHub (no en Railway) porque Cloudflare bloquea IPs de data
+# center en varias tiendas y los runners de GitHub pasan.
+
+on:
+  schedule:
+    # Lunes 09:00 UTC = 06:00 AR, después del daily-scrape.
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  vet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Vetear candidatas
+        run: |
+          node scripts/vet-store-candidates.mjs \
+            --file data/store-candidates-queue.txt \
+            --recheck 60 \
+            --write \
+            --altas-out /tmp/altas.json | tee /tmp/vet.txt
+
+      - name: Sumar las aprobadas a stores.json
+        id: apply
+        run: |
+          node -e '
+            const fs = require("fs");
+            const altas = JSON.parse(fs.readFileSync("/tmp/altas.json", "utf8"));
+            const stores = JSON.parse(fs.readFileSync("data/stores.json", "utf8"));
+            const slugs = new Set(stores.map((s) => s.slug));
+            const nuevas = altas.filter((a) => a && a.slug && !slugs.has(a.slug));
+            // Se agregan líneas al final respetando el formato del archivo
+            // (una tienda por línea, `{ "k": v }`) para que el diff del PR
+            // sean sólo las altas.
+            if (nuevas.length) {
+              const fmt = (o) => "  " + JSON.stringify(o).replace(/^\{/, "{ ").replace(/\}$/, " }").replace(/":/g, "\": ").replace(/,"/g, ", \"");
+              const raw = fs.readFileSync("data/stores.json", "utf8").replace(/\s*\]\s*$/, "");
+              fs.writeFileSync("data/stores.json", raw + ",\n" + nuevas.map(fmt).join(",\n") + "\n]\n");
+              JSON.parse(fs.readFileSync("data/stores.json", "utf8")); // sigue siendo JSON válido
+            }
+            fs.writeFileSync(process.env.GITHUB_OUTPUT, `added=${nuevas.length}\n`, { flag: "a" });
+            console.log(`${nuevas.length} vinotecas nuevas`);
+          '
+
+      - name: Abrir PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet data/stores.json data/store-candidates.json; then
+            echo "Sin cambios"; exit 0
+          fi
+          BRANCH="bot/vinotecas-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/stores.json data/store-candidates.json
+          ADDED="${{ steps.apply.outputs.added }}"
+          git commit -m "chore(vinotecas): ${ADDED} nuevas tras el vet semanal"
+          git push -u origin "$BRANCH"
+          {
+            echo "Vet semanal de \`data/store-candidates-queue.txt\` + re-chequeo de descartes de 60+ días."
+            echo
+            echo "**${ADDED} vinotecas pasan los 6 gates** y quedan agregadas a \`data/stores.json\` en este PR. Revisá el \`name\` de cada una antes de mergear; el ledger (\`data/store-candidates.json\`) registra el veredicto de todas."
+            echo
+            echo '```'
+            cat /tmp/vet.txt | tail -120
+            echo '```'
+          } > /tmp/body.md
+          gh pr create --title "Vinotecas nuevas: ${ADDED} aprobadas por el vet semanal" --body-file /tmp/body.md --base main --head "$BRANCH"
