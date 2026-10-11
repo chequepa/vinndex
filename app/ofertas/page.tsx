@@ -295,8 +295,9 @@ export default async function OfertasPage() {
               Guardá tus vinos y enterate primero
             </h2>
             <p className="text-graphite leading-relaxed text-sm">
-              Si marcás un vino como favorito, el home te avisa cuando baja de
-              precio.{" "}
+              En cada ficha podés tocar “Avisame si baja” y te escribimos por
+              mail cuando el vino baje, o cuando llegue al precio que quieras.
+              Si lo marcás como favorito, el home también te lo muestra.{" "}
               <Link href="/favoritos" className="text-cobalt underline hover:no-underline">
                 Ver mis favoritos
               </Link>
