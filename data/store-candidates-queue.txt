@@ -1,0 +1,79 @@
+# Cola de vinotecas candidatas — la lee .github/workflows/store-discovery.yml
+# todos los lunes con scripts/vet-store-candidates.mjs. Lo ya evaluado queda
+# en data/store-candidates.json y no se vuelve a probar (salvo --recheck).
+# Una por línea; `#` es comentario. Se puede agregar a mano en cualquier
+# momento: la próxima corrida las vetea.
+#
+# Fuente inicial (11/10/2026): relevamiento por buscador, sin abrir los
+# sitios. Nada de esto entra a stores.json sin pasar los 6 gates del vet
+# (backend scrapeable, pesos, carrito, catálogo de vino).
+#
+# Sólo tiendas que pueden venderle a alguien de AMBA: de AMBA, con envío
+# a todo el país, o bodegas con tienda propia. Las regionales que entregan
+# sólo en su ciudad esperan en data/store-candidates-regional.txt hasta
+# que el sitio sepa a dónde envía cada tienda (docs/cobertura-nacional.md):
+# si no, salen "más baratas" para gente a la que no le pueden vender.
+#
+# Posibles duplicados a mirar antes de aprobar: ligier.com.ar (¿=
+# vinotecaligier.com?), casadionisio.com.ar (= dionisioonline.com.ar).
+
+# ── Córdoba (envía a todo el país por Andreani) ──
+rogeralmacendebebidas.mitiendanube.com
+
+# ── Mendoza (tiendas que dicen enviar a todo el país) ──
+losandes2.mitiendanube.com
+tradicionvinos.com.ar
+megawine.com.ar
+donvino.com.ar
+
+# ── NOA (envío nacional) ──
+altamiravinos.com
+vinosdelchango.com.ar
+
+# ── Mar del Plata / La Plata (entregan también en AMBA o a todo el país) ──
+elmercadodebebidas.com.ar
+llegoelvino.mitiendanube.com
+aromasdeltonel.mitiendanube.com
+
+# ── CABA / GBA ──
+bari.com.ar
+lacaveavin.ar
+vinotecamelies.com.ar
+eltunelvinos.com.ar
+wineglass.com.ar
+vitisboutique.com
+herenciadeliwine.mitiendanube.com
+felicetiendadevinos.com.ar
+dfbebidas.com.ar
+vinosadomicilio.net.ar
+lagaleriabebidas2.mitiendanube.com
+vinotecacorcho.mitiendanube.com
+oestewine.mitiendanube.com
+pueyrredonbebidas.com.ar
+vinotecaelpasaje.mitiendanube.com
+portentovinoteca.mitiendanube.com
+vinotecacheers.mitiendanube.com
+lacabravinoteca.mitiendanube.com
+labodegavinoteca.mitiendanube.com
+vidoswines.mitiendanube.com
+vinotecamisuvas.mitiendanube.com
+bouquetwines.mitiendanube.com
+
+# ── Nacionales / clubes ──
+bonvivir.com
+fullescabio.com
+
+# ── Bodegas con tienda propia ──
+shop.norton.com.ar
+tienda.escorihuela.com
+tienda.durigutti.com
+tienda.autorjorgerubio.com.ar
+bodegabrujerias.mitiendanube.com
+familialujanconesa.mitiendanube.com
+patagonianwines.mitiendanube.com
+secretopatagonico.com
+shopfindelmundowines.com
+bodega1320.mitiendanube.com
+es.elporvenirwines.com
+merceddelestero.com.ar
+tercervino.mitiendanube.com

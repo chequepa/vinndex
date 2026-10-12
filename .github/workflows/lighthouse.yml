@@ -9,6 +9,7 @@ on:
       - "app/**"
       - "components/**"
       - "lib/**"
+      - "scripts/check-client-bundle.mjs"
       - "next.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -39,6 +40,11 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Lighthouse no mide /explorar ni las fichas: esta guarda frena el
+      # caso que sí pasó (snapshot.json de 50 MB en el bundle del cliente).
+      - name: Guarda del bundle del cliente
+        run: node scripts/check-client-bundle.mjs
 
       - name: Start server
         run: |

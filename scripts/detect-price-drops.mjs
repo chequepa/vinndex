@@ -63,6 +63,21 @@ const IDENTITY_EPOCH = "2026-07-03";
 const NON_WINE_RE =
   /\b(whisk[eí]y?|gin|vodka|ron|tequila|mezcal|licor|vermut|fern|granadina|aperol|campari|cinzano|martini|cynar|amaretto|bitter|chartreuse|absent|jagermeister|jack[\s-]?daniels|smirnoff|absolut|cerveza|beer|glenlivet|hendricks|bombay|tanqueray|bushmills|chivas|johnny[\s-]?walker|jameson|macallan|aberlour)\b/i;
 
+// Una baja del MÍNIMO de la ficha no es una baja de precio si ese mismo
+// día la ficha sumó vinotecas: es una fusión (el sommelier juntó
+// duplicados, 08–10/10: 40 de las 50 "bajas" publicadas) o una tienda
+// nueva que entra más barata. /ofertas promete "menos que la semana
+// pasada en la misma vinoteca"; eso sólo se puede afirmar si el mínimo
+// bajó con las mismas vinotecas (o menos). Misma regla en lib/monthLows.ts.
+function fellWhileGainingStores(points) {
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1];
+    const b = points[i];
+    if (b.min > 0 && a.min > 0 && b.min < a.min && (b.stores ?? 0) > (a.stores ?? 0)) return true;
+  }
+  return false;
+}
+
 function median(values) {
   if (values.length === 0) return null;
   const s = [...values].sort((a, b) => a - b);
@@ -99,6 +114,7 @@ function main() {
   }
 
   const drops = [];
+  let skippedByMerge = 0;
   const histMap = history.history ?? {};
 
   for (const [slug, rawEntries] of Object.entries(histMap)) {
@@ -134,6 +150,10 @@ function main() {
     // Precio actual muy bajo = data sucia. Ningún vino argentino real
     // está bajo $1500 hoy.
     if (last.min < MIN_CURRENT_PRICE) continue;
+    if (fellWhileGainingStores([...previous, last])) {
+      skippedByMerge++;
+      continue;
+    }
 
     const g = groupBySlug.get(slug);
     if (!g) continue;
@@ -175,7 +195,7 @@ function main() {
   console.log(
     `wrote ${OUT} — ${payload.drops.length} drops detectados (≥${
       DROP_THRESHOLD * 100
-    }% baja vs mediana 7d)`,
+    }% baja vs mediana 7d) · ${skippedByMerge} descartadas porque el mínimo bajó al sumar vinotecas`,
   );
 }
 

@@ -53,6 +53,12 @@ export function monthLows(days = 30): MonthLow[] {
     }
     if (points < 10 || !Number.isFinite(previousMin)) continue;
     if (latest.min >= previousMin) continue;
+    // Todos los puntos previos están en o sobre previousMin: el mínimo
+    // nuevo aparece HOY. Si hoy la ficha además sumó vinotecas, es una
+    // fusión o una tienda nueva más barata, no un precio que bajó (misma
+    // regla que fellWhileGainingStores en scripts/detect-price-drops.mjs).
+    const prev = series[series.length - 2];
+    if (latest.stores > prev.stores && latest.min < prev.min) continue;
     const g = findGroup(slug);
     if (!g || g.minPrice == null || g.minPrice <= 0) continue;
     out.push({

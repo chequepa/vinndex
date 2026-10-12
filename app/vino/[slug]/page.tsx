@@ -7,6 +7,7 @@ import { WineImage } from "@/components/WineImage";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
+import { BasketButton } from "@/components/Basket";
 import { StickyCTA } from "@/components/StickyCTA";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { PriceLadder } from "@/components/PriceLadder";
@@ -40,6 +41,9 @@ import { wineFullName } from "@/lib/wineNames";
 import { brandSiblings, priceNeighbors } from "@/lib/internalLinks";
 import { storeInitials, colorForStore } from "@/lib/storeVisual";
 import { WineLinkList } from "@/components/WineLinkList";
+import { gemFor, storeContext } from "@/lib/gems";
+import { PriceAlertForm } from "@/components/PriceAlertForm";
+import { alertsEnabled } from "@/lib/alerts";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -483,6 +487,10 @@ export default async function Vino({ params }: Params) {
   const inStockOffers = offers.filter((o) => o.inStock);
   const allOutOfStock = inStockOffers.length === 0;
   const bestOffer = allOutOfStock ? offers[0] : inStockOffers[0];
+  // Joyita (lib/gems.ts): alta gama mucho más barata en una vinoteca que
+  // en el resto. Se avisa arriba del CTA porque es LA razón para comprar hoy.
+  const gem = gemFor(group.groupSlug);
+  const gemStoreContext = gem ? storeContext(gem) : null;
   // La tabla principal muestra sólo lo comprable hoy; las vinotecas sin
   // stock van a un desplegable abajo (antes eran 1/3 de la tabla, en gris
   // al 50% de opacidad, ilegibles). Si TODAS están sin stock no hay nada
@@ -1008,6 +1016,26 @@ export default async function Vino({ params }: Params) {
                 </div>
               )}
 
+              {gem && !allOutOfStock && (
+                <Link
+                  href="/joyitas"
+                  className="mb-5 flex items-start gap-3 rounded-2xl bg-snow/10 border border-snow/25 px-4 py-3 text-snow hover:bg-snow/15 transition-colors max-w-xl"
+                >
+                  <span aria-hidden="true" className="text-mustard text-lg leading-none mt-0.5">◆</span>
+                  <span className="text-sm leading-snug">
+                    <strong className="font-semibold">Joyita:</strong>{" "}
+                    {storeName(gem.storeSlug)} lo tiene {Math.round(gem.discount * 100)}% abajo
+                    de lo que lo cobran las otras {gem.storeCount - 1} vinotecas
+                    (mediana {formatArs(gem.reference)}).
+                    {gemStoreContext && (
+                      <span className="block text-snow/70 text-xs mt-0.5">
+                        Ojo: {gemStoreContext}, pero en este vino está bastante más abajo que su costumbre.
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              )}
+
               {allOutOfStock ? (
                 <a
                   href="#precios"
@@ -1032,6 +1060,8 @@ export default async function Vino({ params }: Params) {
                 </a>
               )}
 
+              <BasketButton slug={group.groupSlug} className="mt-4 text-snow" />
+
               <div className="mt-6 flex items-center gap-3 text-snow/85">
                 <span className="text-xs uppercase tracking-wider">
                   Compartir
@@ -1046,6 +1076,12 @@ export default async function Vino({ params }: Params) {
                   }
                 />
               </div>
+
+              {alertsEnabled() && (
+                <div className="mt-4">
+                  <PriceAlertForm slug={group.groupSlug} currentPrice={heroMinPrice ?? null} />
+                </div>
+              )}
             </div>
           </div>
         </div>

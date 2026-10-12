@@ -8,6 +8,7 @@ import { readPriceDrops, type PriceDrop } from "@/lib/priceDrops";
 import { monthLows, type MonthLow } from "@/lib/monthLows";
 import { displayBrand, formatArs, storeName } from "@/lib/snapshot";
 import { brandedName } from "@/lib/brandedName";
+import { alertsEnabled } from "@/lib/alerts";
 
 const SITE = "https://vinndex.com.ar";
 
@@ -295,8 +296,19 @@ export default async function OfertasPage() {
               Guardá tus vinos y enterate primero
             </h2>
             <p className="text-graphite leading-relaxed text-sm">
-              Si marcás un vino como favorito, el home te avisa cuando baja de
-              precio.{" "}
+              {alertsEnabled() ? (
+                <>
+                  En cada ficha podés tocar “Avisame si baja” y te escribimos
+                  por mail cuando el vino baje, o cuando llegue al precio que
+                  quieras. Si lo marcás como favorito, el home también te lo
+                  muestra.{" "}
+                </>
+              ) : (
+                <>
+                  Si marcás un vino como favorito, el home te avisa cuando baja
+                  de precio.{" "}
+                </>
+              )}
               <Link href="/favoritos" className="text-cobalt underline hover:no-underline">
                 Ver mis favoritos
               </Link>
