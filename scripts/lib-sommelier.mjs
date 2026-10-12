@@ -397,10 +397,248 @@ export function buildIndex(verdicts) {
     const c = unitConsensus(unitKey, expandPass(u, "A"), expandPass(u, "B"));
     units.push({ unitKey, agreement: c.agreement, classes: c.classes.size, out: c.out.size, applied: c.agreement >= MIN_AGREEMENT });
     if (c.agreement < MIN_AGREEMENT) continue;
-    for (const [k, v] of c.classes) { index.set(k, v); out.delete(k); }
-    for (const k of c.out) { out.add(k); index.delete(k); }
+    // La revisión más reciente es dueña de TODOS los nombres que vio: uno
+    // que quedó sin decidir no conserva la clase de una revisión anterior
+    // (con otra unidad), que lo separaría de su ficha.
+    for (const k of u.names) { index.delete(k); out.delete(k); }
+    for (const [k, v] of c.classes) index.set(k, v);
+    for (const k of c.out) out.add(k);
   }
-  return { index, out, units };
+  const extra = applyChecks(verdicts, index, out);
+  return { index, out, units, extra };
+}
+
+// ── Doble chequeo (12/10) ───────────────────────────────────────────────────
+// La primera vuelta revisa bodega por bodega: no ve el mismo vino cargado con
+// dos bodegas distintas o sin bodega ("Latitud 33 Dulce" [Chandon] / "LATITUD
+// DULCE" [sin bodega]), ni puede auditar lo que quedó fusionado. Dos chequeos
+// más, también con dos pasadas y consenso:
+//   · duplicados: casos "ficha principal + candidatos parecidos de cualquier
+//     bodega"; las dos pasadas tienen que decir que un candidato es el mismo
+//     vino. Se aplica UNIENDO las clases de las dos fichas (así se mueven
+//     juntos todos los nombres de cada vino, también los que hoy no están).
+//   · auditoría: cada ficha con más de un nombre; las dos pasadas tienen que
+//     marcar un nombre como intruso. Se aplica sacándolo de su clase ("x"):
+//     separar nunca fabrica una quimera.
+// Sólo se aplican con verdicts.checks.apply === true (modo sombra hasta que
+// alguien mire el resultado).
+
+export const SYSTEM_DUPLICADOS = `Sos el sommelier de Vinndex, un comparador de precios de vinos de vinotecas online de Argentina. Ya revisamos el catálogo bodega por bodega. Ahora buscamos los duplicados que esa revisión no podía ver: el mismo producto cargado con bodegas distintas, sin bodega, o con un nombre muy diferente.
+
+Cada caso trae una ficha principal (P) y fichas candidatas parecidas. Para cada caso, decí cuáles candidatas son EXACTAMENTE el mismo producto que la principal. Puede no ser ninguna.
+
+${CRITERIO}
+- Un pack o combo con productos DISTINTOS adentro no es el mismo producto. Una caja x6 del mismo vino sí lo es (es otro formato).
+- Destilados: distinta edad (12 años / 18 años), estilo o graduación especial son productos distintos.
+- Gift cards, accesorios, comida: sólo son "el mismo" si son literalmente el mismo artículo.
+
+Un error que junta dos productos distintos es mucho peor que dejar un duplicado: si dudás, no lo marques.
+
+Respondé SOLO con el JSON del schema: un elemento por caso, con el id del caso en "c" y los ids de las candidatas que son el mismo producto en "mismos".`;
+
+export const SCHEMA_DUPLICADOS = {
+  type: "object",
+  additionalProperties: false,
+  required: ["casos"],
+  properties: {
+    casos: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["c", "mismos"],
+        properties: { c: str, mismos: { type: "array", items: str } },
+      },
+    },
+  },
+};
+
+export const SYSTEM_AUDITORIA = `Sos el sommelier de Vinndex, un comparador de precios de vinos de vinotecas online de Argentina. Cada ficha del sitio tiene que ser UN solo producto (un vino, en sus distintos formatos), porque ahí se comparan los precios de todas las tiendas.
+
+Te paso fichas con los nombres exactos con que las publican las tiendas, cuántas ofertas tiene cada nombre y su precio mediano. Para cada ficha, listá los nombres que son un producto DISTINTO del producto principal de la ficha: otra línea, otro nivel (Reserva, Gran Reserva), otro varietal, otro color o dulzor, otra edición numerada, un pack con vinos distintos, algo que no es vino.
+
+${CRITERIO}
+- NO son intrusos: el mismo vino en otro formato (caja, estuche, magnum, 375, lata) ni en otra añada.
+- Si la ficha mezcla dos vinos, marcá como intrusos los nombres del vino que tiene menos ofertas.
+- El precio ayuda: un nombre a más del doble o menos de la mitad del resto suele ser otro vino (salvo que sea un formato distinto o una añada vieja de colección).
+
+Un falso intruso parte una ficha que estaba bien; marcá sólo lo que es claramente otro producto. Si la ficha está bien, devolvé la lista vacía.
+
+Respondé SOLO con el JSON del schema, una entrada por ficha.`;
+
+export const SCHEMA_AUDITORIA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["fichas"],
+  properties: {
+    fichas: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["f", "intrusos"],
+        properties: { f: str, intrusos: { type: "array", items: str } },
+      },
+    },
+  },
+};
+
+const fichaLines = (label, f) => {
+  const lines = [`${label} · ${f.bodega ?? "sin bodega"} · ${f.storeCount} tienda${f.storeCount === 1 ? "" : "s"} · ${fmtPrice(f.price)}`];
+  f.names.forEach((n, j) => lines.push(`  ${label}.${j + 1} "${n.raw.slice(0, 140).replace(/"/g, "'")}" ×${n.count} ${fmtPrice(n.price)}`));
+  return lines;
+};
+
+/**
+ * Pedido de duplicados. `cases` = [[anchor, cand1, cand2...], ...] con
+ * índices de `fichas`. Etiquetas: caso C3, principal C3.P, candidatas C3.1...
+ */
+export function buildDupPrompt(cases, fichas, order) {
+  const lines = [`Casos: ${order.length}`, ""];
+  const labels = []; // por caso en orden presentado: { ci, cand: { "C3.1": fichaIdx } }
+  order.forEach((ci, pos) => {
+    const [anchor, ...cands] = cases[ci];
+    const cl = `C${pos + 1}`;
+    lines.push(`── ${cl}`);
+    lines.push(...fichaLines(`${cl}.P`, fichas[anchor]).map((l, i) => (i === 0 ? `PRINCIPAL ${l}` : l)));
+    const cand = {};
+    cands.forEach((fi, j) => {
+      const lab = `${cl}.${j + 1}`;
+      cand[lab] = fi;
+      lines.push(...fichaLines(lab, fichas[fi]));
+    });
+    labels.push({ cl, ci, cand });
+    lines.push("");
+  });
+  return { text: lines.join("\n"), labels };
+}
+
+/** → pares [fichaIdx, fichaIdx] que esta pasada dio como el mismo producto. */
+export function parseDupOutput(out, labels) {
+  const byCl = new Map(labels.map((l) => [l.cl, l]));
+  const pairs = [];
+  for (const r of out?.casos ?? []) {
+    const l = byCl.get(String(r?.c ?? "").trim());
+    if (!l) continue;
+    for (const m of r.mismos ?? []) {
+      const lab = String(m).trim();
+      const fi = l.cand[lab] ?? l.cand[`${l.cl}.${lab.replace(/^.*\./, "")}`];
+      if (fi === undefined) continue;
+      pairs.push([l.ci, fi]);
+    }
+  }
+  return pairs;
+}
+
+/** Pedido de auditoría: fichas por índice, etiquetas F1, F1.2... */
+export function buildAuditPrompt(fichaIdx, fichas) {
+  const lines = [`Fichas: ${fichaIdx.length}`, ""];
+  fichaIdx.forEach((fi, pos) => lines.push(...fichaLines(`F${pos + 1}`, fichas[fi])));
+  return { text: lines.join("\n") };
+}
+
+/** → [[fichaIdx, nameIdx], ...] intrusos de esta pasada. */
+export function parseAuditOutput(out, fichaIdx, fichas) {
+  const res = [];
+  for (const r of out?.fichas ?? []) {
+    for (const n of r.intrusos ?? []) {
+      const m = /^F(\d+)\.(\d+)$/.exec(String(n).trim());
+      if (!m) continue;
+      const fi = fichaIdx[Number(m[1]) - 1];
+      const ni = Number(m[2]) - 1;
+      if (fi === undefined || !fichas[fi]?.names[ni]) continue;
+      res.push([fi, ni]);
+    }
+  }
+  return res;
+}
+
+/**
+ * Consenso del doble chequeo, puro. `checks.fichas[i]` = nameKeys de la
+ * ficha i; cada unidad trae sus pasadas A y B ya traducidas a índices.
+ * @returns {{merges: Array<[string[], string[]]>, ejects: Set<string>}}
+ */
+export function checksConsensus(checks) {
+  // Cada ficha se guarda con sus nombres para poder rearmar el pedido; acá
+  // sólo importan las claves.
+  const fichas = (checks?.fichas ?? []).map((f) => (Array.isArray(f) ? f : (f?.names ?? []).map((n) => n.key)));
+  const merges = [];
+  const ejects = new Set();
+  const intrusos = new Map(); // fichaIdx → Set(nameIdx) con consenso
+  for (const u of Object.values(checks?.units ?? {})) {
+    const A = u.passes?.A, B = u.passes?.B;
+    if (!A || !B) continue;
+    if (u.kind === "duplicados") {
+      const key = ([a, b]) => (a < b ? `${a},${b}` : `${b},${a}`);
+      const inB = new Set((B.pairs ?? []).map(key));
+      const seen = new Set();
+      for (const p of A.pairs ?? []) {
+        const k = key(p);
+        if (!inB.has(k) || seen.has(k)) continue;
+        seen.add(k);
+        if (fichas[p[0]] && fichas[p[1]]) merges.push([fichas[p[0]], fichas[p[1]]]);
+      }
+    } else if (u.kind === "auditoria") {
+      const inB = new Set((B.intrusos ?? []).map(([f, n]) => `${f},${n}`));
+      for (const [f, n] of A.intrusos ?? []) {
+        if (!inB.has(`${f},${n}`)) continue;
+        if (!intrusos.has(f)) intrusos.set(f, new Set());
+        intrusos.get(f).add(n);
+      }
+    }
+  }
+  // Nunca se vacía media ficha: si los intrusos son la mitad o más de sus
+  // nombres, la ficha está mezclada al medio y no hay "intruso" claro.
+  for (const [f, set] of intrusos) {
+    const names = fichas[f] ?? [];
+    if (set.size * 2 >= names.length) continue;
+    for (const n of set) if (names[n]) ejects.add(names[n]);
+  }
+  return { merges, ejects };
+}
+
+/** Aplica el doble chequeo sobre el índice, in place (sólo con apply). */
+function applyChecks(verdicts, index, out) {
+  const checks = verdicts?.checks;
+  const stats = { applied: false, merges: 0, ejects: 0 };
+  if (!checks) return stats;
+  const { merges, ejects } = checksConsensus(checks);
+  stats.mergesConsenso = merges.length;
+  stats.ejectsConsenso = ejects.size;
+  if (checks.apply !== true) return stats;
+  stats.applied = true;
+  // Unión de clases. La clase de un lado = la mayoritaria de sus nombres; un
+  // lado sin ninguna clase (ficha nunca revisada) recibe una propia.
+  const parent = new Map();
+  const find = (c) => { let x = c; while (parent.has(x) && parent.get(x) !== x) x = parent.get(x); return x; };
+  const sideClass = (names) => {
+    const cnt = new Map();
+    for (const k of names) { const e = index.get(k); if (e) cnt.set(e.cls, (cnt.get(e.cls) ?? 0) + 1); }
+    let cls = [...cnt].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0]?.[0];
+    if (!cls) cls = `m|${shortHash(names.slice().sort().join("\n"))}`;
+    // Los nombres de la ficha sin clase (o fuera) se suman a la del lado:
+    // ya viven juntos en la ficha publicada.
+    for (const k of names) if (!index.has(k) && !out.has(k)) index.set(k, { cls, wine: null });
+    return cls;
+  };
+  const allOut = (names) => names.every((k) => out.has(k));
+  for (const [a, b] of merges) {
+    if (allOut(a) || allOut(b)) continue;
+    const ca = find(sideClass(a)), cb = find(sideClass(b));
+    if (ca === cb) continue;
+    // Raíz determinística: la menor alfabéticamente.
+    const [r, s] = ca < cb ? [ca, cb] : [cb, ca];
+    parent.set(s, r);
+    if (!parent.has(r)) parent.set(r, r);
+    stats.merges++;
+  }
+  if (parent.size) for (const [k, e] of index) { const r = find(e.cls); if (r !== e.cls) index.set(k, { ...e, cls: r }); }
+  for (const k of ejects) {
+    if (!out.has(k)) stats.ejects++;
+    index.delete(k);
+    out.add(k);
+  }
+  return stats;
 }
 
 /** Las pasadas se guardan alineadas a `u.names` para no repetir claves. */
