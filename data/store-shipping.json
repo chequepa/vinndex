@@ -1,0 +1,8 @@
+{
+  "_doc": "Envío gratis por vinoteca, para la compra combinada (/compra). Sólo lo que la tienda publica: monto mínimo de compra para envío gratis por zona ('amba' o 'nacional'). Sin dato = la página dice 'Envío no incluido' y nada más. NUNCA inventar un costo: si una tienda no publica el mínimo, no va. 'verificado: false' = salió de un relevamiento por buscador (snippets) y falta abrir la página de envíos de la tienda; la UI lo muestra igual pero con 'según la tienda'. Para sumar o corregir: editar acá con la fecha.",
+  "stores": {
+    "enotek": { "gratisDesde": { "amba": 60000 }, "fuente": "página de envíos de la tienda (relevamiento por buscador)", "fecha": "2026-10-11", "verificado": false },
+    "la-barrica": { "gratisDesde": { "nacional": 150000 }, "fuente": "página de envíos de la tienda (relevamiento por buscador)", "fecha": "2026-10-11", "verificado": false },
+    "bodega-norton": { "gratisDesde": { "nacional": 110000 }, "fuente": "tienda oficial (relevamiento por buscador)", "fecha": "2026-10-11", "verificado": false }
+  }
+}

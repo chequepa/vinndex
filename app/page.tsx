@@ -3,6 +3,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { WineImage } from "@/components/WineImage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FavoritesNavLink } from "@/components/Favorites";
+import { BasketNavLink } from "@/components/Basket";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
 import { HomeFavoriteDrops } from "@/components/HomeFavoriteDrops";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -477,6 +478,7 @@ export default async function Home() {
               </svg>
               <span>Precios en CABA</span>
             </a>
+            <BasketNavLink className="text-snow" />
             <FavoritesNavLink className="text-snow" />
             <ThemeToggle className="text-snow" />
           </div>
@@ -770,6 +772,37 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      {/* COMPRA DE VARIOS VINOS · el acceso a /compra. Sin esto nadie la
+          encontraba (12/10): el único camino era un botón en la ficha. */}
+      <section id="varios-vinos" className="px-6 py-14 lg:py-20">
+        <div className="max-w-7xl mx-auto rounded-3xl bg-malbec text-snow px-6 py-10 sm:px-10 lg:px-14 grid lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
+          <div>
+            <p className="text-mustard text-sm tracking-[0.2em] uppercase font-semibold mb-3">
+              ¿Vas a comprar varios vinos?
+            </p>
+            <h2 className="display text-3xl md:text-4xl lg:text-5xl font-semibold leading-[1.05]">
+              Una caja de este, una de aquel:
+              <span className="block italic font-normal">¿dónde comprás todo junto?</span>
+            </h2>
+            <p className="mt-4 text-snow/85 text-base leading-relaxed max-w-xl">
+              Sumá los vinos que te querés llevar y te decimos en qué vinoteca
+              te sale más barato el pedido entero. Un solo envío, un solo pago.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 lg:items-end">
+            <Link
+              href="/compra"
+              className="arrow-nudge press cursor-wine inline-flex items-center justify-center gap-2 min-h-12 bg-[#f5ede0] text-[#6b1e2e] font-semibold px-6 py-3 rounded-full text-base hover:bg-mustard"
+            >
+              Armar mi compra <span data-arrow aria-hidden="true">→</span>
+            </Link>
+            <p className="text-snow/70 text-sm lg:text-right">
+              En cada vino vas a ver “Sumar a mi compra”.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* PRICE DROPS · only show when there's signal */}
       {topDrops.length > 0 && (

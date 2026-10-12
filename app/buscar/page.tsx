@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { WineImage } from "@/components/WineImage";
+import { BasketChip } from "@/components/Basket";
 import { SearchPersist, LastSearchChip } from "@/components/SearchPersist";
 import { MobileFiltersDrawer } from "@/components/MobileFiltersDrawer";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -790,10 +791,10 @@ export default async function Buscar({ searchParams }: Params) {
                   g.offers[0];
 
                 return (
+                  <div key={g.groupSlug} className="wine-row">
                   <a
-                    key={g.groupSlug}
                     href={`/vino/${g.groupSlug}`}
-                    className="wine-row block py-5"
+                    className="block pt-5 pb-2"
                   >
                     <div className="flex gap-5">
                       <div className="relative w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-snow border border-ink/10">
@@ -872,6 +873,11 @@ export default async function Buscar({ searchParams }: Params) {
                       </div>
                     </div>
                   </a>
+                  {/* Fuera del <a>: un botón no puede ir adentro de un link. */}
+                  <div className="flex justify-end pb-4">
+                    <BasketChip slug={g.groupSlug} />
+                  </div>
+                  </div>
                 );
               })}
             </div>

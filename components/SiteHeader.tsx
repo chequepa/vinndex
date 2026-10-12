@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { FavoritesNavLink } from "./Favorites";
+import { BasketNavLink } from "./Basket";
 import { HeaderShell } from "./HeaderShell";
 import { NavLinks, type NavItem } from "./NavLinks";
 
@@ -29,6 +30,7 @@ const NAV: NavItem[] = [
 /** La tira de mobile tiene lugar para más: se scrollea de costado. */
 const NAV_MOBILE: NavItem[] = [
   ...NAV,
+  { href: "/compra", label: "Comprar varios vinos" },
   { href: "/bodegas", label: "Bodegas", match: ["/bodega"] },
   { href: "/indice", label: "Índice de precios" },
   { href: "/blog", label: "Blog" },
@@ -161,6 +163,7 @@ export function SiteHeader({
           </Link>
         )}
         <div className="ml-auto flex items-center gap-2 shrink-0">
+          <BasketNavLink className="text-ink" />
           <FavoritesNavLink className="text-ink" />
           {/* En <sm el toggle vive en el footer: 4 items en 390px dejaban
               al buscador sin lugar. */}
