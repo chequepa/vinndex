@@ -54,7 +54,17 @@ import {
   buildIndex,
   costOf,
   estimateCost,
+  SYSTEM_DUPLICADOS,
+  SCHEMA_DUPLICADOS,
+  SYSTEM_AUDITORIA,
+  SCHEMA_AUDITORIA,
+  buildDupPrompt,
+  parseDupOutput,
+  buildAuditPrompt,
+  parseAuditOutput,
+  checksConsensus,
 } from "./lib-sommelier.mjs";
+import { lineTokens } from "./stage4-token-merge.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -92,6 +102,14 @@ const MAX_FAILURES = 3;
 // entre pasadas vuelven a la cola UNA vez, con esfuerzo xhigh. Si siguen
 // sin coincidir, quedan como están (no se aplican).
 const RETRY_LOW = process.env.SOMMELIER_RETRY_LOW === "1" || process.env.SOMMELIER_RETRY_LOW === "true";
+// SOMMELIER_DOBLE=1: arma (una vez) el plan del doble chequeo —duplicados
+// entre bodegas y auditoría de fichas— sobre el snapshot publicado. El plan
+// queda guardado en verdicts.checks y las corridas siguientes lo continúan
+// aunque no lleven la variable.
+const DOBLE = process.env.SOMMELIER_DOBLE === "1" || process.env.SOMMELIER_DOBLE === "true";
+const DUP_CASES_PER_REQUEST = 25;
+const DUP_MAX_CANDS = 6;
+const AUDIT_FICHAS_PER_REQUEST = 40;
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 
@@ -350,6 +368,138 @@ function plan(fichas, verdicts, state) {
   return { prep, units, pending };
 }
 
+// ── Doble chequeo: plan ────────────────────────────────────────────────────
+
+const compactFicha = (f) => ({
+  slug: f.slug,
+  bodega: f.brand,
+  storeCount: f.storeCount,
+  price: f.price,
+  names: f.names.map((n) => ({ key: n.key, raw: n.raw, count: n.count, price: n.price })),
+});
+
+/**
+ * Candidatos a duplicado que la primera vuelta no vio juntos: fichas de
+ * bodegas (unidades) distintas o sin revisar, con ≥50 % de tokens de línea
+ * en común (sin la bodega) y precios a menos de 2×. Cada ficha es principal
+ * de un caso con sus vecinas todavía no preguntadas (máx. 6).
+ */
+function planDupCases(fichas, verdicts) {
+  const idx = buildIndex(verdicts);
+  const unitOf = (f) => {
+    const c = new Map();
+    for (const n of f.names) {
+      const e = idx.index.get(n.key);
+      if (e) { const u = e.cls.split("|")[0]; c.set(u, (c.get(u) ?? 0) + n.count); }
+    }
+    return [...c].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  };
+  const F = fichas.map((f, i) => {
+    const toks = new Set();
+    for (const n of [f.title, ...f.names.slice(0, 3).map((x) => x.raw)]) for (const t of lineTokens(n)) toks.add(t);
+    for (const t of normalizeBodegaKey(f.brand ?? "").split(" ")) toks.delete(t);
+    return { i, f, toks, unit: unitOf(f) };
+  });
+  const df = new Map();
+  for (const x of F) for (const t of x.toks) df.set(t, (df.get(t) ?? 0) + 1);
+  const inv = new Map();
+  for (const x of F) for (const t of x.toks) if (df.get(t) <= 60) { if (!inv.has(t)) inv.set(t, []); inv.get(t).push(x.i); }
+  const seenPair = new Set();
+  const nb = new Map();
+  for (const ids of inv.values()) {
+    for (let a = 0; a < ids.length; a++) for (let b = a + 1; b < ids.length; b++) {
+      const k = `${ids[a]},${ids[b]}`;
+      if (seenPair.has(k)) continue;
+      seenPair.add(k);
+      const A = F[ids[a]], B = F[ids[b]];
+      if (A.unit && B.unit && A.unit === B.unit) continue; // ya los vio juntos
+      let inter = 0;
+      for (const t of A.toks) if (B.toks.has(t)) inter++;
+      const jac = inter / (A.toks.size + B.toks.size - inter);
+      if (jac < 0.5) continue;
+      const pa = A.f.price, pb = B.f.price;
+      if (pa && pb && Math.max(pa / pb, pb / pa) > 2) continue;
+      for (const [p, q] of [[A.i, B.i], [B.i, A.i]]) { if (!nb.has(p)) nb.set(p, []); nb.get(p).push([q, jac]); }
+    }
+  }
+  // Principales: primero las fichas con más tiendas (la ficha "buena" de cada vino).
+  const asked = new Set();
+  const cases = [];
+  const anchors = [...nb.keys()].sort((a, b) => fichas[b].storeCount - fichas[a].storeCount || a - b);
+  for (const a of anchors) {
+    const cands = nb.get(a)
+      .filter(([q]) => !asked.has(a < q ? `${a},${q}` : `${q},${a}`))
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, DUP_MAX_CANDS)
+      .map(([q]) => q);
+    if (!cands.length) continue;
+    for (const q of cands) asked.add(a < q ? `${a},${q}` : `${q},${a}`);
+    cases.push([a, ...cands]);
+  }
+  return cases;
+}
+
+function planChecks(fichas, verdicts) {
+  const cases = planDupCases(fichas, verdicts);
+  // Lo que más se ve primero: fichas con más tiendas.
+  const auditIdx = fichas
+    .map((f, i) => [f, i])
+    .filter(([f]) => f.names.length >= 2)
+    .sort((a, b) => b[0].storeCount - a[0].storeCount || a[1] - b[1])
+    .map(([, i]) => i);
+  // Sólo se guardan las fichas que usa el plan, reindexadas.
+  const used = new Map();
+  const use = (i) => { if (!used.has(i)) used.set(i, used.size); return used.get(i); };
+  const dupCases = cases.map((c) => c.map(use));
+  const audit = auditIdx.map(use);
+  const stored = [];
+  for (const [i, j] of used) stored[j] = compactFicha(fichas[i]);
+  const units = {};
+  for (let k = 0; k < dupCases.length; k += DUP_CASES_PER_REQUEST) {
+    const part = dupCases.slice(k, k + DUP_CASES_PER_REQUEST);
+    units[`d:${shortHash(JSON.stringify(part), 12)}`] = { kind: "duplicados", cases: part, passes: {} };
+  }
+  for (let k = 0; k < audit.length; k += AUDIT_FICHAS_PER_REQUEST) {
+    const part = audit.slice(k, k + AUDIT_FICHAS_PER_REQUEST);
+    units[`a:${shortHash(JSON.stringify(part), 12)}`] = { kind: "auditoria", fichaIdx: part, passes: {} };
+  }
+  return { apply: false, plannedAt: new Date().toISOString(), fichas: stored, units, plan: { casos: dupCases.length, auditadas: audit.length } };
+}
+
+function checkRequests(key, u, checks) {
+  const reqs = [];
+  for (const pass of ["A", "B"]) {
+    if (u.passes?.[pass]) continue;
+    const seed = parseInt(shortHash(key + pass, 8), 16);
+    let system, schema, text, meta;
+    if (u.kind === "duplicados") {
+      const order = pass === "A" ? u.cases.map((_, i) => i) : shuffled(u.cases.map((_, i) => i), seed);
+      const built = buildDupPrompt(u.cases.map((c) => c), checks.fichas, order);
+      // labels.ci es el índice del caso: se traduce a ficha principal al leer.
+      system = SYSTEM_DUPLICADOS; schema = SCHEMA_DUPLICADOS; text = built.text;
+      meta = { kind: "duplicados", key, pass, labels: built.labels.map((l) => ({ cl: l.cl, anchor: u.cases[l.ci][0], cand: l.cand })) };
+    } else {
+      const order = pass === "A" ? u.fichaIdx : shuffled(u.fichaIdx, seed);
+      const built = buildAuditPrompt(order, checks.fichas);
+      system = SYSTEM_AUDITORIA; schema = SCHEMA_AUDITORIA; text = built.text;
+      meta = { kind: "auditoria", key, pass, fichaIdx: order };
+    }
+    reqs.push({
+      custom_id: `${u.kind[0]}-${shortHash(key, 16)}-${pass}`,
+      meta,
+      estUsd: estimateCost(system.length + text.length, 3_000),
+      params: {
+        model: SOMMELIER_MODEL,
+        max_tokens: 32_000,
+        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: text }],
+        output_config: { effort: "high", format: { type: "json_schema", schema } },
+      },
+    });
+  }
+  return reqs;
+}
+
 // ── Resultados ──────────────────────────────────────────────────────────────
 
 function textOf(message) {
@@ -384,6 +534,20 @@ function handleResult(meta, out, usd, verdicts, state) {
       else nul++;
     }
     return `atribución: ${set} con bodega, ${nul} sin`;
+  }
+  if (meta.kind === "duplicados" || meta.kind === "auditoria") {
+    const u = verdicts.checks?.units?.[meta.key];
+    if (!u) return null;
+    if (meta.kind === "duplicados") {
+      // parseDupOutput devuelve [índice de caso, ficha]; acá ci ya es la principal.
+      const labels = meta.labels.map((l) => ({ cl: l.cl, ci: l.anchor, cand: l.cand }));
+      const pairs = parseDupOutput(out, labels);
+      u.passes[meta.pass] = { pairs, at, usd: Math.round(usd * 10000) / 10000 };
+      return `duplicados ${meta.key} [${meta.pass}]: ${pairs.length} pares "mismo"`;
+    }
+    const intrusos = parseAuditOutput(out, meta.fichaIdx, verdicts.checks.fichas);
+    u.passes[meta.pass] = { intrusos, at, usd: Math.round(usd * 10000) / 10000 };
+    return `auditoría ${meta.key} [${meta.pass}]: ${intrusos.length} intrusos`;
   }
   if (meta.kind === "bodega") {
     const parsed = parseBodegaOutput(out, meta.labeled);
@@ -529,6 +693,22 @@ async function run() {
       est += c;
     }
   }
+  // Doble chequeo: no depende de la atribución, va también con preparación.
+  if (DOBLE && !verdicts.checks) {
+    verdicts.checks = planChecks(fichas, verdicts);
+    const n = Object.keys(verdicts.checks.units).length;
+    log(state, `doble chequeo planeado: ${verdicts.checks.plan.casos} casos de duplicados + ${verdicts.checks.plan.auditadas} fichas a auditar (${n} unidades × 2 pasadas)`);
+  }
+  for (const [key, u] of Object.entries(verdicts.checks?.units ?? {})) {
+    if ((state.failures[key] ?? 0) >= MAX_FAILURES) continue;
+    const rs = checkRequests(key, u, verdicts.checks);
+    if (!rs.length) continue;
+    const c = rs.reduce((s2, r) => s2 + r.estUsd, 0);
+    if (requests.length + rs.length > MAX_REQUESTS) break;
+    if (est + c > remaining) break;
+    requests.push(...rs);
+    est += c;
+  }
   if (!requests.length) {
     console.log(pending.length || prep.length ? `nada entra en el presupuesto que queda ($${remaining.toFixed(2)})` : "todo revisado: no hay nada pendiente");
     if (!dry) save(verdicts, state);
@@ -539,7 +719,8 @@ async function run() {
 
   if (dry) {
     const out = resolve(argVal("--out", resolve(tmpdir(), "sommelier-dry-run.json")));
-    writeFileSync(out, JSON.stringify(requests.slice(0, 4).map((r) => ({ custom_id: r.custom_id, estUsd: r.estUsd, system: r.params.system.map((s) => s.text.slice(0, 400)), user: r.params.messages[0].content.slice(0, 6000) })), null, 1));
+    const sample = [...new Map(requests.map((r) => [r.meta.kind, r])).values()];
+    writeFileSync(out, JSON.stringify(sample.map((r) => ({ custom_id: r.custom_id, estUsd: r.estUsd, system: r.params.system.map((s) => s.text.slice(0, 400)), user: r.params.messages[0].content.slice(0, 6000) })), null, 1));
     console.log(`(dry-run) ejemplo de pedidos en ${out}`);
     for (const u of pending.slice(0, 15)) console.log(`  · ${u.unitKey} — ${u.fichas.length} fichas, ${u.names.length} nombres, ${u.offers} ofertas`);
     const all = pending.flatMap((u) => bodegaRequests(u, verdicts, { retry: u.retry }));
@@ -582,6 +763,12 @@ function status() {
   console.log(`  pendientes: ${pending.length} bodegas · ${prep.length} pedidos de preparación`);
   console.log(`  nombres con vino decidido (consenso): ${idx.index.size} · fuera de su ficha: ${idx.out.size}`);
   if (lowAgreement.length) console.log(`  bodegas NO aplicadas por bajo acuerdo entre pasadas: ${lowAgreement.map((u) => `${u.unitKey} (${(u.agreement * 100).toFixed(0)}%)`).join(", ")}`);
+  if (verdicts.checks) {
+    const us = Object.values(verdicts.checks.units);
+    const done = us.filter((u) => u.passes?.A && u.passes?.B).length;
+    const cons = checksConsensus(verdicts.checks);
+    console.log(`  doble chequeo: ${done}/${us.length} unidades con dos pasadas · consenso: ${cons.merges.length} fusiones, ${cons.ejects.size} intrusos · ${verdicts.checks.apply ? "APLICADO" : "en sombra (checks.apply=false)"}`);
+  }
   console.log(`  gasto del ciclo ${ck}: $${(state.spend[ck] ?? 0).toFixed(2)} de $${BUDGET_USD}`);
   console.log(`  batch en vuelo: ${state.inflight ? `${state.inflight.batchId} (${state.inflight.requests} pedidos, desde ${state.inflight.submittedAt})` : "ninguno"}`);
   for (const l of state.log.slice(-8)) console.log(`  │ ${l}`);

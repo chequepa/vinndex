@@ -290,3 +290,23 @@ Archivos: `data/sommelier/verdicts.json` (veredictos, familias,
 atribuciones), `state.json` (batch en vuelo, gasto por ciclo, log),
 `apply-report.json` (qué fusionó/mudó/bloqueó el último publish, con
 ejemplos para auditar).
+
+### Doble chequeo (2026-10-12)
+
+La primera vuelta revisa bodega por bodega, así que no puede ver el mismo
+vino cargado con dos bodegas distintas o sin bodega ("Latitud 33 Dulce"
+[Chandon] / "LATITUD DULCE" [sin bodega], "Glenfarclas 10 años" bajo dos
+marcas), ni auditar lo que ya quedó fusionado. `SOMMELIER_DOBLE=1` (input
+`doble_chequeo` del workflow) arma una vez, sobre el snapshot publicado, dos
+revisiones más, también con dos pasadas y consenso:
+
+- **Duplicados**: cada ficha con candidatas parecidas (≥50 % de tokens de
+  línea sin la bodega, precio a < 2×) que la primera vuelta no vio juntas.
+  Se aplica uniendo las CLASES de las dos fichas: se mueven juntos todos los
+  nombres de cada vino, también los que hoy no están publicados.
+- **Auditoría**: cada ficha con más de un nombre; los intrusos con consenso
+  salen de su clase (separar nunca fabrica una quimera). Si los intrusos son
+  la mitad de la ficha o más, no se separa nada.
+
+El plan queda en `verdicts.checks` y se aplica sólo con
+`verdicts.checks.apply = true`: modo sombra hasta mirar el resultado.

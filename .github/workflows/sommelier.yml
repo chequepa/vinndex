@@ -28,6 +28,11 @@ on:
         type: boolean
         required: false
         default: false
+      doble_chequeo:
+        description: "Armar el plan del doble chequeo (duplicados entre bodegas + auditoría de fichas). Se aplica sólo con verdicts.checks.apply=true"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -63,6 +68,7 @@ jobs:
           SOMMELIER_CYCLE_DAY: ${{ vars.SOMMELIER_CYCLE_DAY }}
           SOMMELIER_MAX_REQUESTS: ${{ inputs.max_requests }}
           SOMMELIER_RETRY_LOW: ${{ inputs.retry_low }}
+          SOMMELIER_DOBLE: ${{ inputs.doble_chequeo }}
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "Sin ANTHROPIC_API_KEY: el sommelier no corre."

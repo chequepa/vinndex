@@ -230,5 +230,43 @@ const helpers = {
   check("SOMMELIER_APPLY=0 cuenta pero no fusiona", st.fusiones === 1 && groups.size === 2);
 }
 
+console.log("\n=== DOBLE CHEQUEO (duplicados entre bodegas + auditoría) ===");
+{
+  const { checksConsensus, buildIndex: bi } = await import("./lib-sommelier.mjs");
+  // fichas: 0 = Latitud 33 Dulce [Chandon], 1 = LATITUD DULCE [sin bodega], 2 = Latitud 33 Rosé,
+  //         3 = ficha con un intruso (Gran Reserva dentro de la Reserva)
+  const fichas = [
+    { names: [{ key: "latitud 33 dulce" }, { key: "latitud 33 espumante dulce" }] },
+    { names: [{ key: "latitud dulce" }] },
+    { names: [{ key: "latitud 33 rose" }] },
+    { names: [{ key: "x reserva malbec" }, { key: "x reserva malbec 750" }, { key: "x gran reserva malbec" }] },
+  ];
+  const checks = {
+    apply: true,
+    fichas,
+    units: {
+      "d:1": { kind: "duplicados", cases: [[0, 1, 2]], passes: { A: { pairs: [[0, 1], [0, 2]] }, B: { pairs: [[1, 0]] } } },
+      "a:1": { kind: "auditoria", fichaIdx: [3], passes: { A: { intrusos: [[3, 2]] }, B: { intrusos: [[3, 2], [3, 1]] } } },
+      "d:2": { kind: "duplicados", cases: [[2, 1]], passes: { A: { pairs: [[2, 1]] } } }, // una sola pasada
+    },
+  };
+  const c = checksConsensus(checks);
+  check("duplicado: sólo el par que dicen las DOS pasadas (orden indistinto)", c.merges.length === 1 && c.merges[0][1][0] === "latitud dulce");
+  check("auditoría: sólo el intruso de las dos pasadas", c.ejects.size === 1 && c.ejects.has("x gran reserva malbec"));
+  // Aplicación sobre el índice: la clase de Chandon absorbe la ficha sin bodega.
+  const names = ["latitud 33 dulce", "latitud 33 espumante dulce", "x reserva malbec", "x reserva malbec 750", "x gran reserva malbec"];
+  const m = { "latitud 33 dulce": "v1", "latitud 33 espumante dulce": "v1", "x reserva malbec": "v2", "x reserva malbec 750": "v2", "x gran reserva malbec": "v2" };
+  const unitV = { kind: "bodega", names, at: "2026-10-07", passes: { A: { ...compactPass(names, { map: m, wines: {} }), inputHash: "h" }, B: { ...compactPass(names, { map: m, wines: {} }), inputHash: "h" } } };
+  const idx = bi({ units: { "b:chandon": unitV }, checks });
+  check("aplicado: LATITUD DULCE (sin revisar) toma la clase de Latitud 33 Dulce", idx.index.get("latitud dulce")?.cls === idx.index.get("latitud 33 dulce")?.cls);
+  check("aplicado: el intruso sale de su clase", !idx.index.has("x gran reserva malbec") && idx.out.has("x gran reserva malbec"));
+  check("aplicado: el resto de la ficha auditada queda igual", idx.index.get("x reserva malbec")?.cls === idx.index.get("x reserva malbec 750")?.cls);
+  const sombra = bi({ units: { "b:chandon": unitV }, checks: { ...checks, apply: false } });
+  check("en sombra (apply=false) no toca nada", !sombra.index.has("latitud dulce") && sombra.index.has("x gran reserva malbec") && sombra.extra.mergesConsenso === 1);
+  // Media ficha "intrusa" = mezcla al medio: no se separa.
+  const mitad = checksConsensus({ fichas: [{ names: [{ key: "a" }, { key: "b" }] }], units: { "a:2": { kind: "auditoria", passes: { A: { intrusos: [[0, 1]] }, B: { intrusos: [[0, 1]] } } } } });
+  check("si los intrusos son la mitad de la ficha, no se separa nada", mitad.ejects.size === 0);
+}
+
 console.log(`\n${pass} ok · ${fail} fallas`);
 process.exit(fail ? 1 : 0);
