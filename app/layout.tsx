@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { CompareFloatingButton } from "@/components/Compare";
+import { BasketFloatingButton } from "@/components/Basket";
 import { Analytics } from "@/components/Analytics";
 
 const fraunces = Fraunces({
@@ -86,6 +87,7 @@ export default function RootLayout({
         </a>
         {children}
         <CompareFloatingButton />
+        <BasketFloatingButton />
         {/* Server-side pageview tracker · reemplaza el beacon de
             Cloudflare Web Analytics (que cargaba un script de
             terceros con cookies, penalizando best-practices en

@@ -7,6 +7,7 @@ import { WineImage } from "@/components/WineImage";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ViewTracker } from "@/components/RecentlyViewed";
 import { CompareButton } from "@/components/Compare";
+import { BasketButton } from "@/components/Basket";
 import { StickyCTA } from "@/components/StickyCTA";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { PriceLadder } from "@/components/PriceLadder";
@@ -1058,6 +1059,8 @@ export default async function Vino({ params }: Params) {
                   <ExternalIcon />
                 </a>
               )}
+
+              <BasketButton slug={group.groupSlug} className="mt-4 text-snow" />
 
               <div className="mt-6 flex items-center gap-3 text-snow/85">
                 <span className="text-xs uppercase tracking-wider">
