@@ -12,8 +12,10 @@
 import shippingJson from "@/data/store-shipping.json";
 
 export type StoreShipping = {
-  /** "general" = la tienda publica el mínimo sin decir para qué zona. */
-  gratisDesde: { amba?: number; nacional?: number; general?: number };
+  /** "general" = la tienda publica el mínimo sin decir para qué zona.
+   * "local" = para una ciudad fuera de AMBA (Rosario, La Plata, Córdoba…):
+   * se guarda pero no se muestra hasta que el sitio sepa tu zona. */
+  gratisDesde: { amba?: number; nacional?: number; general?: number; local?: number };
   /** Frase textual y URL de donde salió (scripts/survey-shipping.mjs). */
   evidencia?: { zona: string; frase: string; url: string }[];
   fuente: string;
