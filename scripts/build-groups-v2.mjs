@@ -1207,6 +1207,9 @@ async function main() {
   // SOMMELIER_APPLY=0 mide sin tocar nada. Sin veredictos, no hace nada.
   {
     const verdicts = loadSommelierVerdicts(SOMMELIER_VERDICTS_PATH);
+    // El doble chequeo (duplicados entre bodegas + auditoría) se activa desde
+    // el workflow: verdicts.json lo reescribe el bot y no se edita a mano.
+    if (verdicts?.checks && process.env.SOMMELIER_CHECKS_APPLY === "1") verdicts.checks.apply = true;
     if (verdicts) {
       const idx = buildSommelierIndex(verdicts);
       const dryRun = process.env.SOMMELIER_APPLY === "0";
@@ -1226,7 +1229,10 @@ async function main() {
         `  sommelier${dryRun ? " (SÓLO MEDICIÓN)" : ""}: ${idx.units.length} bodegas con consenso · ${idx.index.size} nombres decididos · ` +
           `${st.gruposConCasa} fichas con vino · ${st.fusiones} fusiones · ${st.mudadas} ofertas mudadas · ${st.fuera} fuera de su ficha · ` +
           `bloqueadas: ${st.bloqueadasGate} por gate, ${st.bloqueadasPrecio} por precio · grupos ${before} → ${groups.size}` +
-          (lowAgreement.length ? ` · ${lowAgreement.length} bodegas sin aplicar por bajo acuerdo` : ""),
+          (lowAgreement.length ? ` · ${lowAgreement.length} bodegas sin aplicar por bajo acuerdo` : "") +
+          (idx.extra?.mergesConsenso !== undefined
+            ? ` · doble chequeo ${idx.extra.applied ? "APLICADO" : "en sombra"}: ${idx.extra.mergesConsenso} pares iguales, ${idx.extra.vetadasPorCadena ?? 0} vetados por cadena, ${idx.extra.ejectsConsenso} intrusos`
+            : ""),
       );
       if (PUBLISH) {
         writeFileSync(
@@ -1238,6 +1244,7 @@ async function main() {
               dryRun,
               ...st,
               unidades: idx.units,
+              dobleChequeo: idx.extra,
             },
             null,
             1,

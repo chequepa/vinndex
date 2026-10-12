@@ -564,19 +564,20 @@ export function checksConsensus(checks) {
   const fichas = (checks?.fichas ?? []).map((f) => (Array.isArray(f) ? f : (f?.names ?? []).map((n) => n.key)));
   const merges = [];
   const ejects = new Set();
+  const ejectGroups = []; // nameKeys de los intrusos de una misma ficha: salen juntos
   const intrusos = new Map(); // fichaIdx → Set(nameIdx) con consenso
+  const key = (a, b) => (a < b ? `${a},${b}` : `${b},${a}`);
+  const yes = []; // pares con consenso "mismo"
+  const distinct = new Set(); // pares que las dos pasadas vieron juntos y NINGUNA dio como mismo
   for (const u of Object.values(checks?.units ?? {})) {
     const A = u.passes?.A, B = u.passes?.B;
     if (!A || !B) continue;
     if (u.kind === "duplicados") {
-      const key = ([a, b]) => (a < b ? `${a},${b}` : `${b},${a}`);
-      const inB = new Set((B.pairs ?? []).map(key));
-      const seen = new Set();
-      for (const p of A.pairs ?? []) {
-        const k = key(p);
-        if (!inB.has(k) || seen.has(k)) continue;
-        seen.add(k);
-        if (fichas[p[0]] && fichas[p[1]]) merges.push([fichas[p[0]], fichas[p[1]]]);
+      const inA = new Set((A.pairs ?? []).map(([a, b]) => key(a, b)));
+      const inB = new Set((B.pairs ?? []).map(([a, b]) => key(a, b)));
+      for (const k of inA) if (inB.has(k)) yes.push(k.split(",").map(Number));
+      for (const [anchor, ...cands] of u.cases ?? []) {
+        for (const c of cands) { const k = key(anchor, c); if (!inA.has(k) && !inB.has(k)) distinct.add(k); }
       }
     } else if (u.kind === "auditoria") {
       const inB = new Set((B.intrusos ?? []).map(([f, n]) => `${f},${n}`));
@@ -587,14 +588,41 @@ export function checksConsensus(checks) {
       }
     }
   }
-  // Nunca se vacía media ficha: si los intrusos son la mitad o más de sus
-  // nombres, la ficha está mezclada al medio y no hay "intruso" claro.
+  // Freno de cadenas (como lib-jev): dos fichas no se juntan si las dos
+  // pasadas las vieron lado a lado y ninguna las dio como el mismo producto,
+  // aunque un tercero las conecte. 12/10: "La Perdiz en el Árbol" de PERA y
+  // de MANZANA quedaban unidas a través de una ficha ambigua.
+  const parent = new Map();
+  const members = new Map();
+  const find = (x) => { while (parent.has(x) && parent.get(x) !== x) x = parent.get(x); return x; };
+  const yesSorted = [...new Map(yes.map(([a, b]) => [key(a, b), [Math.min(a, b), Math.max(a, b)]])).values()].sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  let vetoed = 0;
+  for (const [a, b] of yesSorted) {
+    if (!fichas[a] || !fichas[b]) continue;
+    const ra = find(a), rb = find(b);
+    if (ra === rb) { merges.push([fichas[a], fichas[b]]); continue; }
+    const ma = members.get(ra) ?? [ra], mb = members.get(rb) ?? [rb];
+    let bad = false;
+    for (const x of ma) { for (const y of mb) if (distinct.has(key(x, y))) { bad = true; break; } if (bad) break; }
+    if (bad) { vetoed++; continue; }
+    parent.set(rb, ra);
+    if (!parent.has(ra)) parent.set(ra, ra);
+    members.set(ra, [...ma, ...mb]);
+    members.delete(rb);
+    merges.push([fichas[a], fichas[b]]);
+  }
+  // Intrusos: salen juntos (los de una ficha suelen ser el mismo otro vino:
+  // los 12 nombres de Don Nicanor dentro de Nieto Senetiner Malbec), y sólo
+  // si en la ficha queda al menos un nombre.
   for (const [f, set] of intrusos) {
     const names = fichas[f] ?? [];
-    if (set.size * 2 >= names.length) continue;
-    for (const n of set) if (names[n]) ejects.add(names[n]);
+    if (set.size >= names.length) continue;
+    const grp = [...set].map((n) => names[n]).filter(Boolean);
+    if (!grp.length) continue;
+    ejectGroups.push(grp);
+    for (const k of grp) ejects.add(k);
   }
-  return { merges, ejects };
+  return { merges, ejects, ejectGroups, vetoed };
 }
 
 /** Aplica el doble chequeo sobre el índice, in place (sólo con apply). */
@@ -602,9 +630,10 @@ function applyChecks(verdicts, index, out) {
   const checks = verdicts?.checks;
   const stats = { applied: false, merges: 0, ejects: 0 };
   if (!checks) return stats;
-  const { merges, ejects } = checksConsensus(checks);
+  const { merges, ejects, ejectGroups, vetoed } = checksConsensus(checks);
   stats.mergesConsenso = merges.length;
   stats.ejectsConsenso = ejects.size;
+  stats.vetadasPorCadena = vetoed;
   if (checks.apply !== true) return stats;
   stats.applied = true;
   // Unión de clases. La clase de un lado = la mayoritaria de sus nombres; un
@@ -633,10 +662,15 @@ function applyChecks(verdicts, index, out) {
     stats.merges++;
   }
   if (parent.size) for (const [k, e] of index) { const r = find(e.cls); if (r !== e.cls) index.set(k, { ...e, cls: r }); }
-  for (const k of ejects) {
-    if (!out.has(k)) stats.ejects++;
-    index.delete(k);
-    out.add(k);
+  // Los intrusos de una ficha reciben una clase propia compartida: salen
+  // juntos a UNA ficha nueva (no una por nombre).
+  for (const grp of ejectGroups) {
+    const cls = `e|${shortHash(grp.slice().sort().join("\n"))}`;
+    for (const k of grp) {
+      out.delete(k);
+      index.set(k, { cls, wine: null });
+      stats.ejects++;
+    }
   }
   return stats;
 }
@@ -702,8 +736,13 @@ export function applySommelier(groups, idx, h) {
   for (const v of idx.index.values()) if (!wineByCls.has(v.cls)) wineByCls.set(v.cls, v.wine);
   const note = (s) => { if (stats.ejemplos.length < 400) stats.ejemplos.push(s); };
 
-  // 1. Vino de casa por grupo.
+  // 1. Vino de casa por grupo. Para FUSIONAR un grupo entero hace falta
+  //    mayoría (homeOf); para SEPARAR alcanza la pluralidad (moveHome): en
+  //    una ficha mezclada al medio (20 ofertas de Nieto Senetiner Malbec y
+  //    19 de Don Nicanor, 12/10) ningún vino llega a la mitad, y con la regla
+  //    de mayoría no se separaba nada. Separar es la dirección segura.
   const homeOf = new Map(); // groupKey → cls
+  const moveHome = new Map(); // groupKey → cls
   for (const [key, g] of groups) {
     const tally = new Map();
     for (const o of g.offers) {
@@ -712,6 +751,7 @@ export function applySommelier(groups, idx, h) {
     }
     if (!tally.size) continue;
     const [best, n] = [...tally].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0];
+    moveHome.set(key, best);
     if (n * 2 < g.offers.length) continue;
     homeOf.set(key, best);
   }
@@ -750,7 +790,7 @@ export function applySommelier(groups, idx, h) {
   //    Un vino sin ficha propia recibe UNA ficha nueva (clave determinística
   //    por clase), aunque sus ofertas vengan de varios grupos.
   for (const [key, g] of [...groups]) {
-    const home = homeOf.get(key);
+    const home = homeOf.get(key) ?? moveHome.get(key);
     if (!home || !groups.has(key)) continue;
     const moving = new Map(); // destino → ofertas
     let blocked = 0;
