@@ -334,15 +334,18 @@ function OptionCard({
 }
 
 function shippingNote(o: ApiOption): { text: string; ok: boolean } | null {
-  const s = o.shipping;
-  if (!s) return null;
-  const zone = s.gratisDesde.amba != null ? "AMBA" : s.gratisDesde.nacional != null ? "todo el país" : null;
-  const min = s.gratisDesde.amba ?? s.gratisDesde.nacional;
-  if (!zone || min == null) return null;
-  const src = s.verificado ? "" : " (según la tienda)";
+  const g = o.shipping?.gratisDesde;
+  if (!g) return null;
+  // El sitio asume AMBA (todavía no sabe tu zona): primero ese mínimo,
+  // después el que la tienda publica sin zona, después el nacional.
+  const pick: [string, number] | null =
+    g.amba != null ? ["a AMBA", g.amba] : g.general != null ? ["", g.general] : g.nacional != null ? ["a todo el país", g.nacional] : null;
+  if (!pick) return null;
+  const [zone, min] = pick;
+  const where = zone ? ` ${zone}` : "";
   return o.total >= min
-    ? { text: `✓ Llega al envío gratis a ${zone} (desde ${formatArs(min)})${src}.`, ok: true }
-    : { text: `Envío gratis a ${zone} desde ${formatArs(min)}${src}: te faltan ${formatArs(min - o.total)}.`, ok: false };
+    ? { text: `✓ Llega al envío gratis${where} (desde ${formatArs(min)}, según la tienda).`, ok: true }
+    : { text: `Envío gratis${where} desde ${formatArs(min)} (según la tienda): te faltan ${formatArs(min - o.total)}.`, ok: false };
 }
 
 function EmptyState({ favorites }: { favorites: string[] }) {

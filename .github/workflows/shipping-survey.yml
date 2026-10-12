@@ -1,0 +1,70 @@
+name: Envío gratis por vinoteca (mensual)
+
+# Relevamiento del mínimo para envío gratis que publica cada vinoteca
+# (scripts/survey-shipping.mjs → data/store-shipping.json). Lo usa /compra
+# para decir "✓ Llega al envío gratis a AMBA (según la tienda)".
+#
+# Abre un PR, no escribe a main: el dato es público y el PR trae, por
+# tienda, la frase textual y el link de donde salió, para mirarlo antes de
+# publicarlo. Corre en GitHub porque desde Railway varias tiendas bloquean
+# las IPs de data center.
+
+on:
+  schedule:
+    # Día 1 de cada mes, 10:00 UTC (07:00 AR). Ojo: "1-7 * 1" NO es "primer
+    # lunes" en cron: día del mes y día de la semana se combinan con OR.
+    - cron: "0 10 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  survey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Casos dorados del extractor (bloqueante)
+        run: node scripts/test-shipping.mjs
+
+      - name: Relevar páginas de envío
+        run: node scripts/survey-shipping.mjs --report /tmp/envios.md | tee /tmp/survey.txt
+
+      - name: Abrir PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet data/store-shipping.json; then
+            echo "Sin cambios"; exit 0
+          fi
+          BRANCH="bot/envios-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/store-shipping.json
+          git commit -m "chore(envios): relevamiento de envío gratis por vinoteca"
+          git push -u origin "$BRANCH"
+          {
+            echo "Relevamiento mensual del mínimo para envío gratis que publica cada vinoteca (\`scripts/survey-shipping.mjs\`). Lo usa \`/compra\` (\"✓ Llega al envío gratis…, según la tienda\")."
+            echo
+            echo "**Revisá la evidencia antes de mergear:** cada fila trae la frase textual y el link a la página de donde salió. Si una está mal, borrá la tienda del JSON en este PR (o cargala a mano con \`\"manual\": true\` para que el relevamiento no la toque)."
+            echo
+            cat /tmp/envios.md
+            echo
+            echo '<details><summary>Log completo</summary>'
+            echo
+            echo '```'
+            tail -150 /tmp/survey.txt
+            echo '```'
+            echo '</details>'
+          } > /tmp/body.md
+          if ! gh pr create --title "Envío gratis por vinoteca: relevamiento $(date -u +%Y-%m)" --body-file /tmp/body.md --base main --head "$BRANCH"; then
+            echo "::error title=No se pudo abrir el PR::La rama $BRANCH tiene el relevamiento. Abrí el PR a mano en https://github.com/${{ github.repository }}/pull/new/$BRANCH y habilitá Settings → Actions → General → 'Allow GitHub Actions to create and approve pull requests'."
+            exit 1
+          fi
