@@ -16,17 +16,20 @@ type Props = {
   revealAfter?: string;
 };
 
+// Joyitas y Vinotecas van adelante: son las dos respuestas a "¿dónde lo
+// compro más barato?" que ningún buscador de tienda te da.
 const NAV: NavItem[] = [
   { href: "/ofertas", label: "Ofertas" },
+  { href: "/joyitas", label: "Joyitas" },
+  { href: "/vinotecas", label: "Vinotecas", match: ["/vinoteca"] },
   { href: "/explorar", label: "Explorar" },
   { href: "/ranking", label: "Rankings", match: ["/vs"] },
-  { href: "/bodegas", label: "Bodegas", match: ["/bodega"] },
 ];
 
 /** La tira de mobile tiene lugar para más: se scrollea de costado. */
 const NAV_MOBILE: NavItem[] = [
   ...NAV,
-  { href: "/vinotecas", label: "Vinotecas", match: ["/vinoteca"] },
+  { href: "/bodegas", label: "Bodegas", match: ["/bodega"] },
   { href: "/indice", label: "Índice de precios" },
   { href: "/blog", label: "Blog" },
 ];
