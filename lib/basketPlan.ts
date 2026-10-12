@@ -1,9 +1,14 @@
 /**
- * Combinaciones de la compra combinada (ver lib/basket.ts). Módulo PURO,
- * sin snapshot: lo importa el cliente (components/BasketPlanner.tsx) para
- * re-ordenar al instante cuando la persona cambia el costo de envío.
+ * Compra combinada (ver lib/basket.ts): ¿en qué vinoteca compro TODO?
+ *
+ * Regla de producto (12/10/2026, tras la v1): la respuesta es SIEMPRE una
+ * sola vinoteca. Repartir la compra en varias tiendas es justo lo que la
+ * persona quiere evitar (varios envíos, varios checkouts), así que no se
+ * ofrece como recomendación. Se ordenan las vinotecas por cuántos de los
+ * vinos tienen (todas primero) y, a igual cobertura, por total.
+ *
+ * Módulo puro (sin snapshot), testeable y sin dependencias.
  */
-
 /** Cómo compra esa cantidad en esa vinoteca. */
 export type BasketCell = {
   total: number;
@@ -35,80 +40,34 @@ export type BasketMatrix = {
   stores: { slug: string; name: string }[];
 };
 
-export type PlanLine = { itemSlug: string; storeSlug: string; cell: BasketCell };
-export type Plan = {
-  kind: "single" | "split" | "pair";
-  stores: string[];
-  lines: PlanLine[];
-  /** Ítems que ninguna vinoteca del plan tiene. */
-  uncovered: string[];
-  winesTotal: number;
-  shippingTotal: number;
+export type StoreOption = {
+  storeSlug: string;
+  /** Una línea por vino que la tienda tiene. */
+  lines: { itemSlug: string; cell: BasketCell }[];
+  /** Vinos del pedido que esta tienda no tiene (en esa cantidad). */
+  missing: string[];
   total: number;
 };
 
-function planFrom(
-  kind: Plan["kind"],
-  items: BasketItem[],
-  allowed: string[] | null,
-  shippingPerStore: number,
-): Plan {
-  const lines: PlanLine[] = [];
-  const uncovered: string[] = [];
-  for (const it of items) {
-    let bestStore: string | null = null;
-    let bestCell: BasketCell | null = null;
-    for (const [s, cell] of Object.entries(it.byStore)) {
-      if (allowed && !allowed.includes(s)) continue;
-      if (!bestCell || cell.total < bestCell.total) {
-        bestStore = s;
-        bestCell = cell;
-      }
-    }
-    if (bestStore && bestCell) lines.push({ itemSlug: it.slug, storeSlug: bestStore, cell: bestCell });
-    else uncovered.push(it.slug);
-  }
-  const used = [...new Set(lines.map((l) => l.storeSlug))];
-  const winesTotal = lines.reduce((a, l) => a + l.cell.total, 0);
-  const shippingTotal = used.length * shippingPerStore;
-  return { kind, stores: used, lines, uncovered, winesTotal, shippingTotal, total: winesTotal + shippingTotal };
-}
-
 /**
- * Las tres respuestas que importan:
- *   · `singles`: vinotecas que tienen TODO, de la más barata a la más cara
- *     (si ninguna tiene todo: las que más cubren);
- *   · `split`: cada vino donde está más barato, sin importar cuántas
- *     vinotecas sean;
- *   · `pair`: la mejor combinación de exactamente dos vinotecas que cubra
- *     todo (fuerza bruta: ~100 tiendas → ~5.000 pares, trivial).
- * `best` es el más barato contando envío.
+ * Vinotecas ordenadas: primero las que tienen TODOS los vinos (más barata
+ * primero); después, si hace falta, las que tienen más vinos. Los vinos que
+ * ninguna tienda tiene no cuentan como faltante de nadie (no hay dónde
+ * comprarlos) y la UI los avisa aparte.
  */
-export function planBasket(matrix: BasketMatrix, shippingPerStore: number) {
-  const items = matrix.items;
-  const storeSlugs = matrix.stores.map((s) => s.slug);
-  const singles = storeSlugs
-    .map((s) => planFrom("single", items, [s], shippingPerStore))
-    .filter((p) => p.lines.length > 0)
-    .sort((a, b) => a.uncovered.length - b.uncovered.length || a.total - b.total);
-  const split = planFrom("split", items, null, shippingPerStore);
-
-  let pair: Plan | null = null;
-  if (items.length >= 2) {
-    // Sólo tiendas que tienen al menos un vino del pedido.
-    for (let i = 0; i < storeSlugs.length; i++) {
-      for (let j = i + 1; j < storeSlugs.length; j++) {
-        const p = planFrom("pair", items, [storeSlugs[i], storeSlugs[j]], shippingPerStore);
-        if (p.uncovered.length > 0 || p.stores.length < 2) continue;
-        if (!pair || p.total < pair.total) pair = p;
-      }
+export function rankStores(matrix: BasketMatrix): StoreOption[] {
+  const buyable = matrix.items.filter((i) => Object.keys(i.byStore).length > 0);
+  const options: StoreOption[] = matrix.stores.map(({ slug }) => {
+    const lines: StoreOption["lines"] = [];
+    const missing: string[] = [];
+    for (const it of buyable) {
+      const cell = it.byStore[slug];
+      if (cell) lines.push({ itemSlug: it.slug, cell });
+      else missing.push(it.slug);
     }
-  }
-
-  const fullSingles = singles.filter((p) => p.uncovered.length === 0);
-  const candidates = [fullSingles[0], pair, split.uncovered.length === 0 ? split : null].filter(
-    (p): p is Plan => p != null,
-  );
-  const best = candidates.sort((a, b) => a.total - b.total || a.stores.length - b.stores.length)[0] ?? null;
-  return { singles, split, pair, best };
+    return { storeSlug: slug, lines, missing, total: lines.reduce((a, l) => a + l.cell.total, 0) };
+  });
+  return options
+    .filter((o) => o.lines.length > 0)
+    .sort((a, b) => a.missing.length - b.missing.length || a.total - b.total);
 }

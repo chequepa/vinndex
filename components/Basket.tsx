@@ -103,8 +103,8 @@ export function toggleBasket(slug: string) {
 }
 
 /**
- * Botón de la ficha. Al sumar el primer vino aparece el acceso a /compra;
- * con 2+ vinos ya hay una pregunta que responder ("¿dónde compro todo?").
+ * Botón de la ficha. Lenguaje de la persona ("voy a comprar varios"), no
+ * del sistema: la v1 decía "compra combinada" y nadie entendía qué era.
  */
 export function BasketButton({ slug, className = "" }: { slug: string; className?: string }) {
   const list = useBasket();
@@ -115,36 +115,83 @@ export function BasketButton({ slug, className = "" }: { slug: string; className
         type="button"
         onClick={() => toggleBasket(slug)}
         aria-pressed={active}
-        className={`cursor-wine inline-flex items-center gap-2 min-h-11 px-4 rounded-full border text-sm font-medium transition-colors text-current ${
-          active ? "border-current/60 bg-current/10" : "border-current/35 hover:bg-current/10"
+        className={`cursor-wine inline-flex items-center gap-2 min-h-11 px-4 rounded-full border text-sm font-semibold transition-colors text-current ${
+          active ? "border-current/60 bg-current/15" : "border-current/40 hover:bg-current/10"
         }`}
       >
         <BoxIcon />
-        {active ? "En tu compra combinada" : "Sumar a una compra de varios vinos"}
+        {active ? "✓ En mi compra" : "Sumar a mi compra de varios vinos"}
       </button>
       {active && (
-        <Link href={basketHref(list)} className="text-sm underline text-current/90 hover:text-current">
+        <Link href="/compra" className="text-sm font-semibold underline text-current hover:no-underline">
           {list.length >= 2
-            ? `¿Dónde compro los ${list.length}? →`
-            : "Sumá otro vino para comparar dónde comprar todo"}
+            ? `Ver dónde comprar los ${list.length} juntos →`
+            : "Sumá otro vino y te decimos dónde comprar todo junto"}
         </Link>
       )}
     </div>
   );
 }
 
-/** Acceso flotante con 2+ vinos (abajo a la izquierda: Comparar va a la derecha). */
+/**
+ * Versión chica para las tarjetas de resultados (/buscar): armar la compra
+ * buscando, sin entrar a cada ficha.
+ */
+export function BasketChip({ slug }: { slug: string }) {
+  const list = useBasket();
+  const active = list.some((e) => e.slug === slug);
+  return (
+    <button
+      type="button"
+      onClick={() => toggleBasket(slug)}
+      aria-pressed={active}
+      className={`cursor-wine inline-flex items-center gap-1.5 min-h-9 px-3 rounded-full border text-xs font-semibold transition-colors ${
+        active
+          ? "border-malbec bg-malbec text-snow"
+          : "border-ink/15 text-ink hover:border-malbec hover:text-malbec"
+      }`}
+    >
+      <BoxIcon />
+      {active ? "En mi compra" : "Sumar a mi compra"}
+    </button>
+  );
+}
+
+/** Ícono del header (al lado de Favoritos), con el contador. */
+export function BasketNavLink({ className = "" }: { className?: string }) {
+  const count = useBasket().length;
+  return (
+    <Link
+      href="/compra"
+      aria-label={`Mi compra de varios vinos (${count})`}
+      title="Mi compra: dónde comprar varios vinos juntos"
+      className={`cursor-wine relative inline-flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-current/15 hover:bg-current/10 transition text-current ${className}`}
+    >
+      <BoxIcon />
+      {count > 0 && (
+        <span
+          className="absolute -top-1 -right-1 bg-malbec text-snow text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center leading-none"
+          aria-hidden="true"
+        >
+          {count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+/** Acceso flotante desde el primer vino (abajo a la izquierda: Comparar va a la derecha). */
 export function BasketFloatingButton() {
   const list = useBasket();
   const pathname = usePathname();
-  if (list.length < 2 || pathname?.startsWith("/compra")) return null;
+  if (list.length < 1 || pathname?.startsWith("/compra")) return null;
   return (
     <Link
-      href={basketHref(list)}
+      href="/compra"
       className="cursor-wine fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] left-5 lg:bottom-5 z-40 inline-flex items-center gap-2 bg-malbec text-snow font-semibold px-5 py-3 rounded-full shadow-2xl hover:bg-cobalt transition-colors text-sm"
     >
       <BoxIcon />
-      Tu compra ({list.length})
+      {list.length >= 2 ? `¿Dónde compro los ${list.length}?` : "Mi compra (1)"}
     </Link>
   );
 }
