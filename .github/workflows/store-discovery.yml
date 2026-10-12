@@ -87,4 +87,9 @@ jobs:
             cat /tmp/vet.txt | tail -120
             echo '```'
           } > /tmp/body.md
-          gh pr create --title "Vinotecas nuevas: ${ADDED} aprobadas por el vet semanal" --body-file /tmp/body.md --base main --head "$BRANCH"
+          # Si el repo no deja que Actions abra PRs, la rama ya quedó subida:
+          # el error dice exactamente qué tildar y dónde está el PR a mano.
+          if ! gh pr create --title "Vinotecas nuevas: ${ADDED} aprobadas por el vet semanal" --body-file /tmp/body.md --base main --head "$BRANCH"; then
+            echo "::error title=No se pudo abrir el PR::La rama $BRANCH tiene las altas. Abrí el PR a mano en https://github.com/${{ github.repository }}/pull/new/$BRANCH y habilitá Settings → Actions → General → 'Allow GitHub Actions to create and approve pull requests' para que la próxima corrida lo abra sola."
+            exit 1
+          fi
