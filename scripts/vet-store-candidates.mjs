@@ -132,21 +132,88 @@ async function muestraProductos(base, platform) {
     return { items, raw: r.body };
   }
   if (platform === "tiendanube") {
-    const r = await probe(`${base}/ar/productos/`);
-    if (!r.ok || !r.body) return { error: `/ar/productos/ ${r.status ?? r.err}` };
-    const html = r.body;
     // TN no expone API pública sin credenciales; el adapter parsea el
-    // listado. Acá alcanza con contar items y leer precios del markup.
-    const nombres = [...html.matchAll(/<a[^>]+class="[^"]*js-item-name[^"]*"[^>]*>([^<]+)</gi)].map((m) => m[1].trim());
-    const alt = nombres.length ? nombres : [...html.matchAll(/data-store="product-item-name"[^>]*>([^<]+)</gi)].map((m) => m[1].trim());
-    const precios = [...html.matchAll(/itemprop="price"[^>]+content="([\d.,]+)"/gi)].map((m) => num(m[1]));
-    const items = alt.map((n, i) => ({ name: n, price: precios[i] ?? null, comprable: true }));
-    if (!items.length) return { error: "/ar/productos/ sin items parseables" };
-    return { items, raw: html.slice(0, 20000) };
+    // listado. Se prueban las dos rutas de catálogo que usan las tiendas y
+    // se devuelve la que funcionó, para que la línea de stores.json lleve
+    // el `catalogPath` real.
+    let lastError = null;
+    for (const catalogPath of ["/ar/productos/", "/productos/"]) {
+      const r = await probe(`${base}${catalogPath}`);
+      if (!r.ok || !r.body) {
+        lastError = `${catalogPath} ${r.status ?? r.err}`;
+        continue;
+      }
+      const items = parseTiendanubeListing(r.body);
+      if (items.length) return { items, raw: r.body.slice(0, 20000), catalogPath };
+      lastError = `${catalogPath} sin items parseables`;
+    }
+    return { error: lastError ?? "catálogo no encontrado" };
   }
   // VTEX / PrestaShop / Magento necesitan IDs de categoría a mano: el
   // detector los marca y el alta no se puede automatizar.
   return { manual: true };
+}
+
+/**
+ * Productos de un listado de Tiendanube. Lee lo MISMO que el scraper
+ * (scripts/scrape-tiendanube.mjs → parseJsonLdFromHtml): los bloques
+ * JSON-LD `Product` del HTML. Antes el vet buscaba clases del markup
+ * (`js-item-name`, `data-store="product-item-name"`) que los temas nuevos
+ * no traen con el texto adentro, y descartaba tiendas que el scraper sí
+ * lee: 20 de 47 en la primera corrida semanal (12/10/2026). Las clases
+ * quedan como respaldo para temas viejos sin JSON-LD.
+ */
+export function parseTiendanubeListing(html) {
+  const out = [];
+  const re = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const isProduct = (o) =>
+    o && typeof o === "object" && (o["@type"] === "Product" || (Array.isArray(o["@type"]) && o["@type"].includes("Product")));
+  for (const m of html.matchAll(re)) {
+    let parsed;
+    try {
+      parsed = JSON.parse(m[1].trim());
+    } catch {
+      continue;
+    }
+    const list = Array.isArray(parsed) ? parsed : [parsed];
+    for (const item of list) {
+      for (const p of [item, item?.mainEntity]) {
+        if (!isProduct(p) || !p.name) continue;
+        out.push({
+          name: String(p.name).trim(),
+          price: num(p.offers?.price),
+          currency: p.offers?.priceCurrency ?? null,
+          comprable: /InStock/i.test(p.offers?.availability ?? "InStock"),
+        });
+      }
+    }
+  }
+  if (out.length) return out;
+  const nombres = [...html.matchAll(/<a[^>]+class="[^"]*js-item-name[^"]*"[^>]*>([^<]+)</gi)].map((x) => x[1].trim());
+  const alt = nombres.length ? nombres : [...html.matchAll(/data-store="product-item-name"[^>]*>([^<]+)</gi)].map((x) => x[1].trim());
+  const precios = [...html.matchAll(/itemprop="price"[^>]+content="([\d.,]+)"/gi)].map((x) => num(x[1]));
+  return alt.map((n, i) => ({ name: n, price: precios[i] ?? null, comprable: true }));
+}
+
+/**
+ * Nombre de la tienda para la línea de stores.json: `og:site_name`, o el
+ * `<title>` hasta el primer separador. Si no hay nada usable, null (y se
+ * cae al nombre derivado del dominio). Antes salía siempre del dominio:
+ * "Llegoelvino Mitiendanube", "Shopfindelmundowines".
+ */
+export function storeNameFromHtml(html) {
+  if (!html) return null;
+  const decode = (s) =>
+    s.replace(/&amp;/g, "&").replace(/&#0?39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim();
+  const og =
+    html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i) ??
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:site_name["']/i);
+  if (og && og[1].trim()) return decode(og[1]);
+  const t = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (!t) return null;
+  const first = decode(t[1]).split(/\s+[|–—·-]\s+/)[0].trim();
+  if (!first || /^(inicio|home|tienda online)$/i.test(first)) return null;
+  return first.length <= 60 ? first : null;
 }
 
 /**
@@ -253,13 +320,18 @@ export async function vetCandidate(input, { storesByHost, storesBySlug }) {
     return { ...out, veredicto: "descartada", motivo: `sólo ${vinos} de ${items.length} de la muestra son vino` };
   }
 
-  // Línea lista para data/stores.json.
+  // Línea lista para data/stores.json. El nombre sale del sitio (og:
+  // site_name / <title>); el del dominio queda de respaldo.
+  const home = await probe(base);
+  const nombreSitio = storeNameFromHtml(home.ok ? home.body : null);
   out.linea = {
     slug,
-    name: host.replace(/\.(com|ar|net|shop|store)(\.[a-z]{2})?$/i, "").replace(/[.-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim(),
+    name:
+      nombreSitio ??
+      slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim(),
     platform,
     baseUrl: base,
-    ...(platform === "tiendanube" ? { catalogPath: "/ar/productos/" } : {}),
+    ...(platform === "tiendanube" ? { catalogPath: m.catalogPath ?? "/ar/productos/" } : {}),
   };
   return { ...out, veredicto: "alta", motivo: `${items.length} productos, ${vinos} de vino, ${cart.detalle}` };
 }

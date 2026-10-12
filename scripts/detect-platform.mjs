@@ -109,6 +109,11 @@ export function normalizeBase(input) {
 export function slugFromHost(host) {
   return host
     .replace(/^www\./, "")
+    // Subdominio de plataforma: "llegoelvino.mitiendanube.com" → "llegoelvino"
+    // (el slug es la URL /vinoteca/<slug>; "-mitiendanube" no aporta nada).
+    .replace(/\.(mitiendanube|myshopify)\.com$/i, "")
+    // Prefijos de tienda: "shop.norton.com.ar", "tienda.escorihuela.com".
+    .replace(/^(shop|tienda|store)\./i, "")
     .replace(/\.(com|ar|net|org|store|shop)(\.[a-z]{2})?$/i, "")
     .replace(/[^a-z0-9]+/gi, "-")
     .replace(/^-+|-+$/g, "")
