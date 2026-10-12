@@ -38,10 +38,21 @@ const GRATIS_RE = /(env[ií]os?|despachos?)\s*(?:a domicilio\s*)?(gratis|gratuit
 // "$60.000", "$ 60000", "$60.000,00", "60 mil", "$60k"
 const MONTO_RE = /\$\s?(\d{1,3}(?:[.\s]\d{3})+|\d{4,7})(?:,\d{2})?|(\d{2,3})\s?(?:mil\b|k\b)/gi;
 
+// Orden = prioridad ante empate de distancia. "local" son ciudades fuera
+// de AMBA: un "gratis en Rosario desde $100.000" no le sirve a alguien de
+// Palermo y la UI no lo muestra (queda guardado para cuando el sitio sepa
+// la zona de la persona, docs/cobertura-nacional.md).
 const ZONAS = [
-  { zona: "nacional", re: /todo el pa[ií]s|todo argentina|toda la argentina|a nivel nacional|env[ií]os? nacionales?|interior del pa[ií]s|resto del pa[ií]s/i },
-  { zona: "amba", re: /\bcaba\b|capital federal|ciudad aut[oó]noma|\bamba\b|gran buenos aires|\bgba\b|conurbano|zona norte|zona sur|zona oeste/i },
+  { zona: "nacional", re: /todo el pa[ií]s|todo argentina|toda la argentina|a nivel nacional|env[ií]os? nacionales?|interior del pa[ií]s|resto del pa[ií]s/gi },
+  { zona: "amba", re: /\bcaba\b|capital federal|ciudad aut[oó]noma|\bamba\b|gran buenos aires|\bgba\b|conurbano|zona norte|zona sur|zona oeste|vicente l[oó]pez|avellaneda|san isidro/gi },
+  { zona: "local", re: /\brosario\b|la plata|c[oó]rdoba|\bmendoza\b|neuqu[eé]n|tucum[aá]n|mar del plata|bah[ií]a blanca|\bsalta\b|santa fe|san juan|bariloche|alrededores|localidades seleccionadas|\binterior zona\b/gi },
 ];
+
+// Un monto es un MÍNIMO de envío gratis sólo si viene con su palabra
+// ("desde $X", "superando $X", "compras de $X"). Sin eso suele ser un
+// precio: "2 cajas 50% OFF + envío gratis en CABA $94.800" (Vinos x Caja,
+// 12/10/2026) es el precio de la promo, no el mínimo.
+const CUE_RE = /(desde|a partir de|partir de los?|superando( los)?|supera(n)?( los)?|superiores? a|mayor(es)? a|m[aá]s de|por encima de|m[ií]n(imo|\.)?|monto m[ií]nimo|sumando|compras? de|compras? por|en compras de)\s*(los\s*)?$/i;
 
 function parseMonto(m) {
   if (m[1]) return Number(m[1].replace(/[.\s]/g, ""));
@@ -49,10 +60,29 @@ function parseMonto(m) {
   return null;
 }
 
+/** Zona más cercana a `pos` dentro de `text` (o null). */
+function nearestZone(text, pos) {
+  let best = null;
+  for (const z of ZONAS) {
+    z.re.lastIndex = 0;
+    let m;
+    while ((m = z.re.exec(text))) {
+      const d = Math.min(Math.abs(m.index - pos), Math.abs(m.index + m[0].length - pos));
+      if (!best || d < best.d) best = { zona: z.zona, d };
+    }
+  }
+  return best?.zona ?? null;
+}
+
 /**
- * Frases candidatas: cada línea (o ventana de ~220 caracteres alrededor del
- * "envío gratis") que tenga un monto creíble.
- * Devuelve [{ zona: "amba"|"nacional"|"general", monto, frase }].
+ * Frases candidatas. La zona se asigna POR MONTO y dentro de su oración:
+ * "gratis en La Plata desde $10.000 y CABA y GBA desde $100.000" son dos
+ * mínimos distintos (Casa Dionisio), igual que "desde $150.000 en CABA y
+ * GBA · desde $350.000 a todo el país" (Central de Vinos). Para cada monto
+ * se mira primero el tramo entre el monto anterior y éste; si ahí no hay
+ * zona, el tramo siguiente hasta el próximo monto (y ese tramo queda
+ * "usado", para que no lo tome también el monto de después).
+ * Devuelve [{ zona: "amba"|"nacional"|"local"|"general", monto, frase }].
  */
 export function extractFreeShipping(text) {
   if (!text) return [];
@@ -61,28 +91,62 @@ export function extractFreeShipping(text) {
   const lines = text.split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const g = GRATIS_RE.exec(line);
-    if (!g) continue;
+    // Todas las menciones de la línea: "…de tener envío gratis! Envío
+    // gratis superando los $200.000" (Varietal) tiene dos, y la primera
+    // termina su oración antes del monto.
+    for (const g of line.matchAll(new RegExp(GRATIS_RE.source, "gi"))) {
     // La frase puede seguir en la línea siguiente ("Envío gratis" / "desde
-    // $60.000"), pero sólo si la línea del "gratis" no trae monto propio:
-    // si no, la zona de la línea de abajo ("…a todo el país desde
-    // $150.000") contaminaba a la de arriba.
-    const start = Math.max(0, g.index - 120);
-    const own = line.slice(start, g.index + 220);
+    // $60.000"), pero sólo si la línea del "gratis" no trae monto propio.
+    const startAt = Math.max(0, g.index - 120);
+    const own = line.slice(startAt, g.index + 260);
     MONTO_RE.lastIndex = 0;
-    const ownHasMonto = MONTO_RE.test(own);
-    const ctx = ownHasMonto ? own : (line + " " + (lines[i + 1] ?? "")).slice(start, g.index + 220);
+    const ctx = MONTO_RE.test(own) ? own : (line + " " + (lines[i + 1] ?? "")).slice(startAt, g.index + 260);
+
+    // Oración que contiene el "gratis": de ahí no se sale. Empieza en el
+    // último corte (punto, ¡!, ¿?, "|") antes del "gratis": "…cuotas sin
+    // interés en compras superiores a $200.000 💳 ¡Envío gratis a todo el
+    // país a partir de $100.000" (Bianchi) — los $200.000 son de las cuotas.
+    const gIdx = Math.max(0, g.index - startAt);
+    const before = ctx.slice(0, gIdx);
+    const cut = Math.max(before.lastIndexOf(". "), before.lastIndexOf("¡"), before.lastIndexOf("!"), before.lastIndexOf("¿"), before.lastIndexOf("?"), before.lastIndexOf("|"));
+    const sentStart = cut >= 0 ? cut + 1 : 0;
+    // Fin de oración: punto después de minúscula o paréntesis. "24 HS. Y
+    // DESDE $350.000…" (todo en mayúsculas) NO corta: es una abreviatura.
+    const nextDot = ctx.slice(gIdx).search(/[a-záéíóúñ)]\.\s+[A-ZÁÉÍÓÚ¡]|!\s|\?\s/);
+    const sentEnd = nextDot >= 0 ? gIdx + nextDot + 2 : ctx.length;
+    const sent = ctx.slice(sentStart, sentEnd);
+    const frase = sent.replace(/\s+/g, " ").trim().slice(0, 240);
+
     MONTO_RE.lastIndex = 0;
+    const montos = [];
     let m;
-    while ((m = MONTO_RE.exec(ctx))) {
-      const monto = parseMonto(m);
+    while ((m = MONTO_RE.exec(sent))) montos.push({ m, start: m.index, end: m.index + m[0].length });
+    let consumedUpTo = 0;
+    let lastAcceptedEnd = -1;
+    for (let k = 0; k < montos.length; k++) {
+      const { m: mm, start, end } = montos[k];
+      const monto = parseMonto(mm);
       if (monto == null || monto < 10_000 || monto > 1_000_000) continue;
-      const zona = ZONAS.find((z) => z.re.test(ctx))?.zona ?? "general";
-      const frase = ctx.replace(/\s+/g, " ").trim().slice(0, 240);
+      // Con su palabra ("desde $X") o encadenado a un mínimo anterior de la
+      // misma frase ("desde $60.000 (CABA) y $80.000 (Zona Norte)").
+      const chained = lastAcceptedEnd >= 0 && start - lastAcceptedEnd <= 40;
+      if (!chained && !CUE_RE.test(sent.slice(Math.max(0, start - 45), start))) continue;
+      lastAcceptedEnd = end;
+      const prevEnd = Math.max(k > 0 ? montos[k - 1].end : 0, consumedUpTo);
+      const nextStart = k + 1 < montos.length ? montos[k + 1].start : sent.length;
+      const segBefore = sent.slice(prevEnd, start);
+      let zona = nearestZone(segBefore, segBefore.length);
+      if (!zona) {
+        const after = sent.slice(end, nextStart);
+        zona = nearestZone(after, 0);
+        if (zona) consumedUpTo = nextStart;
+      }
+      zona ??= "general";
       const key = `${zona}|${monto}`;
       if (seen.has(key)) continue;
       seen.add(key);
       out.push({ zona, monto, frase });
+    }
     }
   }
   return out;

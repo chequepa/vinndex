@@ -27,6 +27,19 @@ check("entidad &#36;", one(`<p>Envío gratis en CABA desde &#36;55.000</p>`) ===
 const dos = `<p>Envío gratis en CABA desde $60.000</p><p>Envío gratis a todo el país desde $150.000</p>`;
 check("dos zonas en la misma página", one(dos) === "amba:60000 nacional:150000", one(dos));
 
+console.log("\n=== Casos reales del primer relevamiento (12/10/2026) ===");
+const real = [
+  ["Casa Dionisio: La Plata y CABA/GBA en la misma frase", `<p>Envíos Gratis en La Plata para compras superiores a $ 10.000 y CABA y GBA para compras superiores a $ 100.000</p>`, "local:10000 amba:100000"],
+  ["Central de Vinos: CABA/GBA y todo el país", `<p>ENVÍO SIN CARGO EN COMPRAS DESDE $150.000 EN CABA Y GBA · 24 HS. Y DESDE $350.000 A TODO EL PAÍS</p>`, "amba:150000 nacional:350000"],
+  ["Rebellion: zona entre paréntesis después del monto", `<p>Envíos gratis desde $60.000 (CABA) y $80.000 (Zona Norte). Envíos al resto del país por Andreani.</p>`, "amba:60000 amba:80000"],
+  ["Vinoteca Campos: Rosario es local, no se muestra", `<p>ENVÍOS GRATIS en compras Rosario y alrededores: mayor a $100.000</p>`, "local:100000"],
+  ["Vinos x Caja: precio de una promo, no un mínimo", `<p>2 CAJAS DE INTOCABLES MALBEC 50% OFF + ENVIO GRATIS EN CABA Y GBA $94.800,00</p>`, "(nada)"],
+  ["Enotek: AMBA y 'Interior Zona 1'", `<p>Envíos gratis AMBA Min $60.000 - Interior Zona 1 $225.000</p>`, "amba:60000 local:225000"],
+  ["Biendevinos: CABA + partidos del GBA", `<p>📦envío gratis en CABA, Vicente López y Avellaneda superando $65.000📦</p>`, "amba:65000"],
+  ["La Barrica: 'sumando'", `<p>Envios Gratis a Todo el Pais por Andreani sumando $150.000 en tu carrito.</p>`, "nacional:150000"],
+];
+for (const [d, html, want] of real) check(d, one(html) === want, one(html));
+
 console.log("\n=== Lo que NO tiene que contar ===");
 check("precio de un vino, sin 'envío gratis'", one(`<p>Catena Zapata Malbec $57.900</p>`) === "(nada)", one(`<p>Catena Zapata Malbec $57.900</p>`));
 check("envío gratis sin monto", one(`<p>Envío gratis a todo el país</p>`) === "(nada)", one(`<p>Envío gratis a todo el país</p>`));

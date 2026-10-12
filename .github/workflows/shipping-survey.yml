@@ -43,7 +43,7 @@ jobs:
           if git diff --quiet data/store-shipping.json; then
             echo "Sin cambios"; exit 0
           fi
-          BRANCH="bot/envios-$(date -u +%Y%m%d)"
+          BRANCH="bot/envios-$(date -u +%Y%m%d)-${{ github.run_number }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
