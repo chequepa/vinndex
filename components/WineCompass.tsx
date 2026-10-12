@@ -33,8 +33,8 @@ import Link from "next/link";
 import {
   type CompassDataset,
   colorForWine,
-} from "@/lib/compass";
-import { formatArs } from "@/lib/snapshot";
+} from "@/lib/compassPalette";
+import { formatArs } from "@/lib/format";
 
 type Props = {
   dataset: CompassDataset;

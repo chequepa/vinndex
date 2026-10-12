@@ -827,14 +827,9 @@ export function resolveFacetName(
 // Note: findProductBySlug / searchProducts / productSlug were removed —
 // all pages now operate on productGroups via findGroup / searchGroups.
 
-export function formatArs(value: number | null): string {
-  if (value === null || value <= 0) return "Consultar";
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+// Vive en ./format para que los componentes de cliente lo importen sin
+// arrastrar snapshot.json al bundle del navegador.
+export { formatArs } from "./format";
 
 // Re-export displayWineName from its own module (kept separate so
 // client components can import without pulling in snapshot.json).

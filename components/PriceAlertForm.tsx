@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import { formatArs } from "@/lib/snapshot";
+import { formatArs } from "@/lib/format";
 
 type Props = {
   slug: string;
