@@ -1,29 +1,475 @@
 {
-  "_doc": "Envío gratis publicado por cada vinoteca, para /compra. Lo mantiene scripts/survey-shipping.mjs (workflow shipping-survey.yml, mensual, vía PR): lee el home y la página de envíos de cada tienda y guarda el mínimo por zona ('amba', 'nacional', 'local' si es para una ciudad fuera de AMBA —no se muestra— o 'general' si no dice zona) con la frase textual y la URL como evidencia. Sin frase con monto creíble = sin dato: nunca se inventa un costo. Una entrada con \"manual\": true no la toca el relevamiento. Si una tienda deja de publicar el dato, se conserva hasta 3 relevamientos seguidos sin encontrarlo.",
+  "_doc": "Envío gratis publicado por cada vinoteca, para /compra. Lo mantiene scripts/survey-shipping.mjs (workflow shipping-survey.yml, mensual, vía PR): lee el home y la página de envíos de cada tienda y guarda el mínimo por zona ('amba', 'nacional', o 'general' si no dice zona; los mínimos para ciudades del interior y las vinotecas del interior no se guardan hasta que el sitio sea nacional, docs/cobertura-nacional.md) con la frase textual y la URL como evidencia. Sin frase con monto creíble = sin dato: nunca se inventa un costo. Una entrada con \"manual\": true no la toca el relevamiento. Si una tienda deja de publicar el dato, se conserva hasta 3 relevamientos seguidos sin encontrarlo.",
   "stores": {
     "enotek": {
       "gratisDesde": {
-        "amba": 60000
+        "amba": 60000,
+        "general": 120000
       },
-      "fuente": "página de envíos de la tienda (relevamiento por buscador)",
-      "fecha": "2026-10-11",
-      "verificado": false
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "Envíos gratis AMBA Min $60.000 - Interior Zona 1 $225.000 (*1) - NUEVO Envío sin cargo a partir de $120.000 para Córdoba, Rosario y Funes (ENVÍO NUBE).",
+          "url": "https://www.enotek.com.ar/"
+        },
+        {
+          "zona": "general",
+          "frase": "Envío gratis superando los $120.000,00",
+          "url": "https://www.enotek.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false,
+      "conflicto": true
     },
     "la-barrica": {
       "gratisDesde": {
         "nacional": 150000
       },
-      "fuente": "página de envíos de la tienda (relevamiento por buscador)",
-      "fecha": "2026-10-11",
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "ENVIO GRATIS Envios Gratis a Todo el Pais por Andreani sumando $150.000 en tu carrito.",
+          "url": "https://www.vinoslabarrica.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
       "verificado": false
     },
     "bodega-norton": {
       "gratisDesde": {
-        "nacional": 110000
+        "nacional": 110000,
+        "general": 110000
       },
-      "fuente": "tienda oficial (relevamiento por buscador)",
-      "fecha": "2026-10-11",
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "Envío gratis a todo el pais a partir de $110.000",
+          "url": "https://shop.norton.com.ar/"
+        },
+        {
+          "zona": "general",
+          "frase": "ENVIO GRATIS en compras superiores a $110.000.-",
+          "url": "https://shop.norton.com.ar/policies/shipping-policy"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "varietal": {
+      "gratisDesde": {
+        "general": 200000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío gratis superando los $200.000,00",
+          "url": "https://www.varietalvinoteca.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "rebellion": {
+      "gratisDesde": {
+        "amba": 60000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "Envíos gratis desde $60.000 (CABA) y $80.000 (Zona Norte).",
+          "url": "https://www.rebellion.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false,
+      "conflicto": true
+    },
+    "wine-boutique": {
+      "gratisDesde": {
+        "amba": 60000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "🚚 ENVÍO GRATIS EN CABA DESDE $60.000",
+          "url": "https://www.wineboutique.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "biendevinos": {
+      "gratisDesde": {
+        "amba": 65000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "📦envío gratis en CABA, Vicente López y Avellaneda superando $65.000📦",
+          "url": "https://www.biendevinos.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "enofilo": {
+      "gratisDesde": {
+        "general": 60000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío sin cargo en compras de $60.000 o más.",
+          "url": "https://enofilo.com.ar/envios/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false,
+      "conflicto": true
+    },
+    "vinos-y-spirits": {
+      "gratisDesde": {
+        "nacional": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "Envío gratis a todo el país en todas las compras superiores a $100.000!",
+          "url": "https://vinosyspirits.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "ligier": {
+      "gratisDesde": {
+        "amba": 200000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "Envío gratis: CABA desde $200.000 · GBA desde $300.000",
+          "url": "https://vinotecaligier.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false,
+      "conflicto": true
+    },
+    "frappe": {
+      "gratisDesde": {
+        "amba": 120000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "Envío gratis a CABA en compras superiores a $120.000",
+          "url": "https://www.frappe.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "la-viteca": {
+      "gratisDesde": {
+        "nacional": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "Envíos sin cargo en compras superiores a $100.000 a todo el país.",
+          "url": "https://laviteca.com/envios-sin-cargo/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "tienda-wino": {
+      "gratisDesde": {
+        "general": 50000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "ENVíOS GRATIS A PARTIR DE $50.000",
+          "url": "https://www.tiendawino.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "bonvino": {
+      "gratisDesde": {
+        "general": 200000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "ENVIO SIN COSTO PARA COMPRAS SUPERIORES A $ 200.000",
+          "url": "https://www.bonvino.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "vino-aparte": {
+      "gratisDesde": {
+        "general": 195000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío gratis a partir de $195.000",
+          "url": "https://vinoaparte.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "casa-dionisio-caba": {
+      "gratisDesde": {
+        "amba": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "Envíos Gratis en La Plata para compras superiores a $ 10.000 y CABA y GBA para compras superiores a $ 100.000",
+          "url": "https://www.tienda.dionisioonline.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "chakana": {
+      "gratisDesde": {
+        "general": 118000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envíos gratis a partir de $118.000",
+          "url": "https://chakanawines.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "finca-decero": {
+      "gratisDesde": {
+        "nacional": 120000,
+        "general": 120000
+      },
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "ENVÍOS GRATIS A TODO EL PAÍS DESDE $120.000",
+          "url": "https://shop.fincadecero.com/"
+        },
+        {
+          "zona": "general",
+          "frase": "Envío gratis superando los $120.000,00",
+          "url": "https://shop.fincadecero.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "cava-tosco": {
+      "gratisDesde": {
+        "nacional": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "nacional",
+          "frase": "Si la compra supera los $100.000 envíos gratis al resto del país.",
+          "url": "https://www.lacavadeltosco.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "almacen-beberbien": {
+      "gratisDesde": {
+        "general": 50000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envíos sin cargo monto mínimo $50.000",
+          "url": "https://almacenbeberbien.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "susana-balbo": {
+      "gratisDesde": {
+        "general": 150000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Por tus compras mayores a $150.000 obtendrás el envío sin cargo a tu domicilio. (Excepto Tierra del fuego, Antártida e Islas del Atlántico Sur).",
+          "url": "https://tienda.susanabalbowines.com.ar/policies/shipping-policy"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "bianchi": {
+      "gratisDesde": {
+        "general": 100000,
+        "nacional": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío gratis a partir de $100.000!",
+          "url": "https://www.bodegasbianchi.com.ar/"
+        },
+        {
+          "zona": "nacional",
+          "frase": "Envío gratis a todo el país a partir de $100.000 🚚",
+          "url": "https://www.bodegasbianchi.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "monteviejo": {
+      "gratisDesde": {
+        "general": 140000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío gratis para compras superiores a $140.000",
+          "url": "https://wines.monteviejo.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "familia-schroeder": {
+      "gratisDesde": {
+        "general": 100000,
+        "nacional": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envíos gratis a partir de los $100.000",
+          "url": "https://tienda.familiaschroeder.com/"
+        },
+        {
+          "zona": "nacional",
+          "frase": "Envío gratis a todo el país A partir de los $100.000",
+          "url": "https://tienda.familiaschroeder.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "rutini": {
+      "gratisDesde": {
+        "general": 300000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envíos sin cargo a partir de $300.000",
+          "url": "https://tienda.rutiniwines.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "lar-de-vinos": {
+      "gratisDesde": {
+        "amba": 40000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "&gt;&gt;&gt;Envios sin cargo en compras superiores a $ 40.000 en CABA y algunos partidos de GBA",
+          "url": "https://lardevinos.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "antonino": {
+      "gratisDesde": {
+        "amba": 150000
+      },
+      "evidencia": [
+        {
+          "zona": "amba",
+          "frase": "ENVÍO GRATIS EN CABA SUPERANDO LOS $150.000 | ENVÍO GRATIS EN CABA SUPERANDO LOS $150.000 | ENVÍO GRATIS EN CABA SUPERANDO LOS $150.000",
+          "url": "https://vinotecaantonino.com.ar/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "vitis-boutique": {
+      "gratisDesde": {
+        "general": 100000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "Envío GRATIS en compras mayores a $100.000",
+          "url": "https://vitisboutique.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
+      "verificado": false
+    },
+    "escorihuela-gascon": {
+      "gratisDesde": {
+        "general": 250000
+      },
+      "evidencia": [
+        {
+          "zona": "general",
+          "frase": "ENVÍO SIN CARGO a partir de $250.000",
+          "url": "https://tienda.escorihuela.com/"
+        }
+      ],
+      "fuente": "relevamiento automático de la web de la tienda",
+      "fecha": "2026-10-12",
       "verificado": false
     }
-  }
+  },
+  "actualizado": "2026-10-12"
 }
