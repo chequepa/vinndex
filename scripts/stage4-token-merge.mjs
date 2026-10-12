@@ -239,6 +239,10 @@ const VARIETAL_RE = [
   ["montepulciano", /\bmontepulciano\b/], ["marsanne", /\bmarsanne\b/], ["roussanne", /\broussanne\b/],
   ["gruner", /\bgr[uü]ner\b/], ["malvasia", /\bmalvas[ií]a\b/], ["cinsault", /\bcinsault\b/],
   ["verdejo", /\bverdejo\b/], ["albarino", /\balbari[nñ]o\b/],
+  // 12/10: "Textual Carmenere" y "Textual Innovación Caladoc" se juntaban
+  // porque el gate de varietal no conocía la uva.
+  ["caladoc", /\bcaladoc\b/], ["graciano", /\bgraciano\b/], ["petit manseng", /\bpetit\s+manseng\b/],
+  ["bequignol", /\bbequignol\b/],
   ["blend", /\b(blend|corte|assemblage|ensamble|tinto\s+de\s+mesa)\b/],
 ];
 function styleSet(g) {

@@ -124,6 +124,10 @@ jobs:
         run: node scripts/build-groups-v2.mjs --publish
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          # Doble chequeo del sommelier (duplicados entre bodegas + auditoría
+          # de fichas), activado el 12/10 después de revisar a mano 100
+          # fusiones y 80 intrusos. "0" lo vuelve a dejar en sombra.
+          SOMMELIER_CHECKS_APPLY: "1"
 
       # Los redirects 308 son el SEO de las URLs viejas y se fueron
       # borrando solos durante un mes sin que nadie lo viera (13.494 el

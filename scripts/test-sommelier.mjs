@@ -192,6 +192,16 @@ const helpers = {
   check("gate frena la mudanza → la oferta sale igual a una ficha propia", !!sale && groups.get("spy").offers.length === 2 && groups.get("yaco").offers.length === 2);
 }
 {
+  // Ficha mezclada al medio (ningún vino llega a la mitad): igual se separa.
+  const groups = new Map([
+    ["mix", { wine: null, offers: [offer("Nieto Senetiner Malbec"), offer("Nieto Senetiner Malbec"), offer("Don Nicanor Malbec"), offer("Don Nicanor Malbec"), offer("Vino Malbec Sin Veredicto")] }],
+  ]);
+  applySommelier(groups, mkIdx([["Nieto Senetiner Malbec", "NS"], ["Don Nicanor Malbec", "DN"]]), helpers);
+  const where = (re) => [...groups].filter(([, g]) => g.offers.some((o) => re.test(o.name))).map(([k]) => k);
+  const [ns, dn] = [where(/Senetiner/), where(/Nicanor/)];
+  check("ficha mezclada al medio (2+2+1): los dos vinos terminan en fichas distintas", ns.length === 1 && dn.length === 1 && ns[0] !== dn[0] && groups.size === 2);
+}
+{
   // Vino sin ficha propia: las ofertas de dos grupos van a UNA ficha nueva.
   const groups = new Map([
     ["g1", { wine: null, offers: [offer("Norton Reserva Malbec"), offer("Norton Reserva Malbec"), offer("Norton Lote La Colonia Malbec")] }],
@@ -259,13 +269,22 @@ console.log("\n=== DOBLE CHEQUEO (duplicados entre bodegas + auditoría) ===");
   const unitV = { kind: "bodega", names, at: "2026-10-07", passes: { A: { ...compactPass(names, { map: m, wines: {} }), inputHash: "h" }, B: { ...compactPass(names, { map: m, wines: {} }), inputHash: "h" } } };
   const idx = bi({ units: { "b:chandon": unitV }, checks });
   check("aplicado: LATITUD DULCE (sin revisar) toma la clase de Latitud 33 Dulce", idx.index.get("latitud dulce")?.cls === idx.index.get("latitud 33 dulce")?.cls);
-  check("aplicado: el intruso sale de su clase", !idx.index.has("x gran reserva malbec") && idx.out.has("x gran reserva malbec"));
+  check("aplicado: el intruso sale de su clase (a una propia)", idx.index.get("x gran reserva malbec")?.cls?.startsWith("e|") && idx.index.get("x gran reserva malbec").cls !== idx.index.get("x reserva malbec")?.cls);
   check("aplicado: el resto de la ficha auditada queda igual", idx.index.get("x reserva malbec")?.cls === idx.index.get("x reserva malbec 750")?.cls);
   const sombra = bi({ units: { "b:chandon": unitV }, checks: { ...checks, apply: false } });
-  check("en sombra (apply=false) no toca nada", !sombra.index.has("latitud dulce") && sombra.index.has("x gran reserva malbec") && sombra.extra.mergesConsenso === 1);
-  // Media ficha "intrusa" = mezcla al medio: no se separa.
-  const mitad = checksConsensus({ fichas: [{ names: [{ key: "a" }, { key: "b" }] }], units: { "a:2": { kind: "auditoria", passes: { A: { intrusos: [[0, 1]] }, B: { intrusos: [[0, 1]] } } } } });
-  check("si los intrusos son la mitad de la ficha, no se separa nada", mitad.ejects.size === 0);
+  check("en sombra (apply=false) no toca nada", !sombra.index.has("latitud dulce") && sombra.index.get("x gran reserva malbec")?.cls === sombra.index.get("x reserva malbec")?.cls && sombra.extra.mergesConsenso === 1);
+  // Si todos los nombres son "intrusos", no hay ficha de la que sacarlos.
+  const todos = checksConsensus({ fichas: [{ names: [{ key: "a" }, { key: "b" }] }], units: { "a:2": { kind: "auditoria", passes: { A: { intrusos: [[0, 0], [0, 1]] }, B: { intrusos: [[0, 0], [0, 1]] } } } } });
+  check("si todos los nombres son intrusos, no se separa nada", todos.ejects.size === 0);
+  // Don Nicanor dentro de Nieto Senetiner Malbec: la mitad de la ficha, sale junta.
+  const nic = checksConsensus({ fichas: [{ names: [{ key: "ns malbec" }, { key: "nieto senetiner malbec" }, { key: "don nicanor malbec" }, { key: "vino don nicanor malbec" }] }], units: { "a:3": { kind: "auditoria", passes: { A: { intrusos: [[0, 2], [0, 3]] }, B: { intrusos: [[0, 3], [0, 2]] } } } } });
+  check("Don Nicanor (mitad de la ficha) sale, y sale junto", nic.ejectGroups.length === 1 && nic.ejectGroups[0].length === 2);
+  // Freno de cadenas: Pera ≡ Ambigua ≡ Manzana, pero Pera y Manzana se vieron juntas y nadie dijo "mismo".
+  const cadena = checksConsensus({
+    fichas: [{ names: [{ key: "perdiz pera" }] }, { names: [{ key: "la perdiz en el arbol" }] }, { names: [{ key: "perdiz manzana" }] }],
+    units: { "d:3": { kind: "duplicados", cases: [[0, 1, 2], [2, 1]], passes: { A: { pairs: [[0, 1], [2, 1]] }, B: { pairs: [[0, 1], [2, 1]] } } } },
+  });
+  check("freno de cadenas: Pera y Manzana no quedan unidas por una ficha ambigua", cadena.merges.length === 1 && cadena.vetoed === 1);
 }
 
 console.log(`\n${pass} ok · ${fail} fallas`);
