@@ -1,5 +1,963 @@
 {
  "_doc": "Correcciones del catálogo por consenso de las dos pasadas del sommelier (alias que capturan otro vino, nombres de línea mal escritos). Lo escribe scripts/sommelier.mjs; lo aplica build-groups-v2.mjs ANTES de catalog-manual.json, y sólo con apply=true o SOMMELIER_CATALOG_APPLY=1.",
  "apply": false,
- "wines": []
+ "wines": [
+  {
+   "id": "catena-zapata-saint-felicien-malbec-tinto",
+   "quitarAliases": [
+    "catena zapata",
+    "felicien fernando maza saint tributo"
+   ],
+   "nota": "'Catena Zapata Malbec' sin línea es otro vino (línea Catena), y Tributo a Fernando Maza es una edición especial más cara. | Sin línea es el Catena Malbec; Tributo a Fernando Maza es una edición especial con otra línea y precio doble."
+  },
+  {
+   "id": "catena-zapata-saint-felicien-cabernet-franc-tinto",
+   "quitarAliases": [
+    "catena zapata"
+   ],
+   "nota": "'Catena Zapata Cabernet Franc' sin línea es otro vino, no Saint Felicien. | Sin línea es el Catena Cabernet Franc, distinto de Saint Felicien."
+  },
+  {
+   "id": "catena-zapata-saint-felicien-cabernet-tinto",
+   "quitarAliases": [
+    "catena zapata"
+   ],
+   "nota": "Sin línea es el Catena Cabernet Sauvignon, otro vino; 'Única' indica una edición especial. | Sin línea es el Catena Cabernet, otro vino; 'única' sin ofertas no es claramente otro."
+  },
+  {
+   "id": "catena-zapata-saint-felicien-pinot-noir-tinto",
+   "quitarAliases": [
+    "catena zapata",
+    "felicien fernando maza saint tributo"
+   ],
+   "nota": "Sin línea es el Catena Pinot Noir, otro vino; Tributo a Fernando Maza es una edición especial más cara. | Sin línea es el Catena Pinot Noir; Tributo a Fernando Maza es una edición especial con precio doble."
+  },
+  {
+   "id": "catena-zapata-saint-felicien-sauvignon-blanc-blanco",
+   "quitarAliases": [
+    "catena zapata"
+   ],
+   "nota": "'Catena Zapata Sauvignon Blanc' sin línea no es Saint Felicien. | Sin línea corresponde a la línea Catena, distinta de Saint Felicien."
+  },
+  {
+   "id": "catena-zapata-lesploratore-malbec-tinto",
+   "quitarAliases": [
+    "dv esploratore salta",
+    "dv esploratore"
+   ],
+   "linea": "L'Esploratore La Rioja",
+   "nota": "La ficha es la versión La Rioja; Salta es otro paraje con ficha propia y el alias sin región fue descartado. | La ficha es el L'Esploratore La Rioja. Salta es otra versión con su propia línea y el genérico sin región no se puede asignar; el sommelier sacó ambos."
+  },
+  {
+   "id": "catena-zapata-blend-blend",
+   "linea": "Nicolás Catena Zapata",
+   "nota": "El blend con alias 'nicolas' es el Nicolás Catena Zapata; 'Blend' no es un nombre de línea. | El blend es el Nicolás Catena Zapata; 'Blend' sola no es nombre de línea."
+  },
+  {
+   "id": "catena-zapata-adrianna-malbec-tinto",
+   "quitarAliases": [
+    "adrianna dv tupungato"
+   ],
+   "nota": "DV Catena Adrianna Tupungato es otro vino (ficha DV Catena Adrianna), no el Adrianna Vineyard; el sommelier lo sacó. | El DV Catena Adrianna Tupungato tiene su propia línea; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "catena-zapata-dv-catena-malbec-tinto",
+   "quitarAliases": [
+    "designated dv nicasia"
+   ],
+   "nota": "Vineyard Designated Nicasia es otro Malbec de la línea DV, distinto del Malbec-Malbec. | El Vineyard Designated Nicasia es otro vino (DV Catena Nicasia), no el Malbec-Malbec."
+  },
+  {
+   "id": "catena-zapata-dv-catena-lesploratore-malbec-tinto",
+   "quitarAliases": [
+    "dv lesploratore salta"
+   ],
+   "linea": "L'Esploratore",
+   "nota": "Error de tipeo en el nombre; la versión Salta tiene ficha propia y el sommelier la sacó. | Línea mal tipeada. La versión Salta tiene su propia ficha; el sommelier la sacó."
+  },
+  {
+   "id": "catena-zapata-adriana-malbec-tinto",
+   "linea": "Adrianna",
+   "nota": "'DV Catena Adrianna' es la línea Vineyard Designated de DV Catena, distinta del Adrianna Vineyard; además el nombre tiene un error de tipeo. | 'adriana dv' es el mismo vino con un error de tipeo; se corrige la grafía a Adrianna."
+  },
+  {
+   "id": "catena-zapata-mundus-bacilus-terrae",
+   "linea": "Adrianna Vineyard Mundus Bacillus Terrae",
+   "nota": "Adrianna Mundus Bacillus Terrae es el mismo vino; el nombre de la línea tiene un error de tipeo (Bacilus). | El alias con Adrianna es el mismo vino; 'Bacilus' es un error de tipeo."
+  },
+  {
+   "id": "catena-zapata-chardonnay-alta-chardonnay-blanco",
+   "linea": "Angélica Zapata Alta",
+   "nota": "Angélica Zapata Chardonnay Alta es el mismo vino; el nombre de la línea incluía el varietal. | 'alta angelica' es el mismo Angélica Zapata Chardonnay Alta; el nombre de línea incluía el varietal y omitía Angélica Zapata."
+  },
+  {
+   "id": "catena-zapata-animal-syrah-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "El alias sin línea captaría un Syrah genérico de la bodega, que es otro vino distinto de Animal. | '(nada)' atraparía un Syrah de la bodega sin línea, que no es Animal."
+  },
+  {
+   "id": "catena-zapata-nicolas-catena-zapata",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Las ofertas sin línea son cajas y boxes de regalo de Catena Zapata, que son otros productos. | '(nada)' atrapa boxes y vinos Catena Zapata genéricos, no el ícono Nicolás Catena Zapata."
+  },
+  {
+   "id": "catena-zapata-nicolas-catena-zapata-blend-blend",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Nicolás Catena Zapata ya es un blend, así que 'Blend' sobra en el nombre; el alias sin línea sería otro vino. | '(nada)' atrapa Catena Zapata sin línea, otro vino; el nombre de línea incluía 'Blend', que es varietal."
+  },
+  {
+   "id": "catena-zapata-catena-dv-cabernet-cabernet-tinto",
+   "linea": "DV Catena",
+   "nota": "'v' sale de partir 'D.V.', es el mismo vino; el nombre de la línea incluía el varietal. | 'v' es un resto de 'D.V.' partido; el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "catena-zapata-nicolas-catena-zapata-malbec-malbec-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Catena Zapata Malbec' sin línea es otro vino, más barato; el nombre de la línea incluía el varietal. | '(nada)' atrapa 'Catena Zapata Malbec', el Catena Malbec básico, que es otro vino; el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "catena-zapata-animal-malbec-tinto",
+   "quitarAliases": [
+    "catena ernesto"
+   ],
+   "nota": "'Ernesto' (Ernesto Catena Malbec) no identifica a Animal y captaría otros vinos; el nombre tiene un error de tipeo. | 'ernesto' sólo atrapa Ernesto Catena sin línea, que no es necesariamente Animal; el nombre de línea tiene un tilde erróneo."
+  },
+  {
+   "id": "catena-zapata-blanc-de-blancs-viognier-blanco",
+   "linea": "Nicasia Blanc de Blancs",
+   "nota": "Es Nicasia Blanc de Blancs; al nombre de la línea le faltaba Nicasia. | 'blancs nicasia' es el mismo Nicasia Blanc de Blancs; el nombre de línea omite Nicasia."
+  },
+  {
+   "id": "catena-zapata-nicasia-vineyard-blanc-de-blanc-blanco",
+   "linea": "Nicasia Blanc de Blancs",
+   "nota": "'Nicasia' solo captaría los tintos de Nicasia, que son otros vinos; el nombre de la línea tiene un error de tipeo. | Es el Nicasia Blanc de Blancs; 'nicasia' en blanco no es claramente otro vino."
+  },
+  {
+   "id": "salentein-single-vineyard-malbec-tinto",
+   "linea": "Single Vineyard La Pampa",
+   "nota": "Todas las ofertas son del Single Vineyard La Pampa; la línea tiene varios parajes y conviene nombrar el paraje. | Todas las ofertas son el Single Vineyard La Pampa (San Pablo); la bodega tiene varios Single Vineyard, así que la línea debe nombrar el paraje."
+  },
+  {
+   "id": "salentein-portillo-blanco",
+   "quitarAliases": [
+    "portillo sauvignon"
+   ],
+   "nota": "El alias corresponde a Portillo Sauvignon Blanc, que tiene ficha propia; el sommelier sacó todas sus ofertas. | Portillo Sauvignon Blanc es otro vino con ficha propia; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "salentein-killka-blanco",
+   "quitarAliases": [
+    "killka sauvignon"
+   ],
+   "nota": "El alias corresponde a Killka Sauvignon Blanc, que tiene ficha propia; el sommelier sacó todas sus ofertas. | Killka Sauvignon Blanc es otro vino con ficha propia; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "salentein-magnum-malbec-tinto",
+   "linea": "Reserva",
+   "nota": "Magnum es un formato y no una línea; las ofertas son del Reserva Malbec, y \"magmun\" es un error de tipeo del formato. | Las ofertas son el Reserva Malbec y Magnum es un formato; Magmun es un error de tipeo de Magnum."
+  },
+  {
+   "id": "bodega-salentein-tilia-malbec-tinto",
+   "quitarAliases": [
+    "organico tilia"
+   ],
+   "nota": "Tilia Orgánico es una etiqueta distinta de Tilia Malbec. | Tilia Orgánico es una etiqueta distinta del Tilia Malbec."
+  },
+  {
+   "id": "salentein-tilia-malbec-tinto",
+   "quitarAliases": [
+    "organico tilia"
+   ],
+   "nota": "Tilia Orgánico es una etiqueta distinta de Tilia Malbec. | Tilia Orgánico es una etiqueta distinta del Tilia Malbec."
+  },
+  {
+   "id": "salentein-primus",
+   "quitarAliases": [
+    "cab primus"
+   ],
+   "nota": "\"Cab\" es Primus Cabernet, que tiene ficha propia; el sommelier sacó la oferta. | 'Primus Cab S.' es el Primus Cabernet Sauvignon, otro vino de la ficha; el sommelier lo sacó."
+  },
+  {
+   "id": "chandon-cuvee-blanc-de-blancs-blanco",
+   "quitarAliases": [
+    "blanc cuvee noir"
+   ],
+   "linea": "Cuvée Réserve Blanc de Blancs",
+   "nota": "a1 es Blanc de Blanc con un error de tipeo; a2 es Blanc de Noir, otro vino. La grafía oficial de la línea es Cuvée Réserve Blanc de Blancs. | Las tiendas lo llaman Cuvée Reserve; 'blanc cuvee noir' es Blanc de Noirs, otro vino; 'blanc de blanc' es un error de tipeo del mismo."
+  },
+  {
+   "id": "chandon-extra-brut-ed-limitada-eoy-espumante-extrabrut",
+   "linea": "Edición Limitada EOY",
+   "nota": "'ed eoy' es el mismo vino; el nombre de la línea incluye el dulzor y está abreviado. | El nombre incluye el tipo Extra Brut y está abreviado; 'ed eoy' es el mismo vino."
+  },
+  {
+   "id": "vina-cobos-felino-malbec-tinto",
+   "quitarAliases": [
+    "cobos vina",
+    "cobos"
+   ],
+   "nota": "'Cobos Malbec' sin línea es el ícono de la bodega (~$576.000), no el Felino (~$33.000). | 'Cobos Malbec' es el ícono de la bodega (~$576.000), no el Felino."
+  },
+  {
+   "id": "vina-cobos-felino-cabernet-tinto",
+   "quitarAliases": [
+    "cobos vina"
+   ],
+   "nota": "'Cobos Cabernet Sauvignon' sin línea es el ícono de la bodega, no el Felino. | Sin línea sería el Cobos Cabernet Sauvignon, el ícono, no el Felino."
+  },
+  {
+   "id": "vina-cobos-felino-chardonnay",
+   "quitarAliases": [
+    "cobos vina"
+   ],
+   "nota": "Un 'Cobos Chardonnay' sin línea no es el Felino: la bodega tiene varios chardonnay y una línea Cobos propia. | Sin línea sería el Cobos Chardonnay, el ícono de la bodega, no el Felino."
+  },
+  {
+   "id": "vina-cobos-bramare-appellation-malbec-tinto",
+   "quitarAliases": [
+    "appellation bramare cuyo lujan",
+    "appellation bramare uco",
+    "appellation bramare uco valle"
+   ],
+   "nota": "Appellation Luján de Cuyo y Appellation Valle de Uco son dos vinos distintos, ya tienen ficha propia (Bramare Luján / Valle de Uco) y el sommelier sacó todas sus ofertas. | Appellation Luján de Cuyo y Valle de Uco son dos Malbec distintos con fichas propias; el sommelier los sacó todos."
+  },
+  {
+   "id": "vina-cobos-felino-blend",
+   "quitarAliases": [
+    "cobos vina"
+   ],
+   "nota": "Un blend sin línea no es el Felino, ya que la bodega tiene otros cortes (Cocodrilo, Cobos). | Sin línea sería el ícono Cobos, no el Felino; el Felino Blend es el Red Blend (ficha duplicada con V11)."
+  },
+  {
+   "id": "vina-cobos-bramare-malbec-tinto",
+   "quitarAliases": [
+    "bramare uco",
+    "bramare marchiori"
+   ],
+   "nota": "Bramare Valle de Uco es otro vino y Bramare Marchiori es un single vineyard de ~$600.000; el alias de Luján de Cuyo es el mismo Bramare Malbec. | Bramare Malbec = Luján de Cuyo; Valle de Uco es otro vino y Marchiori es un viñedo único de ~$600.000."
+  },
+  {
+   "id": "vina-cobos-bramare-chardonnay",
+   "quitarAliases": [
+    "bramare touza vd",
+    "bramare rebon vd"
+   ],
+   "nota": "Touza y Rebon son viñedos únicos y el Uco tiene su propia ficha (Bramare Valle de Uco); el sommelier sacó estas ofertas. | El Bramare Chardonnay es de Valle de Uco, así que 'uco' es el mismo vino; Touza y Rebon son viñedos únicos, otros vinos."
+  },
+  {
+   "id": "vina-cobos-felino-blend-tinto",
+   "quitarAliases": [
+    "cobos vina"
+   ],
+   "nota": "Un blend sin línea no es el Felino Red Blend, ya que la bodega tiene otros cortes. | Sin línea apunta al ícono Cobos, no al Felino Red Blend."
+  },
+  {
+   "id": "rutini-single-vineyard",
+   "quitarAliases": [
+    "cab",
+    "cab sauvignon",
+    "cab franc"
+   ],
+   "nota": "Cab. Sauvignon y Cab. Franc son Single Vineyard de otro varietal y tienen su propia ficha; el sommelier sacó las ofertas de Cab. Sauvignon. | La ficha es el Single Vineyard sin varietal (cajas x3); 'cab', 'cab sauvignon' y 'cab franc' son los Single Vineyard varietales Cabernet Sauvignon y Cabernet Franc, vinos distintos."
+  },
+  {
+   "id": "monteviejo-petite-fleur-malbec-tinto",
+   "quitarAliases": [
+    "fleur partida petite"
+   ],
+   "nota": "'Partida' no es relleno ni tipeo: indica una partida o edición especial distinta del Petite Fleur Malbec común. | 'Partida' indica una partida o edición limitada de Petite Fleur, distinta de la línea regular; hoy no tiene ofertas."
+  },
+  {
+   "id": "bodega-monteviejo-festivo-malbec-tinto",
+   "quitarAliases": [
+    "monteviejo"
+   ],
+   "nota": "'(nada)' captura cajas de regalo vacías y 'Monteviejo Malbec' es ambiguo entre varias líneas (Petite Fleur, Lindaflor, Festivo), no es Festivo. | (nada) captura cajas de regalo y cualquier 'Monteviejo Malbec' sin línea, que no identifica a Festivo entre los varios Malbec de la bodega."
+  },
+  {
+   "id": "zuccardi-poligonos-malbec-tinto",
+   "quitarAliases": [
+    "poligonos tupungato uco"
+   ],
+   "nota": "'del Valle de Uco' es el nombre completo de la línea; Tupungato es otro paraje con ficha propia (Polígonos Tupungato Malbec). | El Polígonos Tupungato Malbec tiene ficha propia en el catálogo; 'uco' solo es el nombre completo de la misma línea."
+  },
+  {
+   "id": "zuccardi-piedra-infinita-malbec-tinto",
+   "linea": "Finca Piedra Infinita",
+   "nota": "Es el Finca Piedra Infinita escrito sin 'Finca', con el mismo rango de precio; 'Infinita' sola es un tipeo. | Es el Finca Piedra Infinita; al nombre del catálogo le falta 'Finca' y 'infinita' es el mismo vino."
+  },
+  {
+   "id": "zuccardi-poligonos",
+   "quitarAliases": [
+    "cab poligonos",
+    "cab franc poligonos"
+   ],
+   "nota": "'Cab'/'Cab Franc' es el Polígonos Cabernet Franc, otro varietal con ficha propia; 'Valle de Uco' es genérico. | 'cab franc' es el Polígonos Cabernet Franc (V1), y el sommelier sacó todas sus ofertas; 'uco' es la misma línea."
+  },
+  {
+   "id": "zuccardi-poligonos-del-valle-de-uco-malbec-tinto",
+   "quitarAliases": [
+    "alto poligonos tupungato uco valle"
+   ],
+   "nota": "Es la misma línea Polígonos; Tupungato Alto es otro paraje con ficha propia. | El Polígonos Tupungato Alto Malbec es otra ficha del catálogo."
+  },
+  {
+   "id": "zuccardi-piedra-infinita-gravascal",
+   "linea": "Finca Piedra Infinita Gravascal",
+   "nota": "Es el Finca Piedra Infinita Gravascal escrito sin 'Finca'; el alias sin 'Piedra' es un tipeo. | Es el Finca Piedra Infinita Gravascal; al nombre del catálogo le falta 'Finca' y el alias es el mismo vino."
+  },
+  {
+   "id": "bodega-bianchi-particular-malbec-malbec-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Ofertas como 'Bianchi Malbec' o 'Familia Bianchi Malbec' corresponden al Malbec varietal o al Famiglia, con precios muy distintos ($8.000 y $44.500); el sommelier sacó la mitad de la ficha. | El alias sin línea captura 'Familia Bianchi Malbec' a $8.000 (Famiglia/Varietal) y otros Malbec; no es el Particular."
+  },
+  {
+   "id": "bodega-bianchi-particular-cabernet-sauvignon-cabernet-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Un 'Bianchi Cabernet Sauvignon' sin línea sería otro vino (por ejemplo Famiglia), no el Particular. | 'Bianchi Cabernet Sauvignon' sin línea puede ser Famiglia u otro vino básico, no necesariamente el Particular."
+  },
+  {
+   "id": "bodega-bianchi-particular-merlot-merlot-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Un 'Bianchi Merlot' sin línea no identifica al Particular, que es una línea propia. | 'Bianchi Merlot' sin línea no identifica al Particular; la bodega tiene líneas más básicas."
+  },
+  {
+   "id": "bodega-bianchi-particular-cabernet-franc-cabernet-franc-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "Un 'Bianchi Cabernet Franc' sin línea sería otro vino (por ejemplo Famiglia), no el Particular. | 'Bianchi Cabernet Franc' sin línea puede ser Famiglia; no es necesariamente el Particular."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-malbec-malbec-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Yacochuya Malbec' sin línea es el ícono Yacochuya, mucho más caro; la línea no debe llevar el varietal. | 'Yacochuya Malbec' sin línea es el ícono Yacochuya, mucho más caro; el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-tannat-tannat-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Yacochuya Tannat' sin línea apunta a la etiqueta homónima de la bodega, no a Coquena; la línea no debe llevar el varietal. | El alias sin línea es otro vino (Yacochuya); el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-torrontes-torrontes",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Yacochuya Torrontés' sin línea es otra etiqueta (Yacochuya/San Pedro de Yacochuya); la línea no debe llevar el varietal. | El alias sin línea apunta a otro vino de la bodega (Yacochuya/San Pedro); el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-cabernet-sauvignon-cabernet-tinto",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Yacochuya Cabernet Sauvignon' sin línea es la etiqueta Yacochuya, no Coquena; la línea no debe llevar el varietal. | 'Yacochuya Cabernet Sauvignon' es la línea ícono, más cara; el nombre de línea incluía el varietal."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-rosado-rosado",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Yacochuya Rosado' sin línea no es claramente Coquena; el color no forma parte del nombre de la línea. | El alias sin línea apunta al vino Yacochuya de la bodega, no al Coquena Rosado."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-malbec-rose-malbec-rosado",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "El rosado de Malbec es el mismo Coquena Rosado (el sommelier sacó todas sus ofertas); la línea no debe llevar varietal ni color, y el alias sin línea no es Coquena. | El alias sin línea apunta al vino Yacochuya, no al Coquena rosado de Malbec."
+  },
+  {
+   "id": "bodega-yacochuya-coquena-corte-blend",
+   "quitarAliases": [
+    "corte"
+   ],
+   "nota": "El blend sin línea sería otra etiqueta de la bodega; 'Corte' es descriptor del varietal, no parte de la línea. | El alias sin línea apunta al vino Yacochuya, no al Coquena corte."
+  },
+  {
+   "id": "mosquita-muerta-blend-de-tintas-blend",
+   "linea": "Blend de Tintas",
+   "nota": "El doble magnum es sólo otro formato. La línea oficial es 'Blend de Tintas', no 'Tintas' a secas. | 'Doble magnum' es sólo un formato del mismo Blend de Tintas. La línea se llama 'Blend de Tintas', no 'Tintas'."
+  },
+  {
+   "id": "mosquita-muerta-tintas-blend-tinto",
+   "linea": "Blend de Tintas",
+   "nota": "El doble magnum es sólo otro formato. La línea oficial es 'Blend de Tintas', no 'Tintas' a secas. | 'Doble magnum' es sólo un formato del mismo Blend de Tintas. La línea se llama 'Blend de Tintas', no 'Tintas'."
+  },
+  {
+   "id": "bressia-monteagrelo-malbec-tinto",
+   "quitarAliases": [
+    "bressia"
+   ],
+   "nota": "Las ofertas sin línea son el Bressia Malbec D.O.C., que ya tiene su propia línea 'Doc' y no es Monteagrelo; el sommelier las sacó todas. | '(nada)' captura 'Bressia Malbec D.O.C', que es la línea Doc, otro vino de la bodega."
+  },
+  {
+   "id": "bressia-monteagrelo",
+   "quitarAliases": [
+    "bressia"
+   ],
+   "nota": "Sin varietal ni línea, el alias capturaría cualquier 'Bressia' a secas (Profundo, Conjuro, etc.), no específicamente Monteagrelo. | '(nada)' sin varietal equivale a 'Bressia' a secas: es ambiguo y no describe al Monteagrelo."
+  },
+  {
+   "id": "el-esteco-blend-de-extremos-blend",
+   "quitarAliases": [
+    "cab extremos"
+   ],
+   "nota": "'cab' indica el Blend de Extremos Cabernet, otro varietal; el sommelier sacó esa oferta de la ficha. | 'Cab-Cab' es la variante Cabernet de Blend de Extremos, otro corte; el sommelier sacó su única oferta."
+  },
+  {
+   "id": "humberto-canale-old-vineyard-riesling",
+   "quitarAliases": [
+    "excepcion old"
+   ],
+   "nota": "Cosecha de Excepción es una versión especial del Old Vineyard Riesling, a casi el triple de precio ($90.000 contra $33.200), y el sommelier sacó todas sus ofertas. | Cosecha de Excepción es otra versión del Old Vineyard Riesling, casi triple de precio y todas sus ofertas fueron sacadas de la ficha."
+  },
+  {
+   "id": "humberto-canale-estate",
+   "quitarAliases": [
+    "estate gris"
+   ],
+   "nota": "'Estate gris' describe el Estate Sauvignon Gris, que ya existe como otro vino en el catálogo. | 'estate gris' corresponde a Estate Sauvignon Gris, que es otro vino del catálogo y no el Estate genérico."
+  },
+  {
+   "id": "pulenta-estate-sil-vous-plait-rosado",
+   "linea": "S'il Vous Plaît",
+   "nota": "'il plait vous' es la misma etiqueta con el apóstrofo partido; la línea tiene un error de tipeo. | 'il plait vous' es S'il Vous Plaît con otra grafía; se corrige la grafía oficial de la línea."
+  },
+  {
+   "id": "bodega-norton-lote-negro-blend-blend",
+   "quitarAliases": [
+    "norton"
+   ],
+   "nota": "'(nada)' sería un Norton Blend genérico, y la bodega tiene otros blends como Clásico o Privada. El nombre de la línea no debe incluir 'Blend', que es el varietal. | Un Norton sin línea no es Lote Negro, porque la bodega tiene varios blends; la línea no debe incluir el varietal."
+  },
+  {
+   "id": "lagarde-gran-guarda-blend",
+   "linea": "Henry Gran Guarda",
+   "nota": "El blend Gran Guarda de Lagarde es el Henry Gran Guarda Nº1, así que 'guarda henry' es el mismo vino; corrijo la línea para que incluya Henry. | El Gran Guarda de Lagarde es el Henry Gran Guarda N°1; 'guarda henry' es el mismo vino y al nombre de la línea le falta 'Henry'."
+  },
+  {
+   "id": "luigi-bosca-apuntes-cabernet-tinto",
+   "quitarAliases": [
+    "apuntes canota"
+   ],
+   "nota": "El Apuntes Cabernet Sauvignon es de Paraje Altamira; 'Canota' apunta a otro Apuntes de otro paraje. | Canota es otro paraje que el Paraje Altamira de este Cabernet; la línea oficial es 'Los Apuntes'."
+  },
+  {
+   "id": "nieto-senetiner-don-nicanor-blend-blend",
+   "quitarAliases": [
+    "nieto senetiner"
+   ],
+   "nota": "'Nieto Senetiner Blend' es otro vino, más barato y sacado de la ficha; el nombre de la línea no debe incluir el varietal Blend. | 'Nieto Senetiner Blend' es otro vino, el básico de la bodega: cuesta casi la mitad y se sacó de la ficha."
+  },
+  {
+   "id": "bodega-nieto-senetiner-coleccion-tardia-rosado",
+   "quitarAliases": [
+    "natural nieto tardia v"
+   ],
+   "linea": "Cosecha Tardía",
+   "nota": "'Colección' es un error por 'Cosecha Tardía'; 'tardia' sola es el mismo vino, pero 'natural' remite a la línea Emilia Natural, que es otra. | 'tardia' es el mismo vino; 'natural' apunta a la línea Emilia Natural, que es otra; 'Colección' parece una deformación de 'Cosecha'."
+  },
+  {
+   "id": "trapiche-varietal-merlot-tinto",
+   "linea": "Reserva",
+   "nota": "Las ofertas sin línea son el Trapiche Reserva Merlot, que la ficha conserva; la línea se llama Reserva, no 'Varietal'. | Las tiendas llaman 'Trapiche Merlot' o 'Trapiche Reserva Merlot' al mismo vino básico, con precios parecidos; la línea es Reserva, no 'Varietal'."
+  },
+  {
+   "id": "trapiche-gran-medalla",
+   "quitarAliases": [
+    "medalla pinot"
+   ],
+   "nota": "Gran Medalla Pinot es otro vino (tiene su propia ficha) y se sacaron todas sus ofertas; las de Cab se conservaron. | El Gran Medalla Pinot Noir es otro vino, que ya tiene ficha propia (V8), y el sommelier sacó todas esas ofertas; el alias 'cab' se conserva."
+  },
+  {
+   "id": "andeluna-altitud-malbec-tinto",
+   "quitarAliases": [
+    "altitud organico"
+   ],
+   "nota": "El Altitud Malbec Orgánico es otra etiqueta, y el sommelier sacó de la ficha sus 7 ofertas; la línea Altitud está bien escrita. | El Altitud Malbec Orgánico es otra etiqueta: el sommelier sacó de la ficha las 7 ofertas de ese alias; el nombre de la línea está bien."
+  },
+  {
+   "id": "piattelli-reserva-malbec-tinto",
+   "quitarAliases": [
+    "salta"
+   ],
+   "nota": "Mendoza y Luján de Cuyo son el Reserva Malbec de Mendoza; 'salta' es el Reserva Malbec de Cafayate, otra etiqueta, con precio mucho mayor. | Mendoza y Luján de Cuyo son el mismo Reserva Malbec; el Reserva Malbec de Salta es otra etiqueta (además mezcla Gran Reserva, con una mediana de $31.595)."
+  },
+  {
+   "id": "susana-balbo-signature-blanco",
+   "quitarAliases": [
+    "raiz signature"
+   ],
+   "nota": "Signature Blanco de Raíz Edición Limitada es una versión especial distinta del Signature Blanco de Gualtallary. | Signature Blanco de Raíz Edición Limitada es una versión especial distinta del Signature Blanco de Gualtallary."
+  },
+  {
+   "id": "cadus-appellation-chardonnay-chardonnay",
+   "linea": "Appellation Vista Flores",
+   "nota": "'Apellation' es un error de tipeo del mismo Chardonnay de Vista Flores; el nombre de la línea incluye el varietal y le falta el paraje que la distingue de Appellation Tunuyán. | 'Apellation' es un error de tipeo del mismo vino. La línea no debe incluir el varietal: el nombre oficial es Appellation Vista Flores."
+  },
+  {
+   "id": "achaval-ferrer-appellation-malbec-tinto",
+   "quitarAliases": [
+    "appellation uco",
+    "apellation uco"
+   ],
+   "nota": "'Appellation Uco' y su variante mal escrita 'Apellation Uco' son el Appellation Valle de Uco, que ya tiene ficha propia y es distinto del Appellation Luján de Cuyo; no corresponden al Appellation genérico. | 'appellation uco' y 'apellation uco' son el Appellation Valle de Uco, que tiene su propia ficha; la línea Appellation tiene varios parajes (Luján de Cuyo y Valle de Uco)."
+  },
+  {
+   "id": "santa-julia-sauvignon-blanco",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Santa Julia Blanco' sin varietal es otro vino (un blanco genérico), no el Sauvignon. | 'Santa Julia Blanco' sin varietal es otro vino genérico; el nombre de la línea es el varietal y corresponde a la línea Varietal."
+  },
+  {
+   "id": "santa-julia-sauvignon-blanco-blanco",
+   "quitarAliases": [
+    ""
+   ],
+   "nota": "'Santa Julia Blanco' sin varietal es otro vino (un blanco genérico), no el Sauvignon. | 'Santa Julia Blanco' sin varietal es otro vino genérico; el nombre de la línea es el varietal y corresponde a la línea Varietal."
+  },
+  {
+   "id": "navarro-correas-fino-blanco",
+   "quitarAliases": [
+    "fino sauvignon"
+   ],
+   "nota": "'Fino Sauvignon' es un Sauvignon Blanc (otro varietal, el sommelier sacó todo). Las ofertas son Los Árboles Blanco: 'Fino' es descriptor, no línea. | 'fino sauvignon' es Fino Sauvignon Blanc, otro varietal; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "navarro-correas-fino-syrah-tinto",
+   "quitarAliases": [
+    "fino petit"
+   ],
+   "nota": "Petit Syrah es otro varietal y tiene ficha propia ('Fino Petit Syrah'), distinta del Syrah. | 'fino petit' es Fino Petit Syrah, otro varietal con ficha propia (Fino Petit Syrah)."
+  },
+  {
+   "id": "navarro-correas-navarro-correas-espumante-extrabrut",
+   "quitarAliases": [
+    "edic lat"
+   ],
+   "nota": "'Edic. 2001 Lat' es la Edición 2001, versión especial con ficha propia. | 'edic lat' es la Edición 2001 en lata, una versión especial con ficha propia; (nada) es el Extra Brut clásico."
+  },
+  {
+   "id": "navarro-correas-extra-brut-espumante-extrabrut",
+   "quitarAliases": [
+    "edic lat"
+   ],
+   "nota": "'Edic. 2001 Lat' es la Edición 2001, versión especial con ficha propia. | 'edic lat' es la Edición 2001 en lata, una versión especial con ficha propia; (nada) es el Extra Brut clásico."
+  },
+  {
+   "id": "navarro-correas-champana-extra-brut-espumante-extrabrut",
+   "quitarAliases": [
+    "edic lat"
+   ],
+   "nota": "'Edic. 2001 Lat' es la Edición 2001, versión especial con ficha propia. | 'edic lat' es la Edición 2001 en lata, una versión especial con ficha propia; (nada) es el Extra Brut clásico."
+  },
+  {
+   "id": "navarro-correas-fino-petit-syrah-syrah-tinto",
+   "quitarAliases": [
+    "fino"
+   ],
+   "nota": "'Fino' a secas corresponde al Fino Syrah, otro varietal que tiene ficha propia. | 'fino' a secas es Fino Syrah, otro varietal distinto del Petit Syrah."
+  },
+  {
+   "id": "navarro-correas-cham-extra-brut-torrontes-espumante-extrabrut",
+   "quitarAliases": [
+    "cham ed extra"
+   ],
+   "nota": "'Cham Ed.' es la Edición Limitada, que tiene línea propia distinta. | 'cham ed' es la Edición Limitada de Torrontés, que tiene su propia ficha (Cham Ed. Limitada)."
+  },
+  {
+   "id": "sophenia-cabernet-sauvignon-cabernet-tinto",
+   "linea": "Reserva",
+   "nota": "El nombre de la línea del catálogo es el varietal; las tiendas lo venden como Reserva Cabernet Sauvignon. 'Finca' es la bodega y el precio coincide. | 'Finca Sophenia Cabernet Sauvignon' es la misma línea Reserva; el nombre del catálogo es sólo el varietal."
+  },
+  {
+   "id": "alvear-federico-espumante",
+   "quitarAliases": [
+    "capacidad federico limon sabor"
+   ],
+   "nota": "'sabor limón' es una versión saborizada distinta del espumante Federico, así que es otro vino. | 'Sabor limón' es una versión saborizada de Federico, un producto distinto del espumante base."
+  },
+  {
+   "id": "alandes-paradoux-blend",
+   "quitarAliases": [
+    "blancs paradoux"
+   ],
+   "nota": "Paradoux Blend de Blancs es el blanco de la línea, otro vino que ya tiene su propia ficha; ninguna oferta quedó en esta. | \"Paradoux Blend de Blancs\" es el blanco de la línea, otro vino con su propia ficha; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "alandes-malbec-malbec-tinto",
+   "quitarAliases": [
+    "uco"
+   ],
+   "nota": "'Malbec de Uco' es el Malbec Uco Valley / Valle de Uco, otra línea del catálogo; el sommelier sacó todas sus ofertas. | \"Malbec de Uco\" es el Malbec Uco Valley/Valle de Uco, una línea propia del catálogo; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "renacer-punto-final-malbec-tinto",
+   "quitarAliases": [
+    "final organico punto"
+   ],
+   "nota": "Punto Final Orgánico es una etiqueta aparte de Renacer que se vende junto al Punto Final Malbec convencional (en versión clásica y Reserva), así que es otro vino aunque el precio sea parecido. | Punto Final Orgánico es una etiqueta propia de Renacer, distinta del Punto Final Malbec, aunque cueste parecido y el sommelier haya dejado esas ofertas en la ficha; el nombre de la línea está bien."
+  },
+  {
+   "id": "ver-sacrum-cayetana-pedro-ximenez",
+   "linea": "La Cayetana",
+   "nota": "'cayetana ximenez' es el mismo blanco Pedro Ximénez con la palabra omitida. La línea oficial es 'La Cayetana': el nombre del catálogo incluye el varietal y omite el 'La'. | 'cayetana ximenez' es una abreviatura del mismo blanco; la línea oficial es La Cayetana y Pedro Ximénez es el varietal, que no va en el nombre de la línea."
+  },
+  {
+   "id": "ver-sacrum-la-cayetana-pedro-ximenez",
+   "linea": "La Cayetana",
+   "nota": "'cayetana ximenez' es el mismo blanco Pedro Ximénez con la palabra omitida. La línea oficial es 'La Cayetana': el nombre del catálogo incluye el varietal y omite el 'La'. | 'cayetana ximenez' es una abreviatura del mismo blanco; la línea oficial es La Cayetana y Pedro Ximénez es el varietal, que no va en el nombre de la línea."
+  },
+  {
+   "id": "alta-vista-terroir-selection-malbec-tinto",
+   "quitarAliases": [
+    "salta selection terroir"
+   ],
+   "nota": "Terroir Selection Salta es una versión de otra región (Cafayate), distinta del Terroir Selection Malbec de Mendoza; el sommelier sacó 3 de sus 4 ofertas. | El Terroir Selection Malbec Salta (Cafayate) es otra etiqueta de la línea: el paraje distingue, y el sommelier sacó 3 de sus 4 ofertas."
+  },
+  {
+   "id": "el-porvenir-pequenas-fermentaciones-garnacha",
+   "quitarAliases": [
+    "fermentaciones gsm pequenas"
+   ],
+   "nota": "GSM es otro corte (Garnacha-Syrah-Mourvèdre), distinto de la Garnacha varietal; el sommelier sacó todas sus ofertas. | GSM es otro corte (Garnacha, Syrah y Mourvèdre), distinto del Garnacha varietal; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "argento-sv-malbec-tinto",
+   "quitarAliases": [
+    "organico sv"
+   ],
+   "linea": "Single Vineyard",
+   "nota": "S.V. es la abreviatura de Single Vineyard; 'SV Agrelo Orgánico' es otro vino ya catalogado (Single Vineyard Agrelo Orgánico), más barato, y el sommelier lo sacó de la ficha. | 'S.V.' es la abreviatura de Single Vineyard; 'S.V. Agrelo Orgánico' es otro vino, ya en el catálogo como Single Vineyard Agrelo Orgánico, más barato y sacado de la ficha."
+  },
+  {
+   "id": "matias-riccitelli-hey-malbec-malbec-tinto",
+   "quitarAliases": [
+    "matias riccitelli"
+   ],
+   "nota": "'Matías Riccitelli Malbec' sin línea es el Malbec homónimo de la bodega, otro vino más caro que Hey Malbec. | 'Matías Riccitelli Malbec' sin 'Hey' es el Malbec de la línea de autor homónima, más caro, no el Hey Malbec."
+  },
+  {
+   "id": "trivento-gaudeo-malbec-tinto",
+   "quitarAliases": [
+    "gaudeo tunuyan",
+    "gaudeo tupungato"
+   ],
+   "nota": "Gaudeo tiene varios parajes (Altamira, Tupungato, San Pablo Tunuyán). Tunuyán es otro vino (8 de 9 ofertas sacadas) y Tupungato ya tiene su propia línea 'Gaudeo Tupungato' en el catálogo. | Gaudeo tiene varios parajes (Altamira, Tunuyán, Tupungato), que son vinos distintos; Tupungato ya tiene su propia ficha y Tunuyán casi no quedó en la ficha."
+  },
+  {
+   "id": "trivento-gaudeo",
+   "quitarAliases": [
+    "gaudeo tunuyan",
+    "gaudeo tupungato"
+   ],
+   "nota": "Gaudeo tiene varios parajes (Altamira, Tupungato, San Pablo Tunuyán). Tunuyán es otro vino (8 de 9 ofertas sacadas) y Tupungato ya tiene su propia línea 'Gaudeo Tupungato' en el catálogo. | Gaudeo tiene varios parajes (Altamira, Tunuyán, Tupungato), que son vinos distintos; Tupungato ya tiene su propia ficha y Tunuyán casi no quedó en la ficha."
+  },
+  {
+   "id": "trivento-tribu-rosado",
+   "quitarAliases": [
+    "trivento"
+   ],
+   "nota": "(nada) capturó 'Trivento Reserve Rose', que es la línea Reserve rosado y no Tribu; el sommelier la sacó de la ficha. | (nada) captura 'Trivento Reserve Rose', que es la línea Reserve rosado y no Tribu; el sommelier la sacó de la ficha."
+  },
+  {
+   "id": "bemberg-estate-la-linterna-malbec-tinto",
+   "quitarAliases": [
+    "chanar linterna punco"
+   ],
+   "nota": "Las ofertas de la ficha son La Linterna Malbec La Consulta; Chañar Punco es otro paraje (Catamarca), otro vino de la línea. | El Chañar Punco es otro Malbec de La Linterna, de otro paraje (Catamarca), y la línea tiene varios parajes."
+  },
+  {
+   "id": "onofri-alma-gemela-garnacha",
+   "quitarAliases": [
+    "alma carignan gemela",
+    "alma gemela ximenez",
+    "alma gemela pedro ximenez"
+   ],
+   "nota": "Carignan y Pedro Ximénez son otros varietales de la línea Alma Gemela, distintos de la Garnacha. | Carignan y Pedro Ximénez son otros varietales de Alma Gemela, distintos de la Garnacha."
+  },
+  {
+   "id": "onofri-wines-alma-gemela-bonarda-tinto",
+   "quitarAliases": [
+    "alma carignan gemela"
+   ],
+   "nota": "Alma Gemela Carignan es otro varietal, distinto del Bonarda. | El Alma Gemela Carignan es otro varietal, no la Bonarda."
+  },
+  {
+   "id": "etchart-bruno-blend",
+   "linea": "Martín Bruno",
+   "nota": "La línea es Martín Bruno (blend de Malbecs); el alias con 'martin malbecs' es el mismo vino. | Las ofertas de Martín Bruno Blend de Malbecs son este vino; la línea se llama Martín Bruno."
+  },
+  {
+   "id": "etchart-bruno-malbec-tinto",
+   "linea": "Martín Bruno",
+   "nota": "La línea se llama Martín Bruno; los alias con 'martin' y 'malbecs' describen el mismo vino. | Los alias 'Martín Bruno' y 'Blend de Malbecs' son el nombre completo del mismo vino, así que ninguno es ajeno; la línea se llama Martín Bruno."
+  },
+  {
+   "id": "alfredo-roca-reserva",
+   "quitarAliases": [
+    "chardonn",
+    "tocai"
+   ],
+   "nota": "a1 es el Reserva Chardonnay y a2 el Reserva Tocai (o el Tocai Friulano sin nivel): son otros varietales, y el sommelier sacó casi todas sus ofertas. | Chardonnay y Tocai son otros varietales: el Tocai tiene su propia línea y se sacaron casi todas las ofertas de ambos alias."
+  },
+  {
+   "id": "finca-natalina-finca-roble-malbec-tinto",
+   "quitarAliases": [
+    "cab finca roble sauv"
+   ],
+   "nota": "a1 es el Roble Cabernet Sauvignon, otro varietal; la línea incluye 'Finca', parte del nombre de la bodega. | V3.a1 captura el Roble Cabernet Sauvignon ('Cab Sauv'), que es otro varietal. La línea es Roble; 'Finca' es un resto del nombre de la bodega."
+  },
+  {
+   "id": "uvita-de-plata-torrontes",
+   "quitarAliases": [
+    "borgona lt mesa plata",
+    "borgona mesa plata"
+   ],
+   "nota": "'Bco' es la abreviatura de blanco del Torrontés; el Borgoña es el tinto de la línea, otro vino. | 'Bco' es el blanco De Plata (Torrontés), el mismo vino; 'Borgoña' es el tinto De Plata, otro vino."
+  },
+  {
+   "id": "uvita-de-plata-tinto",
+   "quitarAliases": [
+    "borgona lt mesa plata",
+    "borgona mesa plata"
+   ],
+   "nota": "El sommelier sacó todas las ofertas de Borgoña de esta ficha: corresponden a la ficha De Plata Borgoña (V2). | Las ofertas de Borgoña se sacaron de esta ficha y quedaron en la ficha de De Plata sin color (V3); el alias corresponde a ese otro vino."
+  },
+  {
+   "id": "bodega-piedra-negra-arroyo-grande-criolla",
+   "quitarAliases": [
+    "arroyo grande gris pinot",
+    "arroyo grande gris"
+   ],
+   "nota": "La ficha es el Arroyo Grande Criolla. El Arroyo Grande Pinot Gris es otro varietal: el sommelier sacó sus 3 ofertas, y 'arroyo grande gris' es el mismo Pinot Gris incompleto. | La ficha quedó con el Arroyo Grande Criolla. a1 y a2 son el Arroyo Grande Pinot Gris, otro varietal: el sommelier sacó las 3 ofertas de a1."
+  },
+  {
+   "id": "piedra-negra-arroyo-grande",
+   "quitarAliases": [
+    "arroyo grande gris pinot",
+    "arroyo grande gris"
+   ],
+   "nota": "La ficha es el Arroyo Grande Criolla. El Arroyo Grande Pinot Gris es otro varietal: el sommelier sacó sus 3 ofertas, y 'arroyo grande gris' es el mismo Pinot Gris incompleto. | La ficha quedó con el Arroyo Grande Criolla. a1 y a2 son el Arroyo Grande Pinot Gris, otro varietal: el sommelier sacó las 3 ofertas de a1."
+  },
+  {
+   "id": "bodega-piedra-negra-arroyo-grande",
+   "quitarAliases": [
+    "arroyo grande gris pinot",
+    "arroyo grande gris"
+   ],
+   "nota": "La ficha es el Arroyo Grande Criolla. El Arroyo Grande Pinot Gris es otro varietal: el sommelier sacó sus 3 ofertas, y 'arroyo grande gris' es el mismo Pinot Gris incompleto. | La ficha quedó con el Arroyo Grande Criolla. a1 y a2 son el Arroyo Grande Pinot Gris, otro varietal: el sommelier sacó las 3 ofertas de a1."
+  },
+  {
+   "id": "araucana-ribera-del-cuarzo-pinot-noir-tinto",
+   "linea": "Río de los Ciervos",
+   "nota": "Ribera del Cuarzo es la bodega que elabora Araucana, no una línea: este vino es el Río de los Ciervos Pinot Noir, y el alias a1 es ese mismo vino con la bodega escrita. | Ribera del Cuarzo es la bodega patagónica que elabora Araucana, no una línea; las ofertas son el Río de los Ciervos Pinot Noir, así que se corrige la línea y el alias queda como propio."
+  },
+  {
+   "id": "tapiz-zolo-malbec-tinto",
+   "quitarAliases": [
+    "black zolo"
+   ],
+   "nota": "Zolo Black es otra etiqueta, más alta ($50.900 contra $19.730), y el sommelier sacó todas sus ofertas. | Zolo Black es otra línea más alta de Tapiz (mediana $50.900 vs $19.730) y el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "bodega-atamisque-catalpa-merlot-merlot-tinto",
+   "quitarAliases": [
+    "atamisque"
+   ],
+   "nota": "'(nada)' es la línea Atamisque (el vino que lleva sólo el nombre de la bodega), no Catalpa; el nombre del catálogo incluye el varietal. | Las ofertas sin línea corresponden a la línea Atamisque, no a Catalpa; el nombre de línea no debe incluir el varietal."
+  },
+  {
+   "id": "bodega-atamisque-catalpa-chardonnay-chardonnay",
+   "quitarAliases": [
+    "atamisque"
+   ],
+   "nota": "'(nada)' es la línea Atamisque (el vino que lleva sólo el nombre de la bodega), no Catalpa; el nombre del catálogo incluye el varietal. | 'Atamisque Chardonnay' sin línea es el Chardonnay de la línea Atamisque, otro vino; el nombre de línea no debe incluir el varietal."
+  },
+  {
+   "id": "bodega-tilia-tilia-chenin",
+   "linea": "Orgánico",
+   "nota": "El Chenin de Tilia es de la línea Orgánico, igual que su Malbec y su Cabernet. 'Tilia Chenin' y 'Tilia Orgánico Chenin' son el mismo vino a precios parecidos, así que la línea debe llamarse Orgánico. | Tilia no tiene un Chenin aparte del Orgánico (misma línea que el Malbec y el Cabernet orgánicos); 'organico' es el mismo vino a precio similar, así que la línea debe ser Orgánico."
+  },
+  {
+   "id": "alma-roble-malbec-tinto",
+   "linea": "Alma Roja Roble",
+   "nota": "«Alma Roja Malbec Roble» es este mismo vino, con 5 de 5 ofertas conservadas y precio coherente; la línea debe llamarse Alma Roja Roble, no sólo Roble. | Las ofertas son 'Alma Roja Malbec Roble', el mismo vino a precio coherente; la línea es Alma Roja Roble, no sólo 'Roble'."
+  },
+  {
+   "id": "pascual-toso-alta-chardonnay-espumante-nature",
+   "quitarAliases": [
+    "nature"
+   ],
+   "nota": "'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega, otro vino (0 ofertas quedaron); la línea es 'Alta' y 'Brut' indica el dulzor. | 'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega (línea Nature), otro vino; el sommelier sacó las 3 ofertas. La línea se llama 'Alta': 'Brut' es dulzor, no línea."
+  },
+  {
+   "id": "pascual-toso-alta-espumante-nature",
+   "quitarAliases": [
+    "nature"
+   ],
+   "nota": "'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega, otro vino (0 ofertas quedaron); la línea es 'Alta' y 'Brut' indica el dulzor. | 'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega (línea Nature), otro vino; el sommelier sacó las 3 ofertas. La línea se llama 'Alta': 'Brut' es dulzor, no línea."
+  },
+  {
+   "id": "pascual-toso-alta-brut-espumante-nature",
+   "quitarAliases": [
+    "nature"
+   ],
+   "nota": "'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega, otro vino (0 ofertas quedaron); la línea es 'Alta' y 'Brut' indica el dulzor. | 'Pascual Toso Brut Nature' sin 'Alta' es el espumante básico de la bodega (línea Nature), otro vino; el sommelier sacó las 3 ofertas. La línea se llama 'Alta': 'Brut' es dulzor, no línea."
+  },
+  {
+   "id": "arca-yaco-amar-y-vivir-cabernet-franc-tinto",
+   "quitarAliases": [
+    "amar vivir zinfandel"
+   ],
+   "nota": "El alias con 'zinfandel' corresponde al Amar y Vivir Zinfandel, otro varietal distinto del Cabernet Franc. | V2.a1 'zinfandel' es otro varietal (Amar y Vivir Zinfandel), distinto del Cabernet Franc."
+  },
+  {
+   "id": "raquis-paraje",
+   "linea": "Los Parajes",
+   "nota": "«Raquis Gualtallary/San Pablo» son los mismos vinos de paraje que «Raquis Paraje X», al mismo precio; «Paraje» es una grafía incompleta de la línea Los Parajes, que ya está en el catálogo. | La línea es Los Parajes, y cada paraje (Gualtallary, San Pablo, Chacayes) es otro vino. El alias (nada) junta parajes distintos y la versión sin línea; el sommelier sacó todas sus ofertas."
+  },
+  {
+   "id": "estancia-las-canitas-blend-blend",
+   "quitarAliases": [
+    "navarro torre"
+   ],
+   "nota": "Familia Navarro Torre es otra línea de la bodega, cuesta casi el doble ($30.300 vs $17.100) y el sommelier sacó todas sus ofertas de la ficha. | 'Familia Navarro Torre' es otra línea de la bodega, casi al doble de precio ($30.300 vs $17.100) y el sommelier sacó las 3 ofertas de la ficha."
+  },
+  {
+   "id": "alamos-pinot-reserva",
+   "linea": "Reserve",
+   "nota": "El nombre incluye el varietal: la línea es Alamos Reserve (Pinot Noir). El alias sin palabras corresponde al mismo vino, porque el nivel Reserva se exige aparte; no hay ofertas en contra. | '(nada)' captura los Alamos sin línea (Alamos Malbec, etc.), otro vino más básico; el nombre de línea incluye el varietal, la línea es Reserve."
+  },
+  {
+   "id": "bodega-del-carmen-nido-del-tigre-torrontes",
+   "quitarAliases": [
+    "centenario nido tigre"
+   ],
+   "nota": "Torrontés Centenario es otro vino con línea propia en el catálogo; el alias 'centenario' no corresponde al Nido del Tigre Torrontés base. | V1.a1 'Centenario' es el Torrontés Centenario, que tiene su propia línea en el catálogo; el Nido del Tigre Torrontés base es otro vino."
+  },
+  {
+   "id": "septima-10-barricas-gran-reserva",
+   "quitarAliases": [
+    "barricas cab"
+   ],
+   "nota": "Las ofertas que quedaron en la ficha son 10 Barricas Gran Reserva Cabernet Franc, así que «cab franc» (a2) es el mismo vino. «Cab» solo (a1) sugiere Cabernet Sauvignon, otro varietal; no tiene ofertas. | Las ofertas reales son el 10 Barricas Gran Reserva Cabernet Franc (a2 es el mismo vino). 'cab' a secas significa Cabernet Sauvignon, que es otro vino (10 Barricas Cabernet); no tiene ofertas y se "
+  },
+  {
+   "id": "bodega-weinert-chenin-blanc-chenin-blanco",
+   "linea": "Weinert",
+   "nota": "La línea 'Chenin Blanc' es sólo el varietal; el vino es el Weinert Chenin, así que la línea correcta es 'Weinert'. '(nada)' captura 'Weinert Chenin' y es el mismo vino. | Weinert no tiene otro Chenin, así que 'Weinert Chenin' sin línea es este mismo vino y el alias (nada) es propio; el nombre de línea 'Chenin Blanc' es sólo el varietal y corresponde a la línea varietal 'Weinert', igual que el Malb"
+  },
+  {
+   "id": "weinert-chenin-blanc-chenin-blanco",
+   "linea": "Weinert",
+   "nota": "La línea 'Chenin Blanc' es sólo el varietal; el vino es el Weinert Chenin, así que la línea correcta es 'Weinert'. '(nada)' captura 'Weinert Chenin' y es el mismo vino. | Weinert no tiene otro Chenin, así que 'Weinert Chenin' sin línea es este mismo vino y el alias (nada) es propio; el nombre de línea 'Chenin Blanc' es sólo el varietal y corresponde a la línea varietal 'Weinert', igual que el Malb"
+  },
+  {
+   "id": "colon-selecto-merlot-tinto",
+   "quitarAliases": [
+    "cab selecto"
+   ],
+   "nota": "'cab' es Cabernet: Selecto Cabernet es otro varietal, no el Merlot. | \"cab selecto\" es el Selecto Cabernet (cab = Cabernet), otro varietal que este Merlot."
+  },
+  {
+   "id": "suter-chardonnay-chardonnay",
+   "quitarAliases": [
+    "tipo vintage"
+   ],
+   "nota": "Las ofertas de 'tipo vintage' son 'Suter Chardonnay Vintage', otro vino que no menciona champaña ni Extra Brut; el nombre de la línea está bien. | 'Tipo vintage' describe un Suter Chardonnay Vintage tranquilo, no la Champaña Extra Brut espumante."
+  },
+  {
+   "id": "suter-champana-extra-brut-blanco",
+   "quitarAliases": [
+    "tipo vintage"
+   ],
+   "nota": "Las ofertas de 'tipo vintage' son 'Suter Chardonnay Vintage', otro vino que no menciona champaña ni Extra Brut; el nombre de la línea está bien. | 'Tipo vintage' describe un Suter Chardonnay Vintage tranquilo, no la Champaña Extra Brut espumante."
+  },
+  {
+   "id": "finca-flichman-pje-de-tupungato-blend",
+   "linea": "Paisaje de Tupungato",
+   "nota": "'Tupungatu' es un error de tipeo; la línea oficial es Paisaje de Tupungato, no 'Pje'. | 'Tupungatu' es un error de tipeo del mismo vino; 'Pje' abrevia la línea oficial Paisaje de Tupungato."
+  },
+  {
+   "id": "bodega-noemia-noemia-a-lisa-malbec-tinto",
+   "quitarAliases": [
+    "noemia"
+   ],
+   "nota": "'(nada)' capturaría 'Noemía Malbec', el vino ícono de la bodega, mucho más caro y distinto de A Lisa; la línea no debe incluir el nombre de la bodega. | '(nada)' = 'Noemía Malbec', que es el ícono de la bodega y otro vino mucho más caro que A Lisa; además, el nombre de la línea incluye la bodega y debe ser 'A Lisa'."
+  },
+  {
+   "id": "altos-las-hormigas-malbec-malbec-tinto",
+   "quitarAliases": [
+    "uco"
+   ],
+   "nota": "'Uco' corresponde al Terroir Valle de Uco, otra línea superior de la bodega, y no al Malbec básico (Clásico). | 'Uco' es el Terroir/Appellation Valle de Uco, otra línea; el catálogo nombra la línea con el varietal, y el Malbec básico de la bodega es el Clásico."
+  },
+  {
+   "id": "escorihuela-pequenas-producciones",
+   "quitarAliases": [
+    "cab pequenas producciones"
+   ],
+   "nota": "'Cab' es abreviatura de Cabernet: esa oferta corresponde al Pequeñas Producciones Cabernet, que ya tiene ficha propia, y no a este vino sin varietal. | 'Cab' es abreviatura de Cabernet. Ese varietal ya tiene su propia ficha de Pequeñas Producciones, distinta de esta entrada sin varietal."
+  },
+  {
+   "id": "la-colina-chardonnay-chardonnay-blanco",
+   "quitarAliases": [
+    "chennin"
+   ],
+   "nota": "'chennin' (Chenin) es otro varietal, no este Chardonnay; la línea es en realidad el vino sin línea de La Colina y no hay otro nombre que proponer. | \"Chennin\" (Chenin) es otro varietal: una oferta \"Chardonnay Chenin\" es un corte distinto del Chardonnay varietal, así que el alias es ajeno."
+  },
+  {
+   "id": "atilio-avena-malbec-malbec-tinto",
+   "quitarAliases": [
+    "v"
+   ],
+   "nota": "La palabra 'V' remite a la línea Finca V, que la bodega tiene como etiqueta propia, distinta del Malbec sin línea. | 'V Atilio Avena Malbec' parece la línea Finca V, otra etiqueta de la bodega, y no su Malbec sin línea; queda la duda de que el sommelier dejó esa oferta en la ficha."
+  },
+  {
+   "id": "ruca-malen-capitulo-tres-malbec-tinto",
+   "quitarAliases": [
+    "capitulo infuso tres"
+   ],
+   "nota": "\"capitulo infuso tres\" incluye Infuso, que es otra línea de la bodega (Capítulo Infuso), no el Capítulo Tres Malbec. | \"infuso\" nombra la línea Capítulo Infuso, que figura aparte en el catálogo, así que el alias describe otro vino."
+  },
+  {
+   "id": "ventisquero-tinto-ventisquero-syrah-tinto",
+   "linea": "Clásico",
+   "nota": "'tto' abrevia 'tinto' (relleno), es el mismo Syrah básico; el nombre del catálogo es sólo color + bodega, y la línea básica de Ventisquero es Clásico. | 'tto' es la abreviatura de 'tinto' (relleno), no otra línea; el nombre del catálogo es sólo bodega + color, y el Syrah básico sin línea de Ventisquero es el Clásico."
+  },
+  {
+   "id": "joffre-e-hijas-gran-malbec-malbec-tinto",
+   "quitarAliases": [
+    "cab hijas joffre sauv"
+   ],
+   "nota": "V1.a1 'cab sauv' es el Gran Cabernet Sauvignon, otro varietal (0 ofertas quedaron); el nombre de línea incluye el varietal, la línea es 'Gran'. | a1 'Cab/Sauv' es el Gran Cabernet Sauvignon, otro varietal (0 de 2 quedaron en la ficha); la línea es 'Gran', el nombre del catálogo incluye el varietal"
+  },
+  {
+   "id": "medias-chicos-altos-hormigas-tinto",
+   "quitarAliases": [
+    "altos hormigas terroir"
+   ],
+   "nota": "Terroir es una línea distinta y superior de Altos Las Hormigas, no el tinto básico. | Terroir es una línea distinta (de mayor nivel) que la básica de Altos Las Hormigas."
+  }
+ ]
 }
