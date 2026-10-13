@@ -553,6 +553,138 @@ export function parseAuditOutput(out, fichaIdx, fichas) {
   return res;
 }
 
+// ── Auditoría del catálogo (alias y nombres de línea) ───────────────────────
+// El catálogo minado (gpt-4o-mini) asigna a cada vino "alias": las palabras
+// que, quitando bodega, varietal, color, añada y relleno, dejan las ofertas
+// de ese vino. Un alias ajeno manda a la ficha las ofertas de OTRO vino y,
+// peor, cuando ese otro vino no tiene entrada propia en el catálogo, su
+// ficha se publica con el título equivocado (13/10: "Nieto Senetiner
+// Malbec", 17 tiendas, titulada "Don Nicanor Malbec" por el alias "nieto
+// senetiner"). Claude ve todas las líneas de la bodega y, por alias, las
+// ofertas que captura, su precio y si el sommelier las dejó en la ficha.
+
+export const SYSTEM_CATALOGO = `Sos el sommelier de Vinndex, un comparador de precios de vinos de vinotecas online de Argentina. El sitio tiene un catálogo de vinos (bodega + línea + varietal) armado automáticamente, y las ofertas de las tiendas se asignan a esos vinos por PALABRAS: a cada nombre de oferta se le quitan la bodega, el varietal, el color, la añada, el volumen y el relleno ("vino", "750 cc", "botella"...), y las palabras que quedan, ordenadas alfabéticamente, se buscan entre los "alias" de cada vino de esa bodega. Los niveles (Reserva, Gran Reserva, Gran, Single Vineyard...) se exigen aparte —una oferta sin "Gran" nunca cae en "Gran Medalla"— y por eso no figuran en las palabras.
+
+Te paso, por bodega, la lista de sus líneas en el catálogo y, para algunos vinos, los alias que NO son el nombre de su propia línea. Para cada alias ves las palabras exactas, cuántas ofertas captura hoy, cuántas de esas el sommelier dejó en la ficha del vino después de revisarlas una por una, su precio mediano y ejemplos de nombres. "(nada)" significa que el alias captura las ofertas que dicen sólo bodega + varietal/color, sin línea ("Nieto Senetiner Malbec").
+
+Para cada vino decidí:
+1. alias_ajenos: los alias que describen OTRO vino (otra línea, otro nivel, una versión especial como Tributo/Edición Limitada/Reserva, o el vino "sin línea" de la bodega cuando la bodega tiene un vino propio que se llama sólo con su nombre). Ejemplo: en Nieto Senetiner, "(nada)" como alias de "Don Nicanor Malbec" es ajeno: "Nieto Senetiner Malbec" es otro vino, más barato. Ejemplo contrario: "(nada)" como alias de Rutini "Colección" NO es ajeno si las tiendas llaman "Rutini Malbec" al Colección y la bodega no tiene otro Malbec básico.
+   SÍ son el mismo vino: abreviaturas, errores de tipeo, palabras partidas o pegadas, el orden, la bodega escrita distinto, y palabras que no distinguen (el paraje cuando la línea es de un solo lugar).
+2. linea: el nombre correcto de la línea SÓLO si el del catálogo está mal (es el nombre de otro vino, tiene un error de tipeo, o incluye la bodega/varietal). Con la grafía oficial de la bodega, sin bodega ni varietal. Si está bien, null.
+
+${CRITERIO}
+
+Señales: si el sommelier sacó de la ficha casi todas las ofertas de un alias, casi seguro es ajeno; un precio a más del doble o menos de la mitad del de la línea también. Un alias sin ofertas hoy se juzga sólo por sus palabras.
+
+Quitar un alias bueno deja sin ficha a las ofertas que lo usan: marcá sólo lo que es claramente otro vino. Respondé SOLO con el JSON del schema, una entrada por vino (V1, V2...), con un motivo de una línea.`;
+
+export const SCHEMA_CATALOGO = {
+  type: "object",
+  additionalProperties: false,
+  required: ["vinos"],
+  properties: {
+    vinos: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["v", "alias_ajenos", "linea", "motivo"],
+        properties: {
+          v: str,
+          alias_ajenos: { type: "array", items: str },
+          linea: { anyOf: [str, { type: "null" }] },
+          motivo: str,
+        },
+      },
+    },
+  },
+};
+
+const fmtKey = (k) => (k ? `"${k}"` : "(nada)");
+const evLine = (r) => {
+  const ex = (r.ejemplos ?? []).map(([n, c, p]) => `"${String(n).slice(0, 110).replace(/"/g, "'")}" ×${c} ${fmtPrice(p)}`).join("; ");
+  return `${r.ofertas} ofertas, ${r.quedaron} quedaron en la ficha, mediana ${fmtPrice(r.precio)}${ex ? ` · ej: ${ex}` : ""}`;
+};
+const wineDesc = (w) => [w.linea ? `"${w.linea}"` : "(sin línea)", w.varietal, w.color, w.dulzor].filter(Boolean).join(" · ");
+
+/**
+ * unit = { bodega, hermanos: [{linea, varietal, color, dulzor, storeCount}],
+ * entries: [evidencia de build-groups-v2 catalogEvidence] }. `order` =
+ * índices de entries en el orden presentado. Etiquetas V1, V1.a1...
+ */
+export function buildCatalogPrompt(unit, order) {
+  const lines = [`Bodega: ${unit.bodega}`, "", `Líneas de la bodega en el catálogo (${unit.hermanos.length}):`];
+  for (const h of unit.hermanos) lines.push(`  · ${wineDesc(h)}${h.storeCount ? ` (${h.storeCount} tiendas)` : ""}`);
+  lines.push("", `Vinos a revisar: ${order.length}`, "");
+  const labeled = [];
+  order.forEach((ei, pos) => {
+    const e = unit.entries[ei];
+    const v = `V${pos + 1}`;
+    lines.push(`── ${v} · ${wineDesc(e)}`);
+    for (const r of e.propio) lines.push(`  su propio nombre, palabras ${fmtKey(r.key)}: ${evLine(r)}`);
+    const al = {};
+    e.alias.forEach((r, j) => {
+      const lab = `${v}.a${j + 1}`;
+      al[lab] = r.key;
+      lines.push(`  ${lab} palabras ${fmtKey(r.key)}: ${evLine(r)}`);
+    });
+    labeled.push({ v, ei, al });
+    lines.push("");
+  });
+  return { text: lines.join("\n"), labeled };
+}
+
+/** → { [entryIdx]: { ajenos: [key], linea: string|null } } */
+export function parseCatalogOutput(out, labeled) {
+  const byV = new Map(labeled.map((l) => [l.v, l]));
+  const res = {};
+  for (const r of out?.vinos ?? []) {
+    const l = byV.get(String(r?.v ?? "").trim());
+    if (!l) continue;
+    const ajenos = [];
+    for (const a of r.alias_ajenos ?? []) {
+      const lab = String(a).trim();
+      const k = l.al[lab] ?? l.al[`${l.v}.${lab.replace(/^.*\./, "")}`];
+      if (k !== undefined && !ajenos.includes(k)) ajenos.push(k);
+    }
+    const linea = typeof r.linea === "string" && r.linea.trim() ? r.linea.trim() : null;
+    res[l.ei] = { ajenos, linea, motivo: typeof r.motivo === "string" ? r.motivo.slice(0, 300) : "" };
+  }
+  return res;
+}
+
+/**
+ * Consenso: un alias sale si las DOS pasadas lo dan por ajeno; la línea se
+ * renombra si las dos proponen exactamente el mismo nombre (sin contar
+ * mayúsculas ni tildes al comparar). Devuelve las entradas del archivo de
+ * correcciones (lib-catalog-manual applyCatalogFixes), una por id.
+ */
+export function catalogConsensus(catalogo) {
+  const fixes = [];
+  const fold = (x) => stripAccents(String(x)).toLowerCase().replace(/\s+/g, " ").trim();
+  for (const u of Object.values(catalogo?.units ?? {})) {
+    const A = u.passes?.A?.res, B = u.passes?.B?.res;
+    if (!A || !B) continue;
+    u.entries.forEach((e, ei) => {
+      const a = A[ei], b = B[ei];
+      if (!a || !b) return;
+      const ajenos = a.ajenos.filter((k) => b.ajenos.includes(k));
+      const linea = a.linea && b.linea && fold(a.linea) === fold(b.linea) && fold(a.linea) !== fold(e.linea) ? a.linea : null;
+      if (!ajenos.length && !linea) return;
+      const raws = e.alias.filter((r) => ajenos.includes(r.key)).flatMap((r) => r.raw);
+      const nota = [a.motivo, b.motivo].filter(Boolean).join(" | ").slice(0, 400);
+      for (const id of e.ids ?? [e.id]) {
+        const fx = { id };
+        if (raws.length) fx.quitarAliases = raws;
+        if (linea) fx.linea = linea;
+        fx.nota = nota;
+        fixes.push(fx);
+      }
+    });
+  }
+  return fixes;
+}
+
 /**
  * Consenso del doble chequeo, puro. `checks.fichas[i]` = nameKeys de la
  * ficha i; cada unidad trae sus pasadas A y B ya traducidas a índices.

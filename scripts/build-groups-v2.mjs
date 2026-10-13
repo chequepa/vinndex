@@ -49,7 +49,7 @@ import { staleStores, inflatedStores } from "./lib-store-activity.mjs";
 import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet, isExcluded } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { dropResolved } from "./lib-carryover.mjs";
-import { applyManualOverlay } from "./lib-catalog-manual.mjs";
+import { applyManualOverlay, applyCatalogFixes } from "./lib-catalog-manual.mjs";
 import { eanFromSku } from "./lib-ean.mjs";
 import { buildTypoMap, applyTypoMap } from "./lib-typos.mjs";
 import { adjudicatePairs, jevPolicy, pairKey, JEV_MAX_MERGES_PER_RUN, JEV_NAME_MIN, JEV_NAME_MAX_SHARE } from "./lib-jev.mjs";
@@ -150,6 +150,8 @@ const JEV_SUSPECTS_PATH = resolve(ROOT, "data/jev-gate-suspects.json");
 const CARRYOVER_PATH = resolve(ROOT, "data/carryover.json");
 const SOMMELIER_VERDICTS_PATH = resolve(ROOT, "data/sommelier/verdicts.json");
 const SOMMELIER_REPORT_PATH = resolve(ROOT, "data/sommelier/apply-report.json");
+// Evidencia para la auditoría del catálogo (sommelier.mjs, pedidos "catalogo").
+const CATALOG_EVIDENCE_PATH = process.env.CATALOG_EVIDENCE || (PUBLISH ? resolve(ROOT, "data/sommelier/catalog-evidence.json") : null);
 
 function norm(s) {
   return stripAccents(String(s ?? "")).toLowerCase().replace(/\s+/g, " ").trim();
@@ -274,7 +276,81 @@ function buildCatalogIndex(catalog) {
     );
   }
   console.log(`  catálogo: ${canon.size} entradas duplicadas (mismo vino con/sin varietal o color) plegadas`);
-  return { exact, byLine, winesPerBodega };
+  return { exact, byLine, winesPerBodega, wines, canon };
+}
+
+/**
+ * Evidencia para la auditoría del catálogo: por vino canónico con algún
+ * alias cuya clave de línea no es la de su propio nombre, qué ofertas
+ * entraron por cada clave, a qué precio, y si la ficha final las conservó
+ * (el sommelier saca las que no son ese vino: un alias cuyas ofertas
+ * terminan todas afuera es casi seguro otro vino).
+ */
+function catalogEvidence(idx, EVID) {
+  const per = new Map(); // wid → Map(key → ofertas)
+  for (const [o, e] of EVID) {
+    if (!per.has(e.wid)) per.set(e.wid, new Map());
+    const m = per.get(e.wid);
+    if (!m.has(e.key)) m.set(e.key, []);
+    m.get(e.key).push({ o, kept: e.final === undefined ? null : e.final === e.wid });
+  }
+  const members = new Map();
+  for (const w of idx.wines) {
+    const t = idx.canon.get(w) ?? w;
+    if (!members.has(t)) members.set(t, []);
+    members.get(t).push(w);
+  }
+  const med = (a) => {
+    if (!a.length) return null;
+    const s = [...a].sort((x, y) => x - y);
+    return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+  };
+  const row = (os) => {
+    const names = new Map();
+    for (const { o } of os) {
+      const n = o._displayName ?? o.name;
+      const e = names.get(n) ?? { n: 0, p: [] };
+      e.n++;
+      if (o.inStock && typeof o.priceArs === "number" && o.priceArs > 0) e.p.push(o.priceArs);
+      names.set(n, e);
+    }
+    return {
+      ofertas: os.length,
+      quedaron: os.filter((x) => x.kept === true).length,
+      precio: med(os.filter(({ o }) => o.comparable && o.inStock && typeof o.priceArs === "number").map(({ o }) => o.priceArs)),
+      ejemplos: [...names].sort((a, b) => b[1].n - a[1].n).slice(0, 5).map(([n, e]) => [n, e.n, med(e.p)]),
+    };
+  };
+  const out = [];
+  for (const [t, ws] of members) {
+    const bt = new Set(normalizeBodegaKey(t.bodega).split(" ").filter((x) => x.length > 1));
+    const key = (text) => [...lineTokens(text)].filter((x) => !bt.has(x)).sort().join(" ");
+    const own = new Set(ws.map((w) => key(w.linea)));
+    const raws = new Map();
+    for (const w of ws) {
+      for (const a of w.lineAliases?.length ? w.lineAliases : [""]) {
+        const k = key(a);
+        if (own.has(k)) continue;
+        if (!raws.has(k)) raws.set(k, new Set());
+        raws.get(k).add(a);
+      }
+    }
+    if (!raws.size) continue;
+    const ev = per.get(t.id) ?? new Map();
+    out.push({
+      id: t.id,
+      ids: ws.map((w) => w.id),
+      bodega: t.bodega,
+      linea: t.linea,
+      varietal: t.varietal ?? null,
+      color: t.color ?? null,
+      dulzor: t.dulzor ?? null,
+      manual: ws.some((w) => w.manual) || undefined,
+      propio: [...own].map((k) => ({ key: k, ...row(ev.get(k) ?? []) })),
+      alias: [...raws].map(([k, r]) => ({ key: k, raw: [...r], ...row(ev.get(k) ?? []) })),
+    });
+  }
+  return out;
 }
 
 /** Asigna una oferta parseada a un vino del catálogo, o null. */
@@ -394,11 +470,14 @@ async function main() {
   // se reconstruya las correcciones humanas no se aplicarían y las
   // fichas curadas se volverían a partir en silencio. Es idempotente.
   catalog.wines ??= [];
+  // Correcciones del sommelier primero, el manual después: gana lo curado.
+  const fixes = applyCatalogFixes(catalog.wines);
   const manual = applyManualOverlay(catalog.wines);
   const idx = buildCatalogIndex(catalog);
   console.log(
     `v2 grouping — ${offers.length} ofertas · catálogo ${catalog.wines.length} vinos` +
-      (manual.total ? ` (overlay manual: ${manual.added}+ ${manual.patched}~ ${manual.removed}-)` : ""),
+      (manual.total ? ` (overlay manual: ${manual.added}+ ${manual.patched}~ ${manual.removed}-)` : "") +
+      (fixes.total ? ` (sommelier: ${fixes.apply ? `${fixes.patched} corregidos` : `${fixes.total} correcciones en sombra`})` : ""),
   );
 
   // ── Errores de tipeo de las tiendas (lib-typos.mjs) ──
@@ -837,6 +916,7 @@ async function main() {
   // ── Asignación ──
   const groups = new Map(); // wineKey → { wine|null, offers: [] }
   const PARSE_CMP = new WeakSet(); // botella suelta según el parser (ignora stale)
+  const EVID = new Map(); // oferta asignada al catálogo → { wid, key, final }
   let assigned = 0;
   for (let i = 0; i < offers.length; i++) {
     const o = offers[i];
@@ -873,6 +953,7 @@ async function main() {
       _bodega: p.bodega ? (bodegaDisplay.get(normalizeBodegaKey(p.bodega)) ?? p.bodega) : null,
     });
     if (isComparable(p)) PARSE_CMP.add(g.offers[g.offers.length - 1]);
+    if (w && CATALOG_EVIDENCE_PATH) EVID.set(g.offers[g.offers.length - 1], { wid: w.id, key: p.lineTokens.join(" ") });
   }
   console.log(`  asignadas a catálogo: ${assigned} (${((100 * assigned) / offers.length).toFixed(1)}%) · grupos: ${groups.size}`);
 
@@ -1510,6 +1591,10 @@ async function main() {
   // ── Materializar grupos ──
   const outGroups = [];
   for (const [key, g] of groups) {
+    for (const o of g.offers) {
+      const e = EVID.get(o);
+      if (e) e.final = g.wine?.id ?? null;
+    }
     const offersOut = g.offers.map(({ _v1Slug, _bodega, _displayName, ...rest }) =>
       _displayName ? { ...rest, name: _displayName } : rest,
     );
@@ -1826,6 +1911,19 @@ async function main() {
     productGroups: outGroups,
   };
   writeFileSync(OUT_PATH, JSON.stringify(out));
+
+  if (CATALOG_EVIDENCE_PATH) {
+    const ev = catalogEvidence(idx, EVID);
+    writeFileSync(
+      CATALOG_EVIDENCE_PATH,
+      JSON.stringify({
+        _doc: "Por vino del catálogo con alias que no son el nombre de su propia línea: qué ofertas captura cada alias y si terminaron en esa ficha. Lo escribe build-groups-v2.mjs; lo lee sommelier.mjs (auditoría del catálogo).",
+        generatedAt: raw.generatedAt ?? null,
+        entries: ev,
+      }) + "\n",
+    );
+    console.log(`  evidencia del catálogo: ${ev.length} vinos con alias ajenos a su línea → ${CATALOG_EVIDENCE_PATH}`);
+  }
 
   if (PUBLISH) {
     // Registro de slugs: lo ya registrado + lo asignado en esta corrida.

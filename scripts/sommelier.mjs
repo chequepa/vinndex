@@ -63,7 +63,13 @@ import {
   buildAuditPrompt,
   parseAuditOutput,
   checksConsensus,
+  SYSTEM_CATALOGO,
+  SCHEMA_CATALOGO,
+  buildCatalogPrompt,
+  parseCatalogOutput,
+  catalogConsensus,
 } from "./lib-sommelier.mjs";
+import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { lineTokens } from "./stage4-token-merge.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -110,6 +116,16 @@ const DOBLE = process.env.SOMMELIER_DOBLE === "1" || process.env.SOMMELIER_DOBLE
 const DUP_CASES_PER_REQUEST = 25;
 const DUP_MAX_CANDS = 6;
 const AUDIT_FICHAS_PER_REQUEST = 40;
+// SOMMELIER_CATALOGO=1: arma (una vez) la auditoría del catálogo —alias y
+// nombres de línea— sobre data/sommelier/catalog-evidence.json, que escribe
+// build-groups-v2.mjs. El consenso va a data/sommelier/catalog-fixes.json,
+// que el agrupador aplica sólo con `apply: true` (en sombra hasta revisar).
+const CATALOGO = process.env.SOMMELIER_CATALOGO === "1" || process.env.SOMMELIER_CATALOGO === "true";
+const CATALOG_ENTRIES_PER_REQUEST = 25;
+const CATALOG_MAX_HERMANOS = 150;
+const EVIDENCE_PATH = resolve(DIR, "catalog-evidence.json");
+const FIXES_PATH = resolve(DIR, "catalog-fixes.json");
+const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 
@@ -132,6 +148,7 @@ function loadState() {
 function save(verdicts, state) {
   mkdirSync(DIR, { recursive: true });
   writeFileSync(VERDICTS_PATH, JSON.stringify(verdicts) + "\n");
+  if (verdicts.catalogo) writeCatalogFixes(verdicts);
   state.log = state.log.slice(-60);
   writeFileSync(STATE_PATH, JSON.stringify(state, null, 1) + "\n");
 }
@@ -500,6 +517,81 @@ function checkRequests(key, u, checks) {
   return reqs;
 }
 
+// ── Auditoría del catálogo ──────────────────────────────────────────────────
+
+function planCatalog() {
+  const ev = readJson(EVIDENCE_PATH, null);
+  if (!ev?.entries?.length) return null;
+  const wines = readJson(CATALOG_PATH, { wines: [] }).wines ?? [];
+  applyManualOverlay(wines);
+  const sib = new Map();
+  for (const w of wines) {
+    const b = normalizeBodegaKey(w.bodega);
+    if (!sib.has(b)) sib.set(b, []);
+    sib.get(b).push({ linea: w.linea, varietal: w.varietal ?? null, color: w.color ?? null, dulzor: w.dulzor ?? null, storeCount: w.storeCount ?? 0 });
+  }
+  // Lo curado a mano no se audita: ya lo miró una persona.
+  const byB = new Map();
+  for (const e of ev.entries) {
+    if (e.manual) continue;
+    const b = normalizeBodegaKey(e.bodega);
+    if (!byB.has(b)) byB.set(b, []);
+    byB.get(b).push(e);
+  }
+  const units = {};
+  let vinos = 0, alias = 0;
+  for (const [b, es] of byB) {
+    const hermanos = (sib.get(b) ?? []).sort((x, y) => y.storeCount - x.storeCount).slice(0, CATALOG_MAX_HERMANOS);
+    for (let k = 0; k < es.length; k += CATALOG_ENTRIES_PER_REQUEST) {
+      const entries = es.slice(k, k + CATALOG_ENTRIES_PER_REQUEST);
+      units[`k:${shortHash(b + "|" + entries.map((e) => e.id).join(","), 12)}`] = { bodega: es[0].bodega, hermanos, entries, passes: {} };
+      vinos += entries.length;
+      alias += entries.reduce((s2, e) => s2 + e.alias.length, 0);
+    }
+  }
+  return { plannedAt: new Date().toISOString(), evidenceAt: ev.generatedAt ?? null, units, plan: { vinos, alias } };
+}
+
+function catalogRequests(key, u) {
+  const reqs = [];
+  for (const pass of ["A", "B"]) {
+    if (u.passes?.[pass]) continue;
+    const idx = u.entries.map((_, i) => i);
+    const order = pass === "A" ? idx : shuffled(idx, parseInt(shortHash(key + pass, 8), 16));
+    const built = buildCatalogPrompt(u, order);
+    reqs.push({
+      custom_id: `k-${shortHash(key, 16)}-${pass}`,
+      meta: { kind: "catalogo", key, pass, labeled: built.labeled },
+      estUsd: estimateCost(SYSTEM_CATALOGO.length + built.text.length, 3_000),
+      params: {
+        model: SOMMELIER_MODEL,
+        max_tokens: 32_000,
+        system: [{ type: "text", text: SYSTEM_CATALOGO, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: built.text }],
+        output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA_CATALOGO } },
+      },
+    });
+  }
+  return reqs;
+}
+
+function writeCatalogFixes(verdicts) {
+  const prev = readJson(FIXES_PATH, {});
+  const wines = catalogConsensus(verdicts.catalogo);
+  writeFileSync(
+    FIXES_PATH,
+    JSON.stringify(
+      {
+        _doc: "Correcciones del catálogo por consenso de las dos pasadas del sommelier (alias que capturan otro vino, nombres de línea mal escritos). Lo escribe scripts/sommelier.mjs; lo aplica build-groups-v2.mjs ANTES de catalog-manual.json, y sólo con apply=true o SOMMELIER_CATALOG_APPLY=1.",
+        apply: prev.apply === true,
+        wines,
+      },
+      null,
+      1,
+    ) + "\n",
+  );
+}
+
 // ── Resultados ──────────────────────────────────────────────────────────────
 
 function textOf(message) {
@@ -548,6 +640,15 @@ function handleResult(meta, out, usd, verdicts, state) {
     const intrusos = parseAuditOutput(out, meta.fichaIdx, verdicts.checks.fichas);
     u.passes[meta.pass] = { intrusos, at, usd: Math.round(usd * 10000) / 10000 };
     return `auditoría ${meta.key} [${meta.pass}]: ${intrusos.length} intrusos`;
+  }
+  if (meta.kind === "catalogo") {
+    const u = verdicts.catalogo?.units?.[meta.key];
+    if (!u) return null;
+    const res = parseCatalogOutput(out, meta.labeled);
+    u.passes[meta.pass] = { res, at, usd: Math.round(usd * 10000) / 10000 };
+    const aj = Object.values(res).reduce((s2, r) => s2 + r.ajenos.length, 0);
+    const ln = Object.values(res).filter((r) => r.linea).length;
+    return `catálogo ${u.bodega} [${meta.pass}]: ${aj} alias ajenos, ${ln} líneas a renombrar`;
   }
   if (meta.kind === "bodega") {
     const parsed = parseBodegaOutput(out, meta.labeled);
@@ -604,7 +705,7 @@ async function collect(client, verdicts, state) {
   for await (const r of await client.messages.batches.results(inf.batchId)) {
     const meta = metas[r.custom_id];
     if (!meta) continue;
-    const failKey = meta.unitKey ?? meta.kind;
+    const failKey = meta.unitKey ?? meta.key ?? meta.kind;
     if (r.result.type !== "succeeded") {
       bad++;
       state.failures[failKey] = (state.failures[failKey] ?? 0) + 1;
@@ -655,6 +756,19 @@ async function run() {
   // vuelve a mandar en la próxima corrida y se paga dos veces.
   if (!dry) mkdirSync(DIR, { recursive: true });
 
+  // El plan se guarda aunque haya un batch en vuelo: las corridas del cron
+  // no llevan SOMMELIER_CATALOGO y lo continúan desde verdicts.catalogo.
+  if (CATALOGO && !verdicts.catalogo) {
+    verdicts.catalogo = planCatalog();
+    if (verdicts.catalogo) {
+      const n = Object.keys(verdicts.catalogo.units).length;
+      log(state, `auditoría del catálogo planeada: ${verdicts.catalogo.plan.vinos} vinos, ${verdicts.catalogo.plan.alias} alias (${n} unidades × 2 pasadas)`);
+    } else {
+      console.log("auditoría del catálogo: falta data/sommelier/catalog-evidence.json (lo escribe build-groups-v2.mjs --publish)");
+    }
+  }
+  if (!dry && verdicts.catalogo && state.inflight) save(verdicts, state);
+
   if (state.inflight) {
     if (dry) {
       console.log(`(dry-run) hay un batch en vuelo: ${state.inflight.batchId}`);
@@ -702,6 +816,16 @@ async function run() {
   for (const [key, u] of Object.entries(verdicts.checks?.units ?? {})) {
     if ((state.failures[key] ?? 0) >= MAX_FAILURES) continue;
     const rs = checkRequests(key, u, verdicts.checks);
+    if (!rs.length) continue;
+    const c = rs.reduce((s2, r) => s2 + r.estUsd, 0);
+    if (requests.length + rs.length > MAX_REQUESTS) break;
+    if (est + c > remaining) break;
+    requests.push(...rs);
+    est += c;
+  }
+  for (const [key, u] of Object.entries(verdicts.catalogo?.units ?? {})) {
+    if ((state.failures[key] ?? 0) >= MAX_FAILURES) continue;
+    const rs = catalogRequests(key, u);
     if (!rs.length) continue;
     const c = rs.reduce((s2, r) => s2 + r.estUsd, 0);
     if (requests.length + rs.length > MAX_REQUESTS) break;
@@ -768,6 +892,13 @@ function status() {
     const done = us.filter((u) => u.passes?.A && u.passes?.B).length;
     const cons = checksConsensus(verdicts.checks);
     console.log(`  doble chequeo: ${done}/${us.length} unidades con dos pasadas · consenso: ${cons.merges.length} fusiones, ${cons.ejects.size} intrusos · ${verdicts.checks.apply ? "APLICADO" : "en sombra (checks.apply=false)"}`);
+  }
+  if (verdicts.catalogo) {
+    const us = Object.values(verdicts.catalogo.units);
+    const done = us.filter((u) => u.passes?.A && u.passes?.B).length;
+    const fx = catalogConsensus(verdicts.catalogo);
+    const fixes = readJson(FIXES_PATH, {});
+    console.log(`  auditoría del catálogo: ${done}/${us.length} unidades con dos pasadas · consenso: ${fx.filter((f) => f.quitarAliases).length} vinos con alias a sacar, ${fx.filter((f) => f.linea).length} líneas a renombrar · ${fixes.apply ? "APLICADO" : "en sombra (catalog-fixes.json apply=false)"}`);
   }
   console.log(`  gasto del ciclo ${ck}: $${(state.spend[ck] ?? 0).toFixed(2)} de $${BUDGET_USD}`);
   console.log(`  batch en vuelo: ${state.inflight ? `${state.inflight.batchId} (${state.inflight.requests} pedidos, desde ${state.inflight.submittedAt})` : "ninguno"}`);
