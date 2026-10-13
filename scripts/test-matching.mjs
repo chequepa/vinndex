@@ -14,7 +14,7 @@ import { hardConflict, lineRelation, lineTokens } from "./stage4-token-merge.mjs
 import { secondaryKey } from "./remerge-groups.mjs";
 import { NAME_PREFIX_TO_BRAND, canonicalizeName } from "./lib-identity.mjs";
 import { isValidEan, eanFromSku } from "./lib-ean.mjs";
-import { staleStores, updateActivity } from "./lib-store-activity.mjs";
+import { staleStores, updateActivity, inflatedStores } from "./lib-store-activity.mjs";
 
 const g = (canonicalName, extra = {}) => ({ canonicalName, type: null, varietals: [], brand: null, ...extra });
 
@@ -460,6 +460,28 @@ console.log("\n=== ACTIVIDAD DE PRECIOS (vinotecas abandonadas) ===");
   const ok3 = b.stores.t.lastPriceChange === "2026-09-30";
   if (!ok2 || !ok3) failed++;
   console.log(`  ${ok2 && ok3 ? "✅" : "❌ FALLA"}  precios iguales no mueven la fecha; un precio distinto sí`);
+}
+
+console.log("\n=== VINOTECAS CON PRECIOS INFLADOS EN BLOQUE ===");
+{
+  // 20 vinos: "caja" cobra 3,5× (felice-vinos, 13/10), "cara" 1,4× (la
+  // más cara legítima, ~1,5×), "nueva" 3,5× pero en pocas fichas.
+  const groups = [];
+  for (let i = 0; i < 20; i++) {
+    const base = 10000 + i * 1000;
+    const g = [
+      { storeSlug: "a", priceArs: base, inStock: true, comparable: true },
+      { storeSlug: "b", priceArs: base * 1.1, inStock: true, comparable: true },
+      { storeSlug: "cara", priceArs: base * 1.4, inStock: true, comparable: true },
+      { storeSlug: "caja", priceArs: base * 3.5, inStock: true, comparable: true },
+    ];
+    if (i < 5) g.push({ storeSlug: "nueva", priceArs: base * 3.5, inStock: true, comparable: true });
+    groups.push(g);
+  }
+  const { flagged } = inflatedStores(groups);
+  const ok = flagged.has("caja") && !flagged.has("cara") && !flagged.has("a") && !flagged.has("nueva");
+  if (!ok) failed++;
+  console.log(`  ${ok ? "✅" : "❌ FALLA"}  3,5× en 20 fichas = inflada; 1,4× no; 5 fichas no alcanzan  →  ${[...flagged.keys()].join(",") || "ninguna"}`);
 }
 
 console.log("\n=== EAN (evidencia de identidad) ===");

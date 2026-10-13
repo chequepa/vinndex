@@ -45,7 +45,7 @@ import {
   cleanScraperBrand,
 } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND, contentTokens } from "./lib-identity.mjs";
-import { staleStores } from "./lib-store-activity.mjs";
+import { staleStores, inflatedStores } from "./lib-store-activity.mjs";
 import { colorOf, hardConflict, lineRelation, lineTokens, discriminatorSet, isIdentityToken, styleSet, isExcluded } from "./stage4-token-merge.mjs";
 import { collapseRedirects } from "./lib-redirects.mjs";
 import { dropResolved } from "./lib-carryover.mjs";
@@ -836,6 +836,7 @@ async function main() {
 
   // ── Asignación ──
   const groups = new Map(); // wineKey → { wine|null, offers: [] }
+  const PARSE_CMP = new WeakSet(); // botella suelta según el parser (ignora stale)
   let assigned = 0;
   for (let i = 0; i < offers.length; i++) {
     const o = offers[i];
@@ -871,8 +872,32 @@ async function main() {
       _v1Slug: o.v1Slug, // sólo para el mapping de slugs; se borra al final
       _bodega: p.bodega ? (bodegaDisplay.get(normalizeBodegaKey(p.bodega)) ?? p.bodega) : null,
     });
+    if (isComparable(p)) PARSE_CMP.add(g.offers[g.offers.length - 1]);
   }
   console.log(`  asignadas a catálogo: ${assigned} (${((100 * assigned) / offers.length).toFixed(1)}%) · grupos: ${groups.size}`);
+
+  // ── Vinotecas con precios inflados en bloque (lib-store-activity) ──
+  // Antes de las fusiones y del partidor por precio: una tienda que
+  // publica la caja como botella no tiene que empujar splits ni bloquear
+  // fusiones. Sus ofertas se publican como "Precio a verificar"
+  // (priceSuspect), fuera del mejor precio y del índice.
+  {
+    const { flagged } = inflatedStores(
+      [...groups.values()].map((g) => g.offers),
+      { isCmp: (o) => PARSE_CMP.has(o) },
+    );
+    let n = 0;
+    for (const g of groups.values()) {
+      for (const o of g.offers) {
+        if (!flagged.has(o.storeSlug)) continue;
+        o.priceSuspect = true;
+        o.comparable = undefined;
+        n++;
+      }
+    }
+    const list = [...flagged].map(([s, e]) => `${s} ${e.ratio}× (${e.shared})`).join(", ");
+    console.log(`  vinotecas con precios inflados en bloque: ${flagged.size}${list ? ` → ${list} · ${n} ofertas a verificar` : ""}`);
+  }
 
   // ── Compatibilidad de PRECIO entre dos grupos ──
   // El precio es evidencia de identidad en vino: dos grupos cuya mediana

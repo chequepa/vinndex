@@ -96,3 +96,61 @@ export function staleStores(activity, today, days = STALE_DAYS) {
   }
   return out;
 }
+
+// ── Vinotecas con precios inflados en bloque ──
+// Una tienda cuyas botellas cuestan, en mediana, el doble o más que en el
+// resto del mercado para los MISMOS vinos no está vendiendo botellas a
+// ese precio: publica la caja (bodegas que venden por 6 sin decirlo) o el
+// scraper lee la variante equivocada. Medido el 13/10/2026: felice-vinos
+// (alta en #210) a 3,5× en 52 vinos (DV Catena Cabernet-Malbec $79.000
+// contra $22.000 en el resto), y las tiendas propias de Rutini, Luigi
+// Bosca, Escorihuela Gascón, Bianchi y Fin del Mundo a 6–8×. La tienda
+// "legítima" más cara del mercado está a 1,5×. El sanity por ficha
+// (precio >4× de la mediana) no alcanza: con pocas tiendas en la ficha
+// la mediana es la propia tienda inflada.
+//
+// Se mide en cada corrida, así que una tienda que corrige sus precios
+// vuelve sola. Sólo el lado alto: una tienda sistemáticamente barata es
+// justo la que el comparador tiene que mostrar.
+export const INFLATED_RATIO = 2;
+export const INFLATED_MIN_SHARED = 15;
+
+function median(a) {
+  const s = [...a].sort((x, y) => x - y);
+  const n = s.length;
+  return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+}
+
+/**
+ * groups: iterable de listas de ofertas {storeSlug, priceArs, inStock,
+ * isCollector}. isCmp(o): la oferta dice ser una botella de 750 suelta.
+ * Por ficha con ≥3 tiendas comparables, cada tienda se compara (su
+ * precio más bajo) contra la mediana de las OTRAS. Devuelve
+ * { flagged: Map(slug → {shared, ratio}), all: Map(slug → {shared, ratio}) }.
+ */
+export function inflatedStores(groups, { isCmp = (o) => o.comparable, ratio = INFLATED_RATIO, minShared = INFLATED_MIN_SHARED } = {}) {
+  const per = new Map();
+  for (const offers of groups) {
+    const byStore = new Map();
+    for (const o of offers ?? []) {
+      if (!o?.inStock || o.isCollector || typeof o.priceArs !== "number" || o.priceArs < 1500 || !isCmp(o)) continue;
+      const p = byStore.get(o.storeSlug);
+      if (p == null || o.priceArs < p) byStore.set(o.storeSlug, o.priceArs);
+    }
+    if (byStore.size < 3) continue;
+    for (const [s, p] of byStore) {
+      const others = [];
+      for (const [t, q] of byStore) if (t !== s) others.push(q);
+      if (!per.has(s)) per.set(s, []);
+      per.get(s).push(p / median(others));
+    }
+  }
+  const all = new Map();
+  const flagged = new Map();
+  for (const [s, rs] of per) {
+    const e = { shared: rs.length, ratio: Math.round(median(rs) * 100) / 100 };
+    all.set(s, e);
+    if (e.shared >= minShared && e.ratio >= ratio) flagged.set(s, e);
+  }
+  return { flagged, all };
+}
