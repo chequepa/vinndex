@@ -1709,7 +1709,11 @@ async function main() {
         .replace(/[()]/g, " ")
         .split(" ")
         .filter((t) => t && !norm(w.varietal ?? "").includes(t)).length === 0;
-    if (w && (lineaHasBodega || lineaSoloFormato)) {
+    // `titulo`: la línea corregida por el sommelier (lib-catalog-manual
+    // applyCatalogFixes). Ya viene pensada para título, sin las reglas de
+    // arriba, que existen para los nombres de línea minados.
+    const lineaTitulo = w ? (w.titulo ?? w.linea) : null;
+    if (w && !w.titulo && (lineaHasBodega || lineaSoloFormato)) {
       // "Catena D.V. Cabernet" como línea es el LLM confundiendo la bodega
       // con la etiqueta; el nombre más frecuente entre las tiendas ("DV
       // Catena Cabernet-Cabernet") es mejor título.
@@ -1718,7 +1722,7 @@ async function main() {
       const varietalDisplay = w.varietal
         ? w.varietal.split("+").map((v) => v[0].toUpperCase() + v.slice(1)).join(" ")
         : "";
-      const lineaNorm = norm(w.linea);
+      const lineaNorm = norm(lineaTitulo);
       const needsVarietal =
         varietalDisplay &&
         !w.varietal.split("+").every((v) => lineaNorm.includes(norm(v)));
@@ -1735,10 +1739,10 @@ async function main() {
       // Un rosado del catálogo cuya línea/varietal no lo dicen ("Trumpeter
       // Reserva Malbec" para el Rosé de Malbec) lleva "Rosé" en el título.
       const needsRose =
-        w.color === "rosado" && !/\b(rose|rosado|rosada)\b/.test(norm(`${w.linea} ${w.varietal ?? ""}`));
+        w.color === "rosado" && !/\b(rose|rosado|rosada)\b/.test(norm(`${lineaTitulo} ${w.varietal ?? ""}`));
       canonicalName = [
         pre.length ? cap(pre.join(" ")) : "",
-        w.linea,
+        lineaTitulo,
         post.length ? cap(post.join(" ")) : "",
         needsVarietal ? varietalDisplay : "",
         needsRose ? "Rosé" : "",
