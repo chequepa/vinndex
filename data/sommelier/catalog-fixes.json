@@ -1,6 +1,6 @@
 {
  "_doc": "Correcciones del catálogo por consenso de las dos pasadas del sommelier (alias que capturan otro vino, nombres de línea mal escritos). Lo escribe scripts/sommelier.mjs; lo aplica build-groups-v2.mjs ANTES de catalog-manual.json, y sólo con apply=true o SOMMELIER_CATALOG_APPLY=1.",
- "apply": false,
+ "apply": true,
  "wines": [
   {
    "id": "catena-zapata-saint-felicien-malbec-tinto",
