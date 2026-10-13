@@ -22,6 +22,7 @@ import {
   buildCatalogPrompt,
   parseCatalogOutput,
   catalogConsensus,
+  CATALOG_PROMPT_VERSION,
 } from "./lib-sommelier.mjs";
 import { applyCatalogFixes } from "./lib-catalog-manual.mjs";
 import { writeFileSync, rmSync } from "node:fs";
@@ -310,9 +311,14 @@ console.log("\n=== AUDITORÍA DEL CATÁLOGO (alias y líneas) ===");
   const B = buildCatalogPrompt(u, [1, 0]);
   check("el prompt muestra el alias vacío como (nada)", A.text.includes("V1.a1 palabras (nada)"));
   // Pasada A: saca el vacío; B (orden invertido: Don Nicanor es V2) también, y además el typo (no hay consenso en el typo).
-  u.passes.A = { res: parseCatalogOutput({ vinos: [{ v: "V1", alias_ajenos: ["V1.a1"], linea: null, motivo: "otro vino" }, { v: "V2", alias_ajenos: [], linea: "Emilia", motivo: "typo" }] }, A.labeled) };
-  u.passes.B = { res: parseCatalogOutput({ vinos: [{ v: "V2", alias_ajenos: ["a1", "V2.a2"], linea: null, motivo: "otro" }, { v: "V1", alias_ajenos: [], linea: "emilia", motivo: "typo" }] }, B.labeled) };
+  const V = CATALOG_PROMPT_VERSION;
+  u.passes.A = { v: V, res: parseCatalogOutput({ vinos: [{ v: "V1", alias_ajenos: ["V1.a1"], linea: null, motivo: "otro vino" }, { v: "V2", alias_ajenos: [], linea: "Emilia", motivo: "typo" }] }, A.labeled) };
+  u.passes.B = { v: V, res: parseCatalogOutput({ vinos: [{ v: "V2", alias_ajenos: ["a1", "V2.a2"], linea: null, motivo: "otro" }, { v: "V1", alias_ajenos: [], linea: "emilia", motivo: "typo" }] }, B.labeled) };
+  // Claude a veces contesta con las palabras en vez de la etiqueta (v1: 0 alias sacados).
+  const porPalabras = parseCatalogOutput({ vinos: [{ v: "V1", alias_ajenos: ["(nada)", "Don Nicanr"], linea: null, motivo: "" }] }, A.labeled);
+  check("acepta '(nada)' y las palabras del alias además de la etiqueta", porPalabras[0].ajenos.join("|") === "|don nicanr");
   const fx = catalogConsensus({ units: { k: u } });
+  check("pasadas de una versión vieja del prompt no cuentan", catalogConsensus({ units: { k: { ...u, passes: { A: { ...u.passes.A, v: V - 1 }, B: u.passes.B } } } }).length === 0);
   const dn = fx.filter((f) => f.id.startsWith("ns-dn"));
   check("alias ajeno en las dos pasadas: sale, en todas las entradas plegadas", dn.length === 2 && dn.every((f) => f.quitarAliases.join() === "nieto senetiner"));
   check("alias ajeno en una sola pasada: queda", !dn.some((f) => f.quitarAliases.includes("don nicanr")));

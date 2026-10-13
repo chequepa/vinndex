@@ -68,6 +68,7 @@ import {
   buildCatalogPrompt,
   parseCatalogOutput,
   catalogConsensus,
+  CATALOG_PROMPT_VERSION,
 } from "./lib-sommelier.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
 import { lineTokens } from "./stage4-token-merge.mjs";
@@ -555,7 +556,7 @@ function planCatalog() {
 function catalogRequests(key, u) {
   const reqs = [];
   for (const pass of ["A", "B"]) {
-    if (u.passes?.[pass]) continue;
+    if (u.passes?.[pass]?.v === CATALOG_PROMPT_VERSION) continue;
     const idx = u.entries.map((_, i) => i);
     const order = pass === "A" ? idx : shuffled(idx, parseInt(shortHash(key + pass, 8), 16));
     const built = buildCatalogPrompt(u, order);
@@ -645,7 +646,7 @@ function handleResult(meta, out, usd, verdicts, state) {
     const u = verdicts.catalogo?.units?.[meta.key];
     if (!u) return null;
     const res = parseCatalogOutput(out, meta.labeled);
-    u.passes[meta.pass] = { res, at, usd: Math.round(usd * 10000) / 10000 };
+    u.passes[meta.pass] = { res, at, usd: Math.round(usd * 10000) / 10000, v: CATALOG_PROMPT_VERSION };
     const aj = Object.values(res).reduce((s2, r) => s2 + r.ajenos.length, 0);
     const ln = Object.values(res).filter((r) => r.linea).length;
     return `catálogo ${u.bodega} [${meta.pass}]: ${aj} alias ajenos, ${ln} líneas a renombrar`;

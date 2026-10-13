@@ -576,7 +576,13 @@ ${CRITERIO}
 
 Señales: si el sommelier sacó de la ficha casi todas las ofertas de un alias, casi seguro es ajeno; un precio a más del doble o menos de la mitad del de la línea también. Un alias sin ofertas hoy se juzga sólo por sus palabras.
 
-Quitar un alias bueno deja sin ficha a las ofertas que lo usan: marcá sólo lo que es claramente otro vino. Respondé SOLO con el JSON del schema, una entrada por vino (V1, V2...), con un motivo de una línea.`;
+Quitar un alias bueno deja sin ficha a las ofertas que lo usan: marcá sólo lo que es claramente otro vino. Respondé SOLO con el JSON del schema, una entrada por vino (V1, V2...), con un motivo de una línea. En alias_ajenos van las ETIQUETAS de los alias (V1.a1, V3.a2...), no sus palabras; si el motivo dice que un alias es otro vino, su etiqueta tiene que estar en alias_ajenos.`;
+
+// Sube cuando cambia el prompt o la lectura de la respuesta: las pasadas de
+// otra versión se vuelven a pedir (sommelier.mjs catalogRequests).
+// v2 (13/10): la v1 no pedía etiquetas y la lectura descartaba "(nada)" y
+// las palabras del alias: 0 alias sacados con motivos que decían "otro vino".
+export const CATALOG_PROMPT_VERSION = 2;
 
 export const SCHEMA_CATALOGO = {
   type: "object",
@@ -634,21 +640,35 @@ export function buildCatalogPrompt(unit, order) {
   return { text: lines.join("\n"), labeled };
 }
 
-/** → { [entryIdx]: { ajenos: [key], linea: string|null } } */
+/**
+ * → { [entryIdx]: { ajenos: [key], linea: string|null } }. Acepta la
+ * etiqueta (V1.a1, a1) o las palabras del alias tal como se mostraron
+ * ("(nada)", "nieto senetiner").
+ */
 export function parseCatalogOutput(out, labeled) {
   const byV = new Map(labeled.map((l) => [l.v, l]));
   const res = {};
+  const words = (x) => stripAccents(String(x)).toLowerCase().replace(/["'«»]/g, "").replace(/\s+/g, " ").trim();
   for (const r of out?.vinos ?? []) {
     const l = byV.get(String(r?.v ?? "").trim());
     if (!l) continue;
+    const byWords = new Map(Object.values(l.al).map((k) => [words(k).split(" ").sort().join(" "), k]));
     const ajenos = [];
+    const noLeidos = [];
     for (const a of r.alias_ajenos ?? []) {
       const lab = String(a).trim();
-      const k = l.al[lab] ?? l.al[`${l.v}.${lab.replace(/^.*\./, "")}`];
-      if (k !== undefined && !ajenos.includes(k)) ajenos.push(k);
+      const w = words(lab);
+      const k =
+        l.al[lab] ??
+        l.al[`${l.v}.${lab.replace(/^.*\./, "")}`] ??
+        (/^\(?(nada|vacio|sin linea)\)?$/.test(w) && Object.values(l.al).includes("") ? "" : undefined) ??
+        byWords.get(w.split(" ").sort().join(" "));
+      if (k === undefined) noLeidos.push(lab.slice(0, 80));
+      else if (!ajenos.includes(k)) ajenos.push(k);
     }
     const linea = typeof r.linea === "string" && r.linea.trim() ? r.linea.trim() : null;
     res[l.ei] = { ajenos, linea, motivo: typeof r.motivo === "string" ? r.motivo.slice(0, 300) : "" };
+    if (noLeidos.length) res[l.ei].noLeidos = noLeidos; // para diagnosticar, no se aplica
   }
   return res;
 }
@@ -663,7 +683,9 @@ export function catalogConsensus(catalogo) {
   const fixes = [];
   const fold = (x) => stripAccents(String(x)).toLowerCase().replace(/\s+/g, " ").trim();
   for (const u of Object.values(catalogo?.units ?? {})) {
-    const A = u.passes?.A?.res, B = u.passes?.B?.res;
+    // Sólo pasadas de la versión vigente del prompt (las viejas se re-piden).
+    const cur = (p) => (p?.v === CATALOG_PROMPT_VERSION ? p.res : null);
+    const A = cur(u.passes?.A), B = cur(u.passes?.B);
     if (!A || !B) continue;
     u.entries.forEach((e, ei) => {
       const a = A[ei], b = B[ei];
