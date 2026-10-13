@@ -691,7 +691,12 @@ export function catalogConsensus(catalogo) {
       const a = A[ei], b = B[ei];
       if (!a || !b) return;
       const ajenos = a.ajenos.filter((k) => b.ajenos.includes(k));
-      const linea = a.linea && b.linea && fold(a.linea) === fold(b.linea) && fold(a.linea) !== fold(e.linea) ? a.linea : null;
+      // Un nombre que sólo SACA palabras del viejo ("Coquena Malbec" →
+      // "Coquena") no mejora el título: el varietal ya se agrega aparte, y
+      // con su grafía de código ("Torrontes", "Cabernet"). Medido 13/10.
+      const toks = (x) => fold(x).replace(/[^a-z0-9 ]/g, " ").split(" ").filter(Boolean);
+      const soloSaca = (n) => toks(n).every((t) => toks(e.linea).includes(t));
+      const linea = a.linea && b.linea && fold(a.linea) === fold(b.linea) && fold(a.linea) !== fold(e.linea) && !soloSaca(a.linea) ? a.linea : null;
       if (!ajenos.length && !linea) return;
       const raws = e.alias.filter((r) => ajenos.includes(r.key)).flatMap((r) => r.raw);
       const nota = [a.motivo, b.motivo].filter(Boolean).join(" | ").slice(0, 400);

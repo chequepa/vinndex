@@ -112,7 +112,8 @@ export function applyManualOverlay(wines, { path = MANUAL_PATH } = {}) {
 const FIXES_PATH = resolve(__dirname, "..", "data/sommelier/catalog-fixes.json");
 
 /**
- * Entradas: { id, quitarAliases?: string[], linea?: string }. Quitar
+ * Entradas: { id, quitarAliases?: string[], linea?: string }. `linea`
+ * se publica como `titulo` (sólo el título de la ficha). Quitar
  * todos los alias deja la línea como único alias: una lista vacía
  * significa "línea vacía" para el índice del catálogo, justo el error
  * que se está corrigiendo.
@@ -137,8 +138,12 @@ export function applyCatalogFixes(wines, { path = FIXES_PATH, apply } = {}) {
     if (at === undefined) continue;
     const w = { ...wines[at] };
     let changed = false;
-    if (typeof fx.linea === "string" && fx.linea.trim() && fx.linea !== w.linea) {
-      w.linea = fx.linea.trim();
+    // La línea corregida es sólo TÍTULO: cambiar `linea` cambia la clave con
+    // que se emparejan las ofertas (medido 13/10: "Cayetana Pedro Ximénez"
+    // perdía su vino y otras fichas cambiaban de título por la regla de
+    // "línea con la bodega adentro"). build-groups-v2 titula con `titulo`.
+    if (typeof fx.linea === "string" && fx.linea.trim() && fx.linea.trim() !== (w.titulo ?? w.linea)) {
+      w.titulo = fx.linea.trim();
       changed = true;
     }
     if (fx.quitarAliases?.length) {

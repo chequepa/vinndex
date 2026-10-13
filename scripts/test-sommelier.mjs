@@ -318,11 +318,13 @@ console.log("\n=== AUDITORÍA DEL CATÁLOGO (alias y líneas) ===");
   const porPalabras = parseCatalogOutput({ vinos: [{ v: "V1", alias_ajenos: ["(nada)", "Don Nicanr"], linea: null, motivo: "" }] }, A.labeled);
   check("acepta '(nada)' y las palabras del alias además de la etiqueta", porPalabras[0].ajenos.join("|") === "|don nicanr");
   const fx = catalogConsensus({ units: { k: u } });
+  const soloSaca = catalogConsensus({ units: { k: { ...u, entries: [u.entries[0], { ...u.entries[1], linea: "Emilia Malbec" }], passes: { A: { v: V, res: { 1: { ajenos: [], linea: "Emilia" } } }, B: { v: V, res: { 1: { ajenos: [], linea: "Emilia" } } } } } } });
+  check("una línea que sólo saca palabras (el varietal) no se corrige", soloSaca.length === 0);
   check("pasadas de una versión vieja del prompt no cuentan", catalogConsensus({ units: { k: { ...u, passes: { A: { ...u.passes.A, v: V - 1 }, B: u.passes.B } } } }).length === 0);
   const dn = fx.filter((f) => f.id.startsWith("ns-dn"));
   check("alias ajeno en las dos pasadas: sale, en todas las entradas plegadas", dn.length === 2 && dn.every((f) => f.quitarAliases.join() === "nieto senetiner"));
   check("alias ajeno en una sola pasada: queda", !dn.some((f) => f.quitarAliases.includes("don nicanr")));
-  check("línea renombrada si las dos coinciden (sin contar mayúsculas)", fx.find((f) => f.id === "ns-emilia")?.linea === "Emilia");
+  check("línea corregida si las dos coinciden (sin contar mayúsculas)", fx.find((f) => f.id === "ns-emilia")?.linea === "Emilia");
   // Aplicación: quitar el único alias no deja la lista vacía (vacía = línea vacía).
   const tmp = join(tmpdir(), `catalog-fixes-test-${process.pid}.json`);
   writeFileSync(tmp, JSON.stringify({ apply: false, wines: [{ id: "x", quitarAliases: ["nieto senetiner"] }, { id: "y", quitarAliases: [""] }] }));
@@ -334,6 +336,10 @@ console.log("\n=== AUDITORÍA DEL CATÁLOGO (alias y líneas) ===");
   applyCatalogFixes(on, { path: tmp, apply: true });
   check("aplicado: el alias sale y queda la propia línea", on[0].lineAliases.join() === "don nicanor");
   check("aplicado: se puede quitar el alias vacío implícito", on[1].lineAliases.join() === "reserva rosado");
+  writeFileSync(tmp, JSON.stringify({ wines: [{ id: "z", linea: "Alma Roja Roble" }] }));
+  const ren = [{ id: "z", linea: "Roble", lineAliases: [] }];
+  applyCatalogFixes(ren, { path: tmp, apply: true });
+  check("la línea corregida es sólo título: la línea y los alias (con que se emparejan las ofertas) no cambian", ren[0].titulo === "Alma Roja Roble" && ren[0].linea === "Roble" && ren[0].lineAliases.length === 0);
   rmSync(tmp, { force: true });
 }
 
