@@ -33,6 +33,11 @@ on:
         type: boolean
         required: false
         default: false
+      catalogo:
+        description: "Armar la auditoría del catálogo (alias que capturan otro vino, nombres de línea). Va a data/sommelier/catalog-fixes.json; se aplica sólo con apply=true en ese archivo"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -69,6 +74,7 @@ jobs:
           SOMMELIER_MAX_REQUESTS: ${{ inputs.max_requests }}
           SOMMELIER_RETRY_LOW: ${{ inputs.retry_low }}
           SOMMELIER_DOBLE: ${{ inputs.doble_chequeo }}
+          SOMMELIER_CATALOGO: ${{ inputs.catalogo }}
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "Sin ANTHROPIC_API_KEY: el sommelier no corre."

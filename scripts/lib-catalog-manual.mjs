@@ -98,3 +98,64 @@ export function applyManualOverlay(wines, { path = MANUAL_PATH } = {}) {
 
   return stats;
 }
+
+// ── Correcciones del sommelier (data/sommelier/catalog-fixes.json) ──
+// Lo escribe scripts/sommelier.mjs con el consenso de las dos pasadas de
+// Claude sobre los alias y los nombres de línea del catálogo minado (13/10:
+// "nieto senetiner" era alias de Don Nicanor Malbec, "atamisque" de
+// Catalpa, "noemia" de A Lisa: la oferta con bodega + varietal a secas
+// caía en otra línea). Es un archivo de máquina, así que se aplica ANTES
+// del overlay manual: lo curado a mano siempre gana.
+//
+// En sombra hasta que alguien revisa una muestra: sólo se aplica con
+// `apply: true` en el archivo o SOMMELIER_CATALOG_APPLY=1.
+const FIXES_PATH = resolve(__dirname, "..", "data/sommelier/catalog-fixes.json");
+
+/**
+ * Entradas: { id, quitarAliases?: string[], linea?: string }. Quitar
+ * todos los alias deja la línea como único alias: una lista vacía
+ * significa "línea vacía" para el índice del catálogo, justo el error
+ * que se está corrigiendo.
+ * @returns {{patched:number,total:number,apply:boolean}}
+ */
+export function applyCatalogFixes(wines, { path = FIXES_PATH, apply } = {}) {
+  const stats = { patched: 0, total: 0, apply: false };
+  if (!existsSync(path)) return stats;
+  let doc;
+  try {
+    doc = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    // Archivo de máquina: ilegible = sin correcciones, no un error de nadie.
+    return stats;
+  }
+  stats.total = doc.wines?.length ?? 0;
+  stats.apply = apply ?? (doc.apply === true || process.env.SOMMELIER_CATALOG_APPLY === "1");
+  if (!stats.apply) return stats;
+  const byId = new Map(wines.map((w, i) => [w.id, i]));
+  for (const fx of doc.wines ?? []) {
+    const at = byId.get(fx?.id);
+    if (at === undefined) continue;
+    const w = { ...wines[at] };
+    let changed = false;
+    if (typeof fx.linea === "string" && fx.linea.trim() && fx.linea !== w.linea) {
+      w.linea = fx.linea.trim();
+      changed = true;
+    }
+    if (fx.quitarAliases?.length) {
+      const drop = new Set(fx.quitarAliases);
+      // Sin alias el índice usa [""] (build-groups-v2): también se puede quitar.
+      const cur = w.lineAliases?.length ? w.lineAliases : [""];
+      const kept = cur.filter((a) => !drop.has(a));
+      if (kept.length !== cur.length) {
+        w.lineAliases = kept.length ? kept : [w.linea.toLowerCase()];
+        changed = true;
+      }
+    }
+    if (changed) {
+      w.sommelierFix = true;
+      wines[at] = w;
+      stats.patched++;
+    }
+  }
+  return stats;
+}

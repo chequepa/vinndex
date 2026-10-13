@@ -19,7 +19,14 @@ import {
   applySommelier,
   sommelierGate,
   MIN_AGREEMENT,
+  buildCatalogPrompt,
+  parseCatalogOutput,
+  catalogConsensus,
 } from "./lib-sommelier.mjs";
+import { applyCatalogFixes } from "./lib-catalog-manual.mjs";
+import { writeFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 let pass = 0;
 let fail = 0;
@@ -285,6 +292,43 @@ console.log("\n=== DOBLE CHEQUEO (duplicados entre bodegas + auditoría) ===");
     units: { "d:3": { kind: "duplicados", cases: [[0, 1, 2], [2, 1]], passes: { A: { pairs: [[0, 1], [2, 1]] }, B: { pairs: [[0, 1], [2, 1]] } } } },
   });
   check("freno de cadenas: Pera y Manzana no quedan unidas por una ficha ambigua", cadena.merges.length === 1 && cadena.vetoed === 1);
+}
+
+console.log("\n=== AUDITORÍA DEL CATÁLOGO (alias y líneas) ===");
+{
+  const ev = (key, ofertas, quedaron, precio) => ({ key, ofertas, quedaron, precio, ejemplos: [] });
+  const u = {
+    bodega: "Nieto Senetiner",
+    hermanos: [{ linea: "Don Nicanor", varietal: "malbec", color: "tinto", storeCount: 20 }],
+    entries: [
+      { id: "ns-dn-malbec", ids: ["ns-dn-malbec", "ns-dn-malbec-sin-color"], linea: "Don Nicanor Malbec", varietal: "malbec", propio: [ev("don nicanor", 40, 38, 14000)], alias: [{ ...ev("", 12, 0, 8000), raw: ["nieto senetiner"] }, { ...ev("don nicanr", 2, 2, 14000), raw: ["don nicanr"] }] },
+      { id: "ns-emilia", ids: ["ns-emilia"], linea: "Emila", varietal: "malbec", propio: [ev("emila", 3, 3, 9000)], alias: [{ ...ev("emilia", 9, 9, 9000), raw: ["emilia"] }] },
+    ],
+    passes: {},
+  };
+  const A = buildCatalogPrompt(u, [0, 1]);
+  const B = buildCatalogPrompt(u, [1, 0]);
+  check("el prompt muestra el alias vacío como (nada)", A.text.includes("V1.a1 palabras (nada)"));
+  // Pasada A: saca el vacío; B (orden invertido: Don Nicanor es V2) también, y además el typo (no hay consenso en el typo).
+  u.passes.A = { res: parseCatalogOutput({ vinos: [{ v: "V1", alias_ajenos: ["V1.a1"], linea: null, motivo: "otro vino" }, { v: "V2", alias_ajenos: [], linea: "Emilia", motivo: "typo" }] }, A.labeled) };
+  u.passes.B = { res: parseCatalogOutput({ vinos: [{ v: "V2", alias_ajenos: ["a1", "V2.a2"], linea: null, motivo: "otro" }, { v: "V1", alias_ajenos: [], linea: "emilia", motivo: "typo" }] }, B.labeled) };
+  const fx = catalogConsensus({ units: { k: u } });
+  const dn = fx.filter((f) => f.id.startsWith("ns-dn"));
+  check("alias ajeno en las dos pasadas: sale, en todas las entradas plegadas", dn.length === 2 && dn.every((f) => f.quitarAliases.join() === "nieto senetiner"));
+  check("alias ajeno en una sola pasada: queda", !dn.some((f) => f.quitarAliases.includes("don nicanr")));
+  check("línea renombrada si las dos coinciden (sin contar mayúsculas)", fx.find((f) => f.id === "ns-emilia")?.linea === "Emilia");
+  // Aplicación: quitar el único alias no deja la lista vacía (vacía = línea vacía).
+  const tmp = join(tmpdir(), `catalog-fixes-test-${process.pid}.json`);
+  writeFileSync(tmp, JSON.stringify({ apply: false, wines: [{ id: "x", quitarAliases: ["nieto senetiner"] }, { id: "y", quitarAliases: [""] }] }));
+  const wines = () => [{ id: "x", linea: "Don Nicanor", lineAliases: ["nieto senetiner"] }, { id: "y", linea: "Reserva Rosado", lineAliases: [] }];
+  const off = wines();
+  const sOff = applyCatalogFixes(off, { path: tmp });
+  check("en sombra no toca el catálogo", sOff.patched === 0 && off[0].lineAliases[0] === "nieto senetiner");
+  const on = wines();
+  applyCatalogFixes(on, { path: tmp, apply: true });
+  check("aplicado: el alias sale y queda la propia línea", on[0].lineAliases.join() === "don nicanor");
+  check("aplicado: se puede quitar el alias vacío implícito", on[1].lineAliases.join() === "reserva rosado");
+  rmSync(tmp, { force: true });
 }
 
 console.log(`\n${pass} ok · ${fail} fallas`);
