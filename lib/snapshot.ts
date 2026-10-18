@@ -5,6 +5,7 @@ import type { ScrapedProduct } from "./adapters/types";
 import type { ProductGroup, ProductOffer } from "./matching";
 import { bestScoreFor } from "./scores";
 import { isJunkWineGroup, isNonWineGroup } from "./junkSlugs";
+import { resolveBrandFallback, type FallbackDeps } from "./brandFallback";
 import {
   buildVocabulary,
   correctTokens,
@@ -1285,34 +1286,7 @@ export function brandPages(): BrandPage[] {
   const pages: BrandPage[] = [];
   for (const [slug, { canonicalName, groups: gs }] of byKey.entries()) {
     if (gs.length < 3) continue;
-    const stores = new Set<string>();
-    const regions = new Set<string>();
-    const varietals = new Set<string>();
-    let wineCount = 0;
-    for (const g of gs) {
-      wineCount += g.offerCount;
-      for (const o of g.offers) stores.add(o.storeSlug);
-      if (g.region) regions.add(g.region);
-      for (const v of g.varietals ?? []) varietals.add(v);
-    }
-    // Top groups by storeCount + min price
-    const topGroups = [...gs]
-      .sort((a, b) => {
-        if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
-        return (a.minPrice ?? 1e9) - (b.minPrice ?? 1e9);
-      })
-      .slice(0, 24);
-
-    pages.push({
-      slug,
-      name: canonicalName,
-      groupCount: gs.length,
-      wineCount,
-      storeCount: stores.size,
-      regions: [...regions],
-      varietals: [...varietals].slice(0, 5),
-      topGroups,
-    });
+    pages.push(buildBrandPage(slug, canonicalName, gs));
   }
 
   brandPagesCache = pages.sort(
@@ -1321,11 +1295,94 @@ export function brandPages(): BrandPage[] {
   return brandPagesCache;
 }
 
+function buildBrandPage(
+  slug: string,
+  canonicalName: string,
+  gs: ProductGroup[],
+): BrandPage {
+  const stores = new Set<string>();
+  const regions = new Set<string>();
+  const varietals = new Set<string>();
+  let wineCount = 0;
+  for (const g of gs) {
+    wineCount += g.offerCount;
+    for (const o of g.offers) stores.add(o.storeSlug);
+    if (g.region) regions.add(g.region);
+    for (const v of g.varietals ?? []) varietals.add(v);
+  }
+  // Top groups by storeCount + min price
+  const topGroups = [...gs]
+    .sort((a, b) => {
+      if (a.storeCount !== b.storeCount) return b.storeCount - a.storeCount;
+      return (a.minPrice ?? 1e9) - (b.minPrice ?? 1e9);
+    })
+    .slice(0, 24);
+
+  return {
+    slug,
+    name: canonicalName,
+    groupCount: gs.length,
+    wineCount,
+    storeCount: stores.size,
+    regions: [...regions],
+    varietals: [...varietals].slice(0, 5),
+    topGroups,
+  };
+}
+
 export function findBrandPage(slug: string): BrandPage | undefined {
   if (!brandPagesBySlug) {
     brandPagesBySlug = new Map(brandPages().map((p) => [p.slug, p]));
   }
   return brandPagesBySlug.get(slug);
+}
+
+let brandFallbackDeps: FallbackDeps<ProductGroup> | null = null;
+
+function fallbackDeps(): FallbackDeps<ProductGroup> {
+  if (brandFallbackDeps) return brandFallbackDeps;
+  const byBrand = new Map<string, ProductGroup[]>();
+  const names: Array<[string, string, number]> = [];
+  for (const g of groups) {
+    // Además del filtro de las páginas, nada de no-vino: una bodega chica
+    // de "Hesperidina" o "Monkey Shoulder" no tiene por qué revivir.
+    if (!g.brand || !feedsBrandPage(g) || isNonWineGroup(g)) continue;
+    const b = brandPageSlug(g.brand);
+    if (!b) continue;
+    const arr = byBrand.get(b);
+    if (arr) arr.push(g);
+    else byBrand.set(b, [g]);
+    names.push([slugify(g.canonicalName), b, g.storeCount]);
+  }
+  brandFallbackDeps = {
+    byBrand,
+    pageSlugs: new Set(brandPages().map((p) => p.slug)),
+    names,
+    groupSlugOf: (g) => g.groupSlug,
+    isWine: (g) => g.type != null || (g.varietals?.length ?? 0) > 0,
+  };
+  return brandFallbackDeps;
+}
+
+/**
+ * Bodega con 2 fichas: la página se arma igual (fuera del sitemap y de
+ * la navegación, que siguen pidiendo ≥3). Ver lib/brandFallback.ts.
+ */
+export function findSmallBrandPage(slug: string): BrandPage | undefined {
+  const r = resolveBrandFallback(slug, fallbackDeps());
+  if (r?.kind !== "small") return undefined;
+  const name = r.groups
+    .map((g) => displayBrand(g.brand))
+    .reduce((a, b) => (b.length > a.length ? b : a), "");
+  return buildBrandPage(slug, name, r.groups);
+}
+
+/** /bodega/{slug} sin página → adónde redirigir (308), o null = 404. */
+export function resolveBrandRedirect(slug: string): string | null {
+  const r = resolveBrandFallback(slug, fallbackDeps());
+  if (r?.kind === "wine") return `/vino/${r.groupSlug}`;
+  if (r?.kind === "brand") return `/bodega/${r.slug}`;
+  return null;
 }
 
 export type FacetPage = {
