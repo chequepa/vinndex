@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import {
   findBrandPage,
+  findSmallBrandPage,
+  resolveBrandRedirect,
   formatArs,
   varietalUrl,
   regionUrl,
@@ -31,7 +33,7 @@ function bodegaMinPrice(slug: string): number | null {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const b = findBrandPage(slug);
+  const b = findBrandPage(slug) ?? findSmallBrandPage(slug);
   if (!b) return { title: "Bodega no encontrada · Vinndex" };
   // Bodegas con catálogo en 1 sola tienda son "thin" para el comparador:
   // no hay comparación de precios que mostrar. Las dejamos accesibles y
@@ -77,8 +79,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function BodegaPage({ params }: Params) {
   const { slug } = await params;
-  const b = findBrandPage(slug);
-  if (!b) notFound();
+  // Bodega que quedó con 2 fichas: página igual. Con 1 ficha, o una
+  // línea que se tomaba por bodega: 308 (ver lib/brandFallback.ts).
+  const b = findBrandPage(slug) ?? findSmallBrandPage(slug);
+  if (!b) {
+    const dest = resolveBrandRedirect(slug);
+    if (dest) permanentRedirect(dest);
+    notFound();
+  }
 
   const multiStore = b.topGroups.filter((g) => g.storeCount >= 2);
   const singleStore = b.topGroups.filter((g) => g.storeCount === 1);
