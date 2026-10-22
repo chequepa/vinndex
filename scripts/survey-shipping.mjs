@@ -45,12 +45,6 @@ const MAX_FETCHES_PER_STORE = 7;
 const DROP_AFTER_FAILS = 3;
 /** Marketplaces y supers: el envío depende del vendedor/sucursal, no hay una política. */
 const SKIP_PLATFORMS = new Set(["mercadolibre", "vtex"]);
-/**
- * El sitio todavía es CABA/GBA (docs/cobertura-nacional.md, en espera): no se
- * relevan las vinotecas del interior ni se guardan mínimos para ciudades del
- * interior ("gratis en Rosario desde…"). Se reactivan con el plan nacional.
- */
-const SKIP_STORES = new Set(["casa-de-vinos-mendoza", "vinoteca-campos", "sol-y-vino"]);
 
 const DRY = argv.includes("--dry-run");
 const REPORT = opt("--report");
@@ -103,7 +97,7 @@ function fmt(n) {
 
 async function main() {
   const stores = JSON.parse(readFileSync(STORES, "utf8")).filter(
-    (s) => !SKIP_PLATFORMS.has(s.platform) && !SKIP_STORES.has(s.slug) && (only.size === 0 || only.has(s.slug)),
+    (s) => !SKIP_PLATFORMS.has(s.platform) && (only.size === 0 || only.has(s.slug)),
   );
   const prev = JSON.parse(readFileSync(OUT, "utf8"));
   const data = { ...prev, stores: { ...(prev.stores ?? {}) } };
@@ -112,6 +106,8 @@ async function main() {
   console.log(`Relevando envíos de ${stores.length} vinotecas…`);
   const results = await pool(stores, CONCURRENCY, async (s) => {
     const r = await surveyStore(s);
+    // El sitio todavía es CABA/GBA (docs/cobertura-nacional.md, en espera):
+    // los mínimos para ciudades del interior ("gratis en Rosario desde…") no se guardan.
     const { byZona, conflicto } = summarize(r.candidates.filter((c) => c.zona !== "local"));
     const zonas = Object.keys(byZona);
     console.log(
