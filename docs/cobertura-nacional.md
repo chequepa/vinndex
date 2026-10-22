@@ -2,7 +2,10 @@
 
 Estado al 11/10/2026: el sitio compara precios sin saber a dónde envía cada
 vinoteca. En la práctica es un comparador de AMBA. Casi todas las tiendas
-están en CABA/GBA o en Mendoza, y el copy asume CABA. Para alguien de
+están en CABA/GBA o son bodegas y tiendas que envían a todo el país, y el
+copy asume CABA. El 22/10/2026 salieron del catálogo las tres vinotecas
+locales del interior que había (Casa de Vinos Mendoza, Sol y Vino Mendoza y
+Campos, de Rosario); esperan en `data/store-candidates-regional.txt`. Para alguien de
 Córdoba, el "mejor precio" puede ser de una tienda que no le envía.
 
 ## Lo que encontramos (relevamiento por buscador, sin abrir sitios)
