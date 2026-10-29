@@ -1,7 +1,7 @@
 {
  "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta sin llegar a la vara para levantarlo (lib-jev.mjs: ≥0,97 y gate de nivel/paraje, edición o color). NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-10-28T07:29:07.376Z",
- "count": 29,
+ "generatedAt": "2026-10-29T07:26:55.816Z",
+ "count": 20,
  "pairs": [
   {
    "ean": "7790945006863",
@@ -32,13 +32,6 @@
    "b": "Espumante Chandon Cuveeres Bdnoirs Pinot 750 Ml"
   },
   {
-   "ean": "7797942007978",
-   "gate": "tier/parcela",
-   "pMismo": 0.96,
-   "a": "Vino Tinto Cabernet Sauvignon 750 Cc Toia Putruele",
-   "b": "Putruele - Toia Gran Cabernet Sauvignon"
-  },
-  {
    "ean": "7798109156348",
    "gate": "varietal",
    "pMismo": 0.96,
@@ -46,11 +39,11 @@
    "b": "Fuego Negro Petit Verdot - Malbec"
   },
   {
-   "ean": "7791540047862",
-   "gate": "edicion",
+   "ean": "7797942007978",
+   "gate": "tier/parcela",
    "pMismo": 0.96,
-   "a": "DADA ART 391 MALBEC 750ML",
-   "b": "Vino Tinto Malbec 750 Cc Dada"
+   "a": "Vino Tinto Cabernet Sauvignon 750 Cc Toia Putruele",
+   "b": "Putruele - Toia Gran Cabernet Sauvignon"
   },
   {
    "ean": "7791540047855",
@@ -95,25 +88,11 @@
    "b": "Estuche vino Alamos cabernet sauvignon 750 cc. x 2 uni"
   },
   {
-   "ean": "040232855030",
-   "gate": "tier/parcela",
+   "ean": "7790070651068",
+   "gate": "edicion",
    "pMismo": 0.93,
-   "a": "PIATTELLI RESERVA MALBEC - TANNAT",
-   "b": "PIATTELLI RESERVA Malbec-Tannat Cafayate"
-  },
-  {
-   "ean": "7798124010212",
-   "gate": "tier/parcela",
-   "pMismo": 0.93,
-   "a": "Piattelli Reserva Cabernet Sauvignon Salta",
-   "b": "Piattelli Reserve Cabernet Sauvignon De Salta Cafayate 750ml"
-  },
-  {
-   "ean": "7798074865726",
-   "gate": "varietal",
-   "pMismo": 0.93,
-   "a": "Vino Salentein Barrel Blend M-p",
-   "b": "Salentein Barrel Selection Malbe/Petit Verdot"
+   "a": "RUCA MALEN CAP 1 MALBEC",
+   "b": "Vino Malbec Ruca Malen X750 Ml"
   },
   {
    "ean": "7798074862343",
@@ -121,13 +100,6 @@
    "pMismo": 0.93,
    "a": "Salentein Single Vineyard La Pampa Malbec",
    "b": "Salentein - Single Vineyard La Pampa Malbec IG San Pablo"
-  },
-  {
-   "ean": "7798074861841",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RESERVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
   },
   {
    "ean": "7798074860653",
@@ -151,11 +123,11 @@
    "b": "Vino tinto Malbec Salentein 750 ml"
   },
   {
-   "ean": "7798124010243",
+   "ean": "7798074861841",
    "gate": "tier/parcela",
    "pMismo": 0.92,
-   "a": "PIATTELLI RESERVA Malbec Cafayate",
-   "b": "Piattelli Reserva Malbec Salta"
+   "a": "SALENTEIN RESERVA MALBEC",
+   "b": "Vino tinto Malbec Salentein 750 ml"
   },
   {
    "ean": "7790070760739",
@@ -165,46 +137,11 @@
    "b": "EMILIA DULCE NATURAL MALBEC ROSADO"
   },
   {
-   "ean": "7798124010267",
-   "gate": "tier/parcela",
-   "pMismo": 0.91,
-   "a": "PIATTELLI TORRONTÉS",
-   "b": "Vino Piattelli Torrontes De Cafayate Salta 750 Ml"
-  },
-  {
-   "ean": "8006063002632",
-   "gate": "edicion",
-   "pMismo": 0.91,
-   "a": "Limoncello Soleggio 25º 700cc",
-   "b": "Limoncello Italiano Soleggio 700 Ml"
-  },
-  {
-   "ean": "7798074865399",
-   "gate": "tier/parcela",
-   "pMismo": 0.91,
-   "a": "SALENTEIN RESERVA PINOT NOIR",
-   "b": "Vino tinto Pinot Noir Salentein 750 ml"
-  },
-  {
-   "ean": "7798276560900",
-   "gate": "dulzor",
-   "pMismo": 0.9,
-   "a": "Piattelli Natural Sweet",
-   "b": "Vino blanco dulce Piatelli natural sweet 750 ml"
-  },
-  {
    "ean": "7798276560771",
    "gate": "dulzor",
    "pMismo": 0.9,
    "a": "Piattelli Natural Sweet",
    "b": "Vino blanco dulce Piatelli natural sweet 750 ml"
-  },
-  {
-   "ean": "7791540054525",
-   "gate": "edicion",
-   "pMismo": 0.9,
-   "a": "Espumante Dada Art 7 Orange Bitter 750cc",
-   "b": "Finca las Moras Dadá Espumante Orange Bitter"
   }
  ]
 }
