@@ -12,6 +12,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { describeResponse } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -172,6 +173,15 @@ async function scrapeStore(store) {
     const items = parseProductsFromHtml(html, store);
     if (items.length === 0) {
       console.log("empty");
+      // Una página 1 vacía no es "la tienda no tiene vinos": es markup o
+      // ruta que cambió, o un muro anti-bot con 200. Se registra como error
+      // con la huella de la respuesta para que el healthcheck lo marque y
+      // el log diga qué devolvió la tienda.
+      if (page === 1) {
+        errors.push(
+          `page 1: sin productos (${html.length}B, final=${res.url})${await describeResponse(res, html)}`,
+        );
+      }
       break;
     }
 

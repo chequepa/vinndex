@@ -17,7 +17,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { fetchPageWithRetry } from "./lib-fetch-retry.mjs";
+import { describeResponse, fetchPageWithRetry } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -182,6 +182,13 @@ async function scrapeStore(config, maxPages) {
     }
 
     const lds = parseJsonLdFromHtml(result.value);
+    // Página 1 sin un solo producto: tienda vacía, migrada o con otra
+    // ruta de catálogo. Se registra qué sirvió para no quedar en 0 mudo.
+    if (page === 1 && lds.length === 0) {
+      errors.push(
+        `page 1: sin productos JSON-LD (${result.value.length}B)${await describeResponse({}, result.value)}`,
+      );
+    }
 
     for (const ld of lds) {
       const p = normalize(ld, config.slug);

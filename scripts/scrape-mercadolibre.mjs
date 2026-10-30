@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
+import { describeResponse } from "./lib-fetch-retry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -242,6 +243,9 @@ async function fetchWithTimeout(url) {
   return {
     ok: res.ok,
     status: res.status,
+    url: res.url,
+    headers: res.headers,
+    challenge: isChallenge(body),
     text: async () => body,
   };
 }
@@ -385,6 +389,14 @@ async function main() {
     const items = parseListingPage(html);
     if (items.length === 0) {
       console.log("empty (end)");
+      // En la página 1 no es el fin del listado: es un challenge que no se
+      // resolvió, un muro de login o cards con otro markup. Va como error
+      // (con la huella de la respuesta) para que el healthcheck lo vea.
+      if (page === 0) {
+        errors.push(
+          `page 1: sin cards (${html.length}B, final=${res.url}${res.challenge ? ", challenge sin resolver" : ""})${await describeResponse(res, html)}`,
+        );
+      }
       break;
     }
 
