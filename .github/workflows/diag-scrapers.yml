@@ -21,47 +21,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-      - name: WooCommerce (fetch)
+      - name: Ligier (sitio nuevo)
+        run: node scripts/diag/ligier.mjs
+      - name: Celler en mitiendanube
         run: |
-          for b in https://debarricas.com.ar https://vineros.ar https://lanubedelvino.com https://lalicoreria.ar; do
-            node scripts/diag/probe.mjs "$b/wp-json/wc/store/v1/products?per_page=2&page=1" \
-              "$b/?rest_route=/wc/store/v1/products&per_page=2" "$b/robots.txt" "$b/product-sitemap.xml" "$b/wp-sitemap.xml"
-            VARIANT=html node scripts/diag/probe.mjs "$b/"
-          done
-      - name: WooCommerce (curl, otra huella TLS)
-        run: |
-          for b in https://debarricas.com.ar https://vineros.ar https://lanubedelvino.com; do
-            curl -sS --compressed -L --max-time 25 -A "$UA" -o /tmp/b -w "curl $b/wp-json/wc/store/v1/products -> %{http_code} %{size_download}B\n" "$b/wp-json/wc/store/v1/products?per_page=2" || true
-            head -c 200 /tmp/b; echo
-          done
-      - name: Ligier (Magento)
-        run: |
-          b=https://vinotecaligier.com
-          VARIANT=html node scripts/diag/probe.mjs "$b/" "$b/search/vino" "$b/catalogsearch/result/?q=vino" "$b/robots.txt" "$b/sitemap.xml"
-          node scripts/diag/probe.mjs "$b/graphql?query=%7Bproducts(search:%22vino%22,pageSize:2)%7Btotal_count%20items%7Bname%20sku%20url_key%7D%7D%7D" \
-            "$b/api/catalog_system/pub/products/search?ft=vino&_from=0&_to=1" "$b/products.json?limit=2" "$b/wp-json/wc/store/v1/products?per_page=2"
-          for p in / /search/vino /catalogsearch/result/?q=vino; do
-            echo "=== clases en $p"
-            curl -sSL --compressed --max-time 25 -A "$UA" "$b$p" | grep -oE 'class="[^"]*(product|item|price|card)[^"]*"' | sort | uniq -c | sort -rn | head -25 || true
-            curl -sSL --compressed --max-time 25 -A "$UA" "$b$p" | grep -oE 'href="https://vinotecaligier\.com/[^"]{3,80}"' | sort -u | head -15 || true
-          done
-      - name: Mercado Libre
-        run: |
-          VARIANT=html node scripts/diag/probe.mjs https://listado.mercadolibre.com.ar/vinos https://www.mercadolibre.com.ar/
-          node scripts/diag/probe.mjs "https://api.mercadolibre.com/sites/MLA" "https://api.mercadolibre.com/sites/MLA/search?category=MLA1577&limit=2"
-          echo "=== clases ML"
-          curl -sSL --compressed --max-time 25 -A "$UA" -H "accept-language: es-AR" https://listado.mercadolibre.com.ar/vinos \
-            | grep -oE 'class="[^"]*(poly|ui-search|andes)[^"]*"' | sort | uniq -c | sort -rn | head -25 || true
-      - name: Tiendanube en 0 y celler
-        run: |
-          VARIANT=html node scripts/diag/probe.mjs \
-            https://orujosvinosboutique.mitiendanube.com/ar/productos/ https://orujosvinosboutique.mitiendanube.com/ \
-            https://lavinotecalanus.mitiendanube.com/ar/productos/ https://lavinotecalanus.mitiendanube.com/ \
-            https://www.celler.com.ar/ https://celler.com.ar/ https://www.celler.com.ar/ar/productos/
-          getent hosts www.celler.com.ar celler.com.ar || echo "celler: sin DNS"
-      - name: Scrapers reales (con el diagnóstico de #229)
-        run: |
-          git fetch -q origin claude/vigilant-planck-53xt31 && git checkout -q FETCH_HEAD -- scripts/
-          node scripts/scrape-woocommerce.mjs fast || true
-          timeout 900 node scripts/scrape-magento.mjs 2>&1 | tail -15 || true
-          timeout 600 node scripts/scrape-mercadolibre.mjs 2>&1 | tail -15 || true
+          VARIANT=html node scripts/diag/probe.mjs https://celler.mitiendanube.com/ar/productos/ https://celler.mitiendanube.com/productos/
+          curl -sSL --compressed --max-time 25 -A "$UA" https://celler.mitiendanube.com/productos/ | grep -o '"@type":"Product"' | wc -l
