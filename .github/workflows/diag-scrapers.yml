@@ -21,9 +21,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-      - name: Ligier (sitio nuevo)
-        run: node scripts/diag/ligier.mjs
-      - name: Celler en mitiendanube
+      - name: Scraper nuevo de Ligier (rama -ligier)
         run: |
-          VARIANT=html node scripts/diag/probe.mjs https://celler.mitiendanube.com/ar/productos/ https://celler.mitiendanube.com/productos/
-          curl -sSL --compressed --max-time 25 -A "$UA" https://celler.mitiendanube.com/productos/ | grep -o '"@type":"Product"' | wc -l
+          git fetch -q origin claude/vigilant-planck-53xt31-ligier
+          git checkout -q FETCH_HEAD -- scripts/ data/stores.json
+          node scripts/test-ligier.mjs
+          node scripts/scrape-ligier.mjs
+          node -e '
+            const s=require("./data/snapshot-ligier.json"); const p=s.products;
+            console.log(JSON.stringify(s.stores[0]));
+            console.log("con precio:",p.filter(x=>x.priceArs).length,"/",p.length,"· sin stock:",p.filter(x=>!x.inStock).length,"· con bodega:",p.filter(x=>x.brand).length,"· con sku:",p.filter(x=>x.externalSku).length);
+            for (const x of [p[0],p[500],p[2000],p[p.length-1]]) console.log(JSON.stringify(x));
+            const pr=p.map(x=>x.priceArs).filter(Boolean).sort((a,b)=>a-b); console.log("precios min/med/max:",pr[0],pr[pr.length>>1],pr[pr.length-1]);'
