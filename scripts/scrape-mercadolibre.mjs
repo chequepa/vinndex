@@ -63,32 +63,9 @@ const MAX_PAGES = 40; // 40 × ~50 = ~2000 products cap
 const PAGE_DELAY_MS = 800;
 const FETCH_TIMEOUT_MS = 25_000;
 
-// ========= API mode (when ML_REFRESH_TOKEN is set) =========
-// User tokens from 3-legged OAuth work against /sites/MLA/search, which
-// client_credentials don't. Much richer data than HTML scrape.
-
-async function refreshAccessToken() {
-  const appId = process.env.ML_APP_ID;
-  const secret = process.env.ML_CLIENT_SECRET;
-  const refreshToken = process.env.ML_REFRESH_TOKEN;
-  if (!appId || !secret || !refreshToken) return null;
-  const res = await fetch("https://api.mercadolibre.com/oauth/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: appId,
-      client_secret: secret,
-      refresh_token: refreshToken,
-    }),
-  });
-  if (!res.ok) {
-    console.error(`  refresh failed: HTTP ${res.status}`);
-    return null;
-  }
-  const body = await res.json();
-  return body.access_token;
-}
+// ========= API mode (apagado, ver scrapeApi) =========
+// El access token sale de scripts/lib-ml-auth.mjs: el refresh token de ML
+// es de un solo uso y hay que guardar el rotado en cada refresh.
 
 async function apiSearch(accessToken, offset, limit) {
   const res = await fetch(
