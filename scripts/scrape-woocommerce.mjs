@@ -133,7 +133,10 @@ function fetchProductsPage(url, page, stats) {
     doFetch: () => fetchJson(url),
     readBody: async (res) => {
       const body = await res.json();
-      return Array.isArray(body) ? body : [];
+      // Un objeto en lugar de la lista (p. ej. un error de plugin con 200)
+      // no es "tienda sin productos": que salga como falla con su huella.
+      if (!Array.isArray(body)) throw new Error("no es una lista");
+      return body;
     },
     // En la Store API de WooCommerce el 404 es el fin del paginado en
     // cualquier página, incluida la 1 (tienda sin productos).

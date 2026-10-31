@@ -5,14 +5,15 @@
  * looks like MLA\d+. Populates brand, description (varietal + year +
  * volume), and — when available — EAN (via CATALOG_PRODUCT_ID attr).
  *
- * Auth: refresh_token from .env.local (user token) — same flow as
- * scrape-mercadolibre.mjs. Run after scrape-mercadolibre.mjs and before
+ * Auth: user token via refresh_token rotativo (scripts/lib-ml-auth.mjs,
+ * re-autorizar: docs/mercadolibre-oauth.md). Run after scrape-mercadolibre.mjs and before
  * merge-snapshots.mjs.
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { getMlAccessToken } from "./lib-ml-auth.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -39,29 +40,6 @@ loadEnv();
 
 const CONCURRENCY = 6;
 const REQUEST_DELAY_MS = 60;
-
-async function refreshAccessToken() {
-  const appId = process.env.ML_APP_ID;
-  const secret = process.env.ML_CLIENT_SECRET;
-  const refreshToken = process.env.ML_REFRESH_TOKEN;
-  if (!appId || !secret || !refreshToken) return null;
-  const res = await fetch("https://api.mercadolibre.com/oauth/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: appId,
-      client_secret: secret,
-      refresh_token: refreshToken,
-    }),
-  });
-  if (!res.ok) {
-    console.error(`refresh failed: HTTP ${res.status}`);
-    return null;
-  }
-  const body = await res.json();
-  return body.access_token;
-}
 
 function attrValue(attrs, id) {
   const a = attrs?.find((x) => x.id === id);
@@ -153,10 +131,10 @@ async function main() {
     process.exit(1);
   }
 
-  const token = await refreshAccessToken();
+  const token = await getMlAccessToken();
   if (!token) {
     console.error(
-      "No ML access token. Skipping enrichment (need ML_APP_ID + ML_CLIENT_SECRET + ML_REFRESH_TOKEN).",
+      "No ML access token. Skipping enrichment (ver docs/mercadolibre-oauth.md).",
     );
     process.exit(0);
   }

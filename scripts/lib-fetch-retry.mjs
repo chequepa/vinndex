@@ -31,6 +31,42 @@ export function isTransientStatus(status) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * Huella corta de una respuesta fallida para el log del scrape: quién
+ * contesta (server, Cloudflare, Sucuri…), con qué tipo y codificación, y
+ * el comienzo del cuerpo. Sin esto un "HTTP 403" o "cuerpo ilegible" no
+ * distingue un WAF de una tienda caída, y desde fuera del runner no se
+ * puede reproducir (el bloqueo es por IP de data-center).
+ */
+export async function describeResponse(res, body) {
+  const h = (k) => res.headers?.get?.(k);
+  const parts = [];
+  for (const [label, key] of [
+    ["server", "server"],
+    ["ct", "content-type"],
+    ["enc", "content-encoding"],
+    ["cf", "cf-mitigated"],
+    ["sucuri", "x-sucuri-id"],
+  ]) {
+    const v = h(key);
+    if (v) parts.push(`${label}=${v.split(";")[0].trim()}`);
+  }
+  let text = body;
+  if (text === undefined) {
+    try {
+      text = await res.text?.();
+    } catch {
+      text = undefined;
+    }
+  }
+  if (typeof text === "string" && text) {
+    const title = text.match(/<title[^>]*>([^<]{1,80})/i)?.[1];
+    const snippet = (title ?? text).replace(/\s+/g, " ").trim().slice(0, 80);
+    if (snippet) parts.push(`"${snippet}"`);
+  }
+  return parts.length ? ` [${parts.join(" ")}]` : "";
+}
+
+/**
  * Pide una página reintentando las fallas transitorias.
  *
  * @param {object}   o
@@ -67,24 +103,30 @@ export async function fetchPageWithRetry({
     try {
       res = await doFetch();
     } catch (err) {
-      failure = `fetch failed (${err.message})`;
+      // undici tira siempre "fetch failed" y deja la causa real (DNS,
+      // conexión rechazada, certificado) en `err.cause`.
+      const cause = err.cause?.code ?? err.cause?.message;
+      failure = `fetch failed (${err.message}${cause ? `: ${cause}` : ""})`;
       continue;
     }
 
     if (!res.ok) {
       if (isDone(res.status, page)) return { done: true };
-      failure = `HTTP ${res.status}`;
+      failure = `HTTP ${res.status}${await describeResponse(res)}`;
       // Un status no transitorio (401, 402, 410…) no mejora insistiendo.
       if (!isTransientStatus(res.status)) break;
       continue;
     }
 
+    // Copia para poder mostrar el cuerpo si `readBody` no lo entiende
+    // (p. ej. un challenge HTML con 200 donde se esperaba JSON).
+    const copy = res.clone?.();
     try {
       const value = await readBody(res);
       if (attempt > 0) stats.recovered = true;
       return { value };
     } catch {
-      failure = "cuerpo ilegible";
+      failure = `cuerpo ilegible${copy ? await describeResponse(copy) : ""}`;
     }
   }
 
