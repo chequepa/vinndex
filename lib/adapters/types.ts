@@ -47,7 +47,8 @@ export type StoreConfig = {
   catalogPath?: string;
   /** PrestaShop (/1574-vinos). */
   categoryPath?: string;
-  /** VTEX: array de category paths; null para fallback ft=vino. */
+  /** VTEX: array de category paths; null para fallback ft=vino. Ligier
+   * (customAdapter "ligier-next"): rutas de listado, ej. "/vinos". */
   categoryPaths?: string[] | null;
   /** Magento (/search/vino). */
   searchPath?: string;

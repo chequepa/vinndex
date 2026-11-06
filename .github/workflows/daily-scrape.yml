@@ -57,8 +57,14 @@ jobs:
         run: node scripts/enrich-ml-catalog.mjs
         continue-on-error: true
 
-      - name: Scrape Magento (Ligier)
+      # Ligier dejó Magento en oct/2026 (sitio Next.js propio). El paso de
+      # Magento queda para el día que se sume otra tienda en esa plataforma.
+      - name: Scrape Magento
         run: node scripts/scrape-magento.mjs
+        continue-on-error: true
+
+      - name: Scrape Ligier (Next.js)
+        run: node scripts/scrape-ligier.mjs
         continue-on-error: true
 
       - name: Scrape PrestaShop (Frappe)
