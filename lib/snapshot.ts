@@ -1,4 +1,5 @@
-import snapshotJson from "@/data/snapshot.json";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import storesConfig from "@/data/stores.json";
 import groupMergesJson from "@/data/group-merges.json";
 import type { ScrapedProduct } from "./adapters/types";
@@ -48,7 +49,25 @@ export type Snapshot = {
   groupsGeneratedAt?: string;
 };
 
-export const snapshot = snapshotJson as Snapshot;
+// El snapshot (~50 MB) se lee del disco en runtime, una sola vez por proceso,
+// en lugar de importarlo. Importado, el bundler lo embebía como string literal
+// en cada chunk de servidor que lo usaba (páginas y route handlers: dos copias
+// de ~51 MB de texto más dos objetos parseados vivos a la vez), y eso era la
+// mayor parte de la RAM fija del server en Railway. El cache en globalThis
+// hace que todos los chunks compartan el mismo objeto.
+const SNAPSHOT_KEY = Symbol.for("vinndex.snapshot");
+function loadSnapshot(): Snapshot {
+  const g = globalThis as unknown as Record<symbol, Snapshot | undefined>;
+  const cached = g[SNAPSHOT_KEY];
+  if (cached) return cached;
+  const parsed = JSON.parse(
+    readFileSync(join(process.cwd(), "data", "snapshot.json"), "utf8"),
+  ) as Snapshot;
+  g[SNAPSHOT_KEY] = parsed;
+  return parsed;
+}
+
+export const snapshot = loadSnapshot();
 
 export function snapshotStats() {
   let inStock = 0;

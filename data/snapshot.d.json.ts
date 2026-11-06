@@ -1,9 +1,9 @@
-// Tipo de `import snapshotJson from "@/data/snapshot.json"` (lib/snapshot.ts).
+// Tipo de `import ... from "@/data/snapshot.json"`.
 //
-// Sin este archivo TypeScript infiere el tipo literal de los ~45 MB del
-// JSON: el type-check de `next build` pedía ~2,9 GB y moría por OOM con
-// el heap por defecto de Node (~2,2 GB). lib/snapshot.ts igual lo castea
-// a `Snapshot`, así que acá alcanza con `unknown` (~1 GB y la mitad de
-// tiempo). Requiere `allowArbitraryExtensions` en tsconfig.json.
+// Desde el 06/11/2026 nadie lo importa: lib/snapshot.ts lee el archivo del
+// disco en runtime (ver el comentario ahí). Este archivo queda como red de
+// seguridad: si alguien vuelve a importarlo, sin esto TypeScript infiere el
+// tipo literal de los ~50 MB del JSON y el type-check de `next build` muere
+// por OOM. Requiere `allowArbitraryExtensions` en tsconfig.json.
 declare const snapshot: unknown;
 export default snapshot;
