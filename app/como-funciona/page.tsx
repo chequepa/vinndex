@@ -43,7 +43,7 @@ export default function ComoFuncionaPage() {
         "@type": "HowToStep",
         position: 2,
         name: "Matcheamos el mismo vino",
-        text: "Cada oferta se canonicaliza (sin puntuación de iniciales, volumen, pack, añada ni muletillas de retail) y se separa en vino (bodega + línea + varietal + color) y variante (botella, magnum, caja, estuche). Un diccionario de bodegas y líneas infiere la bodega desde el título; cada oferta se asigna a un catálogo de 3.000+ vinos validado con GPT-4o-mini; el código de barras fusiona fichas sólo cuando lo cargan 2+ vinotecas sin conflicto de identidad.",
+        text: "Cada oferta se canonicaliza (sin puntuación de iniciales, volumen, pack, añada ni muletillas de retail) y se separa en vino (bodega + línea + varietal + color) y variante (botella, magnum, caja, estuche). Un diccionario de bodegas y líneas infiere la bodega desde el título; cada oferta se asigna a un catálogo de 3.000+ vinos validado con Claude, el modelo de IA de Anthropic; el código de barras fusiona fichas sólo cuando lo cargan 2+ vinotecas sin conflicto de identidad.",
         url: "https://vinndex.com.ar/como-funciona#contenido",
       },
       {
@@ -157,7 +157,7 @@ export default function ComoFuncionaPage() {
                 <li>
                   <strong>Catálogo de vinos:</strong> cada oferta se asigna
                   a un vino de un catálogo de 3.000+ vinos argentinos
-                  validado con GPT-4o-mini, que sabe qué parajes y gamas
+                  validado con Claude (Anthropic), que sabe qué parajes y gamas
                   distinguen un vino de otro (Aluvional Gualtallary no es
                   Aluvional Altamira; Concreto es siempre de Paraje
                   Altamira). Lo que el catálogo todavía no cubre se agrupa

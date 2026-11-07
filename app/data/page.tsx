@@ -368,9 +368,9 @@ export default function DataPage() {
             {stats.totals.storeCount} vinotecas online relevadas. El pipeline
             colapsa el mismo vino vendido en N vinotecas en un grupo único
             usando: EAN cuando está disponible, normalización textual de
-            nombre + bodega + varietal + formato, embeddings (OpenAI{" "}
-            <code className="text-xs">text-embedding-3-small</code>) para
-            gray-zone, y un splitter para chimeras.
+            nombre + bodega + varietal + formato, un catálogo de vinos
+            validado con IA (Claude) para los casos dudosos, y una guarda de
+            precio que separa vinos distintos mezclados en una misma ficha.
           </p>
           <p>
             &ldquo;Comparables&rdquo; = vinos presentes en al menos 2

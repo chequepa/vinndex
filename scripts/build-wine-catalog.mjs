@@ -56,7 +56,7 @@ const DRY = args.includes("--dry");
 
 const CATALOG_PATH = resolve(ROOT, "data/wine-catalog.json");
 const CACHE_PATH = resolve(ROOT, "data/catalog-llm-cache.json");
-// ── OpenAI ──
+// ── Entorno (.env.local en local; secrets en CI) ──
 function loadEnv() {
   try {
     const raw = readFileSync(resolve(ROOT, ".env.local"), "utf8");
