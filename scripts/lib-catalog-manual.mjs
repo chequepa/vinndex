@@ -17,7 +17,7 @@
  * tanto build-wine-catalog.mjs (para que el archivo publicado refleje lo
  * curado) como build-groups-v2.mjs (para que la agrupación salga bien
  * AUNQUE el paso del catálogo se haya salteado — corre con
- * continue-on-error y sin OPENAI_API_KEY se saltea entero). Aplicarlo
+ * continue-on-error y sin ANTHROPIC_API_KEY se saltea entero). Aplicarlo
  * dos veces es idempotente.
  */
 

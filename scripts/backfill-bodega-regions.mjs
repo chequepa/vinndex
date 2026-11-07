@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Backfill de región por bodega usando gpt-4o-mini.
+ * Backfill de región por bodega usando Claude (hasta el 07/11/2026, gpt-4o-mini).
  *
  * La región casi nunca está en el nombre del producto (es atributo de la
  * bodega). El dict manual `data/bodega-regions.json` cubre ~55 bodegas
@@ -29,6 +29,7 @@
  * cambia `normalizeBrandAlias` allá, replicar acá.
  */
 
+import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -54,9 +55,8 @@ function loadEnv() {
 }
 loadEnv();
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY missing. Set in .env.local or CI secret.");
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error("ANTHROPIC_API_KEY missing. Set in .env.local or CI secret.");
   process.exit(1);
 }
 
@@ -65,7 +65,7 @@ const WRITE = args.includes("--write");
 const MIN_GROUPS = Number(
   (args.find((a) => a.startsWith("--min=")) ?? "--min=5").split("=")[1],
 );
-const MODEL = "gpt-4o-mini";
+const MODEL = process.env.REGIONS_MODEL || "claude-opus-5-5";
 const BATCH_SIZE = 25;
 const GOLDEN_MIN_ACCURACY = 0.9; // si la precisión en el golden set baja de esto, abortamos
 
@@ -153,29 +153,42 @@ REGLAS ESTRICTAS:
 
 Respondé EXCLUSIVAMENTE con JSON válido: {"results":[{"i":0,"region":"...","confidence":"alta|media|baja"}, ...]} con un objeto por bodega en el orden recibido.`;
 
+const SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["results"],
+  properties: {
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["i", "region", "confidence"],
+        properties: {
+          i: { type: "integer" },
+          region: { type: "string", enum: [...VALID_REGIONS, "desconocida"] },
+          confidence: { type: "string", enum: ["alta", "media", "baja"] },
+        },
+      },
+    },
+  },
+};
+
+let client = null;
 async function askLLM(names) {
   const list = names.map((n, i) => `${i}. ${n}`).join("\n");
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `Bodegas:\n${list}` },
-      ],
-    }),
+  client ??= new Anthropic();
+  const msg = await client.beta.messages.create({
+    model: MODEL,
+    max_tokens: 16000,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: `Bodegas:\n${list}` }],
+    output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
   });
-  if (!res.ok) {
-    throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  }
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content ?? "{}";
+  if (msg.stop_reason !== "end_turn") throw new Error(`stop_reason=${msg.stop_reason}`);
+  const content = msg.content.filter((b) => b.type === "text").map((b) => b.text).join("") || "{}";
   let parsed;
   try {
     parsed = JSON.parse(content);
