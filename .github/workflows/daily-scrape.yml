@@ -113,12 +113,13 @@ jobs:
       # hay key, se agrupa con el catálogo committeado del último run.
       - name: Identidad v2 — catálogo incremental
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Claude, con la misma key que el sommelier (antes era OpenAI).
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          if [ -n "$OPENAI_API_KEY" ]; then
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
             node scripts/build-wine-catalog.mjs
           else
-            echo "Skipping catálogo — OPENAI_API_KEY not set (se usa el committeado)"
+            echo "Skipping catálogo — ANTHROPIC_API_KEY not set (se usa el committeado)"
           fi
         continue-on-error: true
 

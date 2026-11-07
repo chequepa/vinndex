@@ -466,7 +466,7 @@ async function main() {
     : { wines: [] };
   // El overlay curado a mano se aplica también acá, no sólo en
   // build-wine-catalog: ese paso corre con continue-on-error y se saltea
-  // entero si falta OPENAI_API_KEY. Sin esto, un día que el catálogo no
+  // entero si falta ANTHROPIC_API_KEY. Sin esto, un día que el catálogo no
   // se reconstruya las correcciones humanas no se aplicarían y las
   // fichas curadas se volverían a partir en silencio. Es idempotente.
   catalog.wines ??= [];

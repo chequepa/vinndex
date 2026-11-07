@@ -18,7 +18,7 @@
  *   1. parseOffer() sobre todas las ofertas → candidatos de línea
  *      agregados por (bodega | lineTokens | varietal | color | dulzor).
  *   2. Candidatos con ≥2 tiendas (donde agrupar importa) van al LLM
- *      (gpt-4o-mini, batch por bodega, cache eterno por clave de
+ *      (Claude, batch por bodega, cache eterno por clave de
  *      candidato en data/catalog-llm-cache.json).
  *   3. El LLM valida: ¿es una línea real? ¿nombre canónico? ¿bodega
  *      correcta (caza atribuciones erróneas)? ¿aliases dentro del lote?
@@ -35,6 +35,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
+import Anthropic from "@anthropic-ai/sdk";
 import { parseOffer, stripAccents, normalizeBodegaKey, buildBodegaCollapser, isStoreBrand } from "./lib-offer-identity.mjs";
 import { NAME_PREFIX_TO_BRAND } from "./lib-identity.mjs";
 import { applyManualOverlay } from "./lib-catalog-manual.mjs";
@@ -71,8 +72,19 @@ function loadEnv() {
   } catch { /* sin .env.local seguimos (CI usa secrets) */ }
 }
 loadEnv();
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = "gpt-4o-mini";
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+// Hasta el 07/11/2026 esto corría con gpt-4o-mini. La key de OpenAI dejó de
+// andar ~24/10 y desde ahí cada candidato nuevo se cacheaba con la respuesta
+// por defecto (ver PENDING abajo). Pasó a Claude, con la misma key que usa el
+// sommelier. Effort bajo: es clasificación corta, y el modelo piensa igual.
+const MODEL = process.env.CATALOG_MODEL || "claude-opus-5-5";
+const EFFORT = process.env.CATALOG_EFFORT || "low";
+// Un candidato cuya respuesta falló queda en el cache con el default
+// conservador (para materializar el catálogo hoy) pero marcado `pending`, y
+// la corrida siguiente lo vuelve a preguntar. Después de MAX_PENDING_TRIES
+// fallos seguidos se queda con el default (un candidato envenenado no
+// gasta para siempre).
+const MAX_PENDING_TRIES = 3;
 const BATCH = 12;
 const CONCURRENCY = 6;
 
@@ -183,35 +195,52 @@ function candidatePrompt(bodega, items) {
   return `Bodega presunta: ${bodega}\n\nCandidatos:\n${lines.join("\n")}`;
 }
 
-async function askBatch(bodega, items) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
+const nullable = (schema) => ({ anyOf: [schema, { type: "null" }] });
+const SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["candidatos"],
+  properties: {
+    candidatos: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["i", "legit", "linea", "bodega", "aliasDe", "parajesNoDistinguen", "tiersNoDistinguen"],
+        properties: {
+          i: { type: "integer" },
+          legit: { type: "boolean" },
+          linea: { type: "string" },
+          bodega: { type: "string" },
+          aliasDe: nullable({ type: "integer" }),
+          parajesNoDistinguen: { type: "array", items: { type: "string" } },
+          tiersNoDistinguen: { type: "array", items: { type: "string" } },
+        },
+      },
     },
-    body: JSON.stringify({
-      model: MODEL,
-      temperature: 0,
-      // Sin cap el modelo divagaba hasta el límite (~16k tokens ≈ 49k
-      // chars) → JSON truncado → retry infinito + TPM quemado. 3.500
-      // alcanza de sobra para 12 candidatos compactos.
-      max_tokens: 3500,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: candidatePrompt(bodega, items) },
-      ],
-    }),
+  },
+};
+
+let client = null;
+async function askBatch(bodega, items) {
+  client ??= new Anthropic();
+  const msg = await client.beta.messages.create({
+    model: MODEL,
+    // Holgado: el pensamiento cuenta dentro de max_tokens y quedarse corto
+    // tira la respuesta entera. Sólo se paga lo que se usa.
+    max_tokens: 16000,
+    // Si el modelo declina por política, el API reintenta solo con el
+    // modelo que corresponda a la categoría.
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: candidatePrompt(bodega, items) }],
+    output_config: { effort: EFFORT, format: { type: "json_schema", schema: SCHEMA } },
   });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`OpenAI ${res.status}: ${body.slice(0, 180)}`);
-  }
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(content);
-  const out = parsed.candidatos ?? parsed.candidates ?? [];
+  if (msg.stop_reason !== "end_turn") throw new Error(`stop_reason=${msg.stop_reason}`);
+  const text = msg.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+  const parsed = JSON.parse(text || "{}");
+  const out = parsed.candidatos ?? [];
   if (!Array.isArray(out)) throw new Error("LLM shape: candidatos no es array");
   return out;
 }
@@ -239,7 +268,8 @@ async function main() {
   const need = [];
   for (const c of eligible) {
     c.cacheKey = sha1(c.key);
-    if (!cache[c.cacheKey]) need.push(c);
+    const hit = cache[c.cacheKey];
+    if (!hit || (hit.pending && (hit.pendingTries ?? 0) < MAX_PENDING_TRIES)) need.push(c);
   }
   console.log(`  cache: ${eligible.length - need.length} hits, ${need.length} a preguntar`);
 
@@ -255,8 +285,8 @@ async function main() {
     return;
   }
 
-  if (need.length > 0 && !OPENAI_API_KEY) {
-    console.error("OPENAI_API_KEY faltante y hay candidatos sin cache — corto.");
+  if (need.length > 0 && !ANTHROPIC_API_KEY) {
+    console.error("ANTHROPIC_API_KEY faltante y hay candidatos sin cache — corto.");
     process.exit(1);
   }
 
@@ -276,10 +306,10 @@ async function main() {
   }
   console.log(`  ${batches.length} batches LLM (modelo ${MODEL}, concurrencia ${CONCURRENCY})`);
 
-  let done = 0, errors = 0;
+  let done = 0, errors = 0, fatal = null;
   const t0 = Date.now();
   async function worker() {
-    while (batches.length > 0) {
+    while (batches.length > 0 && !fatal) {
       const batch = batches.shift();
       if (!batch) break;
       try {
@@ -298,7 +328,7 @@ async function main() {
         }
         // candidatos del batch sin respuesta → default conservador
         for (const c of batch) {
-          if (!cache[c.cacheKey]) {
+          if (!cache[c.cacheKey] || cache[c.cacheKey].pending) {
             cache[c.cacheKey] = {
               legit: true,
               linea: c.lineTokens.join(" "),
@@ -315,6 +345,13 @@ async function main() {
           writeFileSync(CACHE_PATH, JSON.stringify(cache));
         }
       } catch (err) {
+        // Key inválida o sin permiso: no tiene sentido seguir ni cachear
+        // nada. Los candidatos quedan sin cache y la corrida siguiente los
+        // pregunta (antes esto los cacheaba con el default para siempre).
+        if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
+          fatal = err;
+          break;
+        }
         errors++;
         console.error(`\n  batch error (${batch.length} cands): ${err.message.slice(0, 120)}`);
         // Bisect: un batch envenenado (respuesta truncada/inválida) se
@@ -334,6 +371,8 @@ async function main() {
             aliasDeKey: null,
             parajesNoDistinguen: [],
             tiersNoDistinguen: [],
+            pending: true,
+            pendingTries: (cache[c.cacheKey]?.pendingTries ?? 0) + 1,
           };
           done++;
         }
@@ -347,6 +386,10 @@ async function main() {
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
   writeFileSync(CACHE_PATH, JSON.stringify(cache));
+  if (fatal) {
+    console.error(`\n  ${fatal.constructor.name} (${fatal.status}): la key de Anthropic no sirve — corto sin cachear lo pendiente.`);
+    process.exit(1);
+  }
   console.log(`\n  LLM listo en ${Math.round((Date.now() - t0) / 1000)}s (${errors} errores) · cache ${Object.keys(cache).length} entradas`);
 
   // ── 4. Materializar catálogo ──
@@ -498,7 +541,7 @@ async function main() {
   }
 
   const out = {
-    _doc: "Catálogo de vinos v2 — (bodega, línea, varietal) con conocimiento por línea: aliases y qué parajes/tiers NO distinguen. Generado por build-wine-catalog.mjs (minado + validación gpt-4o-mini, cache en catalog-llm-cache.json). CURABLE A MANO: las correcciones humanas sobreviven — el builder sólo agrega entradas nuevas, no pisa existentes.",
+    _doc: "Catálogo de vinos v2 — (bodega, línea, varietal) con conocimiento por línea: aliases y qué parajes/tiers NO distinguen. Generado por build-wine-catalog.mjs (minado + validación LLM, cache en catalog-llm-cache.json). CURABLE A MANO: las correcciones humanas sobreviven — el builder sólo agrega entradas nuevas, no pisa existentes.",
     generatedAt: new Date().toISOString(),
     wines: [...wines.values()]
       .map((w) => ({
