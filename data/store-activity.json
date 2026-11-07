@@ -1,6 +1,6 @@
 {
  "_doc": "Actividad de precios por vinoteca. lastPriceChange = última fecha en que la tienda mostró algún precio distinto (o un producto nuevo) respecto del snapshot anterior; firstSeen = primera vez observada; lastCheck = última corrida que la vio. Lo escribe merge-snapshots.mjs (o build-store-activity.mjs --backfill); lo lee build-groups-v2.mjs para marcar ofertas `stale` (sin movimiento en STALE_DAYS) y lib/storeIndex.ts para sacar esas vinotecas del ranking.",
- "updatedAt": "2026-11-06",
+ "updatedAt": "2026-11-07",
  "stores": {
   "romawine-cj": {
    "firstSeen": "2026-07-05",
@@ -14,7 +14,7 @@
   "ambar-selecto": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 223,
    "compared": 223,
    "changedLast": 0,
@@ -23,7 +23,7 @@
   "winenot": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 598,
    "compared": 598,
    "changedLast": 0,
@@ -32,7 +32,7 @@
   "vinoteca-oculta": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1184,
    "compared": 1184,
    "changedLast": 0,
@@ -41,7 +41,7 @@
   "mercado-de-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-08-23",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 205,
    "compared": 205,
    "changedLast": 0,
@@ -49,21 +49,21 @@
   },
   "1812-vinos": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 1219,
-   "compared": 1213,
-   "changedLast": 7,
-   "newLast": 6
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 1216,
+   "compared": 1216,
+   "changedLast": 2,
+   "newLast": 0
   },
   "club-jockey": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
-   "offers": 616,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 617,
    "compared": 616,
    "changedLast": 0,
-   "newLast": 0
+   "newLast": 1
   },
   "orujos-vinos": {
    "firstSeen": "2026-07-05",
@@ -76,26 +76,26 @@
   },
   "enotek": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
-   "offers": 2406,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 2408,
    "compared": 2406,
    "changedLast": 0,
-   "newLast": 0
+   "newLast": 2
   },
   "vinoteca-bodega-901": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 450,
-   "compared": 449,
+   "lastCheck": "2026-11-07",
+   "offers": 448,
+   "compared": 448,
    "changedLast": 0,
-   "newLast": 1
+   "newLast": 0
   },
   "vinoteca-vito": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 202,
    "compared": 202,
    "changedLast": 0,
@@ -104,16 +104,16 @@
   "muniz": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 648,
    "compared": 648,
-   "changedLast": 1,
+   "changedLast": 0,
    "newLast": 0
   },
   "frappe": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1149,
    "compared": 1149,
    "changedLast": 0,
@@ -122,16 +122,16 @@
   "vino-aparte": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 310,
    "compared": 310,
-   "changedLast": 2,
+   "changedLast": 0,
    "newLast": 0
   },
   "la-viteca": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 301,
    "compared": 301,
    "changedLast": 0,
@@ -140,7 +140,7 @@
   "galo-wines": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 607,
    "compared": 607,
    "changedLast": 0,
@@ -149,7 +149,7 @@
   "enotica": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-21",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 222,
    "compared": 222,
    "changedLast": 0,
@@ -157,8 +157,8 @@
   },
   "gobar": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 467,
    "compared": 467,
    "changedLast": 10,
@@ -167,43 +167,43 @@
   "new-vine": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
-   "offers": 726,
-   "compared": 726,
+   "lastCheck": "2026-11-07",
+   "offers": 725,
+   "compared": 725,
    "changedLast": 0,
    "newLast": 0
   },
   "vea": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 5076,
-   "compared": 5069,
-   "changedLast": 17,
-   "newLast": 7
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 5077,
+   "compared": 5074,
+   "changedLast": 9,
+   "newLast": 3
   },
   "tonel-privado": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
-   "offers": 600,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 617,
    "compared": 600,
-   "changedLast": 0,
-   "newLast": 0
+   "changedLast": 3,
+   "newLast": 17
   },
   "wine-boutique": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 342,
-   "compared": 338,
-   "changedLast": 1,
-   "newLast": 4
+   "lastCheck": "2026-11-07",
+   "offers": 341,
+   "compared": 341,
+   "changedLast": 0,
+   "newLast": 0
   },
   "la-barrica": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-01",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1347,
    "compared": 1347,
    "changedLast": 0,
@@ -221,7 +221,7 @@
   "cavas-del-pozo": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-21",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1589,
    "compared": 1589,
    "changedLast": 0,
@@ -230,16 +230,16 @@
   "la-14": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1029,
-   "compared": 1021,
-   "changedLast": 133,
-   "newLast": 8
+   "compared": 1029,
+   "changedLast": 0,
+   "newLast": 0
   },
   "alpataco": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 335,
    "compared": 335,
    "changedLast": 0,
@@ -248,7 +248,7 @@
   "tiempo-de-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 209,
    "compared": 209,
    "changedLast": 0,
@@ -257,7 +257,7 @@
   "lar-de-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 355,
    "compared": 355,
    "changedLast": 0,
@@ -265,12 +265,12 @@
   },
   "carrefour": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 1800,
-   "compared": 1568,
-   "changedLast": 35,
-   "newLast": 232
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 1853,
+   "compared": 1807,
+   "changedLast": 5,
+   "newLast": 46
   },
   "cava-andes": {
    "firstSeen": "2026-07-05",
@@ -280,29 +280,29 @@
   },
   "jumbo": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 4470,
-   "compared": 4463,
-   "changedLast": 9,
-   "newLast": 7
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 4471,
+   "compared": 4468,
+   "changedLast": 29,
+   "newLast": 3
   },
   "disco": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 5076,
-   "compared": 5069,
-   "changedLast": 20,
-   "newLast": 7
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 5077,
+   "compared": 5073,
+   "changedLast": 22,
+   "newLast": 4
   },
   "de-barricas": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
-   "offers": 2204,
-   "compared": 2204,
-   "changedLast": 0,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 2203,
+   "compared": 2203,
+   "changedLast": 31,
    "newLast": 0
   },
   "bebiendo-estrellas": {
@@ -316,44 +316,44 @@
   },
   "berpic": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 548,
-   "compared": 542,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 549,
+   "compared": 548,
    "changedLast": 0,
-   "newLast": 6
+   "newLast": 1
   },
   "biendevinos": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 1546,
-   "compared": 1535,
-   "changedLast": 3,
-   "newLast": 11
+   "compared": 1546,
+   "changedLast": 13,
+   "newLast": 0
   },
   "romawine": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
-   "offers": 3000,
-   "compared": 3000,
-   "changedLast": 0,
-   "newLast": 0
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 3061,
+   "compared": 2998,
+   "changedLast": 1,
+   "newLast": 63
   },
   "buar": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 1058,
    "compared": 1058,
-   "changedLast": 0,
+   "changedLast": 3,
    "newLast": 0
   },
   "tinto": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 555,
    "compared": 555,
    "changedLast": 0,
@@ -362,7 +362,7 @@
   "wine-window": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": null,
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 107,
    "compared": 107,
    "changedLast": 0,
@@ -371,7 +371,7 @@
   "el-lagar": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1352,
    "compared": 1352,
    "changedLast": 0,
@@ -380,7 +380,7 @@
   "vinnovo": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-26",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 542,
    "compared": 542,
    "changedLast": 0,
@@ -397,17 +397,17 @@
   },
   "vineria-san-juan": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 2067,
-   "compared": 2067,
+   "compared": 2063,
    "changedLast": 0,
-   "newLast": 0
+   "newLast": 4
   },
   "la-masia": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 104,
    "compared": 104,
    "changedLast": 0,
@@ -415,26 +415,26 @@
   },
   "lo-de-granado": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 873,
    "compared": 873,
-   "changedLast": 0,
+   "changedLast": 2,
    "newLast": 0
   },
   "tienda-vinos": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 200,
-   "compared": 199,
-   "changedLast": 3,
-   "newLast": 1
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 201,
+   "compared": 201,
+   "changedLast": 1,
+   "newLast": 0
   },
   "rutini": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-02",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 181,
    "compared": 181,
    "changedLast": 0,
@@ -452,7 +452,7 @@
   "vinos-directos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-07",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 223,
    "compared": 223,
    "changedLast": 0,
@@ -461,16 +461,16 @@
   "grand-cru": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 576,
-   "compared": 574,
-   "changedLast": 6,
-   "newLast": 2
+   "lastCheck": "2026-11-07",
+   "offers": 573,
+   "compared": 573,
+   "changedLast": 0,
+   "newLast": 0
   },
   "tinte-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-01",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 385,
    "compared": 385,
    "changedLast": 0,
@@ -479,10 +479,10 @@
   "growler-store": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1676,
    "compared": 1676,
-   "changedLast": 2,
+   "changedLast": 0,
    "newLast": 0
   },
   "wines-argentina-express": {
@@ -497,7 +497,7 @@
   "aldos-vinoteca": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 533,
    "compared": 533,
    "changedLast": 0,
@@ -506,7 +506,7 @@
   "rebellion": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-02",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1682,
    "compared": 1682,
    "changedLast": 0,
@@ -514,30 +514,30 @@
   },
   "cava-naon": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 2011,
-   "compared": 2006,
-   "changedLast": 62,
-   "newLast": 5
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 2012,
+   "compared": 2010,
+   "changedLast": 3,
+   "newLast": 2
   },
   "antonino": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-31",
-   "lastCheck": "2026-11-06",
-   "offers": 408,
-   "compared": 408,
+   "lastCheck": "2026-11-07",
+   "offers": 407,
+   "compared": 407,
    "changedLast": 0,
    "newLast": 0
   },
   "bari": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
-   "offers": 960,
-   "compared": 960,
-   "changedLast": 0,
-   "newLast": 0
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 3000,
+   "compared": 1011,
+   "changedLast": 51,
+   "newLast": 1989
   },
   "tres-cumbres": {
    "firstSeen": "2026-07-05",
@@ -551,7 +551,7 @@
   "luckywine": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 660,
    "compared": 660,
    "changedLast": 0,
@@ -559,44 +559,44 @@
   },
   "carlos-barroca": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
    "offers": 1115,
    "compared": 1115,
-   "changedLast": 0,
+   "changedLast": 1,
    "newLast": 0
   },
   "casa-dionisio-caba": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 1592,
-   "compared": 1575,
-   "changedLast": 3,
-   "newLast": 17
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 1596,
+   "compared": 1592,
+   "changedLast": 1,
+   "newLast": 4
   },
   "central-de-vinos": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 1186,
-   "compared": 1179,
-   "changedLast": 0,
-   "newLast": 7
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 1180,
+   "compared": 1162,
+   "changedLast": 4,
+   "newLast": 18
   },
   "vino-el-salvador": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 820,
-   "compared": 809,
-   "changedLast": 5,
-   "newLast": 11
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 836,
+   "compared": 817,
+   "changedLast": 2,
+   "newLast": 19
   },
   "caja-delirio": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 322,
    "compared": 322,
    "changedLast": 0,
@@ -605,7 +605,7 @@
   "the-buma": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-23",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 284,
    "compared": 284,
    "changedLast": 0,
@@ -614,7 +614,7 @@
   "cafayate-wines": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 538,
    "compared": 538,
    "changedLast": 0,
@@ -623,25 +623,25 @@
   "vinoteca-lanus": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 397,
-   "compared": 391,
+   "compared": 397,
    "changedLast": 0,
-   "newLast": 6
+   "newLast": 0
   },
   "dia": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 165,
-   "compared": 143,
-   "changedLast": 2,
-   "newLast": 22
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 161,
+   "compared": 132,
+   "changedLast": 7,
+   "newLast": 29
   },
   "luigi-bosca": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-31",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 67,
    "compared": 67,
    "changedLast": 0,
@@ -650,7 +650,7 @@
   "tienda-wino": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 191,
    "compared": 191,
    "changedLast": 0,
@@ -659,7 +659,7 @@
   "aroma-de-vid": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 1071,
    "compared": 1071,
    "changedLast": 0,
@@ -668,16 +668,16 @@
   "vinos-y-spirits": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 252,
    "compared": 252,
-   "changedLast": 1,
+   "changedLast": 0,
    "newLast": 0
   },
   "monaco-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-23",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 285,
    "compared": 285,
    "changedLast": 0,
@@ -686,7 +686,7 @@
   "vinicius": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 639,
    "compared": 639,
    "changedLast": 0,
@@ -695,7 +695,7 @@
   "san-rafael-wines": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-24",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 223,
    "compared": 223,
    "changedLast": 0,
@@ -704,7 +704,7 @@
   "rincon-de-vinos": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-30",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 200,
    "compared": 200,
    "changedLast": 0,
@@ -722,7 +722,7 @@
   "varietal": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 52,
    "compared": 52,
    "changedLast": 0,
@@ -731,7 +731,7 @@
   "monteviejo": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-09-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 62,
    "compared": 62,
    "changedLast": 0,
@@ -740,7 +740,7 @@
   "cava-vrava": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 48,
    "compared": 48,
    "changedLast": 0,
@@ -749,16 +749,16 @@
   "susana-balbo": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 122,
-   "compared": 120,
+   "compared": 122,
    "changedLast": 0,
-   "newLast": 2
+   "newLast": 0
   },
   "terruno": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 10,
    "compared": 10,
    "changedLast": 0,
@@ -767,7 +767,7 @@
   "bianchi": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 31,
    "compared": 31,
    "changedLast": 0,
@@ -776,16 +776,16 @@
   "la-taverna-club": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
-   "offers": 211,
-   "compared": 211,
+   "lastCheck": "2026-11-07",
+   "offers": 210,
+   "compared": 210,
    "changedLast": 0,
    "newLast": 0
   },
   "club-vinoteca": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-21",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 22,
    "compared": 22,
    "changedLast": 0,
@@ -812,7 +812,7 @@
   "bonvino": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-29",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 521,
    "compared": 521,
    "changedLast": 0,
@@ -820,17 +820,17 @@
   },
   "cloe-wines": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-10-28",
-   "lastCheck": "2026-11-06",
-   "offers": 349,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 351,
    "compared": 349,
    "changedLast": 0,
-   "newLast": 0
+   "newLast": 2
   },
   "che-wine": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 20,
    "compared": 20,
    "changedLast": 0,
@@ -839,7 +839,7 @@
   "fiducia": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-02",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 135,
    "compared": 135,
    "changedLast": 0,
@@ -848,7 +848,7 @@
   "vino-de-martes": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-16",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 75,
    "compared": 75,
    "changedLast": 0,
@@ -857,7 +857,7 @@
   "familia-schroeder": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 40,
    "compared": 40,
    "changedLast": 0,
@@ -874,17 +874,17 @@
   },
   "santa-barrica": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 151,
-   "compared": 138,
-   "changedLast": 0,
-   "newLast": 13
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 152,
+   "compared": 152,
+   "changedLast": 1,
+   "newLast": 0
   },
   "casa-tukma": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 9,
    "compared": 9,
    "changedLast": 0,
@@ -893,7 +893,7 @@
   "weinert": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-02",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 32,
    "compared": 32,
    "changedLast": 0,
@@ -902,7 +902,7 @@
   "finca-decero": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-02",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 37,
    "compared": 37,
    "changedLast": 0,
@@ -911,7 +911,7 @@
   "la-enoteca": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-07",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 50,
    "compared": 50,
    "changedLast": 0,
@@ -929,7 +929,7 @@
   "crux-cavas": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-10-07",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 74,
    "compared": 74,
    "changedLast": 0,
@@ -938,28 +938,28 @@
   "vinos-de-rios": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 67,
    "compared": 67,
-   "changedLast": 1,
+   "changedLast": 0,
    "newLast": 0
   },
   "vinosxcaja": {
    "firstSeen": "2026-07-05",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 682,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 684,
    "compared": 682,
-   "changedLast": 3,
-   "newLast": 0
+   "changedLast": 1,
+   "newLast": 2
   },
   "chakana": {
    "firstSeen": "2026-07-05",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 26,
    "compared": 26,
-   "changedLast": 11,
+   "changedLast": 0,
    "newLast": 0
   },
   "la-licoreria": {
@@ -983,7 +983,7 @@
   "almacen-beberbien": {
    "firstSeen": "2026-07-12",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 560,
    "compared": 560,
    "changedLast": 0,
@@ -991,17 +991,17 @@
   },
   "enofilo": {
    "firstSeen": "2026-07-12",
-   "lastPriceChange": "2026-11-01",
-   "lastCheck": "2026-11-06",
-   "offers": 398,
-   "compared": 398,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 400,
+   "compared": 397,
    "changedLast": 0,
-   "newLast": 0
+   "newLast": 3
   },
   "cava-tosco": {
    "firstSeen": "2026-07-12",
    "lastPriceChange": "2026-10-24",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 404,
    "compared": 404,
    "changedLast": 0,
@@ -1010,7 +1010,7 @@
   "romawine-haedo": {
    "firstSeen": "2026-07-12",
    "lastPriceChange": "2026-10-24",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 3,
    "compared": 3,
    "changedLast": 0,
@@ -1019,7 +1019,7 @@
   "llego-el-vino": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-10-20",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 97,
    "compared": 97,
    "changedLast": 0,
@@ -1028,7 +1028,7 @@
   "herencia-deli-wine": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-11-05",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 684,
    "compared": 684,
    "changedLast": 0,
@@ -1037,7 +1037,7 @@
   "felice-vinos": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-10-29",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 199,
    "compared": 199,
    "changedLast": 0,
@@ -1046,16 +1046,16 @@
   "patagonian-wines": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 25,
-   "compared": 25,
-   "changedLast": 1,
+   "lastCheck": "2026-11-07",
+   "offers": 24,
+   "compared": 24,
+   "changedLast": 0,
    "newLast": 0
   },
   "tradicion-vinos": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-10-27",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 382,
    "compared": 382,
    "changedLast": 0,
@@ -1064,7 +1064,7 @@
   "vitis-boutique": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-10-13",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 10,
    "compared": 10,
    "changedLast": 0,
@@ -1072,17 +1072,17 @@
   },
   "bodega-norton": {
    "firstSeen": "2026-10-13",
-   "lastPriceChange": "2026-11-04",
-   "lastCheck": "2026-11-06",
-   "offers": 61,
-   "compared": 61,
-   "changedLast": 0,
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 59,
+   "compared": 59,
+   "changedLast": 25,
    "newLast": 0
   },
   "escorihuela-gascon": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 49,
    "compared": 49,
    "changedLast": 0,
@@ -1091,7 +1091,7 @@
   "bodega-del-fin-del-mundo": {
    "firstSeen": "2026-10-13",
    "lastPriceChange": "2026-11-03",
-   "lastCheck": "2026-11-06",
+   "lastCheck": "2026-11-07",
    "offers": 21,
    "compared": 21,
    "changedLast": 0,
@@ -1106,110 +1106,164 @@
   "rogeralmacendebebidas": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 957
+   "lastCheck": "2026-11-07",
+   "offers": 957,
+   "compared": 957,
+   "changedLast": 0,
+   "newLast": 0
   },
   "megawine": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 892
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 905,
+   "compared": 892,
+   "changedLast": 2,
+   "newLast": 13
   },
   "wineglass": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 783
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 783,
+   "compared": 783,
+   "changedLast": 5,
+   "newLast": 0
   },
   "vinosadomicilio": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 960
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 1483,
+   "compared": 955,
+   "changedLast": 267,
+   "newLast": 528
   },
   "vinotecacorcho": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 172
+   "lastCheck": "2026-11-07",
+   "offers": 172,
+   "compared": 172,
+   "changedLast": 0,
+   "newLast": 0
   },
   "oestewine": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 311
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 312,
+   "compared": 311,
+   "changedLast": 0,
+   "newLast": 1
   },
   "pueyrredonbebidas": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 732
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 737,
+   "compared": 730,
+   "changedLast": 6,
+   "newLast": 7
   },
   "vinotecaelpasaje": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 81
+   "lastCheck": "2026-11-07",
+   "offers": 81,
+   "compared": 81,
+   "changedLast": 0,
+   "newLast": 0
   },
   "vinotecacheers": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 70
+   "lastCheck": "2026-11-07",
+   "offers": 70,
+   "compared": 70,
+   "changedLast": 0,
+   "newLast": 0
   },
   "vidoswines": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 237
+   "lastCheck": "2026-11-07",
+   "offers": 237,
+   "compared": 237,
+   "changedLast": 0,
+   "newLast": 0
   },
   "vinotecamisuvas": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 279
+   "lastCheck": "2026-11-07",
+   "offers": 279,
+   "compared": 279,
+   "changedLast": 0,
+   "newLast": 0
   },
   "bouquetwines": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 127
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 126,
+   "compared": 125,
+   "changedLast": 0,
+   "newLast": 1
   },
   "autorjorgerubio": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 64
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 64,
+   "compared": 64,
+   "changedLast": 19,
+   "newLast": 0
   },
   "bodegabrujerias": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 22
+   "lastCheck": "2026-11-07",
+   "offers": 22,
+   "compared": 22,
+   "changedLast": 0,
+   "newLast": 0
   },
   "familialujanconesa": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 36
+   "lastCheck": "2026-11-07",
+   "offers": 36,
+   "compared": 36,
+   "changedLast": 0,
+   "newLast": 0
   },
   "bodega1320": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 10
+   "lastCheck": "2026-11-07",
+   "offers": 10,
+   "compared": 10,
+   "changedLast": 0,
+   "newLast": 0
   },
   "tercervino": {
    "firstSeen": "2026-11-06",
    "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 200
+   "lastCheck": "2026-11-07",
+   "offers": 200,
+   "compared": 200,
+   "changedLast": 0,
+   "newLast": 0
   },
   "ligier": {
    "firstSeen": "2026-11-06",
-   "lastPriceChange": "2026-11-06",
-   "lastCheck": "2026-11-06",
-   "offers": 3571
+   "lastPriceChange": "2026-11-07",
+   "lastCheck": "2026-11-07",
+   "offers": 4309,
+   "compared": 3557,
+   "changedLast": 38,
+   "newLast": 752
   }
  }
 }
