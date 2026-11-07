@@ -96,10 +96,11 @@ export default function PreguntasPage() {
         <>
           Con un pipeline de 4 etapas: primero comparamos el código de barras
           cuando la tienda lo expone (match perfecto), después normalizamos
-          nombre + bodega + cosecha + formato, después usamos embeddings de
-          OpenAI para captar casos como &ldquo;Don David Reserva Malbec&rdquo;
-          vs &ldquo;Don David Malbec Reserva&rdquo;, y por último un LLM
-          (GPT-4o-mini) decide los casos ambiguos. Tiene un ratio de falso
+          nombre + bodega + cosecha + formato (así &ldquo;Don David Reserva
+          Malbec&rdquo; y &ldquo;Don David Malbec Reserva&rdquo; caen en el
+          mismo vino), después cruzamos contra un catálogo de vinos argentinos
+          validado con IA, y por último Claude, el modelo de Anthropic, revisa
+          bodega por bodega los casos ambiguos. Tiene un ratio de falso
           positivo muy bajo, pero si ves un match raro,{" "}
           <Link href="/contacto" className="underline hover:text-cobalt">
             avisanos
@@ -108,7 +109,7 @@ export default function PreguntasPage() {
         </>
       ),
       aForSchema:
-        "Con un pipeline de 4 etapas: primero comparamos el código de barras cuando la tienda lo expone (match perfecto), después normalizamos nombre + bodega + cosecha + formato, después usamos embeddings de OpenAI para captar casos como 'Don David Reserva Malbec' vs 'Don David Malbec Reserva', y por último un LLM (GPT-4o-mini) decide los casos ambiguos. Tiene un ratio de falso positivo muy bajo, pero si ves un match raro, avisanos.",
+        "Con un pipeline de 4 etapas: primero comparamos el código de barras cuando la tienda lo expone (match perfecto), después normalizamos nombre + bodega + cosecha + formato, (así 'Don David Reserva Malbec' y 'Don David Malbec Reserva' caen en el mismo vino), después cruzamos contra un catálogo de vinos argentinos validado con IA, y por último Claude, el modelo de Anthropic, revisa bodega por bodega los casos ambiguos. Tiene un ratio de falso positivo muy bajo, pero si ves un match raro, avisanos.",
     },
     {
       q: "¿Puedo comprar desde Vinndex?",

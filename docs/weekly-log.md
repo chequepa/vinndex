@@ -87,8 +87,8 @@ mergear). El log viejo de ese agente vive fuera del repo
    Después repetir la autorización de ML
    (`https://vinndex.com.ar/api/auth/mercadolibre/login`) y pegar el código
    nuevo en `ML_REFRESH_TOKEN`.
-2. `OPENAI_API_KEY`: generar una key nueva en platform.openai.com y
-   reemplazar el secret.
+2. ~~`OPENAI_API_KEY`~~ — resuelto el 07/11: el catálogo pasó a Claude
+   (#234) y Juan dio de baja OpenAI. No queda nada que dependa de OpenAI.
 3. Probar el botón "¿Ves algo mal en esta ficha?" para saber si `GITHUB_TOKEN`
    anda.
 
