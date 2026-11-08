@@ -28,6 +28,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: npm
 
       - name: Scrape Tiendanube (14 stores)
         run: node scripts/scrape-tiendanube.mjs full
@@ -111,6 +112,13 @@ jobs:
       # Catálogo incremental: sólo los candidatos NUEVOS van al LLM
       # (cache committeado en data/catalog-llm-cache.json). Si falla o no
       # hay key, se agrupa con el catálogo committeado del último run.
+      # Los scrapers son sólo node:*, pero el catálogo usa @anthropic-ai/sdk.
+      # Sin esto el paso moría con ERR_MODULE_NOT_FOUND (08/11) y, por el
+      # continue-on-error, en silencio.
+      - name: Instalar dependencias (SDK de Anthropic para el catálogo)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        continue-on-error: true
+
       - name: Identidad v2 — catálogo incremental
         env:
           # Claude, con la misma key que el sommelier (antes era OpenAI).
