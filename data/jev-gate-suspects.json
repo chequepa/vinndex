@@ -1,15 +1,8 @@
 {
  "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta sin llegar a la vara para levantarlo (lib-jev.mjs: ≥0,97 y gate de nivel/paraje, edición o color). NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-11-10T16:00:55.799Z",
- "count": 22,
+ "generatedAt": "2026-11-11T15:12:47.126Z",
+ "count": 23,
  "pairs": [
-  {
-   "ean": "7792319970411",
-   "gate": "dulzor",
-   "pMismo": 0.99,
-   "a": "NORTON COSECHA TARDIA TINTO",
-   "b": "Vino Norton Ct Tinto 750cc"
-  },
   {
    "ean": "7790945006863",
    "gate": "dulzor",
@@ -18,11 +11,11 @@
    "b": "Vino blanco dule San Huberto natural 750 ml"
   },
   {
-   "ean": "7791540050251",
+   "ean": "7790168904649",
    "gate": "dulzor",
-   "pMismo": 0.98,
-   "a": "Vino Blanco Dulce Sabor Miel 750 Cc Dada",
-   "b": "Vino blanco Honey Dadá 750 ml"
+   "pMismo": 0.99,
+   "a": "Vino Colon Selectodulce Fresco Durazno 750ml",
+   "b": "Vino blanco dulce durazno Colón Select en botella 750 ml"
   },
   {
    "ean": "7790975198736",
@@ -32,11 +25,18 @@
    "b": "Espumante Chandon Cuveeres Bdnoirs Pinot 750 Ml"
   },
   {
+   "ean": "7790607000390",
+   "gate": "tier/parcela",
+   "pMismo": 0.96,
+   "a": "Alfredo Roca Reserva De Familia Malbec 750",
+   "b": "Vino Alfredo Roca Res Malb 750cc"
+  },
+  {
    "ean": "7798109156348",
    "gate": "varietal",
    "pMismo": 0.96,
-   "a": "Fuego Negro Petit Verdot - Malbec",
-   "b": "Vino Fuego Negro Blend Petit Verdotmalbec"
+   "a": "Vino Fuego Negro Blend Petit Verdotmalbec",
+   "b": "Fuego Negro Petit Verdot - Malbec"
   },
   {
    "ean": "7791540047855",
@@ -53,6 +53,13 @@
    "b": "Espumante Chandon Cuveeres Bdblancs Chard 750 Ml"
   },
   {
+   "ean": "7790577009935",
+   "gate": "tier/parcela",
+   "pMismo": 0.94,
+   "a": "RUTINI SINGLE VINEYARD GUALTALLARY CABERNET FRANC",
+   "b": "Vino tinto Cabernet Franc Rutini Guatallary 750 ml"
+  },
+  {
    "ean": "7798287390053",
    "gate": "tier/parcela",
    "pMismo": 0.94,
@@ -60,11 +67,11 @@
    "b": "Vino tinto cabernet sauvignon Callejon del crimen 750 cc."
   },
   {
-   "ean": "7790945008324",
+   "ean": "7794450001184",
    "gate": "edicion",
    "pMismo": 0.94,
-   "a": "San Huberto 0 Alcohol Blanco",
-   "b": "Vino blanco sin alcohol San Humberto 750 ml"
+   "a": "Vino Alamos Cabernet Sauvignon Estuche X 2u-est-cc.-150",
+   "b": "Estuche vino Alamos cabernet sauvignon 750 cc. x 2 uni"
   },
   {
    "ean": "7798124010212",
@@ -81,39 +88,25 @@
    "b": "PIATTELLI RESERVA Malbec-Tannat Cafayate"
   },
   {
+   "ean": "7798124010243",
+   "gate": "tier/parcela",
+   "pMismo": 0.93,
+   "a": "PIATTELLI RVA MALBEC SALTA",
+   "b": "Piatelli Reserva Malbec Cafayate"
+  },
+  {
+   "ean": "7790070651068",
+   "gate": "edicion",
+   "pMismo": 0.93,
+   "a": "RUCA MALEN CAP 1 MALBEC",
+   "b": "Vino Malbec Ruca Malen X750 Ml"
+  },
+  {
    "ean": "7798074862343",
    "gate": "tier/parcela",
    "pMismo": 0.93,
    "a": "Salentein Single Vineyard La Pampa Malbec",
    "b": "Salentein - Single Vineyard La Pampa Malbec IG San Pablo"
-  },
-  {
-   "ean": "7798074861841",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074860653",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074865313",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074869328",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
   },
   {
    "ean": "7798124010243",
@@ -144,11 +137,25 @@
    "b": "Limoncello Italiano Soleggio 700 Ml"
   },
   {
+   "ean": "7798074865399",
+   "gate": "tier/parcela",
+   "pMismo": 0.91,
+   "a": "SALENTEIN RVA PINOT NOIR",
+   "b": "Vino tinto Pinot Noir Salentein 750 ml"
+  },
+  {
    "ean": "7798276560771",
    "gate": "dulzor",
    "pMismo": 0.9,
    "a": "Piattelli Natural Sweet",
    "b": "Vino blanco dulce Piatelli natural sweet 750 ml"
+  },
+  {
+   "ean": "7798074865450",
+   "gate": "tier/parcela",
+   "pMismo": 0.9,
+   "a": "SALENTEIN RVA SAUVIGNON BLANC",
+   "b": "Vino blanco Sauvignon Blanc Salentein 750 ml"
   },
   {
    "ean": "7791540054525",
