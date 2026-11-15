@@ -1,8 +1,15 @@
 {
  "_doc": "Pares que comparten EAN en 2+ tiendas, que Jev da como el mismo vino con ≥0,9 y que un gate duro veta sin llegar a la vara para levantarlo (lib-jev.mjs: ≥0,97 y gate de nivel/paraje, edición o color). NO se fusionan: son candidatos a gate que parte de más (así salió la taquigrafía del #174). Lo escribe build-groups-v2.mjs.",
- "generatedAt": "2026-11-14T14:31:10.742Z",
- "count": 28,
+ "generatedAt": "2026-11-15T15:07:06.277Z",
+ "count": 23,
  "pairs": [
+  {
+   "ean": "7790945006863",
+   "gate": "dulzor",
+   "pMismo": 0.99,
+   "a": "Vino San Huberto Blanco Dulce Natural",
+   "b": "Vino blanco dule San Huberto natural 750 ml"
+  },
   {
    "ean": "7790168904649",
    "gate": "dulzor",
@@ -95,13 +102,6 @@
    "b": "PIATTELLI RESERVA Malbec-Tannat Cafayate"
   },
   {
-   "ean": "7798124010243",
-   "gate": "tier/parcela",
-   "pMismo": 0.93,
-   "a": "PIATTELLI RVA MALBEC SALTA",
-   "b": "Piatelli Reserva Malbec Cafayate"
-  },
-  {
    "ean": "7790070651068",
    "gate": "edicion",
    "pMismo": 0.93,
@@ -114,34 +114,6 @@
    "pMismo": 0.93,
    "a": "Salentein Single Vineyard La Pampa Malbec",
    "b": "Salentein - Single Vineyard La Pampa Malbec IG San Pablo"
-  },
-  {
-   "ean": "7798074861841",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074860653",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074865313",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
-  },
-  {
-   "ean": "7798074869328",
-   "gate": "tier/parcela",
-   "pMismo": 0.92,
-   "a": "SALENTEIN RVA MALBEC",
-   "b": "Vino tinto Malbec Salentein 750 ml"
   },
   {
    "ean": "7798124010243",
@@ -170,13 +142,6 @@
    "pMismo": 0.91,
    "a": "SALENTEIN RVA PINOT NOIR",
    "b": "Vino tinto Pinot Noir Salentein 750 ml"
-  },
-  {
-   "ean": "7798276560900",
-   "gate": "dulzor",
-   "pMismo": 0.9,
-   "a": "Piattelli Natural Sweet",
-   "b": "Vino blanco dulce Piatelli natural sweet 750 ml"
   },
   {
    "ean": "7798276560771",
