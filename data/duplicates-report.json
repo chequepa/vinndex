@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-11-15T15:07:14.555Z",
-  "snapshotGeneratedAt": "2026-11-15T15:05:58.713Z",
-  "groupCount": 30429,
-  "groupsWithDistinctiveTokens": 25597,
+  "generatedAt": "2026-11-16T16:40:46.170Z",
+  "snapshotGeneratedAt": "2026-11-16T16:39:12.656Z",
+  "groupCount": 30437,
+  "groupsWithDistinctiveTokens": 25607,
   "heuristicA": {
     "description": "Clusters de grupos que comparten ≥2 tokens distintivos con brand conflict.",
-    "total": 4154,
+    "total": 4153,
     "items": [
       {
         "key": "blend|sangre",
@@ -290,6 +290,24 @@
         ]
       },
       {
+        "key": "presidents|the",
+        "totalStoresIfMerged": 31,
+        "members": [
+          {
+            "slug": "the-presidents-blend-blend-escorihuela-gascon",
+            "brand": "Escorihuela Gascón",
+            "canonicalName": "The Presidents Blend",
+            "storeCount": 29
+          },
+          {
+            "slug": "the-presidents-malbec",
+            "brand": "The Presidents",
+            "canonicalName": "THE PRESIDENTS MALBEC",
+            "storeCount": 2
+          }
+        ]
+      },
+      {
         "key": "altura|terroir",
         "totalStoresIfMerged": 31,
         "members": [
@@ -327,7 +345,7 @@
       },
       {
         "key": "saurus|select",
-        "totalStoresIfMerged": 31,
+        "totalStoresIfMerged": 30,
         "members": [
           {
             "slug": "saurus-select-pinot-noir-familia-schroeder",
@@ -345,7 +363,7 @@
             "slug": "saurus-select-merlot-familia-schroeder",
             "brand": "Familia Schroeder",
             "canonicalName": "Saurus Select Merlot",
-            "storeCount": 7
+            "storeCount": 6
           },
           {
             "slug": "saurus-select-sauvignon-blanc-750cc",
@@ -364,24 +382,6 @@
             "brand": "Schroeder",
             "canonicalName": "Saurus Select Pinot Noir Rosé - Schroeder",
             "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "presidents|the",
-        "totalStoresIfMerged": 30,
-        "members": [
-          {
-            "slug": "the-presidents-blend-blend-escorihuela-gascon",
-            "brand": "Escorihuela Gascón",
-            "canonicalName": "The Presidents Blend",
-            "storeCount": 28
-          },
-          {
-            "slug": "the-presidents-malbec",
-            "brand": "The Presidents",
-            "canonicalName": "THE PRESIDENTS MALBEC",
-            "storeCount": 2
           }
         ]
       },
@@ -542,42 +542,6 @@
         ]
       },
       {
-        "key": "cafayate|piattelli",
-        "totalStoresIfMerged": 28,
-        "members": [
-          {
-            "slug": "cafayate-malbec-piattelli-reserva-salta",
-            "brand": "Etchart",
-            "canonicalName": "Piattelli Reserva Malbec Cafayate",
-            "storeCount": 18
-          },
-          {
-            "slug": "piattelli-grand-reserve-malbec-salta",
-            "brand": "Piattelli",
-            "canonicalName": "PIATTELLI GRAN RESERVA Malbec Cafayate",
-            "storeCount": 8
-          },
-          {
-            "slug": "piattelli-s-v-late-harvest-torrontes-cafayate-50",
-            "brand": "Etchart",
-            "canonicalName": "Piattelli S. V. Late Harvest Torrontes Cafayate 50",
-            "storeCount": 1
-          },
-          {
-            "slug": "piattelli-vineyards-malbec-cafayate-750-cc",
-            "brand": "Etchart",
-            "canonicalName": "Piattelli Vineyards Malbec Cafayate 750 Cc",
-            "storeCount": 1
-          },
-          {
-            "slug": "piattelli-reserva-malbec-cafayate-valley-salta-y-lujan-de-cu",
-            "brand": "Etchart",
-            "canonicalName": "PIATTELLI RESERVA MALBEC CAFAYATE VALLEY-SALTA Y LUJAN DE CUYO",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
         "key": "hormigas|jardin",
         "totalStoresIfMerged": 28,
         "members": [
@@ -620,6 +584,42 @@
         ]
       },
       {
+        "key": "cafayate|piattelli",
+        "totalStoresIfMerged": 27,
+        "members": [
+          {
+            "slug": "cafayate-malbec-piattelli-reserva-salta",
+            "brand": "Etchart",
+            "canonicalName": "Piattelli Reserva Malbec Cafayate",
+            "storeCount": 17
+          },
+          {
+            "slug": "piattelli-grand-reserve-malbec-salta",
+            "brand": "Piattelli",
+            "canonicalName": "PIATTELLI GRAN RESERVA Malbec Cafayate",
+            "storeCount": 8
+          },
+          {
+            "slug": "piattelli-s-v-late-harvest-torrontes-cafayate-50",
+            "brand": "Etchart",
+            "canonicalName": "Piattelli S. V. Late Harvest Torrontes Cafayate 50",
+            "storeCount": 1
+          },
+          {
+            "slug": "piattelli-vineyards-malbec-cafayate-750-cc",
+            "brand": "Etchart",
+            "canonicalName": "Piattelli Vineyards Malbec Cafayate 750 Cc",
+            "storeCount": 1
+          },
+          {
+            "slug": "piattelli-reserva-malbec-cafayate-valley-salta-y-lujan-de-cu",
+            "brand": "Etchart",
+            "canonicalName": "PIATTELLI RESERVA MALBEC CAFAYATE VALLEY-SALTA Y LUJAN DE CUYO",
+            "storeCount": 0
+          }
+        ]
+      },
+      {
         "key": "cuvee|reserve",
         "totalStoresIfMerged": 27,
         "members": [
@@ -657,48 +657,6 @@
             "slug": "brut-champ-cuvee-ex-mumm-pck-reserve-un-x187cc",
             "brand": "Mumm",
             "canonicalName": "Champ Cuvee Ex Pck Reserve 4 Reserva Brut",
-            "storeCount": 0
-          }
-        ]
-      },
-      {
-        "key": "estate|saurus",
-        "totalStoresIfMerged": 27,
-        "members": [
-          {
-            "slug": "saurus-estate-merlot",
-            "brand": "Schroeder",
-            "canonicalName": "Saurus Estate Merlot",
-            "storeCount": 9
-          },
-          {
-            "slug": "saurus-estate-pinot-noir-2",
-            "brand": "Familia Schroeder",
-            "canonicalName": "Saurus Estate Pinot noir",
-            "storeCount": 8
-          },
-          {
-            "slug": "saurus-estate-pinot-noir-rose",
-            "brand": "SAURUS",
-            "canonicalName": "SAURUS ESTATE PINOT NOIR ROSÉ",
-            "storeCount": 5
-          },
-          {
-            "slug": "saurus-estate-sauvignon-blanc-2024",
-            "brand": "Saurus",
-            "canonicalName": "Saurus Estate Sauvignon Blanc",
-            "storeCount": 3
-          },
-          {
-            "slug": "vino-blanco-chardonnay-750-cc-saurus",
-            "brand": "Saurus",
-            "canonicalName": "Saurus Estate Chardonnay",
-            "storeCount": 2
-          },
-          {
-            "slug": "saurus-estate-malbec-rose-750",
-            "brand": "Schroeder",
-            "canonicalName": "Saurus Estate Malbec Rose 750",
             "storeCount": 0
           }
         ]
@@ -760,6 +718,48 @@
             "brand": "Sousa",
             "canonicalName": "Champagne De Sousa Extra-Brut Réserve Blanc de Blancs Extra Brut",
             "storeCount": 1
+          }
+        ]
+      },
+      {
+        "key": "estate|saurus",
+        "totalStoresIfMerged": 26,
+        "members": [
+          {
+            "slug": "saurus-estate-merlot",
+            "brand": "Schroeder",
+            "canonicalName": "Saurus Estate Merlot",
+            "storeCount": 9
+          },
+          {
+            "slug": "saurus-estate-pinot-noir-2",
+            "brand": "Familia Schroeder",
+            "canonicalName": "Saurus Estate Pinot noir",
+            "storeCount": 8
+          },
+          {
+            "slug": "saurus-estate-pinot-noir-rose",
+            "brand": "SAURUS",
+            "canonicalName": "SAURUS ESTATE PINOT NOIR ROSÉ",
+            "storeCount": 5
+          },
+          {
+            "slug": "vino-blanco-chardonnay-750-cc-saurus",
+            "brand": "Saurus",
+            "canonicalName": "Saurus Estate Chardonnay",
+            "storeCount": 2
+          },
+          {
+            "slug": "saurus-estate-sauvignon-blanc-2024",
+            "brand": "Saurus",
+            "canonicalName": "Saurus Estate Sauvignon Blanc",
+            "storeCount": 2
+          },
+          {
+            "slug": "saurus-estate-malbec-rose-750",
+            "brand": "Schroeder",
+            "canonicalName": "Saurus Estate Malbec Rose 750",
+            "storeCount": 0
           }
         ]
       },
@@ -956,36 +956,6 @@
         ]
       },
       {
-        "key": "blend|rva",
-        "totalStoresIfMerged": 25,
-        "members": [
-          {
-            "slug": "gran-reserva-del-fin-del-mundo-blend",
-            "brand": "Fin del Mundo",
-            "canonicalName": "FIN DEL MUNDO GRAN RVA BLEND",
-            "storeCount": 9
-          },
-          {
-            "slug": "fond-de-cave-gran-reserva-blend-750-ml",
-            "brand": "Fond de Cave",
-            "canonicalName": "FOND DE CAVE GRAN RVA BLEND",
-            "storeCount": 7
-          },
-          {
-            "slug": "blend-gran-reserva-septima",
-            "brand": "Séptima",
-            "canonicalName": "SEPTIMA GRAN RVA BLEND",
-            "storeCount": 7
-          },
-          {
-            "slug": "altus-blend-gran-rva",
-            "brand": "ALTUS",
-            "canonicalName": "ALTUS GRAN RVA BLEND",
-            "storeCount": 2
-          }
-        ]
-      },
-      {
         "key": "piattelli|vineyard",
         "totalStoresIfMerged": 25,
         "members": [
@@ -1142,44 +1112,32 @@
         ]
       },
       {
-        "key": "ribera|tension",
+        "key": "blend|rva",
         "totalStoresIfMerged": 24,
         "members": [
           {
-            "slug": "tension-la-ribera-malbecpetit-verdot-santa-julia",
-            "brand": "Santa Julia",
-            "canonicalName": "Tensión La Ribera Malbec Petit verdot",
+            "slug": "gran-reserva-del-fin-del-mundo-blend",
+            "brand": "Fin del Mundo",
+            "canonicalName": "FIN DEL MUNDO GRAN RVA BLEND",
             "storeCount": 9
           },
           {
-            "slug": "tension-la-ribera-cabernet-franc-santa-julia",
-            "brand": "Santa Julia",
-            "canonicalName": "Tensión La Ribera Cabernet franc",
+            "slug": "blend-gran-reserva-septima",
+            "brand": "Séptima",
+            "canonicalName": "SEPTIMA GRAN RVA BLEND",
+            "storeCount": 7
+          },
+          {
+            "slug": "fond-de-cave-gran-reserva-blend-750-ml",
+            "brand": "Fond de Cave",
+            "canonicalName": "FOND DE CAVE GRAN RVA BLEND",
             "storeCount": 6
           },
           {
-            "slug": "tension-la-ribera-chardonnay-semillon",
-            "brand": "Tensión La Ribera",
-            "canonicalName": "Tensión La Ribera Chardonnay Semillón",
-            "storeCount": 6
-          },
-          {
-            "slug": "tension-la-ribera-estuche-x-3-botellas",
-            "brand": "Santa Julia",
-            "canonicalName": "Tensión La Ribera Estuche x 3 botellas",
-            "storeCount": 1
-          },
-          {
-            "slug": "tension-la-ribera-mix-estuche",
-            "brand": "Tensión La Ribera",
-            "canonicalName": "TENSIÓN LA RIBERA ESTUCHE MIX",
-            "storeCount": 1
-          },
-          {
-            "slug": "tension-la-ribera-mix-750-estuche-3",
-            "brand": "Zuccardi",
-            "canonicalName": "Tensión La Ribera Mix 750 Estuche 3",
-            "storeCount": 1
+            "slug": "altus-blend-gran-rva",
+            "brand": "ALTUS",
+            "canonicalName": "ALTUS GRAN RVA BLEND",
+            "storeCount": 2
           }
         ]
       },
@@ -1226,20 +1184,86 @@
         ]
       },
       {
+        "key": "ribera|tension",
+        "totalStoresIfMerged": 23,
+        "members": [
+          {
+            "slug": "tension-la-ribera-malbecpetit-verdot-santa-julia",
+            "brand": "Santa Julia",
+            "canonicalName": "Tensión La Ribera Malbec Petit verdot",
+            "storeCount": 9
+          },
+          {
+            "slug": "tension-la-ribera-chardonnay-semillon",
+            "brand": "Tensión La Ribera",
+            "canonicalName": "Tensión La Ribera Chardonnay Semillón",
+            "storeCount": 6
+          },
+          {
+            "slug": "tension-la-ribera-cabernet-franc-santa-julia",
+            "brand": "Santa Julia",
+            "canonicalName": "Tensión La Ribera Cabernet franc",
+            "storeCount": 5
+          },
+          {
+            "slug": "tension-la-ribera-estuche-x-3-botellas",
+            "brand": "Santa Julia",
+            "canonicalName": "Tensión La Ribera Estuche x 3 botellas",
+            "storeCount": 1
+          },
+          {
+            "slug": "tension-la-ribera-mix-estuche",
+            "brand": "Tensión La Ribera",
+            "canonicalName": "TENSIÓN LA RIBERA ESTUCHE MIX",
+            "storeCount": 1
+          },
+          {
+            "slug": "tension-la-ribera-mix-750-estuche-3",
+            "brand": "Zuccardi",
+            "canonicalName": "Tensión La Ribera Mix 750 Estuche 3",
+            "storeCount": 1
+          }
+        ]
+      },
+      {
+        "key": "blend|vistalba",
+        "totalStoresIfMerged": 22,
+        "members": [
+          {
+            "slug": "corte-b-blend-vistalba",
+            "brand": "Vistalba",
+            "canonicalName": "Corte B Vistalba Blend",
+            "storeCount": 12
+          },
+          {
+            "slug": "vistalba-corte-a",
+            "brand": "Vistalba",
+            "canonicalName": "Corte C Vistalba Blend",
+            "storeCount": 9
+          },
+          {
+            "slug": "red-blend-blend-un-mundo-chiquito",
+            "brand": "Un Mundo Chiquito",
+            "canonicalName": "Red Blend Vistalba",
+            "storeCount": 1
+          }
+        ]
+      },
+      {
         "key": "hermanas|proyecto",
-        "totalStoresIfMerged": 24,
+        "totalStoresIfMerged": 22,
         "members": [
           {
             "slug": "proyecto-hermanas-cabernet-francmalbec-bodega-lagarde",
             "brand": "Bodega Lagarde",
             "canonicalName": "Proyecto Hermanas Cabernet franc Malbec",
-            "storeCount": 6
+            "storeCount": 5
           },
           {
             "slug": "lagarde-proyecto-hermanas-chardonnay-2019",
             "brand": "Lagarde",
             "canonicalName": "Proyecto Hermanas Chardonnay",
-            "storeCount": 5
+            "storeCount": 4
           },
           {
             "slug": "proyecto-hermanas-blend-bodega-lagarde",
@@ -1268,54 +1292,6 @@
         ]
       },
       {
-        "key": "blend|vistalba",
-        "totalStoresIfMerged": 23,
-        "members": [
-          {
-            "slug": "corte-b-blend-vistalba",
-            "brand": "Vistalba",
-            "canonicalName": "Corte B Vistalba Blend",
-            "storeCount": 13
-          },
-          {
-            "slug": "vistalba-corte-a",
-            "brand": "Vistalba",
-            "canonicalName": "Corte C Vistalba Blend",
-            "storeCount": 9
-          },
-          {
-            "slug": "red-blend-blend-un-mundo-chiquito",
-            "brand": "Un Mundo Chiquito",
-            "canonicalName": "Red Blend Vistalba",
-            "storeCount": 1
-          }
-        ]
-      },
-      {
-        "key": "ilogico|sunal",
-        "totalStoresIfMerged": 22,
-        "members": [
-          {
-            "slug": "agustin-lanus-wines-sunal-ilogico-criolla",
-            "brand": "Agustín Lanús",
-            "canonicalName": "Sunal Ilógico Criolla",
-            "storeCount": 11
-          },
-          {
-            "slug": "ilogico-malbec-sunal",
-            "brand": "Sunal",
-            "canonicalName": "Sunal Ilógico Malbec",
-            "storeCount": 10
-          },
-          {
-            "slug": "agustin-lanus-sunal-ilogico",
-            "brand": "AGUSTIN LANUS",
-            "canonicalName": "SUNAL ILÓGICO 2017",
-            "storeCount": 1
-          }
-        ]
-      },
-      {
         "key": "emblema|rose",
         "totalStoresIfMerged": 21,
         "members": [
@@ -1330,6 +1306,54 @@
             "brand": "Séptima",
             "canonicalName": "Emblema Malbec Rosé",
             "storeCount": 7
+          }
+        ]
+      },
+      {
+        "key": "carmen|maria",
+        "totalStoresIfMerged": 21,
+        "members": [
+          {
+            "slug": "maria-carmen-chardonnay-bianchi-3",
+            "brand": "Bianchi",
+            "canonicalName": "María Carmen Chardonnay",
+            "storeCount": 11
+          },
+          {
+            "slug": "maria-carmen-chardonnay-bianchi",
+            "brand": "Maria Carmen",
+            "canonicalName": "MARIA CARMEN ROSE",
+            "storeCount": 9
+          },
+          {
+            "slug": "bianchi-carmen-chardonnay-famiglia-maria-roble",
+            "brand": "BIANCHI",
+            "canonicalName": "Maria Carmen Chardonnay Roble 750 ml",
+            "storeCount": 1
+          }
+        ]
+      },
+      {
+        "key": "ilogico|sunal",
+        "totalStoresIfMerged": 21,
+        "members": [
+          {
+            "slug": "agustin-lanus-wines-sunal-ilogico-criolla",
+            "brand": "Agustín Lanús",
+            "canonicalName": "Sunal Ilógico Criolla",
+            "storeCount": 10
+          },
+          {
+            "slug": "ilogico-malbec-sunal",
+            "brand": "Sunal",
+            "canonicalName": "Sunal Ilógico Malbec",
+            "storeCount": 10
+          },
+          {
+            "slug": "agustin-lanus-sunal-ilogico",
+            "brand": "AGUSTIN LANUS",
+            "canonicalName": "SUNAL ILÓGICO 2017",
+            "storeCount": 1
           }
         ]
       },
@@ -1760,24 +1784,6 @@
         ]
       },
       {
-        "key": "palo|rose",
-        "totalStoresIfMerged": 17,
-        "members": [
-          {
-            "slug": "cuchillo-noir-palo-pinot-rose",
-            "brand": "Cuchillo de Palo",
-            "canonicalName": "Cuchillo de Palo Rosé de Pinot Noir",
-            "storeCount": 16
-          },
-          {
-            "slug": "ultimo-malon-vermouth-frances-rose-cruz-de-palo",
-            "brand": "Vermouth",
-            "canonicalName": "Ultimo Malon Vermouth Frances Rose - Cruz de Palo",
-            "storeCount": 1
-          }
-        ]
-      },
-      {
         "key": "blanc|noirs",
         "totalStoresIfMerged": 17,
         "members": [
@@ -1858,30 +1864,6 @@
             "brand": "Humberto Canale",
             "canonicalName": "Estate Sauvignon Gris",
             "storeCount": 5
-          }
-        ]
-      },
-      {
-        "key": "blend|norton",
-        "totalStoresIfMerged": 17,
-        "members": [
-          {
-            "slug": "blend-family-privada",
-            "brand": "Norton Privada",
-            "canonicalName": "NORTON PRIVADA FAMILY BLEND",
-            "storeCount": 12
-          },
-          {
-            "slug": "norton-marcelo-gallardo-blend",
-            "brand": "Norton",
-            "canonicalName": "NORTON MARCELO GALLARDO BLEND",
-            "storeCount": 4
-          },
-          {
-            "slug": "norton-lote-negro-unique-edition-blend",
-            "brand": "Lote Negro",
-            "canonicalName": "Norton Lote Negro Unique Edition Blend",
-            "storeCount": 1
           }
         ]
       },
@@ -1994,43 +1976,43 @@
         ]
       },
       {
-        "key": "autoctono|vistalba",
+        "key": "felix|homo",
         "totalStoresIfMerged": 17,
         "members": [
           {
-            "slug": "vino-tinto-autoctono-malbec-gualtallary-vistalba-x-750ml",
-            "brand": "Vistalba",
-            "canonicalName": "Autóctono Gualtallary Vistalba Malbec",
+            "slug": "homo-felix-gran-cabernet-sauvignon",
+            "brand": "Homo Felix",
+            "canonicalName": "Homo Felix Gran Cabernet Sauvignon",
+            "storeCount": 5
+          },
+          {
+            "slug": "homo-felix-gran-chardonnay-x4",
+            "brand": "Homo Felix",
+            "canonicalName": "Homo Felix Gran Chardonnay",
+            "storeCount": 5
+          },
+          {
+            "slug": "homo-felix-gran-malbec",
+            "brand": "Homo Felix",
+            "canonicalName": "Homo Felix Gran Malbec",
             "storeCount": 4
           },
           {
-            "slug": "autoctono-malbec-vistalba",
-            "brand": "Vistalba",
-            "canonicalName": "Autóctono Las Compuertas Vistalba Malbec",
-            "storeCount": 3
+            "slug": "promo-homo-felix-gran-chardonnay",
+            "brand": "El Enemigo",
+            "canonicalName": "PROMO HOMO FELIX Gran Chardonnay",
+            "storeCount": 1
           },
           {
-            "slug": "autoctono-malbec-vistalba-3",
-            "brand": "Vistalba",
-            "canonicalName": "Autóctono Agrelo Vistalba Malbec",
-            "storeCount": 3
+            "slug": "homo-felix-gran-blend",
+            "brand": "El Enemigo",
+            "canonicalName": "HOMO FELIX Gran Blend",
+            "storeCount": 1
           },
           {
-            "slug": "vistalba-autoctono-chardonnay-2019",
-            "brand": "Vistalba",
-            "canonicalName": "Autóctono Vistalba Chardonnay",
-            "storeCount": 3
-          },
-          {
-            "slug": "autoctono-malbec-vistalba-2",
-            "brand": "Parcela Única",
-            "canonicalName": "Vistalba Autóctono Parcela Única Malbec",
-            "storeCount": 3
-          },
-          {
-            "slug": "autoctono-malbec-vistalba-4",
-            "brand": "Vistalba",
-            "canonicalName": "Autóctono Vistalba Malbec",
+            "slug": "homo-felix-1500-estuche-madera",
+            "brand": "Homo Felix",
+            "canonicalName": "Homo Felix 750",
             "storeCount": 1
           }
         ]
@@ -2050,6 +2032,24 @@
             "brand": "Nacha",
             "canonicalName": "Vino Nacha Rose Pinot Noir Orgánico Bot 750ml",
             "storeCount": 0
+          }
+        ]
+      },
+      {
+        "key": "palo|rose",
+        "totalStoresIfMerged": 16,
+        "members": [
+          {
+            "slug": "cuchillo-noir-palo-pinot-rose",
+            "brand": "Cuchillo de Palo",
+            "canonicalName": "Cuchillo de Palo Rosé de Pinot Noir",
+            "storeCount": 15
+          },
+          {
+            "slug": "ultimo-malon-vermouth-frances-rose-cruz-de-palo",
+            "brand": "Vermouth",
+            "canonicalName": "Ultimo Malon Vermouth Frances Rose - Cruz de Palo",
+            "storeCount": 1
           }
         ]
       },
@@ -2270,90 +2270,6 @@
         ]
       },
       {
-        "key": "felix|homo",
-        "totalStoresIfMerged": 16,
-        "members": [
-          {
-            "slug": "homo-felix-gran-chardonnay-x4",
-            "brand": "Homo Felix",
-            "canonicalName": "Homo Felix Gran Chardonnay",
-            "storeCount": 5
-          },
-          {
-            "slug": "homo-felix-gran-cabernet-sauvignon",
-            "brand": "Homo Felix",
-            "canonicalName": "Homo Felix Gran Cabernet Sauvignon",
-            "storeCount": 4
-          },
-          {
-            "slug": "homo-felix-gran-malbec",
-            "brand": "Homo Felix",
-            "canonicalName": "Homo Felix Gran Malbec",
-            "storeCount": 4
-          },
-          {
-            "slug": "promo-homo-felix-gran-chardonnay",
-            "brand": "El Enemigo",
-            "canonicalName": "PROMO HOMO FELIX Gran Chardonnay",
-            "storeCount": 1
-          },
-          {
-            "slug": "homo-felix-gran-blend",
-            "brand": "El Enemigo",
-            "canonicalName": "HOMO FELIX Gran Blend",
-            "storeCount": 1
-          },
-          {
-            "slug": "homo-felix-1500-estuche-madera",
-            "brand": "Homo Felix",
-            "canonicalName": "Homo Felix 750",
-            "storeCount": 1
-          }
-        ]
-      },
-      {
-        "key": "deicas|vineyard",
-        "totalStoresIfMerged": 16,
-        "members": [
-          {
-            "slug": "familia-deicas-single-vineyard-sierra-de-mahoma-blend",
-            "brand": "Deicas",
-            "canonicalName": "Familia Deicas Single Vineyard Sierra de Mahoma Blend",
-            "storeCount": 4
-          },
-          {
-            "slug": "familia-deicas-single-vineyard-lujan-de-cuyo-malbec",
-            "brand": "Deicas",
-            "canonicalName": "FAMILIA DEICAS SINGLE VINEYARD Lujan de Cuyo Malbec",
-            "storeCount": 4
-          },
-          {
-            "slug": "familia-deicas-blend-bodega-garzon",
-            "brand": "Bodega Garzón",
-            "canonicalName": "Familia Deicas Single Vineyard Blend",
-            "storeCount": 3
-          },
-          {
-            "slug": "familia-deicas-single-vineyard-juanico-chardonnay",
-            "brand": "Deicas",
-            "canonicalName": "FAMILIA DEICAS SINGLE VINEYARD JUANICO CHARDONNAY",
-            "storeCount": 2
-          },
-          {
-            "slug": "familia-deicas-extreme-vineyard-cerro-del-guazuvira-blend",
-            "brand": "Deicas",
-            "canonicalName": "FAMILIA DEICAS EXTREME VINEYARD Cerro del Guazuvirá Blend",
-            "storeCount": 2
-          },
-          {
-            "slug": "familia-deicas-extreme-vineyard-suelo-invertido-tannat",
-            "brand": "Deicas",
-            "canonicalName": "FAMILIA DEICAS EXTREME VINEYARD Suelo invertido Tannat",
-            "storeCount": 1
-          }
-        ]
-      },
-      {
         "key": "especial|extra",
         "totalStoresIfMerged": 15,
         "members": [
@@ -2372,25 +2288,25 @@
         ]
       },
       {
-        "key": "blend|family",
+        "key": "blend|norton",
         "totalStoresIfMerged": 15,
         "members": [
           {
             "slug": "blend-family-privada",
             "brand": "Norton Privada",
             "canonicalName": "NORTON PRIVADA FAMILY BLEND",
-            "storeCount": 12
+            "storeCount": 11
           },
           {
-            "slug": "blend-family-nencias-nencias-selection-valle",
-            "brand": "Las Nencias",
-            "canonicalName": "Las Nencias Family Selection Blend",
-            "storeCount": 2
+            "slug": "norton-marcelo-gallardo-blend",
+            "brand": "Norton",
+            "canonicalName": "NORTON MARCELO GALLARDO BLEND",
+            "storeCount": 3
           },
           {
-            "slug": "cinco-sentidos-maluco-family-red-blend",
-            "brand": "Cinco Sentidos",
-            "canonicalName": "Cinco Sentidos Maluco Family Red Blend",
+            "slug": "norton-lote-negro-unique-edition-blend",
+            "brand": "Lote Negro",
+            "canonicalName": "Norton Lote Negro Unique Edition Blend",
             "storeCount": 1
           }
         ]
@@ -2473,7 +2389,7 @@
         "members": [
           {
             "slug": "maria-carmen-chardonnay-bianchi",
-            "brand": "BIANCHI",
+            "brand": "Maria Carmen",
             "canonicalName": "MARIA CARMEN ROSE",
             "storeCount": 9
           },
@@ -2520,21 +2436,93 @@
             "storeCount": 1
           }
         ]
+      },
+      {
+        "key": "organic|vineyards",
+        "totalStoresIfMerged": 15,
+        "members": [
+          {
+            "slug": "organic-vineyards-malbec-fin-del-mundo",
+            "brand": "Fin Del Mundo",
+            "canonicalName": "Organic Vineyards Malbec",
+            "storeCount": 6
+          },
+          {
+            "slug": "blend-fin-mundo",
+            "brand": "Fin del Mundo",
+            "canonicalName": "Organic Vineyards Blend",
+            "storeCount": 5
+          },
+          {
+            "slug": "sacha-organic-vineyards-malbec",
+            "brand": "Vinecol",
+            "canonicalName": "Sacha Organic Vineyards Malbec",
+            "storeCount": 2
+          },
+          {
+            "slug": "sacha-organic-vineyards-chardonnay-sin-filtrar",
+            "brand": "Vinecol",
+            "canonicalName": "Sacha Organic Vineyards Chardonnay Sin Filtrar",
+            "storeCount": 1
+          },
+          {
+            "slug": "sacha-organic-vineyards-bonarda",
+            "brand": "Vinecol",
+            "canonicalName": "Sacha Organic Vineyards Bonarda",
+            "storeCount": 1
+          }
+        ]
+      },
+      {
+        "key": "blend|single",
+        "totalStoresIfMerged": 15,
+        "members": [
+          {
+            "slug": "etchart-single-vineyard-malbec-750-ml",
+            "brand": "Etchart",
+            "canonicalName": "Assemblage Single Vineyard Blend Malbec",
+            "storeCount": 6
+          },
+          {
+            "slug": "familia-deicas-single-vineyard-sierra-de-mahoma-blend",
+            "brand": "Deicas",
+            "canonicalName": "Familia Deicas Single Vineyard Sierra de Mahoma Blend",
+            "storeCount": 4
+          },
+          {
+            "slug": "familia-deicas-blend-bodega-garzon",
+            "brand": "Bodega Garzón",
+            "canonicalName": "Familia Deicas Single Vineyard Blend",
+            "storeCount": 3
+          },
+          {
+            "slug": "vino-desencajaoo-blend-de-malbec-single-vineyard-750-cc",
+            "brand": null,
+            "canonicalName": "Vino Desencajaoo Blend de Malbec Single Vineyard 750 cc",
+            "storeCount": 1
+          },
+          {
+            "slug": "tikal-amorio-single-vineyard-blend-de-malbecs-2020-by-ernest",
+            "brand": "Tikal",
+            "canonicalName": "TIKAL AMORÍO Single Vineyard Blend de Malbecs 2020 By Ernesto Catena Vineyard",
+            "storeCount": 1
+          }
+        ]
       }
     ]
   },
   "heuristicB": {
     "description": "Pares de grupos con Jaccard ≥ 0.75 sobre tokens distintivos.",
-    "total": 7633,
+    "total": 7636,
     "items": [
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 79,
+        "totalStoresIfMerged": 78,
         "a": {
           "slug": "felicien-malbec-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "storeCount": 45
         },
         "b": {
           "slug": "blanco-chardonnay-felicien-saint",
@@ -2545,12 +2533,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 79,
+        "totalStoresIfMerged": 78,
         "a": {
           "slug": "felicien-malbec-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "storeCount": 45
         },
         "b": {
           "slug": "cabernet-felicien-franc-saint",
@@ -2611,22 +2599,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 74,
         "a": {
-          "slug": "felicien-malbec-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
-        },
-        "b": {
-          "slug": "cabernet-felicien-saint-sauvignon",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet",
-          "storeCount": 28
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 74,
-        "a": {
           "slug": "angelica-blanco-chardonnay-zapata",
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Chardonnay",
@@ -2637,6 +2609,22 @@
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Cabernet Sauvignon",
           "storeCount": 37
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 73,
+        "a": {
+          "slug": "felicien-malbec-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Malbec",
+          "storeCount": 45
+        },
+        "b": {
+          "slug": "cabernet-felicien-saint-sauvignon",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet",
+          "storeCount": 28
         }
       },
       {
@@ -2685,38 +2673,6 @@
           "brand": "Catena Zapata",
           "canonicalName": "Angélica Zapata Merlot",
           "storeCount": 28
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 66,
-        "a": {
-          "slug": "felicien-malbec-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
-        },
-        "b": {
-          "slug": "felicien-noir-pinot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 66,
-        "a": {
-          "slug": "felicien-malbec-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
-        },
-        "b": {
-          "slug": "bonarda-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
         }
       },
       {
@@ -2774,13 +2730,29 @@
           "slug": "felicien-malbec-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "storeCount": 45
         },
         "b": {
-          "slug": "cabernet-con-felicien-merlot-saint",
+          "slug": "felicien-noir-pinot-saint",
           "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet Merlot",
-          "storeCount": 18
+          "canonicalName": "Saint Felicien Pinot noir",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 64,
+        "a": {
+          "slug": "felicien-malbec-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Malbec",
+          "storeCount": 45
+        },
+        "b": {
+          "slug": "bonarda-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Bonarda",
+          "storeCount": 19
         }
       },
       {
@@ -2797,6 +2769,22 @@
           "brand": "Catena Zapata",
           "canonicalName": "Nicasia Blend Cabernet franc",
           "storeCount": 31
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 63,
+        "a": {
+          "slug": "felicien-malbec-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Malbec",
+          "storeCount": 45
+        },
+        "b": {
+          "slug": "cabernet-con-felicien-merlot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet Merlot",
+          "storeCount": 18
         }
       },
       {
@@ -2897,12 +2885,12 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 55,
+        "totalStoresIfMerged": 54,
         "a": {
           "slug": "felicien-malbec-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "storeCount": 45
         },
         "b": {
           "slug": "felicien-petit-saint-syra",
@@ -2913,98 +2901,18 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 55,
+        "totalStoresIfMerged": 54,
         "a": {
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
-          "storeCount": 29
+          "storeCount": 28
         },
         "b": {
           "slug": "boher-bot-brut-casa-champana-extra",
           "brand": "Casa Boher",
           "canonicalName": "Extra Brut",
           "storeCount": 26
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 54,
-        "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 29
-        },
-        "b": {
-          "slug": "brut-cuvee-espumante-extra-salentein-speciale",
-          "brand": "Salentein",
-          "canonicalName": "Extra Brut",
-          "storeCount": 25
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 53,
-        "a": {
-          "slug": "blanco-chardonnay-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Chardonnay",
-          "storeCount": 33
-        },
-        "b": {
-          "slug": "felicien-noir-pinot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 53,
-        "a": {
-          "slug": "blanco-chardonnay-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Chardonnay",
-          "storeCount": 33
-        },
-        "b": {
-          "slug": "bonarda-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 53,
-        "a": {
-          "slug": "cabernet-felicien-franc-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet franc",
-          "storeCount": 33
-        },
-        "b": {
-          "slug": "felicien-noir-pinot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 53,
-        "a": {
-          "slug": "cabernet-felicien-franc-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet franc",
-          "storeCount": 33
-        },
-        "b": {
-          "slug": "bonarda-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
         }
       },
       {
@@ -3025,18 +2933,82 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 52,
+        "totalStoresIfMerged": 53,
         "a": {
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
-          "storeCount": 29
+          "storeCount": 28
         },
         "b": {
-          "slug": "brut-champagne-extra-luigibosca-luigibosca",
-          "brand": "Luigi Bosca",
+          "slug": "brut-cuvee-espumante-extra-salentein-speciale",
+          "brand": "Salentein",
           "canonicalName": "Extra Brut",
-          "storeCount": 23
+          "storeCount": 25
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 52,
+        "a": {
+          "slug": "blanco-chardonnay-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Chardonnay",
+          "storeCount": 33
+        },
+        "b": {
+          "slug": "felicien-noir-pinot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Pinot noir",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 52,
+        "a": {
+          "slug": "blanco-chardonnay-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Chardonnay",
+          "storeCount": 33
+        },
+        "b": {
+          "slug": "bonarda-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Bonarda",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 52,
+        "a": {
+          "slug": "cabernet-felicien-franc-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet franc",
+          "storeCount": 33
+        },
+        "b": {
+          "slug": "felicien-noir-pinot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Pinot noir",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 52,
+        "a": {
+          "slug": "cabernet-felicien-franc-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet franc",
+          "storeCount": 33
+        },
+        "b": {
+          "slug": "bonarda-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Bonarda",
+          "storeCount": 19
         }
       },
       {
@@ -3069,6 +3041,22 @@
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Cabernet Merlot",
           "storeCount": 18
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 51,
+        "a": {
+          "slug": "brut-chandon-espumante-extra",
+          "brand": "Chandon",
+          "canonicalName": "Extra Brut",
+          "storeCount": 28
+        },
+        "b": {
+          "slug": "brut-champagne-extra-luigibosca-luigibosca",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Extra Brut",
+          "storeCount": 23
         }
       },
       {
@@ -3123,54 +3111,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 48,
         "a": {
-          "slug": "cabernet-felicien-saint-sauvignon",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet",
-          "storeCount": 28
-        },
-        "b": {
-          "slug": "felicien-noir-pinot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 48,
-        "a": {
-          "slug": "cabernet-felicien-saint-sauvignon",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet",
-          "storeCount": 28
-        },
-        "b": {
-          "slug": "bonarda-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 48,
-        "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 29
-        },
-        "b": {
-          "slug": "brut-extra-rutini",
-          "brand": "Rutini",
-          "canonicalName": "Extra Brut",
-          "storeCount": 19
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 48,
-        "a": {
           "slug": "brut-cuvee-espumante-extra-salentein-speciale",
           "brand": "Salentein",
           "canonicalName": "Extra Brut",
@@ -3187,16 +3127,64 @@
         "jaccard": 1,
         "totalStoresIfMerged": 47,
         "a": {
-          "slug": "felicien-malbec-saint",
+          "slug": "cabernet-felicien-saint-sauvignon",
           "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "canonicalName": "Saint Felicien Cabernet",
+          "storeCount": 28
         },
         "b": {
-          "slug": "catena-zapata-saint-felicien-magnum-15-litros",
+          "slug": "felicien-noir-pinot-saint",
           "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien",
-          "storeCount": 1
+          "canonicalName": "Saint Felicien Pinot noir",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 47,
+        "a": {
+          "slug": "cabernet-felicien-saint-sauvignon",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet",
+          "storeCount": 28
+        },
+        "b": {
+          "slug": "bonarda-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Bonarda",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 47,
+        "a": {
+          "slug": "brut-chandon-espumante-extra",
+          "brand": "Chandon",
+          "canonicalName": "Extra Brut",
+          "storeCount": 28
+        },
+        "b": {
+          "slug": "brut-extra-rutini",
+          "brand": "Rutini",
+          "canonicalName": "Extra Brut",
+          "storeCount": 19
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 47,
+        "a": {
+          "slug": "de-sangre-cabernet-luigi-bosca",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Luigi Bosca Cabernet Sauvignon",
+          "storeCount": 25
+        },
+        "b": {
+          "slug": "vino-blanco-chardonnay-750-cc-luigi-bosca",
+          "brand": "Luigi Bosca",
+          "canonicalName": "Luigi Bosca Chardonnay",
+          "storeCount": 22
         }
       },
       {
@@ -3222,29 +3210,13 @@
           "slug": "felicien-malbec-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
+          "storeCount": 45
         },
         "b": {
-          "slug": "pack-6-vinos-saint-felicien-chardonnay-roble-blanco-x750cc",
+          "slug": "catena-zapata-saint-felicien-magnum-15-litros",
           "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien 6 Chardonnay",
-          "storeCount": 0
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 46,
-        "a": {
-          "slug": "felicien-malbec-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Malbec",
-          "storeCount": 46
-        },
-        "b": {
-          "slug": "estiba-estiba-felicien-fino-gran-gran-presentacion-reserv-reserva-saint-tipo",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Gran Reserva",
-          "storeCount": 0
+          "canonicalName": "Saint Felicien",
+          "storeCount": 1
         }
       },
       {
@@ -3267,22 +3239,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 46,
         "a": {
-          "slug": "de-sangre-cabernet-luigi-bosca",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Luigi Bosca Cabernet Sauvignon",
-          "storeCount": 24
-        },
-        "b": {
-          "slug": "vino-blanco-chardonnay-750-cc-luigi-bosca",
-          "brand": "Luigi Bosca",
-          "canonicalName": "Luigi Bosca Chardonnay",
-          "storeCount": 22
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 46,
-        "a": {
           "slug": "brut-espumante-luigibosca-luigibosca-nature",
           "brand": "Luigi Bosca",
           "canonicalName": "Brut Nature",
@@ -3293,6 +3249,38 @@
           "brand": "Salentein",
           "canonicalName": "Brut Nature",
           "storeCount": 22
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 45,
+        "a": {
+          "slug": "felicien-malbec-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Malbec",
+          "storeCount": 45
+        },
+        "b": {
+          "slug": "pack-6-vinos-saint-felicien-chardonnay-roble-blanco-x750cc",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien 6 Chardonnay",
+          "storeCount": 0
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 45,
+        "a": {
+          "slug": "felicien-malbec-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Malbec",
+          "storeCount": 45
+        },
+        "b": {
+          "slug": "estiba-estiba-felicien-fino-gran-gran-presentacion-reserv-reserva-saint-tipo",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Gran Reserva",
+          "storeCount": 0
         }
       },
       {
@@ -3443,38 +3431,6 @@
         "jaccard": 1,
         "totalStoresIfMerged": 40,
         "a": {
-          "slug": "felicien-noir-pinot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
-        },
-        "b": {
-          "slug": "bonarda-felicien-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 40,
-        "a": {
-          "slug": "bramare-uco-malbec-vina-cobos",
-          "brand": "Viña Cobos",
-          "canonicalName": "Bramare Valle de Uco Malbec",
-          "storeCount": 26
-        },
-        "b": {
-          "slug": "bramare-chardonnay-cobos-uco-valle-vina",
-          "brand": "Viña Cobos",
-          "canonicalName": "Bramare Valle de Uco Chardonnay",
-          "storeCount": 14
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 40,
-        "a": {
           "slug": "brut-espumante-luigibosca-luigibosca-nature",
           "brand": "Luigi Bosca",
           "canonicalName": "Brut Nature",
@@ -3587,16 +3543,32 @@
         "jaccard": 1,
         "totalStoresIfMerged": 39,
         "a": {
-          "slug": "brut-chandon-espumante-extra",
-          "brand": "Chandon",
-          "canonicalName": "Extra Brut",
-          "storeCount": 29
+          "slug": "bramare-uco-malbec-vina-cobos",
+          "brand": "Viña Cobos",
+          "canonicalName": "Bramare Valle de Uco Malbec",
+          "storeCount": 25
         },
         "b": {
-          "slug": "brut-extra-mosquita-muerta-otro-pozo-sapo",
-          "brand": "Mosquita Muerta",
-          "canonicalName": "Extra Brut",
-          "storeCount": 10
+          "slug": "bramare-chardonnay-cobos-uco-valle-vina",
+          "brand": "Viña Cobos",
+          "canonicalName": "Bramare Valle de Uco Chardonnay",
+          "storeCount": 14
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 39,
+        "a": {
+          "slug": "brut-rose-salentein",
+          "brand": "Salentein",
+          "canonicalName": "Brut Rosé",
+          "storeCount": 20
+        },
+        "b": {
+          "slug": "baron-baronb-brut-rose",
+          "brand": "Baron B",
+          "canonicalName": "Brut Rosé",
+          "storeCount": 19
         }
       },
       {
@@ -3606,29 +3578,13 @@
           "slug": "felicien-noir-pinot-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Pinot noir",
-          "storeCount": 20
+          "storeCount": 19
         },
         "b": {
-          "slug": "cabernet-con-felicien-merlot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet Merlot",
-          "storeCount": 18
-        }
-      },
-      {
-        "jaccard": 1,
-        "totalStoresIfMerged": 38,
-        "a": {
           "slug": "bonarda-felicien-saint",
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Bonarda",
-          "storeCount": 20
-        },
-        "b": {
-          "slug": "cabernet-con-felicien-merlot-saint",
-          "brand": "Catena Zapata",
-          "canonicalName": "Saint Felicien Cabernet Merlot",
-          "storeCount": 18
+          "storeCount": 19
         }
       },
       {
@@ -3686,13 +3642,13 @@
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
-          "storeCount": 29
+          "storeCount": 28
         },
         "b": {
-          "slug": "animal-brut-espumante-extra",
-          "brand": "Animal",
+          "slug": "brut-extra-mosquita-muerta-otro-pozo-sapo",
+          "brand": "Mosquita Muerta",
           "canonicalName": "Extra Brut",
-          "storeCount": 9
+          "storeCount": 10
         }
       },
       {
@@ -3729,22 +3685,6 @@
       },
       {
         "jaccard": 1,
-        "totalStoresIfMerged": 38,
-        "a": {
-          "slug": "brut-rose-salentein",
-          "brand": "Salentein",
-          "canonicalName": "Brut Rosé",
-          "storeCount": 20
-        },
-        "b": {
-          "slug": "baron-baronb-brut-rose",
-          "brand": "Baron B",
-          "canonicalName": "Brut Rosé",
-          "storeCount": 18
-        }
-      },
-      {
-        "jaccard": 1,
         "totalStoresIfMerged": 37,
         "a": {
           "slug": "cabernet-felicien-saint-sauvignon",
@@ -3757,6 +3697,38 @@
           "brand": "Catena Zapata",
           "canonicalName": "Saint Felicien Syrah",
           "storeCount": 9
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 37,
+        "a": {
+          "slug": "felicien-noir-pinot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Pinot noir",
+          "storeCount": 19
+        },
+        "b": {
+          "slug": "cabernet-con-felicien-merlot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet Merlot",
+          "storeCount": 18
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 37,
+        "a": {
+          "slug": "bonarda-felicien-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Bonarda",
+          "storeCount": 19
+        },
+        "b": {
+          "slug": "cabernet-con-felicien-merlot-saint",
+          "brand": "Catena Zapata",
+          "canonicalName": "Saint Felicien Cabernet Merlot",
+          "storeCount": 18
         }
       },
       {
@@ -3782,13 +3754,13 @@
           "slug": "brut-chandon-espumante-extra",
           "brand": "Chandon",
           "canonicalName": "Extra Brut",
-          "storeCount": 29
+          "storeCount": 28
         },
         "b": {
-          "slug": "alamos-brut-extra",
-          "brand": "Alamos",
+          "slug": "animal-brut-espumante-extra",
+          "brand": "Animal",
           "canonicalName": "Extra Brut",
-          "storeCount": 8
+          "storeCount": 9
         }
       },
       {
@@ -3805,6 +3777,22 @@
           "brand": "Araucana",
           "canonicalName": "Río de los Ciervos Pinot noir",
           "storeCount": 17
+        }
+      },
+      {
+        "jaccard": 1,
+        "totalStoresIfMerged": 36,
+        "a": {
+          "slug": "cabernet-escorihuela-franc-pequenas-producciones",
+          "brand": "Escorihuela",
+          "canonicalName": "Pequeñas Producciones Cabernet franc",
+          "storeCount": 20
+        },
+        "b": {
+          "slug": "chardonnay-escorihuela-pequenas-producciones",
+          "brand": "Escorihuela",
+          "canonicalName": "Pequeñas Producciones Chardonnay",
+          "storeCount": 16
         }
       }
     ]
