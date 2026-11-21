@@ -19,7 +19,25 @@ type Props = Omit<ImageProps, "src" | "alt" | "onError"> & {
  * la carga falla, mostramos la botella ilustrada de `BottleFallback`,
  * la misma que ya usábamos para los vinos sin foto.
  */
-export function WineImage({ src, name, brand, className, ...rest }: Props) {
+/**
+ * Las fotos de Tiendanube (~73% del catálogo) ya vienen del CDN de la
+ * plataforma en 480 px y webp (`-480-0.webp`), que es el tamaño al que las
+ * mostramos. Pasarlas por el optimizador de Next sólo costaba en Railway:
+ * bajar la imagen, recodificarla con sharp (RAM y CPU, y el cache en disco
+ * se pierde en cada deploy) y reenviarla (egress). Ésas se piden directo al
+ * CDN; el resto (VTEX, Shopify, WordPress, que suelen venir en tamaño
+ * original) sigue pasando por el optimizador.
+ */
+function servedByStoreCdn(src: string): boolean {
+  try {
+    const { hostname, pathname } = new URL(src);
+    return hostname.endsWith(".mitiendanube.com") && /-480-0\.\w+$/.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
+export function WineImage({ src, name, brand, className, unoptimized, ...rest }: Props) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   if (!src || failedSrc === src) {
     return <BottleFallback name={name} brand={brand} />;
@@ -27,6 +45,7 @@ export function WineImage({ src, name, brand, className, ...rest }: Props) {
   return (
     <Image
       {...rest}
+      unoptimized={unoptimized ?? servedByStoreCdn(src)}
       src={src}
       alt={name}
       className={className ?? "object-contain"}
