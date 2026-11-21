@@ -3,14 +3,16 @@ name: Fichas de bodega (Claude)
 # Escribe una ficha corta y con fuentes para cada /bodega/[slug] con Claude +
 # búsqueda web (scripts/bodega-notes.mjs → data/bodega-notes.json). Es
 # incremental: cada corrida hace hasta BODEGA_NOTES_MAX bodegas nuevas o
-# hasta BODEGA_NOTES_RUN_USD de gasto, lo que llegue primero. Con 1.147
-# bodegas y los defaults (40 por día, US$5) termina en ~1 mes; después sólo
-# corre para bodegas nuevas y reintentos de las que no tenían datos.
+# hasta BODEGA_NOTES_RUN_USD de gasto, lo que llegue primero. Primera
+# corrida real (21/11): ~US$0,10 por bodega encontrada, ~US$0,03 por marca
+# que no es bodega. Con 1.147 bodegas y los defaults (150 por día, tope
+# US$20) termina en ~8 días (~US$100); después sólo corre para bodegas
+# nuevas y reintentos de las que no tenían datos.
 #
 # Configuración (Settings → Secrets and variables → Actions):
 #   secret   ANTHROPIC_API_KEY      la misma del sommelier
-#   variable BODEGA_NOTES_MAX       bodegas por corrida (default 40)
-#   variable BODEGA_NOTES_RUN_USD   tope de gasto por corrida (default 5)
+#   variable BODEGA_NOTES_MAX       bodegas por corrida (default 150)
+#   variable BODEGA_NOTES_RUN_USD   tope de gasto por corrida (default 20)
 
 on:
   schedule:
@@ -18,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       max:
-        description: "Bodegas máximas en esta corrida (vacío = 40)"
+        description: "Bodegas máximas en esta corrida (vacío = 150)"
         required: false
         default: ""
 
@@ -32,7 +34,7 @@ concurrency:
 jobs:
   notes:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -52,8 +54,8 @@ jobs:
       - name: Escribir fichas nuevas
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BODEGA_NOTES_MAX: ${{ inputs.max || vars.BODEGA_NOTES_MAX }}
-          BODEGA_NOTES_RUN_USD: ${{ vars.BODEGA_NOTES_RUN_USD }}
+          BODEGA_NOTES_MAX: ${{ inputs.max || vars.BODEGA_NOTES_MAX || '150' }}
+          BODEGA_NOTES_RUN_USD: ${{ vars.BODEGA_NOTES_RUN_USD || '20' }}
         run: node scripts/bodega-notes.mjs
 
       - name: Commit + push si cambió
