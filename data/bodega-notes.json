@@ -1,5 +1,105 @@
 {
  "_doc": "Fichas de bodega para /bodega/[slug]. Las genera scripts/bodega-notes.mjs (Claude + búsqueda web, con fuentes verificadas). Para rehacer una, borrala; para corregirla, editá el texto (no se pisa).",
- "notes": {},
- "misses": {}
+ "notes": {
+  "rutini": {
+   "name": "Rutini",
+   "texto": "Rutini Wines nació en 1885, cuando el inmigrante italiano Felipe Rutini fundó la Bodega La Rural en Coquimbito, Maipú, Mendoza. Hacia 1925 la bodega empezó a plantar viñedos en el Valle de Uco. Su planta actual, que empezó a construirse en 2008, está en Tupungato y ahí se elaboran las líneas Felipe Rutini, Antología, Apartado, Colección Rutini, Encuentro y Trumpeter. Sus viñedos en el Valle de Uco suman más de 400 hectáreas, a una altura de entre 1.050 y 1.200 metros sobre el nivel del mar.",
+   "provincia": "Mendoza",
+   "fundacion": 1885,
+   "fuentes": [
+    "https://rutiniwines.com/en/winery/",
+    "https://www.vinissimus.com/es/bodega/bodega-rutini-wines/",
+    "https://www.wine-searcher.com/merchant/25646-rutini-wines",
+    "https://criadowines.ie/pages/rutini-wines"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:10:05.576Z"
+  },
+  "catena-zapata": {
+   "name": "Catena Zapata",
+   "texto": "Catena Zapata es una bodega familiar con sede en Agrelo, Luján de Cuyo, Mendoza. Su origen se remonta a 1902, cuando el inmigrante italiano Nicola Catena plantó su primera viña de Malbec en Mendoza. La empresa pasó luego a su hijo Domingo y, en 1963, a su nieto Nicolás Catena Zapata, y hoy la conduce Laura Catena, de la cuarta generación. Trabaja con viñedos propios en distintas zonas de Mendoza, como La Pirámide en Agrelo y Adrianna en Gualtallary, a 1.450 metros, y entre sus líneas figuran DV Catena y Saint Felicien.",
+   "provincia": "Mendoza",
+   "fundacion": 1902,
+   "fuentes": [
+    "https://catenazapata.com/es/begginings-es.php",
+    "https://catenazapata.com/since-1902/",
+    "https://catenazapata.com/la-piramide-vineyard/",
+    "https://catenazapata.com/adrianna.php"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:10:23.610Z"
+  },
+  "zuccardi": {
+   "name": "Zuccardi",
+   "texto": "Familia Zuccardi es una empresa familiar de Mendoza fundada en 1963 por el ingeniero Alberto Zuccardi, que empezó plantando viñedos en Maipú. Su hijo José Alberto se sumó a la empresa en 1976. Hoy tiene viñedos y olivares en distintas zonas de Mendoza y una bodega en Paraje Altamira, Valle de Uco, donde fermenta y cría vinos en piletas de concreto sin epoxi. Entre sus líneas figuran Serie A, que reúne variedades representativas de Argentina, Zuccardi Q y Concreto, un Malbec de Paraje Altamira criado en concreto.",
+   "provincia": "Mendoza",
+   "fundacion": 1963,
+   "fuentes": [
+    "https://familiazuccardi.com/",
+    "https://www.cristobal.com.ar/index.php/editorial-familia-zuccardi",
+    "https://mediacopagarcia.com.ar/2470-2/",
+    "https://zuccardiwines.com/wp-content/uploads/2024/06/FT-ESP-ZUCCARDI-GRAVASCAL-2018.pdf"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:10:43.398Z"
+  },
+  "salentein": {
+   "name": "Salentein",
+   "texto": "Bodegas Salentein está en Tunuyán, en el Valle de Uco, Mendoza. La fundó el empresario neerlandés Mijndert Pon, que llegó a la zona en 1996. La primera cosecha fue en 1999, con las líneas Primus, Salentein Reserve y Portillo. En 2002 plantó un viñedo a 1600 metros en su finca San Pablo y en 2009 construyó una champañera. Entre sus líneas también están Single Vineyard, Numina y el corte Gran Valle de Uco.",
+   "provincia": "Mendoza",
+   "fundacion": null,
+   "fuentes": [
+    "https://vinomanos.com/2018/11/bodegas-salentein-20-cosechas/",
+    "https://www.vivieloeste.com.ar/noticias/2023/03/20/57622-bodegas-salentein-celebra-sus-25-cosechas-en-valle-de-uco",
+    "https://www.wine-searcher.com/merchant/57178-bodega-salentein",
+    "https://www.wine-searcher.com/find/salentein+primus+chard+tunuyan+uco+valley+mendoza+argentina"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:11:20.872Z"
+  },
+  "las-perdices": {
+   "name": "Las Perdices",
+   "texto": "Viña Las Perdices es un emprendimiento familiar de Juan Muñoz López, su esposa Rosario y sus hijos, fundado en 2004 en la finca de Agrelo, Luján de Cuyo, Mendoza. La familia cultiva esa propiedad desde 1972. En 1977 construyó en Vistalba una primera bodega que vendía vino a granel, y los primeros vinos con marca propia salieron a mediados de 2006. Tiene 93 hectáreas en Agrelo y se distingue por la variedad de blancos y de cepas poco difundidas. Sus líneas incluyen Ala Colorada, de tintos no tradicionales, y Exploración, con vinos de zonas fuera de Agrelo.",
+   "provincia": "Mendoza",
+   "fundacion": 2004,
+   "fuentes": [
+    "https://guarda14.losandes.com.ar/guarda14/vina-las-perdices-historia-creatividad-e-innovacion",
+    "https://bonvivir.com/bodegas/bodega-vina-las-perdices"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:11:33.718Z"
+  },
+  "trapiche": {
+   "name": "Trapiche",
+   "texto": "Trapiche fue fundada en 1883 por Tiburcio Benegas, empresario y gobernador de Mendoza, a partir de un pequeño viñedo llamado El Trapiche, en Godoy Cruz. Hoy su bodega está en Maipú, en un edificio de estilo florentino construido en 1912 y restaurado a partir de 2006. Pertenece al Grupo Peñaflor, y sus marcas Fond de Cave y Broquel ya circulaban en la década de 1920. En 2015 creó Costa & Pampa en Chapadmalal, provincia de Buenos Aires, a 6 kilómetros del océano Atlántico.",
+   "provincia": "Mendoza",
+   "fundacion": 1883,
+   "fuentes": [
+    "https://bonvivir.com/bodegas/bodega-trapiche",
+    "https://www.bodeboca.com/bodegas/trapiche",
+    "https://en.wikipedia.org/wiki/Trapiche_(winery)",
+    "https://www.lanacion.com.ar/economia/bodegas-trapiche-cumple-120-anos-exportando-los-vinos-argentinos-y-su-objetivo-de-hoy-es-competir-con-el-nuevo-mundo-nid518157/"
+   ],
+   "model": "claude-opus-5-5",
+   "at": "2026-11-21T12:11:54.917Z"
+  }
+ },
+ "misses": {
+  "badia": {
+   "reason": "no encontrada",
+   "at": "2026-11-21T12:09:46.640Z"
+  },
+  "giorgio": {
+   "reason": "no encontrada",
+   "at": "2026-11-21T12:09:49.022Z"
+  },
+  "cristo": {
+   "reason": "no encontrada",
+   "at": "2026-11-21T12:10:56.287Z"
+  },
+  "buckingham": {
+   "reason": "no encontrada",
+   "at": "2026-11-21T12:11:58.007Z"
+  }
+ }
 }
