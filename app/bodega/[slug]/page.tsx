@@ -17,6 +17,25 @@ import { brandCrawlTargets } from "@/lib/internalLinks";
 import { wineFullName } from "@/lib/wineNames";
 import { WineLinkList } from "@/components/WineLinkList";
 import Link from "next/link";
+import bodegaNotesJson from "@/data/bodega-notes.json";
+
+type BodegaNote = {
+  name: string;
+  texto: string;
+  provincia: string | null;
+  fundacion: number | null;
+  fuentes: string[];
+};
+/** Fichas escritas por scripts/bodega-notes.mjs (Claude + búsqueda web, con fuentes). */
+const bodegaNotes = (bodegaNotesJson as { notes: Record<string, BodegaNote> }).notes;
+
+function sourceLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -129,12 +148,16 @@ export default async function BodegaPage({ params }: Params) {
   // los dos: Brand para entity matching en queries de marca,
   // Organization para Knowledge Graph con location.
   const primaryRegion = b.regions[0];
+  const note = bodegaNotes[b.slug];
   const orgJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Organization",
     name: b.name,
     url: `https://vinndex.com.ar/bodega/${slug}`,
-    description: `Bodega argentina${primaryRegion ? ` de ${primaryRegion}` : ""} con ${b.groupCount} etiqueta${b.groupCount === 1 ? "" : "s"} en vinotecas online.`,
+    description:
+      note?.texto ??
+      `Bodega argentina${primaryRegion ? ` de ${primaryRegion}` : ""} con ${b.groupCount} etiqueta${b.groupCount === 1 ? "" : "s"} en vinotecas online.`,
+    ...(note?.fundacion ? { foundingDate: String(note.fundacion) } : {}),
     ...(primaryRegion
       ? {
           address: {
@@ -194,6 +217,27 @@ export default async function BodegaPage({ params }: Params) {
             <span className="font-semibold text-ink">{b.storeCount}</span>{" "}
             vinoteca{b.storeCount === 1 ? "" : "s"}.
           </p>
+          {note && (
+            <div className="mt-6 max-w-2xl">
+              <p className="text-ink leading-relaxed">{note.texto}</p>
+              <p className="text-xs text-graphite mt-2">
+                Fuentes:{" "}
+                {note.fuentes.map((u, i) => (
+                  <span key={u}>
+                    {i > 0 && " · "}
+                    <a
+                      href={u}
+                      target="_blank"
+                      rel="nofollow noopener noreferrer"
+                      className="underline hover:text-ink"
+                    >
+                      {sourceLabel(u)}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
           {(b.varietals.length > 0 || b.regions.length > 0) && (
             <div className="mt-4 flex gap-2 flex-wrap">
               {b.varietals.map((v) => {
