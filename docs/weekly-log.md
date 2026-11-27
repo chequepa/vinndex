@@ -110,3 +110,62 @@ mergear). El log viejo de ese agente vive fuera del repo
   después de mergear. Proponer habilitar el dominio en el entorno.
 - Verificar en Railway → Usage que la RAM base baje de ~1,3 GB a ~0,7 GB
   después de #232.
+
+---
+
+## 2026-11-27 (viernes)
+
+El repaso del 13/11 y del 20/11 no corrió: la tarea quedó pausada sin querer
+el 12/11 y Juan la reactivó el 21/11.
+
+### Números
+
+| | valor |
+|---|---|
+| tiendas activas (snapshot) | 127 (1 con error: mercado-libre, listado bloqueado) |
+| productos scrapeados | 89.091 |
+| fichas (grupos) | 30.500 · multi-tienda 6.340 |
+| ofertas en fichas | 89.250 |
+| data/snapshot.json | 56,4 MB local / 53,75 MB en el push (+1,4 MB en 3 semanas: el riesgo de 100 MB queda lejos) |
+| corridas de Actions (7 días) | todas OK: daily-scrape 7, sommelier 21, fichas de bodega 8, lighthouse 1, vinotecas nuevas 1 |
+| catálogo incremental (Claude) | 16 a preguntar, 0 errores |
+| build-groups-v2 | partidos por precio incoherente: 8 · fusiones bloqueadas por precio: 23 |
+| reportes de usuarios / votos | 0 abiertos (sigue sin entrar nada desde el 19/09) |
+| fichas de bodega | 779 hechas · 281 sin datos confiables · 87 por hacer (de 1.147) |
+| gasto de API del ciclo (desde 16/11) | sommelier ~US$10 · fichas de bodega ~US$90 (estimado) |
+
+### Qué se hizo (21/11 → 27/11)
+
+- #239: tope de heap de 384 MB en `npm start` (pico medido 1.358 → 551 MB) y
+  fotos de Tiendanube directo del CDN (el 73% de las fotos deja de pasar por
+  el optimizador de Next).
+- #240/#241: fichas de bodega con Claude + búsqueda web, 150 por día. Muestra
+  revisada al azar (Les Astronautes, Saurus/Schroeder, Elefante, Onofri,
+  Rutini): correctas y con fuentes reales. Fuentes más usadas: bonvivir,
+  vivino, vinomanos, La Nación, mendoza.tur.ar.
+- #238: alta de Fullescabio (Shopify). #237 cerrado por duplicado.
+- #242: PR del vet semanal con 0 altas (sólo actualiza el ledger): mergeado.
+- Sommelier: revisión xhigh de las bodegas con bajo acuerdo (21/11). Siguen
+  ~29 sin acuerdo; no se insiste.
+
+### Pendiente de Juan
+
+1. Railway → Usage: confirmar que la RAM base bajó a 0,3-0,5 GB después de
+   #239. Si no bajó, Railway no arranca con `npm start`: agregar la variable
+   `NODE_OPTIONS=--max-old-space-size=384` en el servicio.
+2. Secrets `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en GitHub
+   (copiados de Railway). Hoy el enriquecimiento de ML anda igual, pero el log
+   avisa que el token rotado no se guarda.
+3. Probar el botón de reportes en una ficha de vino (GITHUB_TOKEN de Railway).
+
+### Backlog vivo
+
+- Las fichas de bodega terminan la semana que viene. Siguiente uso de los
+  créditos: introducciones editoriales con fuentes para /region, /varietal y
+  /ranking (pocas páginas, mucho tráfico potencial), y reintentar las 281
+  "no encontradas" con el nombre de la bodega desambiguado por sus vinos.
+- Algunas fichas citan páginas de producto de vinotecas (enofilo, divinos,
+  bricco). No es grave; si molesta, preferir fuentes editoriales en el prompt.
+- snapshot.json: crece ~0,5 MB por semana; revisar cuando pase de 70 MB.
+- ML por API autenticada en vez del listado (el listado sigue bloqueado).
+- SEO sin datos de Search Console desde la nube (falta GOOGLE_SERVICE_ACCOUNT_JSON).
